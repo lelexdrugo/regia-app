@@ -1,0 +1,52 @@
+{
+  "note": "numeric shape of the real moviola stores, derived by scripts/dataset-stats.mjs",
+  "sources": 2,
+  "spanDays": 18.2,
+  "milestones": 27,
+  "aggregates": 128,
+  "directions": 4,
+  "lanes": 8,
+  "snapshots": 27,
+  "nodes": 155,
+  "milestoneKinds": {
+    "decisione": 5,
+    "abbandono": 1,
+    "milestone": 10,
+    "esplorazione": 2,
+    "eccezione": 7,
+    "rientro": 1,
+    "gate": 1
+  },
+  "parentsPerMilestone": {
+    "0": 2,
+    "1": 21,
+    "2": 4
+  },
+  "laneShare": [
+    0.41,
+    0.33,
+    0.15,
+    0.04,
+    0.04,
+    0.04
+  ],
+  "titleLength": {
+    "mean": 70,
+    "p50": 55,
+    "p95": 139,
+    "max": 152
+  },
+  "rounds": {
+    "1": 115,
+    "2": 13
+  },
+  "modelsPerTask": {
+    "1": 119,
+    "2": 8,
+    "3": 1
+  },
+  "taskDurationMin": {
+    "p50": 19,
+    "p95": 1789
+  }
+}

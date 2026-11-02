@@ -1,0 +1,22 @@
+{
+  "name": "moviola-renderer-bench",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Spike: benchmark of the moviola renderer (SVG, Canvas 2D, WebGL2, WebGPU) inside a minimal Tauri 2 window",
+  "scripts": {
+    "build:web": "vite build",
+    "bench": "node scripts/run-bench.mjs",
+    "analyze": "node scripts/analyze.mjs",
+    "dataset:stats": "node scripts/dataset-stats.mjs",
+    "bench:suite": "node scripts/run-suite.mjs"
+  },
+  "dependencies": {
+    "pixi.js": "8.22.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/api": "2.12.4",
+    "@tauri-apps/cli": "2.12.4",
+    "vite": "8.3.5"
+  }
+}
