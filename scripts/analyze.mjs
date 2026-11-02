@@ -35,7 +35,7 @@ for (const dir of process.argv.slice(2)) {
   lines.push(`| renderer | scale | backend / what rendered | ${phases.map((p) => p).join(' | ')} | all phases | max | script ms (median, not comparable across engines) | frames >1.5x refresh | repetitions | spread of rep medians |`);
   lines.push(`|---|---|---|${phases.map(() => '---').join('|')}|---|---|---|---|---|---|`);
   const summary = [];
-  for (const [k, rs] of [...groups].sort((a, b) => a[0].split('|')[1] - b[0].split('|')[1] || a[0].localeCompare(b[0]))) {
+  for (const [k, rs] of [...groups].sort((a, b) => parseFloat(a[0].split('|')[1]) - parseFloat(b[0].split('|')[1]) || a[0].split('|')[1].localeCompare(b[0].split('|')[1]) || a[0].localeCompare(b[0]))) {
     const [renderer, scale] = k.split('|');
     const byPhase = phases.map((p) => pool(rs.filter((r) => r.phase === p).map((r) => r.samples.dt)));
     const all = pool(rs.map((r) => r.samples.dt));
@@ -44,7 +44,7 @@ for (const dir of process.argv.slice(2)) {
     const repMedians = [...new Set(rs.map((r) => r.rep))].map((rep) => pool(rs.filter((r) => r.rep === rep).map((r) => r.samples.dt)).median);
     const spread = Math.max(...repMedians) - Math.min(...repMedians);
     const what = rs[0].gpu ? `${rs[0].backend}: ${rs[0].gpu}` : rs[0].backend;
-    summary.push({ renderer, scale: Number(scale), what, byPhase, all, js, dropped: (100 * dropped) / frames, spread });
+    summary.push({ renderer, scale: /^\d+$/.test(scale) ? Number(scale) : scale, what, byPhase, all, js, dropped: (100 * dropped) / frames, spread });
     lines.push(`| ${renderer} | x${scale} | ${what} | ${byPhase.map((b) => `${fmt(b.median)} / ${fmt(b.p95)}`).join(' | ')} | **${fmt(all.median)} / ${fmt(all.p95)}** | ${fmt(all.max, 0)} | ${fmt(js.median, 2)} | ${fmt((100 * dropped) / frames, 0)} % | ${new Set(rs.map((r) => r.rep)).size} | ${fmt(spread)} |`);
   }
   lines.push('');

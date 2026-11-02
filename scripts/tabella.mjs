@@ -15,7 +15,7 @@ for (const arg of process.argv.slice(2)) {
   out.push(`### ${title}`, '');
   out.push(`WebView: ${h.webview}; refresh interval ${f(doc.vsync_ms, 1)} ms (${f(1000 / doc.vsync_ms, 0)} Hz); dpr ${doc.dpr}; WebGL2 reported by the page: ${h.webgl?.webgl2 ? h.webgl.renderer : 'none'}; WebGPU: ${h.webgpu?.available ? [h.webgpu.vendor, h.webgpu.architecture].filter(Boolean).join(' ') + (h.webgpu.fallbackAdapter ? ' (software fallback adapter)' : '') : 'not available'}.`, '');
   out.push('| renderer | scale | median / p95 (ms) | worst phase p95 | frames late | script ms (median) |', '|---|---|---|---|---|---|');
-  for (const r of rows.sort((a, b) => a.scale - b.scale || a.renderer.localeCompare(b.renderer))) {
+  for (const r of rows.sort((a, b) => parseFloat(a.scale) - parseFloat(b.scale) || String(a.scale).localeCompare(String(b.scale)) || a.renderer.localeCompare(b.renderer))) {
     const worst = Math.max(...Object.values(r.by_phase).map((p) => p.p95));
     out.push(`| ${r.renderer} | x${r.scale} | **${f(r.all.median)}** / ${f(r.all.p95)} | ${f(worst)} | ${f(r.dropped_pct, 0)} % | ${f(r.js.median, 2)} |`);
   }
