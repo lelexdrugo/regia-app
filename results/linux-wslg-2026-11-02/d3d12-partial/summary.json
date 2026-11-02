@@ -1,0 +1,78 @@
+[
+ {
+  "renderer": "canvas2d",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 95,
+   "median": 19,
+   "p95": 21
+  },
+  "js": {
+   "n": 95,
+   "median": 4,
+   "p95": 6
+  },
+  "dropped_pct": 1.0526315789473684,
+  "by_phase": {
+   "pan": {
+    "n": 23,
+    "median": 18,
+    "p95": 21
+   },
+   "zoom": {
+    "n": 24,
+    "median": 19,
+    "p95": 19
+   },
+   "playhead": {
+    "n": 23,
+    "median": 19,
+    "p95": 22
+   },
+   "hover": {
+    "n": 25,
+    "median": 18,
+    "p95": 19
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 10,
+  "what": "webgl2: Apple GPU",
+  "all": {
+   "n": 48,
+   "median": 34,
+   "p95": 36
+  },
+  "js": {
+   "n": 48,
+   "median": 2,
+   "p95": 3
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 12,
+    "median": 35,
+    "p95": 36
+   },
+   "zoom": {
+    "n": 12,
+    "median": 34,
+    "p95": 35
+   },
+   "playhead": {
+    "n": 12,
+    "median": 35,
+    "p95": 37
+   },
+   "hover": {
+    "n": 12,
+    "median": 33,
+    "p95": 35
+   }
+  }
+ }
+]

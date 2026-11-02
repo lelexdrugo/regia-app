@@ -1,0 +1,752 @@
+[
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 1,
+  "what": "canvas2d",
+  "all": {
+   "n": 1915,
+   "median": 16.7,
+   "p95": 16.8,
+   "p99": 16.8,
+   "max": 25
+  },
+  "js": {
+   "n": 1903,
+   "median": 0.1,
+   "p95": 0.3,
+   "p99": 0.3,
+   "max": 0.4
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 478,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 20.4,
+    "max": 24.9
+   },
+   "zoom": {
+    "n": 480,
+    "median": 16.6,
+    "p95": 16.8,
+    "p99": 16.8,
+    "max": 24.3
+   },
+   "playhead": {
+    "n": 477,
+    "median": 16.7,
+    "p95": 16.8,
+    "p99": 24.5,
+    "max": 25
+   },
+   "hover": {
+    "n": 480,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.7
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 1,
+  "what": "canvas2d",
+  "all": {
+   "n": 1922,
+   "median": 16.7,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 24.9
+  },
+  "js": {
+   "n": 1910,
+   "median": 0.1,
+   "p95": 0.3,
+   "p99": 0.3,
+   "max": 0.4
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 479,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.7
+   },
+   "zoom": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.9
+   },
+   "playhead": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.6
+   },
+   "hover": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 1,
+  "what": "webgl: ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "all": {
+   "n": 1913,
+   "median": 16.7,
+   "p95": 16.8,
+   "p99": 22.9,
+   "max": 24.9
+  },
+  "js": {
+   "n": 1901,
+   "median": 0.3,
+   "p95": 0.5,
+   "p99": 0.8,
+   "max": 2.6
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 480,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 22.7,
+    "max": 24.6
+   },
+   "zoom": {
+    "n": 482,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 23.9
+   },
+   "playhead": {
+    "n": 469,
+    "median": 16.7,
+    "p95": 16.8,
+    "p99": 24.1,
+    "max": 24.8
+   },
+   "hover": {
+    "n": 482,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 20.8,
+    "max": 24.9
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 1,
+  "what": "svg",
+  "all": {
+   "n": 1924,
+   "median": 16.6,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 25
+  },
+  "js": {
+   "n": 1912,
+   "median": 0.1,
+   "p95": 0.2,
+   "p99": 0.2,
+   "max": 0.4
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 479,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.9
+   },
+   "zoom": {
+    "n": 481,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 16.8
+   },
+   "playhead": {
+    "n": 482,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 25
+   },
+   "hover": {
+    "n": 482,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.9
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 1,
+  "what": "webgl2: ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "all": {
+   "n": 1930,
+   "median": 16.7,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 25
+  },
+  "js": {
+   "n": 1918,
+   "median": 0.1,
+   "p95": 0.2,
+   "p99": 0.3,
+   "max": 0.4
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 482,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 25
+   },
+   "zoom": {
+    "n": 483,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.4
+   },
+   "playhead": {
+    "n": 484,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 21.7
+   },
+   "hover": {
+    "n": 481,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 23.8
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 1920,
+   "median": 16.6,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 25
+  },
+  "js": {
+   "n": 1908,
+   "median": 0.2,
+   "p95": 0.4,
+   "p99": 0.6,
+   "max": 0.8
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 480,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.7
+   },
+   "zoom": {
+    "n": 480,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.7
+   },
+   "playhead": {
+    "n": 481,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.7
+   },
+   "hover": {
+    "n": 479,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 25
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 1925,
+   "median": 16.7,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 25
+  },
+  "js": {
+   "n": 1913,
+   "median": 0.2,
+   "p95": 0.4,
+   "p99": 0.6,
+   "max": 0.8
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.9
+   },
+   "zoom": {
+    "n": 483,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 16.8
+   },
+   "playhead": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 25
+   },
+   "hover": {
+    "n": 480,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.7
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 10,
+  "what": "webgl: ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "all": {
+   "n": 1924,
+   "median": 16.7,
+   "p95": 16.7,
+   "p99": 18.5,
+   "max": 25
+  },
+  "js": {
+   "n": 1912,
+   "median": 0.5,
+   "p95": 0.8,
+   "p99": 1.3,
+   "max": 1.8
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.8,
+    "p99": 21.2,
+    "max": 24.8
+   },
+   "zoom": {
+    "n": 480,
+    "median": 16.7,
+    "p95": 16.8,
+    "p99": 23.2,
+    "max": 25
+   },
+   "playhead": {
+    "n": 480,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 23,
+    "max": 24.8
+   },
+   "hover": {
+    "n": 483,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 23.3
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 10,
+  "what": "svg",
+  "all": {
+   "n": 1923,
+   "median": 16.7,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 25
+  },
+  "js": {
+   "n": 1911,
+   "median": 0.1,
+   "p95": 0.3,
+   "p99": 0.3,
+   "max": 0.8
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 480,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 25
+   },
+   "zoom": {
+    "n": 481,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   },
+   "playhead": {
+    "n": 481,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.9
+   },
+   "hover": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 10,
+  "what": "webgl2: ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "all": {
+   "n": 1930,
+   "median": 16.6,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 24.8
+  },
+  "js": {
+   "n": 1918,
+   "median": 0.2,
+   "p95": 0.3,
+   "p99": 0.3,
+   "max": 0.6
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 483,
+    "median": 16.6,
+    "p95": 16.8,
+    "p99": 16.8,
+    "max": 24.5
+   },
+   "zoom": {
+    "n": 482,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 23.3
+   },
+   "playhead": {
+    "n": 484,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 20.8
+   },
+   "hover": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 100,
+  "what": "canvas2d",
+  "all": {
+   "n": 1923,
+   "median": 16.7,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 25
+  },
+  "js": {
+   "n": 1911,
+   "median": 0.2,
+   "p95": 0.4,
+   "p99": 0.6,
+   "max": 1
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 479,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   },
+   "zoom": {
+    "n": 482,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 16.8
+   },
+   "playhead": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.8,
+    "p99": 16.8,
+    "max": 24.5
+   },
+   "hover": {
+    "n": 481,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 25
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 100,
+  "what": "canvas2d",
+  "all": {
+   "n": 1890,
+   "median": 16.7,
+   "p95": 16.8,
+   "p99": 28,
+   "max": 45.1
+  },
+  "js": {
+   "n": 1878,
+   "median": 0.2,
+   "p95": 1,
+   "p99": 2.2,
+   "max": 5.2
+  },
+  "dropped_pct": 1.5873015873015872,
+  "by_phase": {
+   "pan": {
+    "n": 482,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 16.8
+   },
+   "zoom": {
+    "n": 449,
+    "median": 16.7,
+    "p95": 27.5,
+    "p99": 33.4,
+    "max": 45.1
+   },
+   "playhead": {
+    "n": 480,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   },
+   "hover": {
+    "n": 479,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 100,
+  "what": "webgl: ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "all": {
+   "n": 1844,
+   "median": 16.7,
+   "p95": 16.8,
+   "p99": 33.4,
+   "max": 37.5
+  },
+  "js": {
+   "n": 1832,
+   "median": 0.4,
+   "p95": 0.7,
+   "p99": 1.1,
+   "max": 2.3
+  },
+  "dropped_pct": 4.772234273318872,
+  "by_phase": {
+   "pan": {
+    "n": 484,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 16.8
+   },
+   "zoom": {
+    "n": 395,
+    "median": 16.7,
+    "p95": 33.3,
+    "p99": 33.4,
+    "max": 37.5
+   },
+   "playhead": {
+    "n": 481,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 23.6
+   },
+   "hover": {
+    "n": 484,
+    "median": 16.6,
+    "p95": 16.8,
+    "p99": 16.8,
+    "max": 16.8
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 100,
+  "what": "svg",
+  "all": {
+   "n": 1924,
+   "median": 16.6,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 33.3
+  },
+  "js": {
+   "n": 1912,
+   "median": 0.1,
+   "p95": 0.3,
+   "p99": 0.3,
+   "max": 0.8
+  },
+  "dropped_pct": 0.10395010395010396,
+  "by_phase": {
+   "pan": {
+    "n": 482,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 16.8
+   },
+   "zoom": {
+    "n": 480,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   },
+   "playhead": {
+    "n": 480,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 33.3
+   },
+   "hover": {
+    "n": 482,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.8
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 100,
+  "what": "webgl2: ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "all": {
+   "n": 1928,
+   "median": 16.6,
+   "p95": 16.7,
+   "p99": 16.8,
+   "max": 27.3
+  },
+  "js": {
+   "n": 1916,
+   "median": 0.1,
+   "p95": 0.3,
+   "p99": 0.3,
+   "max": 0.8
+  },
+  "dropped_pct": 0.05186721991701245,
+  "by_phase": {
+   "pan": {
+    "n": 482,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 19.9
+   },
+   "zoom": {
+    "n": 480,
+    "median": 16.7,
+    "p95": 16.8,
+    "p99": 16.8,
+    "max": 27.3
+   },
+   "playhead": {
+    "n": 483,
+    "median": 16.7,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 24.4
+   },
+   "hover": {
+    "n": 483,
+    "median": 16.6,
+    "p95": 16.7,
+    "p99": 16.8,
+    "max": 16.8
+   }
+  }
+ }
+]

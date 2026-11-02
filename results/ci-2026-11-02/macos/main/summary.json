@@ -1,0 +1,752 @@
+[
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 1,
+  "what": "canvas2d",
+  "all": {
+   "n": 1435,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 22
+  },
+  "js": {
+   "n": 1423,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 1
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 359,
+    "median": 17,
+    "p95": 19,
+    "p99": 20,
+    "max": 22
+   },
+   "zoom": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 20,
+    "max": 22
+   },
+   "playhead": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 21
+   },
+   "hover": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 20,
+    "max": 21
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 1,
+  "what": "canvas2d",
+  "all": {
+   "n": 1418,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 122
+  },
+  "js": {
+   "n": 1406,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 3
+  },
+  "dropped_pct": 0.35260930888575465,
+  "by_phase": {
+   "pan": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 20,
+    "max": 21
+   },
+   "playhead": {
+    "n": 346,
+    "median": 17,
+    "p95": 20,
+    "p99": 38,
+    "max": 122
+   },
+   "hover": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 20,
+    "max": 21
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 1,
+  "what": "webgl: Apple GPU",
+  "all": {
+   "n": 1434,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 26
+  },
+  "js": {
+   "n": 1422,
+   "median": 1,
+   "p95": 1,
+   "p99": 2,
+   "max": 5
+  },
+  "dropped_pct": 0.0697350069735007,
+  "by_phase": {
+   "pan": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 23,
+    "max": 26
+   },
+   "zoom": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 22,
+    "max": 23
+   },
+   "playhead": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 1,
+  "what": "svg",
+  "all": {
+   "n": 1431,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 22
+  },
+  "js": {
+   "n": 1419,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 1
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 22,
+    "max": 22
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 1,
+  "what": "webgl2: Apple GPU",
+  "all": {
+   "n": 1431,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 23
+  },
+  "js": {
+   "n": 1419,
+   "median": 1,
+   "p95": 1,
+   "p99": 1,
+   "max": 1
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   },
+   "zoom": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 20,
+    "max": 21
+   },
+   "playhead": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 1435,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 22
+  },
+  "js": {
+   "n": 1423,
+   "median": 1,
+   "p95": 1,
+   "p99": 1,
+   "max": 2
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 360,
+    "median": 17,
+    "p95": 20,
+    "p99": 22,
+    "max": 22
+   },
+   "zoom": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 21
+   },
+   "hover": {
+    "n": 360,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 1435,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 24
+  },
+  "js": {
+   "n": 1423,
+   "median": 1,
+   "p95": 1,
+   "p99": 2,
+   "max": 5
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 360,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 24
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 358,
+    "median": 17,
+    "p95": 19,
+    "p99": 20,
+    "max": 21
+   },
+   "hover": {
+    "n": 359,
+    "median": 17,
+    "p95": 19,
+    "p99": 20,
+    "max": 21
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 10,
+  "what": "webgl: Apple GPU",
+  "all": {
+   "n": 1433,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 24
+  },
+  "js": {
+   "n": 1421,
+   "median": 1,
+   "p95": 2,
+   "p99": 2,
+   "max": 3
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 22,
+    "max": 24
+   },
+   "playhead": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 24
+   },
+   "hover": {
+    "n": 360,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 10,
+  "what": "svg",
+  "all": {
+   "n": 1432,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 24
+  },
+  "js": {
+   "n": 1420,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 1
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 22,
+    "max": 23
+   },
+   "zoom": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 360,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 24
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 10,
+  "what": "webgl2: Apple GPU",
+  "all": {
+   "n": 1433,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 23
+  },
+  "js": {
+   "n": 1421,
+   "median": 1,
+   "p95": 1,
+   "p99": 1,
+   "max": 4
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 21
+   },
+   "hover": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 22,
+    "max": 23
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 100,
+  "what": "canvas2d",
+  "all": {
+   "n": 1434,
+   "median": 17,
+   "p95": 19,
+   "p99": 21,
+   "max": 22
+  },
+  "js": {
+   "n": 1422,
+   "median": 1,
+   "p95": 1,
+   "p99": 1,
+   "max": 2
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 359,
+    "median": 17,
+    "p95": 19,
+    "p99": 21,
+    "max": 21
+   },
+   "zoom": {
+    "n": 359,
+    "median": 17,
+    "p95": 19,
+    "p99": 20,
+    "max": 22
+   },
+   "playhead": {
+    "n": 359,
+    "median": 17,
+    "p95": 19,
+    "p99": 20,
+    "max": 21
+   },
+   "hover": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 100,
+  "what": "canvas2d",
+  "all": {
+   "n": 1433,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 23
+  },
+  "js": {
+   "n": 1421,
+   "median": 1,
+   "p95": 1,
+   "p99": 2,
+   "max": 4
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 359,
+    "median": 17,
+    "p95": 19,
+    "p99": 21,
+    "max": 21
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 21
+   },
+   "playhead": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 20,
+    "max": 22
+   },
+   "hover": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 100,
+  "what": "webgl: Apple GPU",
+  "all": {
+   "n": 1434,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 23
+  },
+  "js": {
+   "n": 1422,
+   "median": 1,
+   "p95": 2,
+   "p99": 2,
+   "max": 5
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 360,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   },
+   "hover": {
+    "n": 358,
+    "median": 17,
+    "p95": 19,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 100,
+  "what": "svg",
+  "all": {
+   "n": 1434,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 24
+  },
+  "js": {
+   "n": 1422,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 1
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 360,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 24
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 357,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 100,
+  "what": "webgl2: Apple GPU",
+  "all": {
+   "n": 1434,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 23
+  },
+  "js": {
+   "n": 1422,
+   "median": 1,
+   "p95": 1,
+   "p99": 1,
+   "max": 2
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   },
+   "zoom": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ }
+]

@@ -1,0 +1,152 @@
+[
+ {
+  "renderer": "canvas2d+busyv",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 817,
+   "median": 29,
+   "p95": 30,
+   "p99": 31,
+   "max": 32
+  },
+  "js": {
+   "n": 805,
+   "median": 28,
+   "p95": 29,
+   "p99": 29,
+   "max": 29
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 204,
+    "median": 29,
+    "p95": 30,
+    "p99": 30,
+    "max": 30
+   },
+   "zoom": {
+    "n": 203,
+    "median": 29,
+    "p95": 31,
+    "p99": 31,
+    "max": 32
+   },
+   "playhead": {
+    "n": 205,
+    "median": 29,
+    "p95": 30,
+    "p99": 30,
+    "max": 30
+   },
+   "hover": {
+    "n": 205,
+    "median": 29,
+    "p95": 30,
+    "p99": 30,
+    "max": 31
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d+shadow",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 1433,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 26
+  },
+  "js": {
+   "n": 1421,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 3
+  },
+  "dropped_pct": 0.06978367062107467,
+  "by_phase": {
+   "pan": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   },
+   "zoom": {
+    "n": 358,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 25
+   },
+   "hover": {
+    "n": 358,
+    "median": 17,
+    "p95": 19,
+    "p99": 22,
+    "max": 26
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 1434,
+   "median": 17,
+   "p95": 20,
+   "p99": 21,
+   "max": 23
+  },
+  "js": {
+   "n": 1422,
+   "median": 1,
+   "p95": 1,
+   "p99": 2,
+   "max": 2
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 20,
+    "max": 21
+   },
+   "zoom": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 357,
+    "median": 17,
+    "p95": 19,
+    "p99": 21,
+    "max": 23
+   },
+   "hover": {
+    "n": 359,
+    "median": 17,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ }
+]

@@ -1,0 +1,752 @@
+[
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 1,
+  "what": "canvas2d",
+  "all": {
+   "n": 1628,
+   "median": 18,
+   "p95": 20,
+   "p99": 21,
+   "max": 31
+  },
+  "js": {
+   "n": 1616,
+   "median": 3,
+   "p95": 4,
+   "p99": 4,
+   "max": 6
+  },
+  "dropped_pct": 0.12285012285012285,
+  "by_phase": {
+   "pan": {
+    "n": 409,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 28
+   },
+   "zoom": {
+    "n": 409,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 404,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 406,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 31
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 1,
+  "what": "canvas2d",
+  "all": {
+   "n": 1623,
+   "median": 18,
+   "p95": 20,
+   "p99": 22,
+   "max": 34
+  },
+  "js": {
+   "n": 1611,
+   "median": 3,
+   "p95": 4,
+   "p99": 4,
+   "max": 5
+  },
+  "dropped_pct": 0.36968576709796674,
+  "by_phase": {
+   "pan": {
+    "n": 404,
+    "median": 18,
+    "p95": 20,
+    "p99": 24,
+    "max": 34
+   },
+   "zoom": {
+    "n": 407,
+    "median": 18,
+    "p95": 20,
+    "p99": 22,
+    "max": 31
+   },
+   "playhead": {
+    "n": 404,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 408,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 1,
+  "what": "webgl: Apple GPU",
+  "all": {
+   "n": 871,
+   "median": 33,
+   "p95": 37,
+   "p99": 46,
+   "max": 276
+  },
+  "js": {
+   "n": 859,
+   "median": 4,
+   "p95": 5,
+   "p99": 6,
+   "max": 12
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 225,
+    "median": 33,
+    "p95": 36,
+    "p99": 38,
+    "max": 39
+   },
+   "zoom": {
+    "n": 224,
+    "median": 33,
+    "p95": 36,
+    "p99": 37,
+    "max": 37
+   },
+   "playhead": {
+    "n": 191,
+    "median": 36,
+    "p95": 42,
+    "p99": 276,
+    "max": 276
+   },
+   "hover": {
+    "n": 231,
+    "median": 32,
+    "p95": 35,
+    "p99": 37,
+    "max": 38
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 1,
+  "what": "svg",
+  "all": {
+   "n": 1650,
+   "median": 18,
+   "p95": 20,
+   "p99": 21,
+   "max": 22
+  },
+  "js": {
+   "n": 1638,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 1
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 413,
+    "median": 18,
+    "p95": 20,
+    "p99": 20,
+    "max": 21
+   },
+   "zoom": {
+    "n": 413,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "playhead": {
+    "n": 412,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   },
+   "hover": {
+    "n": 412,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 21
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 1,
+  "what": "webgl2: Apple GPU",
+  "all": {
+   "n": 878,
+   "median": 34,
+   "p95": 37,
+   "p99": 38,
+   "max": 39
+  },
+  "js": {
+   "n": 866,
+   "median": 2,
+   "p95": 3,
+   "p99": 3,
+   "max": 5
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 220,
+    "median": 34,
+    "p95": 37,
+    "p99": 37,
+    "max": 37
+   },
+   "zoom": {
+    "n": 221,
+    "median": 34,
+    "p95": 36,
+    "p99": 37,
+    "max": 38
+   },
+   "playhead": {
+    "n": 216,
+    "median": 35,
+    "p95": 37,
+    "p99": 39,
+    "max": 39
+   },
+   "hover": {
+    "n": 221,
+    "median": 34,
+    "p95": 36,
+    "p99": 37,
+    "max": 38
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 1542,
+   "median": 19,
+   "p95": 21,
+   "p99": 22,
+   "max": 23
+  },
+  "js": {
+   "n": 1530,
+   "median": 4,
+   "p95": 6,
+   "p99": 7,
+   "max": 8
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 383,
+    "median": 20,
+    "p95": 21,
+    "p99": 22,
+    "max": 22
+   },
+   "zoom": {
+    "n": 385,
+    "median": 19,
+    "p95": 21,
+    "p99": 22,
+    "max": 22
+   },
+   "playhead": {
+    "n": 380,
+    "median": 20,
+    "p95": 22,
+    "p99": 23,
+    "max": 23
+   },
+   "hover": {
+    "n": 394,
+    "median": 19,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 10,
+  "what": "canvas2d",
+  "all": {
+   "n": 1528,
+   "median": 19,
+   "p95": 22,
+   "p99": 22,
+   "max": 23
+  },
+  "js": {
+   "n": 1516,
+   "median": 4,
+   "p95": 6,
+   "p99": 7,
+   "max": 8
+  },
+  "dropped_pct": 0,
+  "by_phase": {
+   "pan": {
+    "n": 384,
+    "median": 20,
+    "p95": 21,
+    "p99": 22,
+    "max": 22
+   },
+   "zoom": {
+    "n": 376,
+    "median": 20,
+    "p95": 22,
+    "p99": 23,
+    "max": 23
+   },
+   "playhead": {
+    "n": 377,
+    "median": 20,
+    "p95": 22,
+    "p99": 23,
+    "max": 23
+   },
+   "hover": {
+    "n": 391,
+    "median": 19,
+    "p95": 21,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 10,
+  "what": "webgl: Apple GPU",
+  "all": {
+   "n": 833,
+   "median": 36,
+   "p95": 40,
+   "p99": 41,
+   "max": 43
+  },
+  "js": {
+   "n": 821,
+   "median": 5,
+   "p95": 6,
+   "p99": 6,
+   "max": 7
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 206,
+    "median": 36,
+    "p95": 40,
+    "p99": 41,
+    "max": 42
+   },
+   "zoom": {
+    "n": 210,
+    "median": 36,
+    "p95": 39,
+    "p99": 41,
+    "max": 42
+   },
+   "playhead": {
+    "n": 196,
+    "median": 38,
+    "p95": 41,
+    "p99": 43,
+    "max": 43
+   },
+   "hover": {
+    "n": 221,
+    "median": 34,
+    "p95": 37,
+    "p99": 38,
+    "max": 38
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 10,
+  "what": "svg",
+  "all": {
+   "n": 1645,
+   "median": 18,
+   "p95": 20,
+   "p99": 21,
+   "max": 35
+  },
+  "js": {
+   "n": 1633,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 3
+  },
+  "dropped_pct": 0.060790273556231005,
+  "by_phase": {
+   "pan": {
+    "n": 410,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 35
+   },
+   "zoom": {
+    "n": 413,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 23
+   },
+   "playhead": {
+    "n": 410,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 24
+   },
+   "hover": {
+    "n": 412,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 10,
+  "what": "webgl2: Apple GPU",
+  "all": {
+   "n": 850,
+   "median": 35,
+   "p95": 38,
+   "p99": 39,
+   "max": 40
+  },
+  "js": {
+   "n": 838,
+   "median": 2,
+   "p95": 3,
+   "p99": 4,
+   "max": 4
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 213,
+    "median": 35,
+    "p95": 37,
+    "p99": 38,
+    "max": 39
+   },
+   "zoom": {
+    "n": 215,
+    "median": 35,
+    "p95": 38,
+    "p99": 39,
+    "max": 40
+   },
+   "playhead": {
+    "n": 208,
+    "median": 36,
+    "p95": 39,
+    "p99": 40,
+    "max": 40
+   },
+   "hover": {
+    "n": 214,
+    "median": 35,
+    "p95": 38,
+    "p99": 38,
+    "max": 39
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d-lod",
+  "scale": 100,
+  "what": "canvas2d",
+  "all": {
+   "n": 1521,
+   "median": 19,
+   "p95": 24,
+   "p99": 26,
+   "max": 30
+  },
+  "js": {
+   "n": 1509,
+   "median": 4,
+   "p95": 9,
+   "p99": 11,
+   "max": 14
+  },
+  "dropped_pct": 3.2215647600262987,
+  "by_phase": {
+   "pan": {
+    "n": 385,
+    "median": 19,
+    "p95": 21,
+    "p99": 22,
+    "max": 22
+   },
+   "zoom": {
+    "n": 351,
+    "median": 21,
+    "p95": 26,
+    "p99": 27,
+    "max": 30
+   },
+   "playhead": {
+    "n": 384,
+    "median": 19,
+    "p95": 21,
+    "p99": 22,
+    "max": 23
+   },
+   "hover": {
+    "n": 401,
+    "median": 19,
+    "p95": 20,
+    "p99": 21,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d",
+  "scale": 100,
+  "what": "canvas2d",
+  "all": {
+   "n": 1433,
+   "median": 19,
+   "p95": 26,
+   "p99": 60,
+   "max": 223
+  },
+  "js": {
+   "n": 1421,
+   "median": 4,
+   "p95": 11,
+   "p99": 40,
+   "max": 208
+  },
+  "dropped_pct": 6.071179344033496,
+  "by_phase": {
+   "pan": {
+    "n": 387,
+    "median": 19,
+    "p95": 21,
+    "p99": 22,
+    "max": 22
+   },
+   "zoom": {
+    "n": 255,
+    "median": 21,
+    "p95": 66,
+    "p99": 161,
+    "max": 223
+   },
+   "playhead": {
+    "n": 387,
+    "median": 19,
+    "p95": 21,
+    "p99": 22,
+    "max": 23
+   },
+   "hover": {
+    "n": 404,
+    "median": 18,
+    "p95": 20,
+    "p99": 20,
+    "max": 21
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl",
+  "scale": 100,
+  "what": "webgl: Apple GPU",
+  "all": {
+   "n": 736,
+   "median": 41,
+   "p95": 45,
+   "p99": 50,
+   "max": 52
+  },
+  "js": {
+   "n": 724,
+   "median": 9,
+   "p95": 11,
+   "p99": 18,
+   "max": 22
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 180,
+    "median": 41,
+    "p95": 44,
+    "p99": 45,
+    "max": 45
+   },
+   "zoom": {
+    "n": 180,
+    "median": 40,
+    "p95": 49,
+    "p99": 52,
+    "max": 52
+   },
+   "playhead": {
+    "n": 177,
+    "median": 42,
+    "p95": 44,
+    "p99": 45,
+    "max": 45
+   },
+   "hover": {
+    "n": 199,
+    "median": 37,
+    "p95": 40,
+    "p99": 41,
+    "max": 42
+   }
+  }
+ },
+ {
+  "renderer": "svg",
+  "scale": 100,
+  "what": "svg",
+  "all": {
+   "n": 1580,
+   "median": 18,
+   "p95": 23,
+   "p99": 31,
+   "max": 36
+  },
+  "js": {
+   "n": 1568,
+   "median": 0,
+   "p95": 1,
+   "p99": 1,
+   "max": 1
+  },
+  "dropped_pct": 3.7974683544303796,
+  "by_phase": {
+   "pan": {
+    "n": 409,
+    "median": 18,
+    "p95": 20,
+    "p99": 21,
+    "max": 27
+   },
+   "zoom": {
+    "n": 353,
+    "median": 19,
+    "p95": 31,
+    "p99": 34,
+    "max": 36
+   },
+   "playhead": {
+    "n": 406,
+    "median": 18,
+    "p95": 20,
+    "p99": 22,
+    "max": 23
+   },
+   "hover": {
+    "n": 412,
+    "median": 18,
+    "p95": 20,
+    "p99": 20,
+    "max": 22
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw",
+  "scale": 100,
+  "what": "webgl2: Apple GPU",
+  "all": {
+   "n": 803,
+   "median": 37,
+   "p95": 40,
+   "p99": 42,
+   "max": 53
+  },
+  "js": {
+   "n": 791,
+   "median": 4,
+   "p95": 5,
+   "p99": 5,
+   "max": 5
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 202,
+    "median": 37,
+    "p95": 39,
+    "p99": 41,
+    "max": 41
+   },
+   "zoom": {
+    "n": 200,
+    "median": 37,
+    "p95": 40,
+    "p99": 46,
+    "max": 53
+   },
+   "playhead": {
+    "n": 197,
+    "median": 38,
+    "p95": 41,
+    "p99": 43,
+    "max": 44
+   },
+   "hover": {
+    "n": 204,
+    "median": 36,
+    "p95": 39,
+    "p99": 40,
+    "max": 41
+   }
+  }
+ }
+]

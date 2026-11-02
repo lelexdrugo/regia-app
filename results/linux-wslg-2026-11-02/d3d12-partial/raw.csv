@@ -1,0 +1,9 @@
+renderer,scale,rep,phase,repeat,nodes,lanes,frames,dt_median,dt_p95,dt_p99,dt_max,js_median,js_p95,labels_median,dropped_pct,init_ms,backend,gpu
+"canvas2d",10,1,"pan",1,1550,16,23,18,21,31,31,4,6,0,4.348,2,"canvas2d",""
+"canvas2d",10,1,"zoom",1,1550,16,24,19,19,20,20,4,6,0,0,2,"canvas2d",""
+"canvas2d",10,1,"playhead",1,1550,16,23,19,22,22,22,5,6,0,0,2,"canvas2d",""
+"canvas2d",10,1,"hover",1,1550,16,25,18,19,20,20,3,4,0,0,2,"canvas2d",""
+"webgl2-raw",10,1,"pan",1,1550,16,12,35,36,36,36,2,3,0,100,83,"webgl2","Apple GPU"
+"webgl2-raw",10,1,"zoom",1,1550,16,12,34,35,35,35,2,3,0,100,83,"webgl2","Apple GPU"
+"webgl2-raw",10,1,"playhead",1,1550,16,12,35,37,37,37,3,4,0,100,83,"webgl2","Apple GPU"
+"webgl2-raw",10,1,"hover",1,1550,16,12,33,35,35,35,2,3,0,100,83,"webgl2","Apple GPU"

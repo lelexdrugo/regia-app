@@ -1,0 +1,202 @@
+[
+ {
+  "renderer": "canvas2d (x10 draws/frame)",
+  "scale": 100,
+  "what": "canvas2d",
+  "all": {
+   "n": 525,
+   "median": 40,
+   "p95": 58,
+   "p99": 65,
+   "max": 1338
+  },
+  "js": {
+   "n": 515,
+   "median": 24,
+   "p95": 43,
+   "p99": 49,
+   "max": 1323
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 154,
+    "median": 49,
+    "p95": 58,
+    "p99": 63,
+    "max": 63
+   },
+   "zoom": {
+    "n": 2,
+    "median": null,
+    "p95": null,
+    "p99": null,
+    "max": 1338
+   },
+   "playhead": {
+    "n": 168,
+    "median": 43,
+    "p95": 59,
+    "p99": 69,
+    "max": 71
+   },
+   "hover": {
+    "n": 201,
+    "median": 37,
+    "p95": 40,
+    "p99": 42,
+    "max": 44
+   }
+  }
+ },
+ {
+  "renderer": "canvas2d-lod (x10 draws/frame)",
+  "scale": 100,
+  "what": "canvas2d",
+  "all": {
+   "n": 638,
+   "median": 40,
+   "p95": 83,
+   "p99": 114,
+   "max": 122
+  },
+  "js": {
+   "n": 626,
+   "median": 25,
+   "p95": 66,
+   "p99": 99,
+   "max": 107
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 155,
+    "median": 49,
+    "p95": 58,
+    "p99": 62,
+    "max": 64
+   },
+   "zoom": {
+    "n": 120,
+    "median": 57,
+    "p95": 115,
+    "p99": 122,
+    "max": 122
+   },
+   "playhead": {
+    "n": 161,
+    "median": 44,
+    "p95": 62,
+    "p99": 103,
+    "max": 113
+   },
+   "hover": {
+    "n": 202,
+    "median": 37,
+    "p95": 40,
+    "p99": 41,
+    "max": 47
+   }
+  }
+ },
+ {
+  "renderer": "pixi-webgl (x10 draws/frame)",
+  "scale": 100,
+  "what": "webgl: Apple GPU",
+  "all": {
+   "n": 273,
+   "median": 105,
+   "p95": 142,
+   "p99": 197,
+   "max": 252
+  },
+  "js": {
+   "n": 261,
+   "median": 52,
+   "p95": 104,
+   "p99": 167,
+   "max": 220
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 70,
+    "median": 105,
+    "p95": 116,
+    "p99": 117,
+    "max": 117
+   },
+   "zoom": {
+    "n": 59,
+    "median": 112,
+    "p95": 197,
+    "p99": 252,
+    "max": 252
+   },
+   "playhead": {
+    "n": 63,
+    "median": 115,
+    "p95": 132,
+    "p99": 138,
+    "max": 138
+   },
+   "hover": {
+    "n": 81,
+    "median": 91,
+    "p95": 95,
+    "p99": 100,
+    "max": 100
+   }
+  }
+ },
+ {
+  "renderer": "webgl2-raw (x10 draws/frame)",
+  "scale": 100,
+  "what": "webgl2: Apple GPU",
+  "all": {
+   "n": 426,
+   "median": 69,
+   "p95": 78,
+   "p99": 86,
+   "max": 92
+  },
+  "js": {
+   "n": 414,
+   "median": 30,
+   "p95": 38,
+   "p99": 49,
+   "max": 58
+  },
+  "dropped_pct": 100,
+  "by_phase": {
+   "pan": {
+    "n": 108,
+    "median": 68,
+    "p95": 74,
+    "p99": 75,
+    "max": 75
+   },
+   "zoom": {
+    "n": 102,
+    "median": 72,
+    "p95": 84,
+    "p99": 90,
+    "max": 92
+   },
+   "playhead": {
+    "n": 103,
+    "median": 71,
+    "p95": 79,
+    "p99": 85,
+    "max": 86
+   },
+   "hover": {
+    "n": 113,
+    "median": 65,
+    "p95": 69,
+    "p99": 70,
+    "max": 71
+   }
+  }
+ }
+]
