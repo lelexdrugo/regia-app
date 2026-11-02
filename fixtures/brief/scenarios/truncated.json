@@ -1,0 +1,15 @@
+{
+  "_note": "Synthetic. The extra blockers of #2 cannot be read: the graph warns and #2 is not ready.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {"number": 1, "title": "a decision upstream", "status": "Decisione", "labels": ["progetto:alpha"]},
+    {"number": 2, "title": "approved, ready, closed blockers, but more exist and the read fails", "status": "Approvato",
+     "labels": ["progetto:alpha", "maturità:pronto"],
+     "blocked_by": [[50,"CLOSED"],[51,"CLOSED"],[52,"CLOSED"],[53,"CLOSED"],[54,"CLOSED"],[55,"CLOSED"],[56,"CLOSED"],[57,"CLOSED"],[58,"CLOSED"],[59,"CLOSED"],[60,"CLOSED"],[61,"CLOSED"],[62,"CLOSED"],[63,"CLOSED"],[64,"CLOSED"],[65,"CLOSED"],[66,"CLOSED"],[67,"CLOSED"],[68,"CLOSED"],[69,"CLOSED"]],
+     "blocked_by_total": 25}
+  ],
+  "extra_blockers": {
+    "2": "error"
+  }
+}

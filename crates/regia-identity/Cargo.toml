@@ -1,0 +1,10 @@
+[package]
+name = "regia-identity"
+description = "The product name, in one constant, and everything derived from it."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+directories.workspace = true

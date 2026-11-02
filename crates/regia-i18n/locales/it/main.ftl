@@ -1,0 +1,10 @@
+app-title = Sala di regia
+brief-waiting = Aspetta te (proposta, decisione)
+brief-session = Serve una sessione con te
+brief-ready = Pronti da eseguire
+brief-in-progress = In corso
+brief-by-project = Per progetto
+brief-nothing = (niente)
+brief-loading = Sto leggendo il brief…
+brief-error = Non riesco a leggere il brief: { $reason }
+brief-partial = Non ancora portati: gli avvisi del controller, dei dossier e di ciò che è fuori dal tracker non si vedono.

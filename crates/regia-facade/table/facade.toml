@@ -1,0 +1,149 @@
+# The facade table (ADR 0017 §4, ADR 0001 "Facade"). Disposable: it disappears with the Python.
+#
+# Translation walks the JSON by shape, so data is never touched: a project called like a key stays
+# as it is. It fails closed: a key or an enum value not listed here is an error, never Italian
+# leaking through. Only the commands listed here exist for the facade.
+schema = 1
+
+[commands.brief]
+python = ["brief"]
+output = "brief"
+[commands.brief.args]
+"--project" = "--progetto"
+
+[commands.projects]
+python = ["progetti"]
+output = "projects"
+
+[enums.status]
+"Inbox" = "inbox"
+"Proposta" = "proposal"
+"Approvato" = "approved"
+"In corso" = "in_progress"
+"Decisione" = "decision"
+"Fatto" = "done"
+"Scartato" = "discarded"
+# Key of the per-project counts for a task with no status.
+"—" = "unset"
+
+[enums.maturity]
+abbozzo = "draft"
+pronto = "ready"
+
+[enums.dossier_problem]
+cartella-mancante = "folder_missing"
+non-e-repo = "not_a_repo"
+senza-remoto = "no_remote"
+senza-upstream = "no_upstream"
+head-staccato = "detached_head"
+git-guasto = "git_failed"
+non-pushati = "not_pushed"
+
+[shapes.brief.fields]
+aspetta_me = { to = "waiting_on_owner", items = "task" }
+pronti = { to = "ready", items = "task" }
+in_corso = { to = "in_progress", items = "task" }
+per_progetto = { to = "by_project", values = "status_counts" }
+sessione = { to = "session", items = "task" }
+grafo = { to = "graph", shape = "graph_warnings" }
+controller = { to = "controller", shape = "controller_warnings" }
+dossier = { to = "dossier", items = "dossier_warning" }
+fuori_dal_tracker = { to = "outside_tracker", values = "outside_tracker_project" }
+
+[shapes.task.fields]
+number = { to = "number" }
+title = { to = "title" }
+state = { to = "state" }
+stateReason = { to = "state_reason" }
+stato = { to = "status", enum = "status" }
+progetto = { to = "project" }
+maturita = { to = "maturity", enum = "maturity" }
+obiettivo = { to = "objective" }
+labels = { to = "labels" }
+parent = { to = "parent" }
+sub = { to = "sub_issues" }
+bloccato_da = { to = "blocked_by" }
+bloccato_da_totale = { to = "blocked_by_total" }
+url = { to = "url" }
+updatedAt = { to = "updated_at" }
+createdAt = { to = "created_at" }
+closedAt = { to = "closed_at" }
+sblocca = { to = "unblocks" }
+catena = { to = "chain" }
+ciclo = { to = "cycle" }
+
+[shapes.status_counts]
+key_enum = "status"
+
+[shapes.graph_warnings.fields]
+cicli = { to = "cycles" }
+troncati = { to = "truncated" }
+
+[shapes.controller_warnings.fields]
+ultimo_giro = { to = "last_cycle" }
+vecchio = { to = "stale" }
+budget = { to = "budget", shape = "controller_budget" }
+da_aprire = { to = "to_open", items = "controller_to_open" }
+da_riprendere = { to = "to_resume", items = "controller_to_resume" }
+
+[shapes.controller_budget.fields]
+giri = { to = "cycles" }
+da = { to = "since" }
+motivo = { to = "reason" }
+allarme = { to = "alarm" }
+
+[shapes.controller_to_open.fields]
+nome = { to = "name" }
+giorno = { to = "day" }
+esito = { to = "outcome" }
+cartella = { to = "folder" }
+prompt = { to = "prompt" }
+motivo = { to = "reason" }
+
+[shapes.controller_to_resume.fields]
+progetto = { to = "project" }
+sessione = { to = "session" }
+riprende = { to = "resumes" }
+come = { to = "how" }
+comando_orca = { to = "orca_command" }
+motivo = { to = "reason" }
+
+[shapes.dossier_warning.fields]
+progetto = { to = "project" }
+cartella = { to = "folder" }
+problema = { to = "problem", enum = "dossier_problem" }
+branch = { to = "branch" }
+avanti = { to = "ahead" }
+dettaglio = { to = "detail" }
+
+[shapes.outside_tracker_project.fields]
+totale = { to = "total" }
+voci = { to = "items", items = "outside_tracker_item" }
+altre = { to = "more" }
+
+# `controllo` stays as the prototype's check id until that slice is ported, and `testo`/`perche` are
+# prose in the prototype's language: data, not contract.
+[shapes.outside_tracker_item.fields]
+controllo = { to = "check" }
+progetto = { to = "project" }
+dove = { to = "where" }
+testo = { to = "text" }
+perche = { to = "why" }
+url = { to = "url" }
+
+[shapes.projects]
+items_of = "project"
+
+# The registry keys come from a free block in the Objective's body; these are the ones in use.
+[shapes.project.fields]
+id = { to = "id" }
+obiettivo = { to = "objective" }
+titolo = { to = "title" }
+stato = { to = "status", enum = "status" }
+cartella = { to = "folder" }
+playbook = { to = "playbook" }
+wip = { to = "wip" }
+priorita = { to = "priority" }
+repo = { to = "repo" }
+prodotti = { to = "products" }
+default_automatici = { to = "automatic_defaults" }

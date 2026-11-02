@@ -1,0 +1,16 @@
+{
+  "blocker_pages": {},
+  "issue_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ]
+}

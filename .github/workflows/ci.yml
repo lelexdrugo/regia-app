@@ -1,0 +1,58 @@
+name: ci
+
+# Minutes on a private repo are billed against a small monthly allowance, and macOS costs about ten
+# times Linux. A push to main that touches the build runs Linux and Windows; the full matrix, with
+# macOS, runs only by hand. Spike branches trigger nothing.
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ci.yml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "app/**"
+      - "crates/**"
+      - "fixtures/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(github.event_name == 'workflow_dispatch' && '["ubuntu-24.04","windows-2025","macos-15"]' || '["ubuntu-24.04","windows-2025"]') }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: System packages for Tauri
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev xvfb
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build CLI, app and tools
+        run: cargo build --workspace --locked
+      - name: Test, with the brief's conformance
+        run: cargo test --workspace --locked
+      - name: Build the app for the smoke test
+        run: cargo build -p regia-app --features smoke --locked
+      - name: The app shows the CLI's brief, in each language (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a ./target/debug/app-smoke
+      - name: The app shows the CLI's brief, in each language
+        if: runner.os != 'Linux'
+        run: ./target/debug/app-smoke

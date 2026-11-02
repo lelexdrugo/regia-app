@@ -1,0 +1,10 @@
+app-title = Control room
+brief-waiting = Waiting on you (proposal, decision)
+brief-session = Needs a working session with you
+brief-ready = Ready to run
+brief-in-progress = In progress
+brief-by-project = By project
+brief-nothing = (nothing)
+brief-loading = Loading the brief…
+brief-error = The brief could not be read: { $reason }
+brief-partial = Not ported yet: controller, dossier and outside-tracker warnings are not shown.

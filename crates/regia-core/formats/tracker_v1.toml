@@ -1,0 +1,23 @@
+# Format v1 of the tracker: strings the prototype wrote into GitHub, read as they are (ADR 0017,
+# "Data"). They are data, not identifiers, so they stay out of the Rust sources. Format v2 and
+# `migrate` belong to the sub-issue of the epic.
+
+[labels]
+project_prefix = "progetto:"
+objective = "tipo:obiettivo"
+session = "sessione"
+
+[labels.maturity]
+draft = "maturità:abbozzo"
+ready = "maturità:pronto"
+
+# Option label in `status_options` of tracker.json → canonical id. Only used once, when the config
+# is loaded, to bind each option id to its canonical id. From then on status is by option id.
+[status_labels]
+"Inbox" = "inbox"
+"Proposta" = "proposal"
+"Approvato" = "approved"
+"In corso" = "in_progress"
+"Decisione" = "decision"
+"Fatto" = "done"
+"Scartato" = "discarded"

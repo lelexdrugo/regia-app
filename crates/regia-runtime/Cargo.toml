@@ -1,0 +1,13 @@
+[package]
+name = "regia-runtime"
+description = "The composition root shared by the CLI and the app: from the environment to wired adapters."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+regia-core.workspace = true
+regia-github.workspace = true
+regia-identity.workspace = true
+thiserror.workspace = true

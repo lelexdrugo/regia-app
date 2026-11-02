@@ -1,0 +1,223 @@
+{
+  "aspetta_me": [
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 3,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 3,
+      "obiettivo": false,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 2,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [
+        [
+          8,
+          "OPEN"
+        ],
+        [
+          40,
+          "CLOSED"
+        ]
+      ],
+      "title": "decision that unblocks the longest chain",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/3"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 2,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 21,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "upstream of a cycle: counts its nodes",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/21"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "sessione"
+      ],
+      "maturita": null,
+      "number": 4,
+      "obiettivo": false,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "proposal with a session label",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/4"
+    },
+    {
+      "bloccato_da": [
+        [
+          19,
+          "OPEN"
+        ]
+      ],
+      "bloccato_da_totale": 1,
+      "catena": null,
+      "ciclo": true,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 18,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": null,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "cycle with 19, null measures, sorts last",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/18"
+    },
+    {
+      "bloccato_da": [
+        [
+          18,
+          "OPEN"
+        ]
+      ],
+      "bloccato_da_totale": 1,
+      "catena": null,
+      "ciclo": true,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 19,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": null,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "cycle with 18",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/19"
+    }
+  ],
+  "grafo": {
+    "cicli": [
+      [
+        18,
+        19
+      ],
+      [
+        20
+      ]
+    ],
+    "troncati": []
+  },
+  "in_corso": [
+    {
+      "bloccato_da": [
+        [
+          8,
+          "OPEN"
+        ]
+      ],
+      "bloccato_da_totale": 1,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 9,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "In corso",
+      "sub": [],
+      "title": "downstream of 8, in progress, no graph keys in this section",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/9"
+    }
+  ],
+  "per_progetto": {
+    "alpha": {
+      "Approvato": 2,
+      "Decisione": 2,
+      "In corso": 1,
+      "Inbox": 1,
+      "Proposta": 3
+    }
+  },
+  "pronti": [],
+  "sessione": [
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "sessione"
+      ],
+      "maturita": null,
+      "number": 4,
+      "obiettivo": false,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "proposal with a session label",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/4"
+    }
+  ]
+}

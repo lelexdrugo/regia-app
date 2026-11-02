@@ -1,0 +1,14 @@
+[package]
+name = "regia-i18n"
+description = "The one language catalog of the CLI and the app (Project Fluent)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+fluent-bundle.workspace = true
+fluent-syntax.workspace = true
+regia-identity.workspace = true
+sys-locale.workspace = true
+unic-langid.workspace = true

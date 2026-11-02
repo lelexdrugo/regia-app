@@ -1,0 +1,20 @@
+[package]
+name = "regia-cli"
+description = "The CLI: the agents' interface and the only entry point of the English contract."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "regia"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+regia-core.workspace = true
+regia-facade.workspace = true
+regia-i18n.workspace = true
+regia-identity.workspace = true
+regia-runtime.workspace = true
+serde_json.workspace = true

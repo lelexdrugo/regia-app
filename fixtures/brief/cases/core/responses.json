@@ -1,0 +1,1481 @@
+{
+  "blocker_pages": {
+    "23": [
+      {
+        "repository": {
+          "issue": {
+            "blockedBy": {
+              "nodes": [
+                {
+                  "number": 119,
+                  "state": "CLOSED"
+                },
+                {
+                  "number": 140,
+                  "state": "CLOSED"
+                },
+                {
+                  "number": 141,
+                  "state": "CLOSED"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": "page-1",
+                "hasNextPage": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "repository": {
+          "issue": {
+            "blockedBy": {
+              "nodes": [
+                {
+                  "number": 142,
+                  "state": "CLOSED"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": null,
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    ],
+    "24": [
+      {
+        "repository": {
+          "issue": {
+            "blockedBy": {
+              "nodes": [
+                {
+                  "number": 143,
+                  "state": "CLOSED"
+                },
+                {
+                  "number": 11,
+                  "state": "OPEN"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": null,
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "issue_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "registry without a folder",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 1,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "In corso",
+                      "optionId": "opt-d4"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "objective of alpha, excluded from every section",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/1"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:omega"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 2,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Approvato",
+                      "optionId": "opt-c3"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "objective of omega, a project with no other task",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/2"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 3,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Decisione",
+                      "optionId": "opt-e5"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 8,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 40,
+                    "state": "CLOSED"
+                  }
+                ]
+              },
+              "title": "decision that unblocks the longest chain",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/3"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "sessione"
+                  }
+                ]
+              },
+              "number": 4,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Proposta",
+                      "optionId": "opt-b2"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "proposal with a session label",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/4"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "sessione"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 5,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Decisione",
+                      "optionId": "opt-e5"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "decision with the session label and a draft",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/5"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 6,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Proposta",
+                      "optionId": "opt-b2"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "tie on chain and unblocks: lower number first (6)",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/6"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 7,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Proposta",
+                      "optionId": "opt-b2"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "tie on chain and unblocks: lower number first (7)",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/7"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-1",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 3,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 8,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Approvato",
+                      "optionId": "opt-c3"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "approved and ready but blocked by an open issue, so not ready",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/8"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 8,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 9,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "In corso",
+                      "optionId": "opt-d4"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "downstream of 8, in progress, no graph keys in this section",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/9"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 41,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 42,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 2
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 10,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Approvato",
+                      "optionId": "opt-c3"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "ready: every blocker closed",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/10"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 11,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Approvato",
+                      "optionId": "opt-c3"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "ready and unblocks two others, so it sorts first",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/11"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 11,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 12,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Inbox",
+                      "optionId": "opt-a1"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "inbox, blocked by 11",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/12"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 12,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 13,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Approvato",
+                      "optionId": "opt-c3"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "approved draft, blocked by 12: draft is never ready",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/13"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 14,
+              "parent": null,
+              "projectItems": {
+                "nodes": []
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "no status at all: counts under the unset key",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/14"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-2",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 15,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Inbox",
+                      "optionId": "other-project-option"
+                    },
+                    "project": {
+                      "id": "OTHER_PROJECT"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "only an item in another Project: also unset",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/15"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 16,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Inbox",
+                      "optionId": "other-project-option"
+                    },
+                    "project": {
+                      "id": "OTHER_PROJECT"
+                    }
+                  },
+                  {
+                    "fieldValueByName": {
+                      "name": "Inbox",
+                      "optionId": "opt-a1"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "in another Project too, but the configured one wins",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/16"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": []
+              },
+              "number": 17,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Decisione",
+                      "optionId": "opt-e5"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "no project label: in the sections, not in the counts",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/17"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 19,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 18,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Proposta",
+                      "optionId": "opt-b2"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "cycle with 19, null measures, sorts last",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/18"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 18,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 19,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Decisione",
+                      "optionId": "opt-e5"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "cycle with 18",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/19"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 20,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 20,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Approvato",
+                      "optionId": "opt-c3"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "blocks itself: a cycle of one",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/20"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 21,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Proposta",
+                      "optionId": "opt-b2"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "upstream of a cycle: counts its nodes",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/21"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-3",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 21,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 18,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 2
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 22,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Inbox",
+                      "optionId": "opt-a1"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "blocked by 21 and by the cycle's neighbor",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/22"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 100,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 101,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 102,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 103,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 104,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 105,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 106,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 107,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 108,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 109,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 110,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 111,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 112,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 113,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 114,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 115,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 116,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 117,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 118,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 119,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 23
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 23,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Approvato",
+                      "optionId": "opt-c3"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "closed-blocker pages: more than 20 blockers, all read and closed, ready",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/23"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 120,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 121,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 122,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 123,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 124,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 125,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 126,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 127,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 128,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 129,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 130,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 131,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 132,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 133,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 134,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 135,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 136,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 137,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 138,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 139,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 22
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 24,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Approvato",
+                      "optionId": "opt-c3"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "second page of blockers holds an open one, so not ready",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/24"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 25,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Decisione",
+                      "optionId": "opt-e5"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": "REOPENED",
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "<img src=x onerror=alert(1)> hostile title, shown as text",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/25"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 26,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "In corso",
+                      "optionId": "opt-d4"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "accenti, «virgolette» e 日本語 nel titolo",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/26"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 27,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Fatto",
+                      "optionId": "opt-f6"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "done but still open: in the counts only",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/27"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 28,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Scartato",
+                      "optionId": "opt-g7"
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "discarded but still open: in the counts only",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/28"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ]
+}

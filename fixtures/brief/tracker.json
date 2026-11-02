@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. Same format as the prototype's config/tracker.json; the ids are invented.",
+  "owner": "example",
+  "repo": "tracker",
+  "project_number": 1,
+  "project_id": "PROJECT_FIXTURE",
+  "project_url": "https://tracker.invalid/projects/1",
+  "status_field_id": "FIELD_FIXTURE",
+  "status_options": {
+    "Inbox": "opt-a1",
+    "Proposta": "opt-b2",
+    "Approvato": "opt-c3",
+    "In corso": "opt-d4",
+    "Decisione": "opt-e5",
+    "Fatto": "opt-f6",
+    "Scartato": "opt-g7"
+  }
+}

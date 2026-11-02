@@ -1,0 +1,583 @@
+{
+  "aspetta_me": [
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 3,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 3,
+      "obiettivo": false,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 2,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [
+        [
+          8,
+          "OPEN"
+        ],
+        [
+          40,
+          "CLOSED"
+        ]
+      ],
+      "title": "decision that unblocks the longest chain",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/3"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 2,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 21,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "upstream of a cycle: counts its nodes",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/21"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "sessione"
+      ],
+      "maturita": null,
+      "number": 4,
+      "obiettivo": false,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "proposal with a session label",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/4"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:beta",
+        "sessione",
+        "maturità:abbozzo"
+      ],
+      "maturita": "abbozzo",
+      "number": 5,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "decision with the session label and a draft",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/5"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:beta"
+      ],
+      "maturita": null,
+      "number": 6,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "tie on chain and unblocks: lower number first (6)",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/6"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:beta"
+      ],
+      "maturita": null,
+      "number": 7,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "tie on chain and unblocks: lower number first (7)",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/7"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [],
+      "maturita": null,
+      "number": 17,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": null,
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "no project label: in the sections, not in the counts",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/17"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:gamma"
+      ],
+      "maturita": null,
+      "number": 25,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": "REOPENED",
+      "stato": "Decisione",
+      "sub": [],
+      "title": "<img src=x onerror=alert(1)> hostile title, shown as text",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/25"
+    },
+    {
+      "bloccato_da": [
+        [
+          19,
+          "OPEN"
+        ]
+      ],
+      "bloccato_da_totale": 1,
+      "catena": null,
+      "ciclo": true,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 18,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": null,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "cycle with 19, null measures, sorts last",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/18"
+    },
+    {
+      "bloccato_da": [
+        [
+          18,
+          "OPEN"
+        ]
+      ],
+      "bloccato_da_totale": 1,
+      "catena": null,
+      "ciclo": true,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 19,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": null,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "cycle with 18",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/19"
+    }
+  ],
+  "grafo": {
+    "cicli": [
+      [
+        18,
+        19
+      ],
+      [
+        20
+      ]
+    ],
+    "troncati": []
+  },
+  "in_corso": [
+    {
+      "bloccato_da": [
+        [
+          8,
+          "OPEN"
+        ]
+      ],
+      "bloccato_da_totale": 1,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 9,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "In corso",
+      "sub": [],
+      "title": "downstream of 8, in progress, no graph keys in this section",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/9"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:gamma"
+      ],
+      "maturita": null,
+      "number": 26,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "In corso",
+      "sub": [],
+      "title": "accenti, «virgolette» e 日本語 nel titolo",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/26"
+    }
+  ],
+  "per_progetto": {
+    "alpha": {
+      "Approvato": 2,
+      "Decisione": 2,
+      "In corso": 1,
+      "Inbox": 1,
+      "Proposta": 3
+    },
+    "beta": {
+      "Approvato": 3,
+      "Decisione": 1,
+      "Inbox": 2,
+      "Proposta": 2,
+      "—": 2
+    },
+    "gamma": {
+      "Approvato": 2,
+      "Decisione": 1,
+      "Fatto": 1,
+      "In corso": 1,
+      "Scartato": 1
+    },
+    "omega": {}
+  },
+  "pronti": [
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 3,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:beta",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 11,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 3,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "ready and unblocks two others, so it sorts first",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/11"
+    },
+    {
+      "bloccato_da": [
+        [
+          41,
+          "CLOSED"
+        ],
+        [
+          42,
+          "CLOSED"
+        ]
+      ],
+      "bloccato_da_totale": 2,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:beta",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 10,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "ready: every blocker closed",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/10"
+    },
+    {
+      "bloccato_da": [
+        [
+          100,
+          "CLOSED"
+        ],
+        [
+          101,
+          "CLOSED"
+        ],
+        [
+          102,
+          "CLOSED"
+        ],
+        [
+          103,
+          "CLOSED"
+        ],
+        [
+          104,
+          "CLOSED"
+        ],
+        [
+          105,
+          "CLOSED"
+        ],
+        [
+          106,
+          "CLOSED"
+        ],
+        [
+          107,
+          "CLOSED"
+        ],
+        [
+          108,
+          "CLOSED"
+        ],
+        [
+          109,
+          "CLOSED"
+        ],
+        [
+          110,
+          "CLOSED"
+        ],
+        [
+          111,
+          "CLOSED"
+        ],
+        [
+          112,
+          "CLOSED"
+        ],
+        [
+          113,
+          "CLOSED"
+        ],
+        [
+          114,
+          "CLOSED"
+        ],
+        [
+          115,
+          "CLOSED"
+        ],
+        [
+          116,
+          "CLOSED"
+        ],
+        [
+          117,
+          "CLOSED"
+        ],
+        [
+          118,
+          "CLOSED"
+        ],
+        [
+          119,
+          "CLOSED"
+        ],
+        [
+          140,
+          "CLOSED"
+        ],
+        [
+          141,
+          "CLOSED"
+        ],
+        [
+          142,
+          "CLOSED"
+        ]
+      ],
+      "bloccato_da_totale": 23,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 23,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "closed-blocker pages: more than 20 blockers, all read and closed, ready",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/23"
+    }
+  ],
+  "sessione": [
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "sessione"
+      ],
+      "maturita": null,
+      "number": 4,
+      "obiettivo": false,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "proposal with a session label",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/4"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:beta",
+        "sessione",
+        "maturità:abbozzo"
+      ],
+      "maturita": "abbozzo",
+      "number": 5,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "decision with the session label and a draft",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/5"
+    }
+  ]
+}

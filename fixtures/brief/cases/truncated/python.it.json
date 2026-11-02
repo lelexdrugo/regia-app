@@ -1,0 +1,42 @@
+{
+  "aspetta_me": [
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 1,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "a decision upstream",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/1"
+    }
+  ],
+  "grafo": {
+    "cicli": [],
+    "troncati": [
+      2
+    ]
+  },
+  "in_corso": [],
+  "per_progetto": {
+    "alpha": {
+      "Approvato": 1,
+      "Decisione": 1
+    }
+  },
+  "pronti": []
+}
