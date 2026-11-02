@@ -38,15 +38,11 @@ env:
 
 jobs:
   bench:
-    if: github.event_name == 'push' || inputs.os == 'all' || inputs.os == matrix.label
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { label: macos, os: macos-latest }
-          - { label: linux, os: ubuntu-24.04 }
-          - { label: windows, os: windows-latest }
-    runs-on: ${{ matrix.os }}
+        label: ${{ fromJSON((github.event_name != 'workflow_dispatch' || inputs.os == 'all') && '["macos","linux","windows"]' || format('["{0}"]', inputs.os)) }}
+    runs-on: ${{ fromJSON('{"macos":"macos-latest","linux":"ubuntu-24.04","windows":"windows-latest"}')[matrix.label] }}
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
