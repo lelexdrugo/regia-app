@@ -37,7 +37,7 @@ fn numbers(section: &Value) -> Vec<u64> {
 fn check(language: Language, case: &Case, expected: &Value) -> Result<(), String> {
     let state = prepare_state_dir(&format!("smoke-{language}"));
     let out = state.join("smoke.json");
-    let app = bin_dir().join(format!("regia-app{}", std::env::consts::EXE_SUFFIX));
+    let app = bin_dir().join(format!("{}-app{}", regia_identity::PRODUCT_NAME, std::env::consts::EXE_SUFFIX));
     let mut command = Command::new(&app);
     apply_fixture_env(&mut command, &case.responses_path(), &state);
     command.env(env_var("LANG"), language.tag()).env(env_var("SMOKE_OUT"), &out);
