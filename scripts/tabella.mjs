@@ -16,8 +16,9 @@ for (const arg of process.argv.slice(2)) {
   out.push(`WebView: ${h.webview}; refresh interval ${f(doc.vsync_ms, 1)} ms (${f(1000 / doc.vsync_ms, 0)} Hz); dpr ${doc.dpr}; WebGL2 reported by the page: ${h.webgl?.webgl2 ? h.webgl.renderer : 'none'}; WebGPU: ${h.webgpu?.available ? [h.webgpu.vendor, h.webgpu.architecture].filter(Boolean).join(' ') + (h.webgpu.fallbackAdapter ? ' (software fallback adapter)' : '') : 'not available'}.`, '');
   out.push('| renderer | scale | median / p95 (ms) | worst phase p95 | frames late | script ms (median) |', '|---|---|---|---|---|---|');
   for (const r of rows.sort((a, b) => parseFloat(a.scale) - parseFloat(b.scale) || String(a.scale).localeCompare(String(b.scale)) || a.renderer.localeCompare(b.renderer))) {
-    const worst = Math.max(...Object.values(r.by_phase).map((p) => p.p95));
-    out.push(`| ${r.renderer} | x${r.scale} | **${f(r.all.median)}** / ${f(r.all.p95)} | ${f(worst)} | ${f(r.dropped_pct, 0)} % | ${f(r.js.median, 2)} |`);
+    const ph = Object.entries(r.by_phase); const incomplete = ph.filter(([, p]) => !Number.isFinite(p.p95)).map(([k]) => k);
+    const worst = incomplete.length ? `n/a (fase ${incomplete.join(', ')} con meno di 30 fotogrammi)` : f(Math.max(...ph.map(([, p]) => p.p95)));
+    out.push(`| ${r.renderer} | x${r.scale} | **${f(r.all.median)}** / ${f(r.all.p95)} | ${worst} | ${f(r.dropped_pct, 0)} % | ${f(r.js.median, 2)} |`);
   }
   const miss = new Set((doc.failures || []).map((x) => x.renderer));
   if (miss.size) out.push('', `Not run here: ${[...miss].join(', ')} (${[...new Set(doc.failures.map((x) => x.error))].join('; ')}).`);
