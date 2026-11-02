@@ -26,7 +26,7 @@
 
 ### Worker verification
 
-- **D1:** confirmed by reading. `rinnova_lock` (`controller.py:524-527`) raises `LockPerso` if the lock is not ours, but between the last renewal before the launch loop (`:643`) and `self.lancia` (`:694`) there is no check, and the launch itself (Orca, "can last minutes", comment at `:823`) is not covered by a lease re-check before it starts. The window is narrower than Codex's `:552` (the renewal at `:643` is closer) but real. Fate: **da decidere in #400**.
+- **D1:** confirmed by reading. `rinnova_lock` (`controller.py:524-527`) raises `LockPerso` if the lock is not ours, but between the last renewal before the launch loop (`:643`) and `self.lancia` (`:694`) there is no check, and the launch itself (Orca, "can last minutes", comment at `:823`) is not covered by a lease re-check before it starts. Codex cites `:552` as the last renewal; `:643` (sveglia) also renews and may lie on the path, so the exact window was not measured, but no renewal sits right before `:694`. Fate: **da decidere in #400**.
 - **D2:** confirmed by reading. `self.record = self.registro.carica()` at `:491` runs in `__init__`; `prendi_lock()` follows only at `:1307`. `_salva_registro` (`:949-950`) saves the in-memory dict through `Registro.salva`, which writes the whole document (`sospese.py:482-486`). Needs a second controller constructed while the first holds the lock and then ends before the lock is taken: narrow but needs no clock fault. Fate: **da decidere in #400**.
 - **D3:** media, not verified in depth. Fate: **da decidere in #400**.
 - **False positives:** none among the three. Not already in `0001-review.md`.
