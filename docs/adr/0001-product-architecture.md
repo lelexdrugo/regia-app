@@ -1,6 +1,6 @@
 # ADR 0001: Product architecture
 
-- **Status:** Proposed, 2026-11-02. It waits for the owner's decision: the first product ADR is a mandatory gate of the epic.
+- **Status:** Accepted, 2026-11-02, by the owner's decision on task #396 of the dossier, with its two choices: the controller is off by default on every installation until the user consents (section 14), and usage probes run only with the user's consent at setup, with no probe at all if the user refuses (section 6). The renderer of the moviola (section 13) comes from the benchmark of task #398; the owner ratifies it at the gate of the study's synthesis (#400).
 - **Scope:** the desktop app, the CLI and the core of the product in this repo. Nothing here is in production, and this ADR moves nothing to production.
 - **Evidence:** the walking skeleton in this repo, run on Windows, Linux and macOS (see "Proof"). Claims that were read but not run are marked *not proven*. Claims about what the skeleton does not do yet are marked *not built*.
 
@@ -39,6 +39,7 @@ Dependencies point inwards. `regia-core` starts no process and opens no socket; 
 | `regia-cli` | The `regia` binary | built |
 | `app/src-tauri` | The Tauri shell: commands, capabilities | built |
 | `regia-conformance` | Dev only: harness, fake `gh`, recorder | built |
+| `regia-exec` | The only module that starts a process, as the threat model requires: a closed list of programs, typed arguments, an environment allow-list | planned |
 | `regia-store` | SQLite state (section 8) | planned |
 | `regia-git` | Git port, through the `git` CLI (section 4) | planned |
 | `regia-agents` | `AgentService` and `LaunchSurface` (section 6) | planned |
@@ -87,7 +88,9 @@ With only one service, the diversity rule degrades to the same service in a clea
 
 **The honest limit of "configurable":** only a CLI that shares a known stream format, transcript rule and usage format is one TOML file. Anything else needs code: today each service has its own argv shape, session-id extraction, transcript rule and usage parsing. The two services known are `claude` and `codex`.
 
-**Usage probes read the tools' OAuth tokens.** The prototype reads Claude's and Codex's access tokens from their files into its process and sends them to two undocumented endpoints, and the `probe usage` port inherits that. It means handling credentials we said we do not hold, on endpoints that can change without notice; and where macOS keeps Claude's credentials is *not proven*, so there the probe may answer "unknown". This ships to colleagues, so the owner decides it (section 14).
+**Usage probes read the tools' OAuth tokens.** The prototype reads Claude's and Codex's access tokens from their files into its process and sends them to two undocumented endpoints, and the `probe usage` port inherits that. It means handling credentials we said we do not hold, on endpoints that can change without notice; and where macOS keeps Claude's credentials is *not proven*, so there the probe may answer "unknown".
+
+**The owner's decision: probes run only with the user's consent at setup, and a user who refuses gets no probe at all.** Nothing then reads the tokens. That state has to be distinct from "unknown": in the prototype an unknown budget sends every candidate to `idle/budget` and keeps waking the token, so a refused probe would leave a controller that never launches. The budget slice defines how the controller behaves with no probe; the dossier's plan proposes the default.
 
 **The skill becomes neutral.** It names no product and asks the CLI: `regia agents show --role <role> --json` answers with service, tier, model, effort, surface, deadline and fallback. That command is a new name in the contract, so it passes the gate with the facade. Regenerating the skill's text from the principal was rejected, because it leaves a second copy to keep aligned in two folders.
 
@@ -112,7 +115,15 @@ Closing the window stops the app's controller. A tray comes later, in its own sl
 - **Keys.** The database documents and the JSON of `lock`, `lease` and `step` share their Italian keys. The table cannot apply inside the core, so `regia-store` needs a v1 codec with those keys as data, or the Python stops reading the rows.
 - **Not only the database.** The state also has `controller-stato.json`, `da-riprendere.json` and `politica-locale.json`, which the Python brief and controller read. The transition contract covers them, by the inventory in the dossier.
 
-*Not proven, and the largest risk of the transition:* Python and Rust on the same `regia.db` holding that lock. It is the first thing the runtime slice must test. **Plan B if it fails:** `lock`, `lease` and `step` stay a Python subprocess for as long as the Python controller exists.
+*Not proven, and the largest risk of the transition:* Python and Rust on the same `regia.db` holding that lock. It is the first thing the runtime slice must test. **Plan B if it fails:** `lock`, `lease` and `step` stay a Python subprocess for as long as the Python controller exists. The risk and plan B concern only the owner's machine: a colleague's machine has no Python, so nothing there shares the lock and `regia-store` works alone.
+
+**Three defects the Rust controller does not inherit.** A review of the prototype's controller (`0001-review-codex.md`, round 2) found them, as static counterexamples that were not executed. The dossier fixes the Python separately; the fix is not a condition of this section.
+
+- **D1, launching after losing the lock.** The lock is checked again right before every launch, at every launch point: a step, the token wake-up, a chat, the chronicler, a resume. The check sits outside the launch's own error handling, so a lost lock cannot turn into a launch error.
+- **D2, losing step records.** The step registry is loaded after the lock is taken, never in a constructor, and saved record by record with a version check, so it cannot overwrite records it did not load.
+- **D3, the cursor of `step start`.** The cursor is written in the same transaction that checks the lock's owner, as `step end` already does.
+
+The engine's tests cover all three with an injected clock, and the prototype's own tests serve as an oracle if the dossier's fix lands.
 
 **Shadow before the gate.** The Rust controller runs with `--shadow` and the `Dry` surface on a copy, never on live files: the whole state folder, with the database through `VACUUM INTO`. The comparison needs a driver, because the prototype's CLI cannot do it as it stands.
 
@@ -167,6 +178,8 @@ In-process Tauri commands. There is no sidecar and no local server.
 
 The binary `regia`, in English, is the only entry point. A command that is not ported goes to `python tools/regia.py` through the table in `crates/regia-facade/table/facade.toml`. The crate and the table disappear when porting ends.
 
+The passthrough exists only on the owner's machine. Colleagues enter this repo and never the dossier, and the prototype is never published, so on their machines an unported command has nowhere to go: it fails with a clear error. v0.1 therefore ships every command of its contract in Rust.
+
 The table has three properties that a key-for-key rename would not.
 
 - **It walks by shape.** Project ids used as keys of `by_project` are data and stay as they are, even a project called like a key.
@@ -215,7 +228,7 @@ The fake behaves like a server: it returns only the fields the query selects, er
 
 ### 13. Frontend for the real screens
 
-Svelte 5, Vite and TypeScript, as a single-page app without SvelteKit, with `bits-ui` for accessible components. It costs the least to write and review, has an accessibility check at compile time, and ships a small bundle (12.7 kB gzipped, against 68.7 kB for React 19, on the same small app, one measurement). React 19 is the fallback, and wins if React Aria's accessible collections turn out to be needed. That agents write Svelte as easily is an assumption, not a measurement. The moviola's renderer is a separate choice, made by its own benchmark, and any of these frameworks can host it.
+Svelte 5, Vite and TypeScript, as a single-page app without SvelteKit, with `bits-ui` for accessible components. It costs the least to write and review, has an accessibility check at compile time, and ships a small bundle (12.7 kB gzipped, against 68.7 kB for React 19, on the same small app, one measurement). React 19 is the fallback, and wins if React Aria's accessible collections turn out to be needed. That agents write Svelte as easily is an assumption, not a measurement. The moviola's renderer is a separate choice, made by its own benchmark, and any of these frameworks can host it. That benchmark (task #398 of the dossier, `docs/app/moviola/scelta-renderer.md`) chose hand-written Canvas 2D with no library, and a level of detail still to design. It holds in all three engines and with no GPU, where WebGL2 is twice as slow. Hand-written WebGL2 is the next step if crowded views or effects demand it, with Canvas 2D as its required fallback. A physical Mac and native Linux with a GPU are *not measured*.
 
 The skeleton stays static, without npm, to keep CI cheap. The choice applies from the first UI slice and is reversible: changing framework rewrites components, not the IPC contract. *Not built.*
 
@@ -223,7 +236,7 @@ The skeleton stays static, without npm, to keep CI cheap. The choice applies fro
 
 The threat model is in the dossier's study, with countermeasures mapped to Tauri 2 capabilities. Tauri must be at least 2.11.6, for two recent IPC advisories; the workspace is on 2.12.5.
 
-**The app cannot fix the most serious threat, because it sits outside the app.** Workers run unattended with their permission prompts disabled, so an injected prompt in an issue or a web page can reach whatever the user's shell can. No capability limits that. The proposal is that the controller is off by default on every installation, and starts only after explicit consent. The owner decides this, and also whether usage probes may read the tools' tokens (section 6).
+**The app cannot fix the most serious threat, because it sits outside the app.** Workers run unattended with their permission prompts disabled, so an injected prompt in an issue or a web page can reach whatever the user's shell can. No capability limits that. **By the owner's decision, the controller is off by default on every installation, and starts only after explicit consent.** Usage probes likewise run only with consent at setup (section 6).
 
 *Not built,* and required by the threat model for the first UI slice: `withGlobalTauri` off (the skeleton needs it on because it has no npm), the window built from Rust with navigation handlers, the isolation pattern (to evaluate there), `cargo audit` and `cargo deny` in CI. Actions are already pinned to commits.
 
@@ -290,7 +303,7 @@ Run by the skeleton on 2026-11-02. CI run links and logs are in the worker's rep
 - **Live, by hand, on Windows:** an empty diff on the real tracker, with `outside_tracker` excluded by the `not_ported` declaration.
 - **App:** the debug build of the real Tauri window, started from a shell on a fixture in English and in Italian, renders the same waiting, ready and in-progress tasks in the same order as the CLI, shows the catalog's headings, and renders a hostile title as text.
 
-**Not measured yet:** installer size (the skeleton does not bundle), memory at rest and cold start on the product. Targets belong to the study's synthesis and should be set on measurements of this skeleton, because no reliable published numbers were found.
+**Measured afterwards, on Windows only, by the study's synthesis:** installer size, memory at rest and start-up, with the targets set on those numbers, because no reliable published ones were found. They are in `docs/app/piano/traguardi.md` of the dossier. Linux and macOS have no numbers yet.
 
 ## Consequences
 
