@@ -4,7 +4,7 @@
 //   stress    scales 300 and 1000, beyond the spec: where each renderer starts to give way
 //   headroom  scale 100, every frame drawn 10 times: exposes GPU/raster cost hidden by the display refresh rate
 //   sanity    the control: a deliberately slowed canvas must come out slower
-// Usage: node scripts/run-suite.mjs [--only main,sanity] [--host-label name]
+// Usage: node scripts/run-suite.mjs [--only main,sanity] [--host-label name] [--main-env KEY=VALUE]
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,14 +16,15 @@ const only = opt('only', 'main,software,stress,headroom,sanity').split(',');
 const host = opt('host-label', { win32: 'windows', darwin: 'macos', linux: 'linux' }[process.platform]);
 const stamp = new Date().toISOString().slice(0, 10);
 const base = join(root, 'results', `${host}-${stamp}`);
+const mainEnv = opt('main-env') ? ['--env', opt('main-env')] : [];
 const gpuRenderers = 'canvas2d,webgl2-raw,pixi-webgl,pixi-webgpu';
 
 const steps = {
-  main: ['--label', `${host}-main`, '--out', join(base, 'main')],
+  main: [...mainEnv, '--label', `${host}-main`, '--out', join(base, 'main')],
   software: ['--software', '--label', `${host}-software`, '--out', join(base, 'software')],
-  stress: ['--scales', '300,1000', '--no-shots', '--label', `${host}-stress`, '--out', join(base, 'stress')],
-  headroom: ['--scales', '100', '--repeat', '10', '--renderers', gpuRenderers, '--no-shots', '--label', `${host}-headroom`, '--out', join(base, 'headroom')],
-  sanity: ['--sanity', '--label', `${host}-sanity`, '--out', join(base, 'sanity')],
+  stress: [...mainEnv, '--scales', '300,1000', '--no-shots', '--label', `${host}-stress`, '--out', join(base, 'stress')],
+  headroom: [...mainEnv, '--scales', '100', '--repeat', '10', '--renderers', gpuRenderers, '--no-shots', '--label', `${host}-headroom`, '--out', join(base, 'headroom')],
+  sanity: [...mainEnv, '--sanity', '--label', `${host}-sanity`, '--out', join(base, 'sanity')],
 };
 let built = false, failed = 0;
 for (const name of only) {

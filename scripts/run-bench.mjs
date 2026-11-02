@@ -4,12 +4,13 @@
 //   npm run bench -- --software              # same, with the GPU switched off (the Linux/Windows fallback case)
 //   npm run bench -- --scales 300,1000 --reps 3   # stress tiers beyond the x100 of the spec
 //   npm run bench -- --repeat 10 --scales 100 --renderers canvas2d,webgl2-raw,pixi-webgl,pixi-webgpu   # headroom: each frame drawn 10 times
+//   npm run bench -- --env GALLIUM_DRIVER=d3d12   # extra environment for the window (WSLg: GPU through Mesa d3d12)
 //   npm run bench -- --sanity                # the control: a deliberately slowed canvas must come out slower
 //
 // It builds the page (vite) and the Tauri window (cargo), runs the window with MOVIOLA_BENCH_* set,
 // then turns results.json into raw.csv and summary.md (scripts/analyze.mjs).
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
@@ -40,6 +41,7 @@ if (!existsSync(exe)) { console.error(`missing ${exe}`); process.exit(1); }
 
 const env = { ...process.env, MOVIOLA_BENCH_OUT: out, MOVIOLA_BENCH_LABEL: label };
 for (const [k, o] of [['RENDERERS', 'renderers'], ['SCALES', 'scales'], ['REPS', 'reps'], ['PHASE_MS', 'phase-ms'], ['WARMUP_MS', 'warmup-ms'], ['REPEAT', 'repeat']]) if (opt(o)) env[`MOVIOLA_BENCH_${k}`] = opt(o);
+args.forEach((a, i) => { if (a === '--env') { const [k, ...v] = args[i + 1].split('='); env[k] = v.join('='); } });
 if (flag('sanity')) env.MOVIOLA_BENCH_SANITY = '1';
 if (flag('no-shots')) env.MOVIOLA_BENCH_SHOTS = '0';
 if (software) {
@@ -49,6 +51,11 @@ if (software) {
 }
 console.log(`running ${exe}\n  out: ${out}\n  host: ${os.type()} ${os.release()} ${os.arch()}, ${os.cpus()[0]?.model}`);
 
+if (platform === 'linux') {
+  // WebKit reports a fixed "Apple GPU" for WebGL, so what the stack really is has to be read outside the page
+  const g = spawnSync('bash', ['-c', 'glxinfo -B 2>&1 | head -40'], { env, encoding: 'utf8' });
+  if (g.stdout) writeFileSync(join(out, 'glxinfo.txt'), g.stdout);
+}
 let cmd = exe, cmdArgs = [];
 if (platform === 'linux' && (flag('xvfb') || (!process.env.DISPLAY && !process.env.WAYLAND_DISPLAY))) { cmd = 'xvfb-run'; cmdArgs = ['-a', '-s', '-screen 0 1600x1000x24', exe]; }
 const r = spawnSync(cmd, cmdArgs, { stdio: 'inherit', env });
