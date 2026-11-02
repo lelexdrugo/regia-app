@@ -1,5 +1,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(all(feature = "smoke", not(debug_assertions)))]
+compile_error!("the smoke feature lets the webview write a file and quit the app: never in a release build");
+
 use std::collections::BTreeMap;
 
 use regia_core::{Brief, BriefOptions};

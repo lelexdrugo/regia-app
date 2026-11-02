@@ -71,6 +71,10 @@
       }
     ]
   },
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
   "issue_pages": [
     {
       "repository": {
@@ -102,6 +106,25 @@
                     "fieldValueByName": {
                       "name": "In corso",
                       "optionId": "opt-d4"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-d4"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -144,6 +167,25 @@
                     "fieldValueByName": {
                       "name": "Approvato",
                       "optionId": "opt-c3"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-c3"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -188,6 +230,25 @@
                     "fieldValueByName": {
                       "name": "Decisione",
                       "optionId": "opt-e5"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-e5"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -242,6 +303,25 @@
                       "name": "Proposta",
                       "optionId": "opt-b2"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -287,6 +367,25 @@
                       "name": "Decisione",
                       "optionId": "opt-e5"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-e5"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -326,6 +425,25 @@
                       "name": "Proposta",
                       "optionId": "opt-b2"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -364,6 +482,25 @@
                     "fieldValueByName": {
                       "name": "Proposta",
                       "optionId": "opt-b2"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-b2"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -424,6 +561,25 @@
                       "name": "Approvato",
                       "optionId": "opt-c3"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -470,6 +626,25 @@
                     "fieldValueByName": {
                       "name": "In corso",
                       "optionId": "opt-d4"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-d4"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -522,6 +697,25 @@
                       "name": "Approvato",
                       "optionId": "opt-c3"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -563,6 +757,25 @@
                     "fieldValueByName": {
                       "name": "Approvato",
                       "optionId": "opt-c3"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-c3"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -607,6 +820,25 @@
                     "fieldValueByName": {
                       "name": "Inbox",
                       "optionId": "opt-a1"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-a1"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -654,6 +886,25 @@
                     "fieldValueByName": {
                       "name": "Approvato",
                       "optionId": "opt-c3"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-c3"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -735,6 +986,16 @@
                       "name": "Inbox",
                       "optionId": "other-project-option"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "other-project-option"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "OTHER_PROJECT"
                     }
@@ -774,6 +1035,16 @@
                       "name": "Inbox",
                       "optionId": "other-project-option"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "other-project-option"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "OTHER_PROJECT"
                     }
@@ -782,6 +1053,25 @@
                     "fieldValueByName": {
                       "name": "Inbox",
                       "optionId": "opt-a1"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-a1"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -817,6 +1107,25 @@
                     "fieldValueByName": {
                       "name": "Decisione",
                       "optionId": "opt-e5"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-e5"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -862,6 +1171,25 @@
                       "name": "Proposta",
                       "optionId": "opt-b2"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -905,6 +1233,25 @@
                     "fieldValueByName": {
                       "name": "Decisione",
                       "optionId": "opt-e5"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-e5"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -953,6 +1300,25 @@
                       "name": "Approvato",
                       "optionId": "opt-c3"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -991,6 +1357,25 @@
                     "fieldValueByName": {
                       "name": "Proposta",
                       "optionId": "opt-b2"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-b2"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -1051,6 +1436,25 @@
                     "fieldValueByName": {
                       "name": "Inbox",
                       "optionId": "opt-a1"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-a1"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -1175,6 +1579,25 @@
                       "name": "Approvato",
                       "optionId": "opt-c3"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -1298,6 +1721,25 @@
                       "name": "Approvato",
                       "optionId": "opt-c3"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -1336,6 +1778,25 @@
                     "fieldValueByName": {
                       "name": "Decisione",
                       "optionId": "opt-e5"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-e5"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -1376,6 +1837,25 @@
                       "name": "In corso",
                       "optionId": "opt-d4"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-d4"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -1414,6 +1894,25 @@
                     "fieldValueByName": {
                       "name": "Fatto",
                       "optionId": "opt-f6"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-f6"
+                        }
+                      ]
                     },
                     "project": {
                       "id": "PROJECT_FIXTURE"
@@ -1454,6 +1953,25 @@
                       "name": "Scartato",
                       "optionId": "opt-g7"
                     },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-g7"
+                        }
+                      ]
+                    },
                     "project": {
                       "id": "PROJECT_FIXTURE"
                     }
@@ -1468,6 +1986,139 @@
               "title": "discarded but still open: in the counts only",
               "updatedAt": "2026-01-02T03:04:05Z",
               "url": "https://tracker.invalid/issues/28"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-4",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 21,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 29,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Inbox",
+                      "optionId": "opt-a1"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-a1"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "in beta, blocked by 21 of alpha: the scope must not cut the graph",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/29"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:"
+                  }
+                ]
+              },
+              "number": 30,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "name": "Decisione",
+                      "optionId": "opt-e5"
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD"
+                          },
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE"
+                          },
+                          "optionId": "opt-e5"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": []
+              },
+              "title": "an empty project label: in the sections, not in the counts",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/30"
             }
           ],
           "pageInfo": {

@@ -228,6 +228,8 @@ impl Table {
                 stderr: String::from_utf8_lossy(&output.stderr).trim().to_owned(),
             });
         }
+        // Its warnings are the only sign that a section was lost, so they reach the user.
+        eprint!("{}", String::from_utf8_lossy(&output.stderr));
         let value = serde_json::from_slice(&output.stdout).map_err(FacadeError::BadJson)?;
         self.translate_output(command, &value)
     }
@@ -287,7 +289,15 @@ mod tests {
     #[test]
     fn local_machine_sections_translate_too() {
         let input = json!({
-            "controller": {"ultimo_giro": "t", "vecchio": false, "budget": null, "da_aprire": [], "da_riprendere": []},
+            "controller": {
+                "ultimo_giro": "t", "vecchio": false,
+                "budget": {"giri": 3, "da": "t", "motivo": "m", "allarme": true},
+                "da_aprire": [{"nome": "n", "giorno": "g", "esito": "e", "cartella": "c", "prompt": "p", "motivo": "m", "tentativi": 2}],
+                "da_riprendere": [{
+                    "progetto": "x", "sessione": "s", "riprende": "t", "come": "c", "comando_orca": "o", "motivo": "m",
+                    "cartella": "c", "origine": "o", "adapter": "a", "agente": "g", "sessione_orca": "so", "transcript": "t",
+                }],
+            },
             "dossier": [{"progetto": "x", "cartella": "c", "problema": "non-pushati", "branch": "b", "avanti": 1}],
             "fuori_dal_tracker": {"x": {"totale": 1, "altre": 0, "voci": [{"controllo": "c", "progetto": "x", "dove": "d", "testo": "t", "perche": "p"}]}},
         });
@@ -295,6 +305,9 @@ mod tests {
         assert_eq!(output["dossier"][0]["problem"], "not_pushed");
         assert_eq!(output["outside_tracker"]["x"]["items"][0]["why"], "p");
         assert_eq!(output["controller"]["stale"], false);
+        assert_eq!(output["controller"]["to_open"][0]["attempts"], 2);
+        assert_eq!(output["controller"]["to_resume"][0]["orca_session"], "so");
+        assert_eq!(output["controller"]["budget"]["alarm"], true);
     }
 
     #[test]

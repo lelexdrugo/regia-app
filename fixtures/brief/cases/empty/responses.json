@@ -1,5 +1,9 @@
 {
   "blocker_pages": {},
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
   "issue_pages": [
     {
       "repository": {

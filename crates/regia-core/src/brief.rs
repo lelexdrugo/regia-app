@@ -14,6 +14,10 @@ use crate::v1::TrackerBinding;
 /// The per-project key for tasks with no status.
 pub const UNSET_STATUS: &str = "unset";
 
+/// Sections of the contract this implementation does not produce. They mean "nothing to report" when
+/// absent, so absence alone would read as an all-clear: the output names them instead.
+pub const NOT_PORTED: [&str; 3] = ["controller", "dossier", "outside_tracker"];
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct BriefTask {
     #[serde(flatten)]
@@ -40,6 +44,7 @@ pub struct Brief {
     pub session: Vec<BriefTask>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub graph: Option<GraphWarnings>,
+    pub not_ported: [&'static str; 3],
 }
 
 #[derive(Debug, Clone, Default)]
@@ -61,17 +66,16 @@ fn ordered(mut tasks: Vec<Task>, graph: &GraphOrder) -> Vec<BriefTask> {
 /// `tasks` are all the open issues: the scope filters the sections, not the graph.
 pub fn build_brief(tasks: Vec<Task>, binding: &TrackerBinding, options: &BriefOptions) -> Brief {
     let graph = graph_order(&tasks);
+    // An empty name scopes nothing and counts nowhere, as in the prototype.
+    let scope = options.project.as_deref().filter(|project| !project.is_empty());
     let scoped: Vec<Task> = tasks
         .into_iter()
-        .filter(|task| match &options.project {
-            Some(project) => task.project.as_deref() == Some(project.as_str()),
-            None => true,
-        })
+        .filter(|task| scope.is_none() || task.project.as_deref() == scope)
         .collect();
 
     let mut by_project: BTreeMap<String, BTreeMap<String, u64>> = BTreeMap::new();
     for task in &scoped {
-        if let Some(project) = &task.project {
+        if let Some(project) = task.project.as_ref().filter(|project| !project.is_empty()) {
             let counts = by_project.entry(project.clone()).or_default();
             if !task.objective {
                 let key = task.status.map_or(UNSET_STATUS, Status::id).to_owned();
@@ -113,5 +117,6 @@ pub fn build_brief(tasks: Vec<Task>, binding: &TrackerBinding, options: &BriefOp
         by_project,
         session,
         graph: warnings,
+        not_ported: NOT_PORTED,
     }
 }

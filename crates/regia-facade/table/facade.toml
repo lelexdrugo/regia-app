@@ -1,8 +1,10 @@
 # The facade table (ADR 0017 §4, ADR 0001 "Facade"). Disposable: it disappears with the Python.
 #
 # Translation walks the JSON by shape, so data is never touched: a project called like a key stays
-# as it is. It fails closed: a key or an enum value not listed here is an error, never Italian
-# leaking through. Only the commands listed here exist for the facade.
+# as it is. It fails closed on keys and on listed enums: an unknown one is an error. Values of other
+# fields pass as they are, so tracker labels and the prototype's prose stay in its language; they are
+# data, not contract. A key that goes missing is caught by the conformance diff, not here. Only the
+# commands listed here exist for the facade.
 schema = 1
 
 [commands.brief]
@@ -10,10 +12,6 @@ python = ["brief"]
 output = "brief"
 [commands.brief.args]
 "--project" = "--progetto"
-
-[commands.projects]
-python = ["progetti"]
-output = "projects"
 
 [enums.status]
 "Inbox" = "inbox"
@@ -99,6 +97,7 @@ esito = { to = "outcome" }
 cartella = { to = "folder" }
 prompt = { to = "prompt" }
 motivo = { to = "reason" }
+tentativi = { to = "attempts" }
 
 [shapes.controller_to_resume.fields]
 progetto = { to = "project" }
@@ -107,6 +106,12 @@ riprende = { to = "resumes" }
 come = { to = "how" }
 comando_orca = { to = "orca_command" }
 motivo = { to = "reason" }
+cartella = { to = "folder" }
+origine = { to = "origin" }
+adapter = { to = "adapter" }
+agente = { to = "agent" }
+sessione_orca = { to = "orca_session" }
+transcript = { to = "transcript" }
 
 [shapes.dossier_warning.fields]
 progetto = { to = "project" }
@@ -130,20 +135,3 @@ dove = { to = "where" }
 testo = { to = "text" }
 perche = { to = "why" }
 url = { to = "url" }
-
-[shapes.projects]
-items_of = "project"
-
-# The registry keys come from a free block in the Objective's body; these are the ones in use.
-[shapes.project.fields]
-id = { to = "id" }
-obiettivo = { to = "objective" }
-titolo = { to = "title" }
-stato = { to = "status", enum = "status" }
-cartella = { to = "folder" }
-playbook = { to = "playbook" }
-wip = { to = "wip" }
-priorita = { to = "priority" }
-repo = { to = "repo" }
-prodotti = { to = "products" }
-default_automatici = { to = "automatic_defaults" }

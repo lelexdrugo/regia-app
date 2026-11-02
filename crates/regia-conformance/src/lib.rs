@@ -13,7 +13,7 @@ use std::process::{Command, Output};
 use std::sync::OnceLock;
 
 use regia_facade::{FacadeError, Table};
-use regia_identity::env_var;
+use regia_identity::{env_var, prototype_env_var};
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -147,10 +147,10 @@ pub fn path_with_fake_gh() -> OsString {
 pub fn apply_fixture_env(command: &mut Command, responses: &Path, state: &Path) {
     command
         .env("PATH", path_with_fake_gh())
-        .env(env_var("RUNTIME"), state)
+        .env(prototype_env_var("RUNTIME"), state)
         .env(responses_var(), responses)
         .env_remove(env_var("ENGINE"))
-        .env_remove(env_var("HOME"));
+        .env_remove(prototype_env_var("HOME"));
 }
 
 pub fn regia_binary() -> PathBuf {
@@ -173,6 +173,158 @@ pub fn run_rust(label: &str, args: &[String], responses: &Path) -> Result<Value,
 /// The Python output in English, through the table the CLI's passthrough uses.
 pub fn translate_python(command: &str, python: &Value) -> Result<Value, FacadeError> {
     Table::embedded().translate_output(command, python)
+}
+
+/// The Rust brief marks the sections it does not produce; the prototype has no such key. The harness
+/// checks the marker and removes it, so an unported section is declared, never silently absent.
+pub fn take_not_ported(rust: &mut Value) -> Result<Vec<String>, String> {
+    let marker = rust
+        .as_object_mut()
+        .and_then(|object| object.remove("not_ported"))
+        .ok_or("the Rust brief has no not_ported marker")?;
+    serde_json::from_value(marker).map_err(|error| error.to_string())
+}
+
+#[derive(Debug)]
+struct Selection {
+    name: String,
+    fragment: bool,
+    children: Vec<Selection>,
+}
+
+fn skip_blank(text: &[char], at: &mut usize) {
+    while text.get(*at).is_some_and(|c| c.is_whitespace() || *c == ',') {
+        *at += 1;
+    }
+}
+
+fn read_name(text: &[char], at: &mut usize) -> String {
+    let start = *at;
+    while text.get(*at).is_some_and(|c| c.is_alphanumeric() || *c == '_') {
+        *at += 1;
+    }
+    text[start..*at].iter().collect()
+}
+
+/// Skips `( … )`, which can hold braces and quoted strings.
+fn skip_arguments(text: &[char], at: &mut usize) -> Result<(), String> {
+    let mut depth = 0;
+    let mut quoted = false;
+    while let Some(&c) = text.get(*at) {
+        *at += 1;
+        match c {
+            '"' => quoted = !quoted,
+            '(' if !quoted => depth += 1,
+            ')' if !quoted => {
+                depth -= 1;
+                if depth == 0 {
+                    return Ok(());
+                }
+            }
+            _ => {}
+        }
+    }
+    Err("unbalanced parentheses in the query".to_owned())
+}
+
+/// Reads a selection set; `at` is just after its `{`.
+fn parse_selection(text: &[char], at: &mut usize) -> Result<Vec<Selection>, String> {
+    let mut out = Vec::new();
+    loop {
+        skip_blank(text, at);
+        match text.get(*at) {
+            None => return Err("unbalanced braces in the query".to_owned()),
+            Some('}') => {
+                *at += 1;
+                return Ok(out);
+            }
+            Some('.') => {
+                *at += 3;
+                skip_blank(text, at);
+                if read_name(text, at) != "on" {
+                    return Err("expected an inline fragment".to_owned());
+                }
+                skip_blank(text, at);
+                let name = read_name(text, at);
+                skip_blank(text, at);
+                if text.get(*at) != Some(&'{') {
+                    return Err(format!("fragment on {name} has no selection"));
+                }
+                *at += 1;
+                out.push(Selection { name, fragment: true, children: parse_selection(text, at)? });
+            }
+            Some(_) => {
+                let name = read_name(text, at);
+                if name.is_empty() {
+                    return Err(format!("unexpected text in the query at {at}"));
+                }
+                skip_blank(text, at);
+                if text.get(*at) == Some(&'(') {
+                    skip_arguments(text, at)?;
+                    skip_blank(text, at);
+                }
+                let mut children = Vec::new();
+                if text.get(*at) == Some(&'{') {
+                    *at += 1;
+                    children = parse_selection(text, at)?;
+                }
+                out.push(Selection { name, fragment: false, children });
+            }
+        }
+    }
+}
+
+fn project(selections: &[Selection], value: &Value, optional: bool) -> Result<Value, String> {
+    match value {
+        Value::Array(items) => {
+            items.iter().map(|item| project(selections, item, optional)).collect::<Result<Vec<_>, _>>().map(Value::Array)
+        }
+        Value::Object(object) => {
+            let mut out = serde_json::Map::new();
+            for selection in selections {
+                if selection.fragment {
+                    // A fragment on another type selects nothing, as on the real API.
+                    if let Value::Object(part) = project(&selection.children, value, true)? {
+                        out.extend(part);
+                    }
+                    continue;
+                }
+                match object.get(&selection.name) {
+                    Some(inner) if selection.children.is_empty() => {
+                        out.insert(selection.name.clone(), inner.clone());
+                    }
+                    Some(inner) => {
+                        out.insert(selection.name.clone(), project(&selection.children, inner, false)?);
+                    }
+                    None if optional => {}
+                    None => return Err(format!("the query selects `{}`, unknown to the fixture", selection.name)),
+                }
+            }
+            Ok(Value::Object(out))
+        }
+        other => Ok(other.clone()),
+    }
+}
+
+/// What a GraphQL server would return for `query` on `value`: only the selected fields, and an error
+/// on a field that does not exist.
+pub fn project_query(query: &str, value: &Value) -> Result<Value, String> {
+    let text: Vec<char> = query.chars().collect();
+    let mut at = 0;
+    skip_blank(&text, &mut at);
+    if text[at..].starts_with(&['q', 'u', 'e', 'r', 'y']) {
+        at += 5;
+        skip_blank(&text, &mut at);
+        if text.get(at) == Some(&'(') {
+            skip_arguments(&text, &mut at)?;
+            skip_blank(&text, &mut at);
+        }
+    }
+    if text.get(at) != Some(&'{') {
+        return Err("the query has no selection set".to_owned());
+    }
+    at += 1;
+    project(&parse_selection(&text, &mut at)?, value, false)
 }
 
 /// Differences as JSON paths. Object key order does not count; array order does, because the order

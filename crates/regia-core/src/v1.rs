@@ -54,6 +54,7 @@ pub struct TrackerConfigV1 {
     pub owner: String,
     pub repo: String,
     pub project_id: String,
+    pub status_field_id: String,
     pub status_options: BTreeMap<String, String>,
 }
 
@@ -183,6 +184,7 @@ mod tests {
             owner: "o".into(),
             repo: "r".into(),
             project_id: "p".into(),
+            status_field_id: "f".into(),
             status_options,
         }
     }

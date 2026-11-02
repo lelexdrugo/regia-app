@@ -8,3 +8,5 @@ brief-nothing = (nothing)
 brief-loading = Loading the brief…
 brief-error = The brief could not be read: { $reason }
 brief-partial = Not ported yet: controller, dossier and outside-tracker warnings are not shown.
+brief-cycle = Dependencies in a cycle, no graph order: { $reason }
+brief-truncated = Dependencies only partly read: { $reason }

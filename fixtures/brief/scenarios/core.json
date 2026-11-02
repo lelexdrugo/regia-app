@@ -61,7 +61,11 @@
     {"number": 27, "title": "done but still open: in the counts only", "status": "Fatto",
      "labels": ["progetto:gamma"]},
     {"number": 28, "title": "discarded but still open: in the counts only", "status": "Scartato",
-     "labels": ["progetto:gamma"]}
+     "labels": ["progetto:gamma"]},
+    {"number": 29, "title": "in beta, blocked by 21 of alpha: the scope must not cut the graph", "status": "Inbox",
+     "labels": ["progetto:beta"], "blocked_by": [[21, "OPEN"]]},
+    {"number": 30, "title": "an empty project label: in the sections, not in the counts", "status": "Decisione",
+     "labels": ["progetto:"]}
   ],
   "extra_blockers": {
     "23": [[[119, "CLOSED"], [140, "CLOSED"], [141, "CLOSED"]], [[142, "CLOSED"]]],

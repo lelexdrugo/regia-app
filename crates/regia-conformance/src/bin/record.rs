@@ -56,11 +56,13 @@ fn pairs(list: &[(u64, String)]) -> Vec<Value> {
 }
 
 fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfigV1) -> Value {
+    // Both ways of reading the status: the prototype by the field's name, the product by its id.
     let mut items = Vec::new();
     if issue.also_in_other_project {
         items.push(json!({
             "project": {"id": "OTHER_PROJECT"},
             "fieldValueByName": {"name": "Inbox", "optionId": "other-project-option"},
+            "fieldValues": {"nodes": [{"optionId": "other-project-option", "field": {"id": "OTHER_FIELD"}}]},
         }));
     }
     if let Some(status) = &issue.status {
@@ -68,6 +70,11 @@ fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfig
         items.push(json!({
             "project": {"id": scenario.project_id},
             "fieldValueByName": {"name": status, "optionId": option},
+            "fieldValues": {"nodes": [
+                {"title": "a text field, not a single select"},
+                {"optionId": "opt-another-select", "field": {"id": "OTHER_FIELD"}},
+                {"optionId": option, "field": {"id": config.status_field_id}},
+            ]},
         }));
     }
     let labels: Vec<Value> = issue.labels.iter().map(|name| json!({"name": name})).collect();
@@ -141,7 +148,11 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1) -> Value {
         };
         blocker_pages.insert(number.clone(), entry);
     }
-    json!({"issue_pages": issue_pages, "blocker_pages": blocker_pages})
+    json!({
+        "expect": {"o": config.owner, "r": config.repo},
+        "issue_pages": issue_pages,
+        "blocker_pages": blocker_pages,
+    })
 }
 
 fn git_output(dossier: &Path, args: &[&str]) -> String {

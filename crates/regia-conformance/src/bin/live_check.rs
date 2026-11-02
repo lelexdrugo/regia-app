@@ -1,19 +1,28 @@
 //! Local only: the Rust and the Python brief against the real tracker, right now. Issue data is
-//! private, so this prints only JSON paths and counts, and writes nothing. The tracker can change
-//! between the two reads, hence the retries. Sections that read the local machine are not ported yet
-//! and are excluded by name.
+//! private, so this prints only JSON paths and counts, with project ids and table errors redacted, and
+//! writes nothing. The tracker can change between the two reads, hence the retries. Sections the Rust
+//! brief declares as not ported are excluded by that declaration.
 //!
-//!     cargo run -p regia-conformance --bin live-check -- --dossier <path> [--python <interpreter>]
+//!     ./target/debug/live-check --dossier <path> [--python <interpreter>]
+//!
+//! Run it directly: `cargo run` changes PATH.
 
 use std::path::PathBuf;
 use std::process::{Command, ExitCode};
 
-use regia_conformance::{json_diff, regia_binary, translate_python};
+use regia_conformance::{json_diff, regia_binary, take_not_ported, translate_python};
 use regia_facade::{PythonPrototype, Table};
-use regia_identity::env_var;
+use regia_identity::{env_var, prototype_env_var};
 use serde_json::Value;
 
-const NOT_PORTED: [&str; 3] = ["controller", "dossier", "outside_tracker"];
+/// A difference path without its value, and without the project id if it has one.
+fn redacted(line: &str) -> String {
+    let path = line.split(": ").next().unwrap_or(line);
+    match path.strip_prefix("$.by_project.") {
+        Some(_) => "$.by_project.<project>".to_owned(),
+        None => path.to_owned(),
+    }
+}
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -27,19 +36,29 @@ fn main() -> ExitCode {
         let output = prototype.command(&argv).output().expect("run the prototype");
         assert!(output.status.success(), "the prototype failed");
         let python: Value = serde_json::from_slice(&output.stdout).expect("JSON from the prototype");
-        let mut python = translate_python("brief", &python).expect("the table covers the real output");
+        let mut python = match translate_python("brief", &python) {
+            Ok(value) => value,
+            Err(error) => {
+                // The message can hold a private value, so only that it happened goes out.
+                let kind = format!("{error:?}");
+                eprintln!("the table does not cover the real output: {}", kind.split(' ').next().unwrap_or(""));
+                return ExitCode::FAILURE;
+            }
+        };
 
         let output = Command::new(regia_binary())
             .args(["brief", "--json"])
-            .env(env_var("HOME"), &dossier)
+            .env(prototype_env_var("HOME"), &dossier)
             .env_remove(env_var("ENGINE"))
             .output()
             .expect("run regia");
         assert!(output.status.success(), "regia failed: {}", String::from_utf8_lossy(&output.stderr));
-        let rust: Value = serde_json::from_slice(&output.stdout).expect("JSON from regia");
+        let mut rust: Value = serde_json::from_slice(&output.stdout).expect("JSON from regia");
+        let not_ported = take_not_ported(&mut rust).expect("the marker");
 
         let object = python.as_object_mut().expect("an object");
-        let present: Vec<&str> = NOT_PORTED.into_iter().filter(|key| object.contains_key(*key)).collect();
+        let present: Vec<&str> =
+            not_ported.iter().map(String::as_str).filter(|key| object.contains_key(*key)).collect();
         for key in &present {
             object.remove(*key);
         }
@@ -49,7 +68,7 @@ fn main() -> ExitCode {
             .map(|key| format!("{key}={}", rust[key].as_array().map_or(0, Vec::len)))
             .collect();
         println!(
-            "attempt {attempt}: {} differences; {}; projects={}; excluded (not ported, present in python): {present:?}",
+            "attempt {attempt}: {} differences; {}; projects={}; not ported, present in python: {present:?}",
             diff.len(),
             counts.join(" "),
             rust["by_project"].as_object().map_or(0, serde_json::Map::len),
@@ -57,9 +76,8 @@ fn main() -> ExitCode {
         if diff.is_empty() {
             return ExitCode::SUCCESS;
         }
-        // Paths only: a difference line also carries values, which can be private.
         for line in diff.iter().take(20) {
-            println!("  {}", line.split(": ").next().unwrap_or(line));
+            println!("  {}", redacted(line));
         }
     }
     ExitCode::FAILURE

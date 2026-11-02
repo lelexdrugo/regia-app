@@ -3,14 +3,28 @@
 
 use std::fs;
 
-use regia_conformance::{Case, bin_dir, json_diff, read_json, run_rust, translate_python};
+use regia_conformance::{Case, bin_dir, json_diff, project_query, read_json, run_rust, take_not_ported, translate_python};
 use serde_json::{Value, json};
 
+/// The Rust brief, with its declaration of what is not ported checked and removed.
+fn rust_brief(label: &str, case: &Case, responses: &std::path::Path) -> Value {
+    let mut rust = run_rust(label, &case.spec.args, responses).expect("the Rust brief runs");
+    let not_ported = take_not_ported(&mut rust).expect("the marker");
+    assert_eq!(not_ported, ["controller", "dossier", "outside_tracker"]);
+    rust
+}
+
 fn diff_of(case: &Case) -> Vec<String> {
-    let rust = run_rust(&format!("test-{}", case.name), &case.spec.args, &case.responses_path())
-        .expect("the Rust brief runs");
+    let rust = rust_brief(&format!("test-{}", case.name), case, &case.responses_path());
     let python = translate_python(case.command_name(), &case.python_output()).expect("the table covers the output");
     json_diff(&rust, &python)
+}
+
+fn write_responses(name: &str, responses: &Value) -> std::path::PathBuf {
+    let path = bin_dir().join("conformance-state").join(name);
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    fs::write(&path, serde_json::to_string(responses).unwrap()).unwrap();
+    path
 }
 
 #[test]
@@ -40,13 +54,52 @@ fn the_cases_exercise_what_they_claim() {
     assert!(!truncated["graph"]["truncated"].as_array().unwrap().is_empty());
     let filtered = translate_python("brief", &Case::named("filtered").python_output()).unwrap();
     assert_eq!(filtered["by_project"].as_object().unwrap().len(), 1);
+    // The scope filters the sections, not the graph: #21 of alpha still counts #29 of beta. Without
+    // this the case could not tell a graph computed after the filter.
+    let unblocks = |brief: &Value| {
+        brief["waiting_on_owner"].as_array().unwrap().iter().find(|t| t["number"] == 21).unwrap()["unblocks"].clone()
+    };
+    assert_eq!(unblocks(&filtered), unblocks(&core));
+    assert_eq!(unblocks(&filtered), json!(2));
+}
+
+/// The fake answers like a server: a field the query does not select is not in the answer.
+#[test]
+fn the_fake_gh_returns_only_what_the_query_selects() {
+    let page = json!({"repository": {"a": 1, "b": {"c": 2, "d": 3}, "e": [{"f": 4, "g": 5}], "h": null}});
+    let query = r#"query($o:String!){repository(owner:$o,name:"x{"){ a b(first:1){c} e{g ... on T{f z}} h{i} }}"#;
+    let projected = project_query(query, &page).unwrap();
+    assert_eq!(projected, json!({"repository": {"a": 1, "b": {"c": 2}, "e": [{"g": 5, "f": 4}], "h": null}}));
+    assert!(project_query("{repository{nope}}", &page).is_err(), "an unknown field is an error");
+}
+
+/// The status field is found by id, so a field with another name works, and a wrong id is an error
+/// instead of an empty plan.
+#[test]
+fn a_status_field_nobody_can_find_is_an_error_not_an_empty_brief() {
+    let case = Case::named("core");
+    let mut responses: Value = read_json(&case.responses_path());
+    for page in responses["issue_pages"].as_array_mut().unwrap() {
+        for issue in page["repository"]["issues"]["nodes"].as_array_mut().unwrap() {
+            for item in issue["projectItems"]["nodes"].as_array_mut().unwrap() {
+                for value in item["fieldValues"]["nodes"].as_array_mut().unwrap() {
+                    if value.get("field").is_some() {
+                        value["field"]["id"] = json!("SOME_OTHER_FIELD");
+                    }
+                }
+            }
+        }
+    }
+    let path = write_responses("negative-field.json", &responses);
+    let outcome = run_rust("negative-field", &case.spec.args, &path);
+    assert!(outcome.is_err_and(|error| error.contains("status field")));
 }
 
 /// Negative control: every alteration of the expected output must surface as a difference.
 #[test]
 fn an_altered_expectation_produces_a_diff() {
     let case = Case::named("core");
-    let rust = run_rust("negative-rust", &case.spec.args, &case.responses_path()).unwrap();
+    let rust = rust_brief("negative-rust", &case, &case.responses_path());
     let original = case.python_output();
 
     let mut changed_number = original.clone();
@@ -82,11 +135,9 @@ fn an_altered_tracker_response_produces_a_diff() {
     // Issue 3 is a task in a section; an Objective would be excluded and change nothing.
     let waiting = node.as_array_mut().unwrap().iter_mut().find(|issue| issue["number"] == 3).unwrap();
     waiting["title"] = json!("altered by the negative control");
-    let path = bin_dir().join("conformance-state").join("negative-responses.json");
-    fs::create_dir_all(path.parent().unwrap()).unwrap();
-    fs::write(&path, serde_json::to_string(&responses).unwrap()).unwrap();
+    let path = write_responses("negative-responses.json", &responses);
 
-    let rust = run_rust("negative-tracker", &case.spec.args, &path).unwrap();
+    let rust = rust_brief("negative-tracker", &case, &path);
     let python = translate_python("brief", &case.python_output()).unwrap();
     assert!(!json_diff(&rust, &python).is_empty());
 }

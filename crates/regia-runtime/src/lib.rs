@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use regia_core::{Brief, BriefOptions, Tracker, TrackerBinding, TrackerConfigV1, TrackerError, V1Error, build_brief};
 use regia_github::GhTracker;
-use regia_identity::{env_var, state_dir};
+use regia_identity::{prototype_env_var, state_dir};
 
 #[derive(Debug, thiserror::Error)]
 pub enum BriefError {
@@ -17,7 +17,7 @@ pub enum BriefError {
 
 /// The dossier of the prototype, while the prototype exists.
 pub fn dossier_dir() -> Option<PathBuf> {
-    std::env::var_os(env_var("HOME")).filter(|value| !value.is_empty()).map(PathBuf::from)
+    std::env::var_os(prototype_env_var("HOME")).filter(|value| !value.is_empty()).map(PathBuf::from)
 }
 
 pub fn load_brief(options: &BriefOptions) -> Result<Brief, BriefError> {

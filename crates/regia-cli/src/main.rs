@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use regia_core::{Brief, BriefOptions, BriefTask};
 use regia_facade::{PythonPrototype, Table};
 use regia_i18n::{Catalog, Language};
-use regia_identity::{BIN_NAME, env_var};
+use regia_identity::{BIN_NAME, env_var, prototype_env_var};
 use regia_runtime::{dossier_dir, load_brief};
 use serde_json::Value;
 
@@ -80,7 +80,7 @@ fn passthrough(command: &str, args: &[String]) -> Result<(), String> {
         return Err("the facade only carries --json output for now".to_owned());
     }
     let dossier = dossier_dir().ok_or_else(|| {
-        format!("`{command}` is not ported: set {} to the prototype's dossier", env_var("HOME"))
+        format!("`{command}` is not ported: set {} to the prototype's dossier", prototype_env_var("HOME"))
     })?;
     let interpreter = std::env::var(env_var("PYTHON")).ok();
     let prototype = PythonPrototype::in_dossier(&dossier, interpreter);
@@ -96,6 +96,10 @@ fn print_json(value: &Value) -> Result<(), String> {
     Ok(())
 }
 
+fn numbers(list: &[u64]) -> String {
+    list.iter().map(|number| format!("#{number}")).collect::<Vec<_>>().join(", ")
+}
+
 fn print_human(brief: &Brief, catalog: &Catalog) {
     let print_section = |id: &str, tasks: &[BriefTask]| {
         println!("== {}", catalog.message(id));
@@ -107,7 +111,22 @@ fn print_human(brief: &Brief, catalog: &Catalog) {
             println!("  #{:<4} [{status}] {}", entry.task.number, entry.task.title);
         }
     };
-    print_section("brief-waiting", &brief.waiting_on_owner);
+    if let Some(graph) = &brief.graph {
+        for cycle in &graph.cycles {
+            println!("  ! {}", catalog.message_with("brief-cycle", "reason", &numbers(cycle)));
+        }
+        if !graph.truncated.is_empty() {
+            println!("  ! {}", catalog.message_with("brief-truncated", "reason", &numbers(&graph.truncated)));
+        }
+    }
+    // A task that needs a session shows there, not twice.
+    let short: Vec<BriefTask> = brief
+        .waiting_on_owner
+        .iter()
+        .filter(|entry| !brief.session.contains(entry))
+        .cloned()
+        .collect();
+    print_section("brief-waiting", &short);
     if !brief.session.is_empty() {
         print_section("brief-session", &brief.session);
     }

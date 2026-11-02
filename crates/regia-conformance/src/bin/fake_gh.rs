@@ -1,13 +1,16 @@
-//! A stand-in for `gh`, a real `.exe` on Windows so `CreateProcess` finds it. It answers `gh api
-//! graphql` from the fixture named by the environment and fails loudly on anything else. Without that
-//! variable it refuses to run, so it can never pass for the real tool by accident.
+//! A stand-in for `gh`. It answers `gh api graphql` from the fixture named by the environment and fails
+//! loudly on anything else. Without that variable it refuses to run, so it can never pass for the real
+//! tool by accident. It returns only what the query selects, and refuses a query that drops the
+//! arguments the brief relies on, so a fixture richer than the query cannot hide a broken query.
 
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::process::ExitCode;
 
-use regia_conformance::{log_var, read_json, responses_var};
+use regia_conformance::{log_var, project_query, read_json, responses_var};
 use serde_json::Value;
+
+const REQUIRED_ON_ISSUES: [&str; 2] = ["states:[OPEN]", "orderBy:{field:CREATED_AT,direction:ASC}"];
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -28,6 +31,7 @@ fn answer(args: &[String]) -> Result<String, String> {
     if args.get(..2) != Some(&["api".to_owned(), "graphql".to_owned()]) {
         return Err(format!("unexpected call: {:?}", args.first()));
     }
+    let responses: Value = read_json(std::path::Path::new(&responses_path));
     let mut query = String::new();
     let mut number = None;
     let mut after = None;
@@ -41,11 +45,14 @@ fn answer(args: &[String]) -> Result<String, String> {
             "query" => query = value.to_owned(),
             "n" => number = Some(value.to_owned()),
             "after" => after = Some(value.to_owned()),
-            "o" | "r" => {}
+            "o" | "r" => {
+                if responses["expect"][key] != value {
+                    return Err(format!("variable {key} is {value}, the fixture expects {}", responses["expect"][key]));
+                }
+            }
             other => return Err(format!("unexpected variable {other}")),
         }
     }
-    let responses: Value = read_json(std::path::Path::new(&responses_path));
     let index = match after.as_deref() {
         None => 0,
         Some(cursor) => cursor
@@ -61,6 +68,11 @@ fn answer(args: &[String]) -> Result<String, String> {
         }
         (format!("blockers {number} {index}"), pages[index].clone())
     } else if query.contains("issues(first:") {
+        for required in REQUIRED_ON_ISSUES {
+            if !query.contains(required) {
+                return Err(format!("the issues query lost {required}"));
+            }
+        }
         (format!("issues {index}"), responses["issue_pages"][index].clone())
     } else {
         return Err("unknown query".to_owned());
@@ -68,6 +80,7 @@ fn answer(args: &[String]) -> Result<String, String> {
     if page.is_null() {
         return Err(format!("no fixture page for {kind}"));
     }
+    let projected = project_query(&query, &page)?;
     if let Ok(log) = std::env::var(log_var()) {
         let mut file = OpenOptions::new()
             .create(true)
@@ -76,5 +89,5 @@ fn answer(args: &[String]) -> Result<String, String> {
             .map_err(|error| error.to_string())?;
         writeln!(file, "{kind}").map_err(|error| error.to_string())?;
     }
-    serde_json::to_string(&serde_json::json!({ "data": page })).map_err(|error| error.to_string())
+    serde_json::to_string(&serde_json::json!({ "data": projected })).map_err(|error| error.to_string())
 }

@@ -15,7 +15,7 @@ const ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$after:String){reposit
       parent{number}
       subIssues(first:50){nodes{number state}}
       blockedBy(first:20){totalCount nodes{number state}}
-      projectItems(first:5){nodes{project{id} fieldValueByName(name:"Status"){... on ProjectV2ItemFieldSingleSelectValue{optionId}}}}
+      projectItems(first:5){nodes{project{id} fieldValues(first:50){nodes{... on ProjectV2ItemFieldSingleSelectValue{optionId field{... on ProjectV2SingleSelectField{id}}}}}}}
     }}}}"#;
 
 const BLOCKERS_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
@@ -26,6 +26,7 @@ pub struct GhTracker {
     owner: String,
     repo: String,
     project_id: String,
+    status_field_id: String,
 }
 
 impl GhTracker {
@@ -35,6 +36,7 @@ impl GhTracker {
             owner: config.owner.clone(),
             repo: config.repo.clone(),
             project_id: config.project_id.clone(),
+            status_field_id: config.status_field_id.clone(),
         }
     }
 
@@ -54,6 +56,13 @@ impl GhTracker {
         }
         if let Some(after) = after {
             command.args(["-f", &format!("after={after}")]);
+        }
+        // The release app has no console: without this flag every call would flash a window.
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+            command.creation_flags(CREATE_NO_WINDOW);
         }
         let output = command
             .output()
@@ -95,14 +104,17 @@ impl GhTracker {
         }
     }
 
-    fn to_raw(&self, node: IssueNode) -> RawIssue {
-        // The last item of the configured Project wins; items of other Projects do not count.
-        let status_option_id = node
-            .project_items
-            .nodes
+    fn to_raw(&self, node: IssueNode, items_seen: &mut u64) -> RawIssue {
+        // The status field is found by its id, so its name can be anything, in any language. The last
+        // item of the configured Project wins; other Projects and other fields do not count.
+        let items: Vec<ProjectItem> =
+            node.project_items.nodes.into_iter().filter(|item| item.project.id == self.project_id).collect();
+        *items_seen += items.len() as u64;
+        let status_option_id = items
             .into_iter()
-            .filter(|item| item.project.id == self.project_id)
-            .filter_map(|item| item.field_value_by_name.and_then(|value| value.option_id))
+            .flat_map(|item| item.field_values.nodes)
+            .filter(|value| value.field.as_ref().is_some_and(|field| field.id.as_deref() == Some(&self.status_field_id)))
+            .filter_map(|value| value.option_id)
             .next_back();
         RawIssue {
             number: node.number,
@@ -125,21 +137,31 @@ impl GhTracker {
 
 impl Tracker for GhTracker {
     fn open_issues(&self) -> Result<Vec<RawIssue>, TrackerError> {
-        let mut issues = Vec::new();
+        let mut issues: Vec<RawIssue> = Vec::new();
+        let mut items_seen = 0;
         let mut after: Option<String> = None;
         loop {
             let data: IssuesData = self.graphql(ISSUES_QUERY, None, after.as_deref())?;
             let connection = data.repository.issues;
             for node in connection.nodes {
-                let mut raw = self.to_raw(node);
+                let mut raw = self.to_raw(node, &mut items_seen);
                 self.complete_blockers(&mut raw);
                 issues.push(raw);
             }
             if !connection.page_info.has_next_page {
-                return Ok(issues);
+                break;
             }
             after = connection.page_info.end_cursor;
         }
+        // Every task in the Project without a status means the config is wrong, not that the plan is
+        // empty: reporting that as an empty brief would be a false all-clear.
+        if items_seen > 0 && issues.iter().all(|issue| issue.status_option_id.is_none()) {
+            return Err(TrackerError::BadResponse(format!(
+                "none of the {items_seen} items in the Project has a value for status field {}: check tracker.json",
+                self.status_field_id
+            )));
+        }
+        Ok(issues)
     }
 }
 
@@ -218,7 +240,7 @@ struct BlockedByList {
 #[serde(rename_all = "camelCase")]
 struct ProjectItem {
     project: ProjectRef,
-    field_value_by_name: Option<FieldValue>,
+    field_values: Nodes<FieldValue>,
 }
 
 #[derive(Deserialize)]
@@ -226,10 +248,17 @@ struct ProjectRef {
     id: String,
 }
 
+/// Empty for a value of a field that is not a single select.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct FieldValue {
     option_id: Option<String>,
+    field: Option<FieldRef>,
+}
+
+#[derive(Deserialize)]
+struct FieldRef {
+    id: Option<String>,
 }
 
 #[derive(Deserialize)]

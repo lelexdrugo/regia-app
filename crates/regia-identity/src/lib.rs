@@ -21,9 +21,19 @@ pub fn app_identifier() -> String {
     format!("{IDENTIFIER_PREFIX}.{PRODUCT_NAME}")
 }
 
-/// `env_var("RUNTIME")` is `REGIA_RUNTIME`: the variables follow the name too.
+/// The name the Python prototype uses for its state folder and environment variables. It is pinned on
+/// purpose: both implementations must find the same `regia.db` while they coexist, so these names do
+/// not follow a rename of the product. It goes away with the prototype.
+pub const PROTOTYPE_NAME: &str = "regia";
+
+/// `env_var("LANG")` is `REGIA_LANG`: the product's own variables follow the name too.
 pub fn env_var(suffix: &str) -> String {
     format!("{}_{suffix}", PRODUCT_NAME.to_uppercase())
+}
+
+/// A variable that is also the prototype's contract: `REGIA_RUNTIME`, `REGIA_HOME`.
+pub fn prototype_env_var(suffix: &str) -> String {
+    format!("{}_{suffix}", PROTOTYPE_NAME.to_uppercase())
 }
 
 /// Per-user configuration: agent services, the primary service, user policy overrides.
@@ -36,19 +46,19 @@ pub fn dossiers_dir() -> Option<PathBuf> {
     BaseDirs::new().map(|dirs| dirs.home_dir().join(format!("{PRODUCT_NAME}-dossiers")))
 }
 
-/// Machine-local state. Same rule as the v1 prototype (ADR 0013): the environment variable, then
+/// Machine-local state, shared with the prototype, by its rule: the environment variable, then
 /// `%LOCALAPPDATA%\<name>` on Windows, then `$XDG_STATE_HOME/<name>` or `~/.local/state/<name>`.
 pub fn state_dir() -> Option<PathBuf> {
-    if let Some(dir) = non_empty_var(&env_var("RUNTIME")) {
+    if let Some(dir) = non_empty_var(&prototype_env_var("RUNTIME")) {
         return Some(PathBuf::from(dir));
     }
     if cfg!(windows) {
-        return non_empty_var("LOCALAPPDATA").map(|dir| PathBuf::from(dir).join(PRODUCT_NAME));
+        return non_empty_var("LOCALAPPDATA").map(|dir| PathBuf::from(dir).join(PROTOTYPE_NAME));
     }
     if let Some(dir) = non_empty_var("XDG_STATE_HOME") {
-        return Some(PathBuf::from(dir).join(PRODUCT_NAME));
+        return Some(PathBuf::from(dir).join(PROTOTYPE_NAME));
     }
-    BaseDirs::new().map(|dirs| dirs.home_dir().join(".local/state").join(PRODUCT_NAME))
+    BaseDirs::new().map(|dirs| dirs.home_dir().join(".local/state").join(PROTOTYPE_NAME))
 }
 
 fn non_empty_var(name: &str) -> Option<String> {
@@ -64,6 +74,7 @@ mod tests {
         assert_eq!(BIN_NAME, PRODUCT_NAME);
         assert!(app_identifier().ends_with(&format!(".{PRODUCT_NAME}")));
         assert!(env_var("X").starts_with(&PRODUCT_NAME.to_uppercase()));
+        assert_eq!(prototype_env_var("RUNTIME"), "REGIA_RUNTIME", "the prototype reads this very name");
         if let Some(dir) = config_dir() {
             assert!(dir.to_string_lossy().contains(PRODUCT_NAME));
         }

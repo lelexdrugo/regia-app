@@ -28,6 +28,18 @@ function section(strings, headingId, key, tasks) {
   return block;
 }
 
+function graphWarnings(strings, graph) {
+  if (!graph) {
+    return [];
+  }
+  const list = (numbers) => numbers.map((number) => `#${number}`).join(", ");
+  const warnings = graph.cycles.map((cycle) => strings["brief-cycle"].replace("{reason}", list(cycle)));
+  if (graph.truncated.length > 0) {
+    warnings.push(strings["brief-truncated"].replace("{reason}", list(graph.truncated)));
+  }
+  return warnings.map((text) => element("p", text));
+}
+
 function report(language) {
   const sections = {};
   for (const item of document.querySelectorAll("li[data-section]")) {
@@ -56,6 +68,7 @@ async function start() {
     root.replaceChildren(
       element("h1", strings["app-title"]),
       element("p", strings["brief-partial"]),
+      ...graphWarnings(strings, brief.graph),
       section(strings, "brief-waiting", "waiting_on_owner", brief.waiting_on_owner),
       section(strings, "brief-ready", "ready", brief.ready),
       section(strings, "brief-in-progress", "in_progress", brief.in_progress),
