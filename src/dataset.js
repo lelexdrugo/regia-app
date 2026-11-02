@@ -29,16 +29,25 @@ const WORDS = ('revisione avversaria contratto moviola snapshot decisione gate r
 
 const normal = (rnd) => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
 
+// A scale is a number (x1, x10, x100: nodes, lanes and days grow together) or a string like '10d': the lanes and days of x10
+// with 8 times the nodes, i.e. a view 8 times as crowded at the same zoom (the way a busy year is more likely to grow).
+export function parseScale(scale) {
+  const m = /^(\d+(?:\.\d+)?)(d?)$/.exec(String(scale));
+  if (!m) throw new Error(`bad scale ${scale}`);
+  return { base: Number(m[1]), crowd: m[2] ? 8 : 1 };
+}
+
 export function dimensions(scale) {
-  const lanes = Math.round(shape.lanes * Math.pow(scale, 0.3));
-  const nodes = Math.round(shape.nodes * scale);
+  const { base, crowd } = parseScale(scale);
+  const lanes = Math.round(shape.lanes * Math.pow(base, 0.3));
+  const nodes = Math.round(shape.nodes * base * crowd);
   const perLaneDay = shape.nodes / (shape.lanes * shape.spanDays);
-  const days = Math.max(Math.round(shape.spanDays), Math.round(nodes / (lanes * perLaneDay)));
+  const days = Math.max(Math.round(shape.spanDays), Math.round((shape.nodes * base) / (lanes * perLaneDay)));
   return { lanes, nodes, days };
 }
 
 export function generate(scale, seed = SEED) {
-  const rnd = mulberry32(seed ^ (scale * 7919));
+  const rnd = mulberry32(seed ^ (parseScale(scale).base * 7919 + parseScale(scale).crowd));
   const { lanes: L, nodes: N, days } = dimensions(scale);
   const M = Math.round((N * shape.milestones) / shape.nodes);
 

@@ -4,7 +4,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const q = (sorted, p) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
-const pool = (arrs) => { const all = arrs.flat().sort((a, b) => a - b); return all.length ? { n: all.length, median: q(all, 0.5), p95: q(all, 0.95) } : { n: 0, median: NaN, p95: NaN }; };
+const MIN_N = 30; // a cell with fewer frames than this is not reported (percentiles of a handful of frames mean nothing)
+const pool = (arrs) => { const all = arrs.flat().sort((a, b) => a - b); return all.length >= MIN_N ? { n: all.length, median: q(all, 0.5), p95: q(all, 0.95), p99: q(all, 0.99), max: all[all.length - 1] } : { n: all.length, median: NaN, p95: NaN, p99: NaN, max: all.length ? all[all.length - 1] : NaN }; };
 const fmt = (v, d = 1) => (Number.isFinite(v) ? v.toFixed(d) : 'n/a');
 
 for (const dir of process.argv.slice(2)) {
@@ -30,9 +31,9 @@ for (const dir of process.argv.slice(2)) {
   const groups = new Map();
   for (const r of rows) { const k = `${r.renderer}${(r.repeat||1)>1?' (x'+r.repeat+' draws/frame)':''}|${r.scale}`; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
   const phases = ['pan', 'zoom', 'playhead', 'hover'];
-  lines.push('Frame time in ms: median / p95 of the pooled frames of all repetitions (`js` is the median script time per frame, label picking included). Lower is better; the display refresh interval is the floor.', '');
-  lines.push(`| renderer | scale | backend / what rendered | ${phases.map((p) => p).join(' | ')} | all phases | js med | frames >1.5x refresh | rep spread of median |`);
-  lines.push(`|---|---|---|${phases.map(() => '---').join('|')}|---|---|---|---|`);
+  lines.push('Frame time in ms: median / p95 of the pooled frames of all repetitions; `n/a` = fewer than 30 frames. Lower is better; the display refresh interval is the floor, and one missed refresh costs one whole interval. `script ms` is the time inside the draw function: it includes rasterisation on some engines (WebKit software) and not on others (Chromium with GPU), and for SVG it leaves out style, layout and paint, so it is not a cost to compare.', '');
+  lines.push(`| renderer | scale | backend / what rendered | ${phases.map((p) => p).join(' | ')} | all phases | max | script ms (median, not comparable across engines) | frames >1.5x refresh | repetitions | spread of rep medians |`);
+  lines.push(`|---|---|---|${phases.map(() => '---').join('|')}|---|---|---|---|---|---|`);
   const summary = [];
   for (const [k, rs] of [...groups].sort((a, b) => a[0].split('|')[1] - b[0].split('|')[1] || a[0].localeCompare(b[0]))) {
     const [renderer, scale] = k.split('|');
@@ -44,7 +45,7 @@ for (const dir of process.argv.slice(2)) {
     const spread = Math.max(...repMedians) - Math.min(...repMedians);
     const what = rs[0].gpu ? `${rs[0].backend}: ${rs[0].gpu}` : rs[0].backend;
     summary.push({ renderer, scale: Number(scale), what, byPhase, all, js, dropped: (100 * dropped) / frames, spread });
-    lines.push(`| ${renderer} | x${scale} | ${what} | ${byPhase.map((b) => `${fmt(b.median)} / ${fmt(b.p95)}`).join(' | ')} | **${fmt(all.median)} / ${fmt(all.p95)}** | ${fmt(js.median, 2)} | ${fmt((100 * dropped) / frames, 0)} % | ${fmt(spread)} |`);
+    lines.push(`| ${renderer} | x${scale} | ${what} | ${byPhase.map((b) => `${fmt(b.median)} / ${fmt(b.p95)}`).join(' | ')} | **${fmt(all.median)} / ${fmt(all.p95)}** | ${fmt(all.max, 0)} | ${fmt(js.median, 2)} | ${fmt((100 * dropped) / frames, 0)} % | ${new Set(rs.map((r) => r.rep)).size} | ${fmt(spread)} |`);
   }
   lines.push('');
 
@@ -63,14 +64,18 @@ for (const dir of process.argv.slice(2)) {
   // sanity check: deliberately slowed canvas must be slower in the numbers
   if (doc.mode === 'sanity') {
     const get = (r) => summary.find((s) => s.renderer === r);
-    const base = get('canvas2d'), busy = get('canvas2d+busy16'), shadow = get('canvas2d+shadow');
+    const base = get('canvas2d'), busy = get('canvas2d+busyv'), shadow = get('canvas2d+shadow');
     lines.push('## Verdict', '');
     if (base && busy) {
-      const jsOk = busy.js.median >= base.js.median + 12;
+      const extra = 1.6 * doc.vsync_ms;
+      const jsOk = busy.js.median >= base.js.median + 0.75 * extra;
       const dtOk = busy.all.median >= base.all.median * 1.3;
-      lines.push(`- canvas2d + 16 ms of busy work per frame: js median ${fmt(base.js.median, 2)} -> ${fmt(busy.js.median, 2)} ms (${jsOk ? 'PASS' : 'FAIL'}: expected at least +12 ms); frame median ${fmt(base.all.median)} -> ${fmt(busy.all.median)} ms (${dtOk ? 'PASS' : 'FAIL'}: expected at least x1.3).`);
+      lines.push(`- canvas2d + ${fmt(extra)} ms (1.6 refresh intervals) of busy work per frame: script median ${fmt(base.js.median, 2)} -> ${fmt(busy.js.median, 2)} ms (${jsOk ? 'PASS' : 'FAIL'}: expected at least +${fmt(0.75 * extra)} ms); frame median ${fmt(base.all.median)} -> ${fmt(busy.all.median)} ms (${dtOk ? 'PASS' : 'FAIL'}: expected at least x1.3).`);
     }
-    if (base && shadow) lines.push(`- canvas2d + shadowBlur on every node: js median ${fmt(base.js.median, 2)} -> ${fmt(shadow.js.median, 2)} ms; frame median ${fmt(base.all.median)} -> ${fmt(shadow.all.median)} ms; frame p95 ${fmt(base.all.p95)} -> ${fmt(shadow.all.p95)} ms (informational: how a real rendering cost shows up).`);
+    if (base && shadow) {
+      const dtOk = shadow.all.median >= base.all.median * 1.15 || shadow.all.p95 >= base.all.p95 * 1.3;
+      lines.push(`- canvas2d + shadowBlur on every node (a real drawing cost, not script time): script median ${fmt(base.js.median, 2)} -> ${fmt(shadow.js.median, 2)} ms; frame median ${fmt(base.all.median)} -> ${fmt(shadow.all.median)} ms; frame p95 ${fmt(base.all.p95)} -> ${fmt(shadow.all.p95)} ms (${dtOk ? 'PASS' : 'NOT SEEN'}: expected a visible rise in frame median x1.15 or p95 x1.3; when the engine rasterises on a GPU fast enough the cost hides under the refresh interval, and then the headroom runs, with repeated drawing, are the control for the GPU side).`);
+    }
     lines.push('');
   }
   writeFileSync(join(dir, 'summary.md'), lines.join('\n') + '\n');

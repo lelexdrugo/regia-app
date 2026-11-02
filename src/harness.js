@@ -12,12 +12,13 @@ export const RENDERERS = {
   'webgl2-raw': () => new WebGL2Renderer(),
   'pixi-webgl': () => new PixiRenderer('webgl'),
   'pixi-webgpu': () => new PixiRenderer('webgpu'),
-  // sanity-check variants, deliberately slowed (see scripts/analyze.mjs)
-  'canvas2d+busy16': () => new Canvas2DRenderer('busy16'),
+  'canvas2d-lod': () => new Canvas2DRenderer('lod'),
+  // sanity-check variants, deliberately slowed (see scripts/analyze.mjs); busyv = 1.6 refresh intervals of script work per frame
+  'canvas2d+busyv': () => new Canvas2DRenderer('busyv'),
   'canvas2d+shadow': () => new Canvas2DRenderer('shadow'),
 };
-export const DEFAULT_RENDERERS = ['svg', 'canvas2d', 'webgl2-raw', 'pixi-webgl', 'pixi-webgpu'];
-export const SANITY_RENDERERS = ['canvas2d', 'canvas2d+busy16', 'canvas2d+shadow'];
+export const DEFAULT_RENDERERS = ['svg', 'canvas2d', 'canvas2d-lod', 'webgl2-raw', 'pixi-webgl', 'pixi-webgpu'];
+export const SANITY_RENDERERS = ['canvas2d', 'canvas2d+busyv', 'canvas2d+shadow'];
 
 const raf = () => new Promise((r) => requestAnimationFrame(r));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -34,19 +35,19 @@ async function calibrateVsync(ms = 1000) {
 function runPhase(r, scene, phase, durMs, repeat = 1) {
   return new Promise((resolve, reject) => {
     const labels = newLabelBuf(); const dts = [], js = [], lab = []; let t0 = null, prev = null, n = 0, lastTs = performance.now();
-    const watchdog = setInterval(() => { if (performance.now() - lastTs > 5000) { clearInterval(watchdog); reject(new Error('requestAnimationFrame stalled (window hidden or occluded?)')); } }, 1000);
+    const watchdog = setInterval(() => { if (performance.now() - lastTs > 15000) { clearInterval(watchdog); reject(new Error(`requestAnimationFrame stalled for 15 s after ${dts.length} frames (longest ${Math.round(Math.max(0, ...dts))} ms): window hidden, or a frame that long`)); } }, 1000);
     const step = (ts) => {
       lastTs = performance.now();
       if (t0 === null) t0 = ts;
       const ms = ts - t0;
-      if (ms >= durMs) { clearInterval(watchdog); resolve({ dts, js, lab }); return; }
+      if (ms >= durMs) { clearInterval(watchdog); if (prev !== null && n > 1) dts.push(ts - prev); /* the last frame counts too */ resolve({ dts, js, lab }); return; }
       const a = performance.now();
       const cam = cameraAt(scene, phase, ms, durMs);
       pickLabels(scene, cam, labels);
       const b = performance.now();
       for (let k = 0; k < repeat; k++) r.frame(cam, labels);
       const c = performance.now();
-      if (prev !== null && ++n > 2) { dts.push(ts - prev); js.push(c - a); lab.push(b - a); }
+      if (prev !== null && ++n > 1) { dts.push(ts - prev); js.push(c - a); lab.push(b - a); }
       prev = ts;
       requestAnimationFrame(step);
     };
@@ -96,17 +97,21 @@ export async function runBenchmark(cfg, onStatus = () => {}) {
   const dpr = window.devicePixelRatio || 1;
   const scenes = new Map();
   const sceneFor = (s) => { if (!scenes.has(s)) { const t = performance.now(); const sc = generate(s); sc.buildMs = performance.now() - t; scenes.set(s, sc); } return scenes.get(s); };
-  const dims = Object.fromEntries(cfg.scales.map((s) => { const d = dimensions(s); return [s, d]; }));
+  const dims = Object.fromEntries(cfg.scales.map((s) => [s, dimensions(s)]));
 
   for (let rep = 1; rep <= cfg.reps; rep++) {
     for (const scale of cfg.scales) {
       const scene = sceneFor(scale);
-      for (const id of cfg.renderers) {
+      // the order of the renderers rotates with the repetition, so that an effect of order (GC, thermal) does not always hit the same one
+      const order = cfg.renderers.map((_, i) => cfg.renderers[(i + rep - 1) % cfg.renderers.length]);
+      for (const id of order) {
+        const pending = [];
         const tag = `${id} x${scale} rep ${rep}/${cfg.reps}`;
         onStatus(tag);
         let r; stage.replaceChildren();
         try {
           r = RENDERERS[id]();
+          r.vsync = vsync;
           const t0 = performance.now();
           const info = await r.init(stage, scene, dpr);
           const initMs = performance.now() - t0;
@@ -116,7 +121,7 @@ export async function runBenchmark(cfg, onStatus = () => {}) {
           for (const phase of PHASES) {
             const { dts, js, lab } = await runPhase(r, scene, phase, cfg.phase_ms, cfg.repeat);
             const d = stats(dts), j = stats(js), l = stats(lab);
-            rows.push({
+            pending.push({
               renderer: id, scale, rep, phase, repeat: cfg.repeat, nodes: scene.N, lanes: scene.lanes, frames: dts.length,
               dt_median: d.median, dt_p95: d.p95, dt_p99: d.p99, dt_max: d.max,
               js_median: j.median, js_p95: j.p95, labels_median: l.median,
@@ -139,6 +144,7 @@ export async function runBenchmark(cfg, onStatus = () => {}) {
             if (id === 'svg') a11y.push({ scale, camera: 'native', items: scene.M, ms: 0, elements: info.notes });
           }
           if (rep === 1) infos.push({ renderer: id, scale, ...info });
+          rows.push(...pending); // a configuration that failed half way leaves no rows: it is listed under failures
         } catch (e) {
           failures.push({ renderer: id, scale, rep, error: String(e?.message || e) });
           onStatus(`${tag} FAILED: ${e?.message || e}`);

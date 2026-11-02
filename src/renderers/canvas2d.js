@@ -4,7 +4,8 @@ import { lowerBound } from '../dataset.js';
 const TAU = Math.PI * 2;
 
 // Canvas 2D, written directly, with viewport culling by binary search on the x-sorted nodes.
-// Variants for the sanity check: `busy<ms>` spins that many milliseconds per frame, `shadow` turns on shadowBlur.
+// Variants: `lod` skips what would be smaller than a pixel (bands, short edges, small nodes: level of detail, a standard canvas
+// technique); for the sanity check, `busyv` spins 1.6 refresh intervals of script time per frame and `shadow` turns on shadowBlur.
 export class Canvas2DRenderer {
   constructor(variant = '') { this.variant = variant; this.id = 'canvas2d' + (variant ? '+' + variant : ''); }
 
@@ -16,7 +17,7 @@ export class Canvas2DRenderer {
     host.appendChild(c);
     this.canvas = c; this.ctx = c.getContext('2d', { alpha: false });
     this.buckets = bucketByKind(scene);
-    this.busy = /^busy(\d+)/.exec(this.variant)?.[1] | 0;
+    this.busyv = this.variant === 'busyv'; this.lod = this.variant === 'lod';
     this.shadow = this.variant === 'shadow';
     return { backend: 'canvas2d', notes: 'CanvasRenderingContext2D' };
   }
@@ -33,7 +34,7 @@ export class Canvas2DRenderer {
     // bands
     const b = scene.bands;
     ctx.fillStyle = BAND_CSS; ctx.beginPath();
-    for (let i = 0; i < b.n; i++) { if (b.x[i] > x1 || b.x[i] + b.w[i] < x0 || b.y[i] > y1 || b.y[i] + b.h[i] < y0) continue; ctx.rect(b.x[i], b.y[i], b.w[i], b.h[i]); }
+    for (let i = 0; i < b.n; i++) { if (this.lod && b.h[i] * z < 0.7) continue; if (b.x[i] > x1 || b.x[i] + b.w[i] < x0 || b.y[i] > y1 || b.y[i] + b.h[i] < y0) continue; ctx.rect(b.x[i], b.y[i], b.w[i], b.h[i]); }
     ctx.fill();
 
     // edges
@@ -41,6 +42,7 @@ export class Canvas2DRenderer {
     ctx.strokeStyle = EDGE_CSS; ctx.lineWidth = 1 / z; ctx.beginPath();
     for (let i = 0; i < e.n; i++) {
       if ((e.x1[i] < x0 && e.x2[i] < x0) || (e.x1[i] > x1 && e.x2[i] > x1)) continue;
+      if (this.lod && Math.abs(e.x2[i] - e.x1[i]) + Math.abs(e.y2[i] - e.y1[i]) < 1.5 / z) continue;
       ctx.moveTo(e.x1[i], e.y1[i]); ctx.lineTo(e.x2[i], e.y2[i]);
     }
     ctx.stroke();
@@ -58,6 +60,7 @@ export class Canvas2DRenderer {
         const i = list[q]; if (i >= hi) break;
         if (y[i] < y0 || y[i] > y1) continue;
         const px = x[i], py = y[i], rr = r[i];
+        if (this.lod && rr * z < 1) continue;
         if (shape[i] === 0) { ctx.moveTo(px + rr, py); ctx.arc(px, py, rr, 0, TAU); }
         else if (shape[i] === 1) { ctx.moveTo(px, py - rr * 1.3); ctx.lineTo(px + rr * 1.3, py); ctx.lineTo(px, py + rr * 1.3); ctx.lineTo(px - rr * 1.3, py); ctx.closePath(); }
         else ctx.rect(px - rr, py - rr, rr * 2, rr * 2);
@@ -68,7 +71,7 @@ export class Canvas2DRenderer {
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawScreenLayer(ctx, cam, labels, scene);
-    if (this.busy) busyWait(this.busy);
+    if (this.busyv) busyWait(1.6 * this.vsync);
   }
 
   async snapshot() { return bytesToBase64Png(this.canvas.toDataURL('image/png')); }

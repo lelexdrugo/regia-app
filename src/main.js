@@ -12,7 +12,7 @@ async function main() {
   for (const r of renderers) if (!RENDERERS[r]) throw new Error(`unknown renderer ${r}`);
   const run = {
     renderers,
-    scales: cfg.sanity ? [10] : list(cfg.scales, ['1', '10', '100']).map(Number),
+    scales: cfg.sanity ? [10] : list(cfg.scales, ['1', '10', '100']).map((s) => (/^\d+$/.test(s) ? Number(s) : s)),
     reps: Number(cfg.reps || 3),
     phase_ms: Number(cfg.phase_ms || 2500),
     warmup_ms: Number(cfg.warmup_ms || 1000),

@@ -1,4 +1,4 @@
-import { BG, VIEW, KIND_COLORS, busyWait, drawScreenLayer, bytesToBase64Png } from './common.js';
+import { BG, VIEW, KIND_COLORS, drawScreenLayer, bytesToBase64Png } from './common.js';
 
 const VS_RECT = `#version 300 es
 layout(location=0) in vec2 aCorner; layout(location=1) in vec4 aRect;
@@ -48,7 +48,7 @@ export class WebGL2Renderer {
     this.scene = scene; this.dpr = dpr;
     const c = document.createElement('canvas'); c.width = Math.round(VIEW.w * dpr); c.height = Math.round(VIEW.h * dpr);
     c.style.width = VIEW.w + 'px'; c.style.height = VIEW.h + 'px'; host.appendChild(c);
-    const gl = c.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false });
+    const gl = c.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: false });
     if (!gl) throw new Error('webgl2 context unavailable');
     this.canvas = c; this.gl = gl;
     const dbg = gl.getExtension('WEBGL_debug_renderer_info');
@@ -80,7 +80,6 @@ export class WebGL2Renderer {
 
     const o = document.createElement('canvas'); o.width = c.width; o.height = c.height; o.style.width = VIEW.w + 'px'; o.style.height = VIEW.h + 'px'; o.style.pointerEvents = 'none';
     host.appendChild(o); this.overlay = o; this.octx = o.getContext('2d');
-    this.busy = 0;
     const bg = BG.match(/#(..)(..)(..)/).slice(1).map((h) => parseInt(h, 16) / 255); this.bg = bg;
     return info;
   }
@@ -96,7 +95,7 @@ export class WebGL2Renderer {
     set(this.pRect); gl.uniform4f(gl.getUniformLocation(this.pRect, 'uColor'), 0.909, 0.639, 0.239, 0.16);
     gl.bindVertexArray(this.vaoRect); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.nRect);
 
-    set(this.pSeg); gl.uniform4f(gl.getUniformLocation(this.pSeg, 'uColor'), 0.627, 0.588, 0.51, 0.55); gl.uniform1f(gl.getUniformLocation(this.pSeg, 'uHalf'), 0.9);
+    set(this.pSeg); gl.uniform4f(gl.getUniformLocation(this.pSeg, 'uColor'), 0.627, 0.588, 0.51, 0.55); gl.uniform1f(gl.getUniformLocation(this.pSeg, 'uHalf'), 0.5);
     gl.bindVertexArray(this.vaoSeg); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, this.nSeg);
 
     set(this.pNode);
@@ -109,7 +108,6 @@ export class WebGL2Renderer {
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     drawScreenLayer(ctx, cam, labels, this.scene);
-    if (this.busy) busyWait(this.busy);
   }
 
   async snapshot() {

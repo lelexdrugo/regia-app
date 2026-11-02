@@ -11,8 +11,8 @@ const f = (v) => Math.round(v * 100) / 100;
 export class SvgRenderer {
   constructor() { this.id = 'svg'; }
 
-  async init(host, scene) {
-    this.scene = scene;
+  async init(host, scene, dpr = 1) {
+    this.scene = scene; this.dpr = dpr;
     const svg = el('svg', { width: VIEW.w, height: VIEW.h, viewBox: `0 0 ${VIEW.w} ${VIEW.h}`, role: 'img', 'aria-label': 'moviola timeline' }, host);
     svg.style.background = BG;
     const style = el('style', {}, svg);
@@ -89,7 +89,7 @@ export class SvgRenderer {
     const xml = new XMLSerializer().serializeToString(clone);
     const img = new Image();
     await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error('svg image load failed')); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml); });
-    const c = document.createElement('canvas'); c.width = VIEW.w; c.height = VIEW.h; c.getContext('2d').drawImage(img, 0, 0);
+    const c = document.createElement('canvas'); c.width = Math.round(VIEW.w * this.dpr); c.height = Math.round(VIEW.h * this.dpr); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); // vector: re-rasterised at the device resolution, like the window
     return c.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
   }
   destroy() { this.svg.remove(); }
