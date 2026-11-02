@@ -1,0 +1,103 @@
+name: moviola-benchmark
+
+# Spike workflow, lives only on spike/moviola-renderer. Runs the renderer benchmark inside the Tauri window on the three
+# runner images. Minutes are a budget (private repo, shared with other tracks): at most 3 pushes' worth of runs on macOS.
+# Billing multipliers on a Free plan: Linux x1, Windows x2, macOS x10. Use workflow_dispatch to run one OS only.
+on:
+  push:
+    branches: [spike/moviola-renderer]
+    paths:
+      - '.github/workflows/moviola-benchmark.yml'
+      - 'src/**'
+      - 'src-tauri/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'index.html'
+      - 'vite.config.js'
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'which runner image'
+        type: choice
+        default: all
+        options: [all, macos, linux, windows]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: moviola-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MOVIOLA_BENCH_PHASE_MS: '2000'
+  MOVIOLA_BENCH_WARMUP_MS: '800'
+  CARGO_TERM_COLOR: never
+  MOVIOLA_BENCH_TIMEOUT_S: '1500'
+
+jobs:
+  bench:
+    if: github.event_name == 'push' || inputs.os == 'all' || inputs.os == matrix.label
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { label: macos, os: macos-latest }
+          - { label: linux, os: ubuntu-24.04 }
+          - { label: windows, os: windows-latest }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Linux system packages (WebKitGTK, Xvfb, Mesa software rasteriser)
+        if: matrix.label == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev libayatana-appindicator3-dev libxdo-dev libssl-dev \
+            xvfb mesa-utils libgl1-mesa-dri libglx-mesa0 mesa-vulkan-drivers
+
+      - run: npm ci
+
+      - name: Machine description
+        shell: bash
+        run: |
+          uname -a || true
+          if [ "$RUNNER_OS" = "macOS" ]; then sw_vers; system_profiler SPDisplaysDataType | head -20 || true; fi
+          if [ "$RUNNER_OS" = "Linux" ]; then (xvfb-run -a glxinfo -B || true) | head -20; fi
+          node -v; cargo -V
+
+      # main = the spec (5 renderers x scales 1/10/100 x 3 repetitions); sanity = the deliberately slowed control.
+      # No stress tier and no software pass here: the runners are slow enough already (see summary.md of each run).
+      - name: Benchmark
+        shell: bash
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: ${{ matrix.label == 'linux' && '1' || '' }}
+        run: node scripts/run-suite.mjs --only main,sanity --host-label ci-${{ matrix.label }}
+
+      - name: Summary in the job page
+        if: always()
+        shell: bash
+        run: |
+          for f in results/ci-*/*/summary.md; do [ -f "$f" ] && { echo "### $f" >> "$GITHUB_STEP_SUMMARY"; head -c 20000 "$f" >> "$GITHUB_STEP_SUMMARY"; echo >> "$GITHUB_STEP_SUMMARY"; }; done || true
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: moviola-bench-${{ matrix.label }}
+          path: |
+            results/ci-*/**
+            !results/_local/**
+          retention-days: 30

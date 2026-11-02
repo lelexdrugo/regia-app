@@ -103,8 +103,11 @@ export class PixiRenderer {
   }
 
   async snapshot() {
-    const url = await this.app.renderer.extract.base64({ target: this.app.stage, frame: new Rectangle(0, 0, VIEW.w, VIEW.h), resolution: this.dpr });
-    return url.replace(/^data:image\/png;base64,/, '');
+    // extract() renders on a transparent background: flatten onto the page colour, as the window shows it
+    const src = await this.app.renderer.extract.canvas({ target: this.app.stage, frame: new Rectangle(0, 0, VIEW.w, VIEW.h), resolution: this.dpr });
+    const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+    const x = c.getContext('2d'); x.fillStyle = BG; x.fillRect(0, 0, c.width, c.height); x.drawImage(src, 0, 0);
+    return c.toDataURL('image/png').replace(/^data:image\/png;base64,/, '');
   }
   destroy() { this.app.destroy(true, { children: true }); }
 }
