@@ -20,7 +20,7 @@ mod search;
 mod tree;
 mod values;
 
-pub use run::{Detached, Launch, Limits, Output};
+pub use run::{Detached, Launch, Limits, Output, secret_shaped};
 pub use search::{Pin, Search, usual_folders};
 pub use values::{
     AbsolutePath, ArgValue, DossierPath, Effort, GitRef, InvalidValue, IssueNumber, ModelId, RepoSlug, Text,

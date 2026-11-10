@@ -16,10 +16,12 @@ use std::path::{Path, PathBuf};
 use regia_exec::{ExecError, ModelId, Pin, Program};
 use serde::{Deserialize, Serialize};
 
+mod cli;
 mod gates;
 mod launch;
 mod policy;
 
+pub use cli::{Cli, Waits};
 pub use gates::{Gate, GateError, Gates};
 pub use launch::{
     Dry, Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback,
@@ -92,6 +94,10 @@ impl Env {
 
     pub fn names(&self) -> impl Iterator<Item = &std::ffi::OsStr> {
         self.0.iter().map(|(name, _)| name.as_os_str())
+    }
+
+    pub fn pairs(&self) -> impl Iterator<Item = (&std::ffi::OsStr, &std::ffi::OsStr)> {
+        self.0.iter().map(|(name, value)| (name.as_os_str(), value.as_os_str()))
     }
 
     fn home(&self) -> Option<PathBuf> {

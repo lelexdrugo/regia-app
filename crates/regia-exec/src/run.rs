@@ -50,8 +50,9 @@ const GIT: &[(&str, &str)] = &[
 ];
 
 /// A secret passes only when a caller names it with [`Launch::env`], as the settings of an agent
-/// will (rule 4).
-fn secret(name: &str) -> bool {
+/// do (rule 4). A caller that forwards variables by prefix leaves these out too.
+pub fn secret_shaped(name: &str) -> bool {
+    let name = name.to_ascii_uppercase();
     ["_TOKEN", "_KEY", "_SECRET", "_PASSWORD"].iter().any(|suffix| name.ends_with(suffix))
 }
 
@@ -65,7 +66,7 @@ fn same(a: &OsStr, b: &OsStr) -> bool {
 
 fn inherits(program: Program, name: &OsStr) -> bool {
     let Some(name) = key(name) else { return false };
-    if secret(&name) {
+    if secret_shaped(&name) {
         return false;
     }
     let prefix = regia_identity::prototype_env_var("");
