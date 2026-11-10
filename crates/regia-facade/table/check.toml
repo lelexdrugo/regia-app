@@ -1,0 +1,42 @@
+# `check` (the prototype's `controlla`): deterministic checks of the commitments left outside the
+# tracker, read only; findings exit with 0. Names from the conformance study, §8 (`conformita.md` of the
+# dossier), not decided: they go to the gate of the names with the rest (`docs/contract/commands.md`).
+# The reasons and the texts of a finding are the prototype's sentences: data, in its language.
+schema = 1
+
+[commands.check]
+python = ["controlla"]
+group = "state"
+output = "check_report"
+[commands.check.args]
+"--project" = "--progetto"
+"--against-disk" = { to = "--contro-il-disco", flag = true }
+
+[enums.check_id]
+"stato-senza-issue" = "state-without-issue"
+"stato-righe-tolte" = "state-lines-removed"
+"domande-aperte-senza-issue" = "open-questions-without-issue"
+"resta-non-riconciliato" = "remaining-unreconciled"
+"commento-dopo-chiusura" = "comment-after-close"
+"decisione-senza-flag" = "decision-without-flag"
+"inbox-ferma" = "inbox-stale"
+"approvato-mai-partito" = "approved-never-started"
+"in-corso-fermo" = "in-progress-stalled"
+"progetto-campo" = "project-field"
+
+[shapes.check_report.fields]
+voci = { to = "findings", items = "check_finding" }
+per_controllo = { to = "per_check", shape = "check_counts" }
+avvisi = { to = "warnings" }
+
+# How many findings each check gave: the keys are check ids.
+[shapes.check_counts]
+key_enum = "check_id"
+
+[shapes.check_finding.fields]
+controllo = { to = "check", enum = "check_id" }
+progetto = { to = "project" }
+dove = { to = "where" }
+testo = { to = "text" }
+perche = { to = "why" }
+url = { to = "url" }

@@ -1,0 +1,2 @@
+Claude: sconosciuto (credenziali Claude non trovate)
+Codex: sconosciuto (credenziali Codex non trovate)

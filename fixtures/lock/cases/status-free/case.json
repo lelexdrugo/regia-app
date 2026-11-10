@@ -1,0 +1,15 @@
+{
+  "_note": "Synthetic. No lock: free.",
+  "args": [
+    "lock",
+    "status",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lock",
+    "stato",
+    "alpha"
+  ]
+}

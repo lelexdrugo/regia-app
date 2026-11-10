@@ -1,0 +1,23 @@
+{
+  "cursore": {
+    "propri": {
+      "commenti": [
+        40
+      ],
+      "report": {
+        "2026-01-09-5-review.md": "2026-01-09T17:00:00+00:00"
+      }
+    },
+    "t": "2026-01-09T18:00:00Z",
+    "v": 1
+  },
+  "ok": true,
+  "progetto": "alpha",
+  "proprietario": "worker-a",
+  "proprietario_generato": false,
+  "ripreso": true,
+  "scade": "2026-01-10T09:15:00.000+00:00",
+  "scade_tra_s": 900,
+  "stato": "rinnovato",
+  "t": "2026-01-10T08:30:00Z"
+}

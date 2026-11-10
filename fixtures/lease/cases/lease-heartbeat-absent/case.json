@@ -1,0 +1,24 @@
+{
+  "_note": "Synthetic. No lease on #7: a heartbeat is refused as absent, exit 3.",
+  "args": [
+    "lease",
+    "heartbeat",
+    "7",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "300",
+    "--json"
+  ],
+  "exit": 3,
+  "python": [
+    "--json",
+    "lease",
+    "battito",
+    "7",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "300"
+  ]
+}

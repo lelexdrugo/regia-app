@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. Without --json the prototype prints a line, which passes as it is.",
+  "args": [
+    "lock",
+    "acquire",
+    "beta",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "60"
+  ],
+  "python": [
+    "lock",
+    "prendi",
+    "beta",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "60"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "cursore": null,
+  "ok": true,
+  "progetto": "alpha",
+  "proprietario": "worker-a",
+  "proprietario_generato": false,
+  "ripreso": false,
+  "scade": "2026-01-10T09:30:00.000+00:00",
+  "scade_tra_s": 1800,
+  "stato": "preso",
+  "t": "2026-01-10T09:00:00Z"
+}

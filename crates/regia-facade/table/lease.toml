@@ -1,0 +1,75 @@
+# `lease`: the lease of a task In progress, kept alive by a heartbeat; someone else's exits with 3.
+# Names from the conformance study, §8 (`conformita.md` of the dossier), not decided: they go to the
+# gate of the names with the rest (`docs/contract/commands.md`). The states are the lock's.
+schema = 1
+
+[commands."lease acquire"]
+python = ["lease", "prendi"]
+group = "state"
+output = "lease_outcome"
+# The task's number.
+positionals = [{}]
+[commands."lease acquire".args]
+"--project" = "--progetto"
+"--holder" = "--proprietario"
+"--ttl" = "--ttl"
+
+[commands."lease heartbeat"]
+python = ["lease", "battito"]
+group = "state"
+output = "lease_outcome"
+positionals = [{}]
+[commands."lease heartbeat".args]
+"--holder" = "--proprietario"
+"--ttl" = "--ttl"
+
+[commands."lease release"]
+python = ["lease", "rilascia"]
+group = "state"
+output = "lease_outcome"
+positionals = [{}]
+[commands."lease release".args]
+"--holder" = "--proprietario"
+
+[commands."lease list"]
+python = ["lease", "list"]
+group = "state"
+output = "lease_list"
+[commands."lease list".args]
+"--expired" = { to = "--scadute", flag = true }
+
+[shapes.lease_outcome.fields]
+ok = { to = "ok" }
+stato = { to = "status", enum = "lock_status" }
+motivo = { to = "reason" }
+attuale = { to = "current", shape = "lease_view" }
+task = { to = "task" }
+progetto = { to = "project" }
+proprietario = { to = "holder" }
+preso = { to = "taken_at" }
+battito = { to = "heartbeat_at" }
+ttl_s = { to = "ttl_s" }
+scade = { to = "expires_at" }
+al_posto_di = { to = "replaced" }
+rubato_il = { to = "stolen_at" }
+scaduto = { to = "expired" }
+scade_tra_s = { to = "expires_in_s" }
+
+# A lease as it is, with what derives from the clock. A row that is not a JSON object lists as
+# unreadable and expired.
+[shapes.lease_view.fields]
+task = { to = "task" }
+progetto = { to = "project" }
+proprietario = { to = "holder" }
+preso = { to = "taken_at" }
+battito = { to = "heartbeat_at" }
+ttl_s = { to = "ttl_s" }
+scade = { to = "expires_at" }
+al_posto_di = { to = "replaced" }
+rubato_il = { to = "stolen_at" }
+scaduto = { to = "expired" }
+scade_tra_s = { to = "expires_in_s" }
+illeggibile = { to = "unreadable" }
+
+[shapes.lease_list]
+items_of = "lease_view"

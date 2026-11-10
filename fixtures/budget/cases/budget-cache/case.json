@@ -1,0 +1,68 @@
+{
+  "_note": "Synthetic. The last attempt was two minutes ago, inside the interval: the answer comes from the cache, a valid Claude window and Codex unknown, with no request.",
+  "args": [
+    "budget",
+    "--cache",
+    "--min-interval",
+    "300",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "budget",
+    "--cache",
+    "--min-intervallo",
+    "300"
+  ],
+  "state": [
+    {
+      "kind": "cache",
+      "key": "budget",
+      "doc": {
+        "ultimo_tentativo": "2026-01-10T08:58:00.000+00:00",
+        "provider": {
+          "claude": {
+            "valido": {
+              "provider": "claude",
+              "stato": "ok",
+              "piano": "max",
+              "finestre": {
+                "5h": {
+                  "stato": "ok",
+                  "usato_pct": 15.0,
+                  "residuo_pct": 85.0,
+                  "reset": "2026-01-10T13:40+00:00",
+                  "reset_tra_s": 16920
+                },
+                "7d": {
+                  "stato": "ok",
+                  "usato_pct": 41.0,
+                  "residuo_pct": 59.0,
+                  "aperta": false,
+                  "reset": null,
+                  "reset_tra_s": null
+                }
+              }
+            },
+            "valido_il": "2026-01-10T08:58:00.000+00:00",
+            "ultimo": {
+              "provider": "claude",
+              "stato": "ok"
+            }
+          },
+          "codex": {
+            "valido": null,
+            "valido_il": null,
+            "ultimo": {
+              "provider": "codex",
+              "stato": "sconosciuto",
+              "piano": null,
+              "finestre": {},
+              "motivo": "token Codex assente"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

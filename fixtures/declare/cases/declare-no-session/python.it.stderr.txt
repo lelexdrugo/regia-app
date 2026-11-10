@@ -1,0 +1,1 @@
+errore: dichiarazione non registrata: nessun id di sessione nell'ambiente (CLAUDE_CODE_SESSION_ID, ORCA_AGENT_SESSION_ID, CODEX_THREAD_ID)

@@ -1,0 +1,1 @@
+errore: nessun passo aperto di worker-a per 'alpha' (il lock è tuo ma non l'hai preso con `regia passo inizio`): cursore non scritto, lock non rilasciato

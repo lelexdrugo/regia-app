@@ -1,0 +1,11 @@
+{
+  "_note": "Synthetic. The credentials point at files that do not exist: both providers are unknown, with no request to them, and exit 0.",
+  "args": [
+    "budget",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "budget"
+  ]
+}

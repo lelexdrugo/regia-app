@@ -1,8 +1,16 @@
-# `lock`: the project lock, one orchestrator at a time; a refusal exits with 3. Only `lock renew` for
-# now, the exit-3 case of the facade's engine; the other subcommands come with their slice. Names
-# from the conformance study, §8 (`conformita.md` of the dossier), not decided: they go to the gate
-# of the names with the rest.
+# `lock`: the project lock, one orchestrator at a time; a refusal exits with 3, `lock status` never
+# does. Names from the conformance study, §8 (`conformita.md` of the dossier), not decided: they go to
+# the gate of the names with the rest (`docs/contract/commands.md`).
 schema = 1
+
+[commands."lock acquire"]
+python = ["lock", "prendi"]
+group = "state"
+output = "lock_outcome"
+positionals = [{}]
+[commands."lock acquire".args]
+"--holder" = "--proprietario"
+"--ttl" = "--ttl"
 
 [commands."lock renew"]
 python = ["lock", "rinnova"]
@@ -13,6 +21,23 @@ positionals = [{}]
 "--holder" = "--proprietario"
 "--ttl" = "--ttl"
 
+[commands."lock release"]
+python = ["lock", "rilascia"]
+group = "state"
+output = "lock_outcome"
+positionals = [{}]
+[commands."lock release".args]
+"--holder" = "--proprietario"
+
+# Informative: exit 0 even when the lock is held by someone else.
+[commands."lock status"]
+python = ["lock", "stato"]
+group = "state"
+output = "lock_status_view"
+positionals = [{}]
+
+# The states of a lock and of a lease, in every outcome and view: `occupato` is a refusal in an outcome
+# and a lock that has not expired in `lock status`, `battito` a lease's heartbeat.
 [enums.lock_status]
 preso = "taken"
 rinnovato = "renewed"
@@ -22,6 +47,9 @@ rilasciato = "released"
 altrui = "foreign"
 assente = "absent"
 libero = "free"
+scaduto = "expired"
+illeggibile = "unreadable"
+battito = "heartbeat"
 
 # An outcome is the view of the lock it wrote, or a refusal with the reason and the lock as it is.
 [shapes.lock_outcome.fields]
@@ -42,6 +70,21 @@ scade_tra_s = { to = "expires_in_s" }
 
 [shapes.lock_view.fields]
 progetto = { to = "project" }
+proprietario = { to = "holder" }
+preso = { to = "taken_at" }
+ttl_s = { to = "ttl_s" }
+scade = { to = "expires_at" }
+al_posto_di = { to = "replaced" }
+rubato_il = { to = "stolen_at" }
+rinnovato = { to = "renewed_at" }
+scaduto = { to = "expired" }
+scade_tra_s = { to = "expires_in_s" }
+
+# `lock status`: whether the lock is held, and the view of it when there is one.
+[shapes.lock_status_view.fields]
+progetto = { to = "project" }
+occupato = { to = "busy" }
+stato = { to = "status", enum = "lock_status" }
 proprietario = { to = "holder" }
 preso = { to = "taken_at" }
 ttl_s = { to = "ttl_s" }

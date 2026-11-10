@@ -1,18 +1,19 @@
 //! Local only. Expands each synthetic scenario into GraphQL responses, writes each case's state rows,
-//! runs the Python prototype on them through the fake `gh`, on the fixtures' fixed day, and stores its
-//! raw output: JSON or text, its stderr if any, and the writes it made to the tracker. The prototype is
-//! not modified and the real tracker is never read: a scenario's URLs must come back, or recording
-//! stops, and so does an exit code other than the case's or an argv other than the one it expects.
+//! runs the Python prototype on them through the fake `gh`, at the fixtures' fixed instant, and stores
+//! its raw output: JSON or text, its stderr if any, and the writes it made to the tracker. The
+//! prototype is not modified and the real tracker is never read: a scenario's URLs must come back, or
+//! recording stops, and so does an exit code other than the case's or an argv other than the one it
+//! expects. `--family` records only the families named, so a slice leaves the others' files alone.
 //!
-//!     cargo run -p regia-conformance --bin record -- --dossier <path> [--python <interpreter>]
+//!     cargo run -p regia-conformance --bin record -- --dossier <path> [--python <interpreter>] [--family <name>]…
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, FIXTURE_TODAY, fixed_today_driver, fixture_for_python, fixtures_dir, lf, log_var, prepare_case_state,
-    read_json, writes_of_run,
+    Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, fixture_for_python, fixtures_dir, lf, log_var,
+    place_args, prepare_case_state, prepare_dossier, read_json, unplace_json, unplace_text, writes_of_run,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
 use regia_exec::git::{self, CommitField};
@@ -225,6 +226,7 @@ fn main() {
     let flag = |name: &str| {
         args.iter().position(|arg| arg == name).map(|i| args[i + 1].clone())
     };
+    let only: BTreeSet<String> = args.windows(2).filter(|pair| pair[0] == "--family").map(|pair| pair[1].clone()).collect();
     // Absolute, because the prototype runs from the dossier's root and the driver takes the script's path.
     let dossier = std::path::absolute(PathBuf::from(flag("--dossier").expect("--dossier <path>"))).expect("the dossier");
     let prototype = PythonPrototype::in_dossier(&dossier, flag("--python"));
@@ -237,13 +239,16 @@ fn main() {
     let binding = TrackerBinding::new(&config).expect("tracker.json binds every status");
     let table = Table::embedded();
     // The interpreter, its flags and its limits are the facade's: the oracle answers as the product
-    // would start it. Only the driver comes in between, to fix the day.
+    // would start it. Only the driver comes in between, to fix the clock.
     let interpreter = prototype.interpreter().expect("a Python interpreter");
-    let driver = fixed_today_driver().display().to_string();
+    let driver = fixed_now_driver().display().to_string();
     let script = prototype.script.display().to_string();
 
     let mut families = BTreeSet::new();
-    for case in Case::all() {
+    let cases: Vec<Case> = Case::all().into_iter().filter(|case| only.is_empty() || only.contains(&case.family)).collect();
+    let known: BTreeSet<&String> = cases.iter().map(|case| &case.family).collect();
+    assert!(only.iter().all(|family| known.contains(family)), "--family names a family without cases: {only:?}");
+    for case in cases {
         let responses = match &case.spec.scenario {
             Some(name) => {
                 let scenario: Scenario = read_json(&case.family_dir().join("scenarios").join(format!("{name}.json")));
@@ -258,18 +263,21 @@ fn main() {
         let log = state.join("gh.log");
         let command = case.command_name();
         let words = command.split(' ').count();
+        // The placeholder of the dossier is a value like any other for the table.
         let argv = table.python_argv(&command, &case.spec.args[words..]).expect("the table knows the case's arguments");
         if let Some(expected) = &case.spec.python {
             assert_eq!(&argv, expected, "{}: the table does not build the argv the case expects", case.name);
         }
+        let folder = case.spec.dossier.as_ref().map(|spec| prepare_dossier(&state, spec));
         let mut launch_args: Vec<String> = python::FLAGS.map(str::to_owned).to_vec();
-        launch_args.extend([driver.clone(), script.clone(), FIXTURE_TODAY.to_owned()]);
-        launch_args.extend(argv.iter().cloned());
+        launch_args.extend([driver.clone(), script.clone(), FIXTURE_NOW.to_owned()]);
+        launch_args.extend(folder.as_ref().map_or_else(|| argv.clone(), |folder| place_args(&argv, folder)));
         let launch = regia_exec::harness::program(&interpreter, &launch_args, &dossier).limits(PROTOTYPE_LIMITS);
-        let output = fixture_for_python(launch, &case.responses_path(), &state)
-            .env(&log_var(), &log)
-            .run()
-            .expect("run the prototype");
+        let mut launch = fixture_for_python(launch, &case.responses_path(), &state).env(&log_var(), &log);
+        for (name, value) in case.spec.session_env() {
+            launch = launch.env(&name, value);
+        }
+        let output = launch.run().expect("run the prototype");
         let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
         assert_eq!(output.status.code(), Some(i32::from(case.spec.exit)), "{}: the prototype ended otherwise: {stderr}", case.name);
 
@@ -281,12 +289,19 @@ fn main() {
         let recorded = [text.as_str(), stderr.as_str(), &serde_json::to_string(&writes).expect("JSON")].concat();
         let urls = recorded.matches("https://").count() + recorded.matches("http://").count();
         assert_eq!(recorded.matches(URL_PREFIX).count(), urls, "{}: foreign URL", case.name);
-        let json = argv.first().is_some_and(|arg| arg == "--json") && table.has_output(&command);
+        // An error prints nothing on stdout, even with `--json`: the facade passes it as text, empty.
+        let json = argv.first().is_some_and(|arg| arg == "--json") && table.has_output(&command) && !text.trim().is_empty();
         let parsed = json.then(|| serde_json::from_str::<Value>(&text).expect("the prototype printed JSON"));
+        // No path of this machine is stored: the dossier's folder becomes the placeholder.
+        let (parsed, text, stderr) = match &folder {
+            Some(folder) => (parsed.map(|value| unplace_json(&value, folder)), unplace_text(&text, folder), unplace_text(&stderr, folder)),
+            None => (parsed, text, stderr),
+        };
         replace(&case.dir.join("python.it.json"), parsed);
         replace_text(&case.dir.join("python.it.txt"), (!json).then(|| lf(&text)).as_deref());
         replace_text(&case.dir.join("python.it.stderr.txt"), Some(lf(&stderr)).filter(|text| !text.is_empty()).as_deref());
         replace(&case.dir.join("calls.json"), (!writes.is_empty()).then(|| Value::Array(writes.clone())));
+        replace(&case.dir.join("dossier.json"), case.spec.dossier.as_ref().and_then(|spec| dossier_after(&state, spec)));
         println!(
             "{}/{}: exit {}, {} calls to the fake gh, {} writes, {urls} URLs, all synthetic",
             case.family,
@@ -306,6 +321,7 @@ fn main() {
         "oracle_last_change_to_regia_py": git_output(&dossier, git::last_commit(CommitField::Hash, &head, Some(&regia_py))),
         "recorded_at": git_output(&dossier, git::last_commit(CommitField::Date, &head, None)),
         "today": FIXTURE_TODAY,
+        "now": FIXTURE_NOW,
     });
     for family in families {
         write_json(&family.join("RECORDED.json"), &recorded);

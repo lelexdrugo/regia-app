@@ -1,0 +1,50 @@
+{
+  "_note": "Synthetic. The same leases, only the expired ones, in text.",
+  "args": [
+    "lease",
+    "list",
+    "--expired"
+  ],
+  "python": [
+    "lease",
+    "list",
+    "--scadute"
+  ],
+  "state": [
+    {
+      "kind": "lease",
+      "key": "7",
+      "doc": {
+        "task": 7,
+        "progetto": "alpha",
+        "proprietario": "worker-a",
+        "preso": "2026-01-10T08:50:00.000+00:00",
+        "battito": "2026-01-10T08:50:00.000+00:00",
+        "ttl_s": 900,
+        "scade": "2026-01-10T09:05:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    },
+    {
+      "kind": "lease",
+      "key": "12",
+      "doc": {
+        "task": 12,
+        "progetto": "beta",
+        "proprietario": "worker-b",
+        "preso": "2026-01-09T08:00:00.000+00:00",
+        "battito": "2026-01-09T08:00:00.000+00:00",
+        "ttl_s": 900,
+        "scade": "2026-01-09T08:15:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    },
+    {
+      "kind": "lease",
+      "key": "30",
+      "doc": "not an object"
+    }
+  ]
+}

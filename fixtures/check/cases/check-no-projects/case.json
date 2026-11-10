@@ -1,0 +1,12 @@
+{
+  "_note": "Synthetic. A tracker with no project: no findings, the warnings only, exit 0.",
+  "scenario": "empty",
+  "args": [
+    "check",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "controlla"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "_note": "Synthetic. No lock on alpha: worker-a takes it for ten minutes, from the fixtures' instant.",
+  "args": [
+    "lock",
+    "acquire",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "600",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lock",
+    "prendi",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "600"
+  ]
+}

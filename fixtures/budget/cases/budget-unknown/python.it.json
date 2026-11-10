@@ -1,0 +1,19 @@
+{
+  "generato": "2026-01-10T09:00:00+00:00",
+  "provider": {
+    "claude": {
+      "finestre": {},
+      "motivo": "credenziali Claude non trovate",
+      "piano": null,
+      "provider": "claude",
+      "stato": "sconosciuto"
+    },
+    "codex": {
+      "finestre": {},
+      "motivo": "credenziali Codex non trovate",
+      "piano": null,
+      "provider": "codex",
+      "stato": "sconosciuto"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# `declare` (the prototype's `dichiara`): which project, and task, this session works on. Local only:
+# no network, no tracker. Without a session id it records nothing and exits with 1. The role passes as
+# it is, because the activity log stores it and the moviola reads it. Name from the conformance study,
+# §8 (`conformita.md` of the dossier), not decided: it goes to the gate of the names with the rest
+# (`docs/contract/commands.md`).
+schema = 1
+
+[commands.declare]
+python = ["dichiara"]
+group = "writes"
+output = "declaration"
+[commands.declare.args]
+"--project" = "--progetto"
+"--task" = "--task"
+"--role" = "--ruolo"
+
+[shapes.declaration.fields]
+ok = { to = "ok" }
+sessione = { to = "session" }
+progetto = { to = "project" }
+task = { to = "task" }
+ts = { to = "ts" }

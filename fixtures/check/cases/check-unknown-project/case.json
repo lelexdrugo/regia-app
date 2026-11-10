@@ -1,0 +1,17 @@
+{
+  "_note": "Synthetic. No objective for alpha in the tracker: an error, exit 1.",
+  "scenario": "empty",
+  "args": [
+    "check",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "exit": 1,
+  "python": [
+    "--json",
+    "controlla",
+    "--progetto",
+    "alpha"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "dossier": {
+    "avanti": 0,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "pushato",
+    "file": [
+      ".regia/stato.md",
+      "docs/plan.md",
+      ".regia/journal/2026-01-10.md"
+    ],
+    "motivo": null,
+    "sha": "b0df40d6bf258ff7e77be1f6543e9ca418f0189b"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

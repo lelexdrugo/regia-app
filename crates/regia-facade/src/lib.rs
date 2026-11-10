@@ -119,6 +119,9 @@ struct ArgSpec {
     /// It takes no value.
     #[serde(default)]
     flag: bool,
+    /// It takes every value that follows, zero or more, up to the next option.
+    #[serde(default)]
+    many: bool,
     /// Its value translates through this enum, from English to the prototype's.
     #[serde(rename = "enum")]
     enum_name: Option<String>,
@@ -134,6 +137,10 @@ impl Arg {
 
     fn flag(&self) -> bool {
         matches!(self, Arg::Spec(ArgSpec { flag: true, .. }))
+    }
+
+    fn many(&self) -> bool {
+        matches!(self, Arg::Spec(ArgSpec { many: true, .. }))
     }
 
     fn enum_name(&self) -> Option<&str> {
@@ -267,6 +274,9 @@ impl Table {
                 if !argument.starts_with("--") || !spec.to().starts_with("--") || !has_enum(&spec.enum_name().map(str::to_owned)) {
                     return problem(file, format!("argument `{argument}` of `{name}` is not an option, or names an unknown enum"));
                 }
+                if spec.flag() && spec.many() {
+                    return problem(file, format!("argument `{argument}` of `{name}` cannot be a flag and take many values"));
+                }
             }
             if !command.positionals.iter().all(|positional| has_enum(&positional.enum_name)) {
                 return problem(file, format!("a positional argument of `{name}` names an unknown enum"));
@@ -346,15 +356,17 @@ impl Table {
 
     /// `regia <command> <args…>` in English → the argv of `regia.py`. Options are renamed, values pass
     /// untouched unless the table names an enum for them, and the global `--json` goes first, where the
-    /// prototype's parser wants it. An option or a positional argument the table does not know is an
-    /// error, and so is a value that starts with a dash.
+    /// prototype's parser wants it. An option that takes `many` values takes those that follow, as the
+    /// prototype's `nargs="*"` does: repeating it there would keep only the last list. An option or a
+    /// positional argument the table does not know is an error, and so is a value that starts with a
+    /// dash.
     pub fn python_argv(&self, command: &str, args: &[String]) -> Result<Vec<String>, FacadeError> {
         let entry = self.command(command)?;
         let error = |argument: &str| (command.to_owned(), argument.to_owned());
         let mut json = false;
         let mut rest = Vec::new();
         let mut positionals = entry.positionals.iter();
-        let mut args = args.iter();
+        let mut args = args.iter().peekable();
         while let Some(arg) = args.next() {
             if arg == "--json" {
                 json = true;
@@ -364,7 +376,11 @@ impl Table {
                     FacadeError::UnknownArgument { command, argument }
                 })?;
                 rest.push(spec.to().to_owned());
-                if !spec.flag() {
+                if spec.many() {
+                    while let Some(value) = args.next_if(|value| !value.starts_with('-')) {
+                        rest.push(self.argument_value(spec.enum_name(), value, &format!("{command} {arg}"))?);
+                    }
+                } else if !spec.flag() {
                     let value = args.next().filter(|value| !value.starts_with('-')).ok_or_else(|| {
                         let (command, argument) = error(arg);
                         FacadeError::MissingValue { command, argument }
@@ -613,6 +629,23 @@ mod tests {
             table.python_argv("lock renew", &renew).unwrap(),
             ["--json", "lock", "rinnova", "alpha", "--proprietario", "ready", "--ttl", "60"]
         );
+    }
+
+    /// `--reports-processed a b` is one list for the prototype's `nargs="*"`, which would keep only the
+    /// last of two repeated options; no value is a list too.
+    #[test]
+    fn an_option_with_many_values_takes_those_that_follow() {
+        let table = Table::embedded();
+        let argv = strings(&["--project", "alpha", "--reports-processed", "a.md", "b.md", "--no-push", "--json"]);
+        assert_eq!(
+            table.python_argv("step finish", &argv).unwrap(),
+            ["--json", "passo", "fine", "--progetto", "alpha", "--report-elaborati", "a.md", "b.md", "--no-push"]
+        );
+        let empty = strings(&["--reports-processed", "--project", "alpha"]);
+        assert_eq!(table.python_argv("step finish", &empty).unwrap(), ["passo", "fine", "--report-elaborati", "--progetto", "alpha"]);
+        let both = "schema = 1\n[commands.x]\npython = [\"x\"]\ngroup = \"reads\"\n[commands.x.args]\n\"--y\" = { to = \"--y\", flag = true, many = true }\n";
+        let files = [FILES.to_vec(), vec![("x.toml", both)]].concat();
+        assert!(Table::from_files(files).unwrap_err().problem.contains("many values"));
     }
 
     #[test]

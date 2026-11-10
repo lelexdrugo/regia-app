@@ -1,0 +1,39 @@
+{
+  "_note": "Synthetic. The lock is worker-b's: worker-a cannot close a step on it, exit 3.",
+  "args": [
+    "step",
+    "finish",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--no-push",
+    "--json"
+  ],
+  "exit": 3,
+  "python": [
+    "--json",
+    "passo",
+    "fine",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--no-push"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": {
+        "progetto": "alpha",
+        "proprietario": "worker-b",
+        "preso": "2026-01-10T08:55:00.000+00:00",
+        "ttl_s": 600,
+        "scade": "2026-01-10T09:05:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    }
+  ]
+}
