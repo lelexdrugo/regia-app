@@ -2726,6 +2726,7 @@ name = "regia-cli"
 version = "0.0.1"
 dependencies = [
  "clap",
+ "regia-agents",
  "regia-core",
  "regia-exec",
  "regia-facade",

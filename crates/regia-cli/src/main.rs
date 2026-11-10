@@ -1,12 +1,18 @@
 use std::io::Write;
+use std::path::PathBuf;
 use std::process::ExitCode;
 
+use clap::builder::PossibleValuesParser;
 use clap::{Parser, Subcommand};
+use regia_agents::{
+    Assignment, Diversity, Dry, Env, LaunchRequest, LaunchSurface, Policy, Receipt, Role, ServiceId, Settings,
+    SurfaceKind,
+};
 use regia_core::{Brief, BriefOptions, BriefTask};
-use regia_exec::{ExecError, Program};
+use regia_exec::{Effort, ExecError, ModelId, Program};
 use regia_facade::{Engine, FacadeError, Printed, PythonPrototype, Table};
 use regia_i18n::{Catalog, Language};
-use regia_identity::{BIN_NAME, env_var};
+use regia_identity::{BIN_NAME, config_dir, env_var};
 use regia_runtime::{dossier_dir, load_brief};
 use serde_json::Value;
 
@@ -28,9 +34,66 @@ enum Commands {
         #[arg(long)]
         project: Option<String>,
     },
+    /// The agent services, as the settings assign them to roles.
+    Agents {
+        #[command(subcommand)]
+        command: AgentsCommand,
+    },
+    /// Starts an agent's session on a step and returns once it is open, with its receipt in JSON.
+    Launch(LaunchArgs),
     /// Commands not ported yet go to the prototype through the facade table.
     #[command(external_subcommand)]
     External(Vec<String>),
+}
+
+#[derive(Subcommand)]
+enum AgentsCommand {
+    /// What a role gets: service, tier, model, effort, surface, deadline and fallback.
+    Show {
+        #[arg(long, value_parser = PossibleValuesParser::new(Role::ALL.map(Role::id)))]
+        role: String,
+        /// The service that wrote the work under review. Without it: the principal.
+        #[arg(long, value_parser = PossibleValuesParser::new(ServiceId::ALL.map(ServiceId::id)))]
+        writer: Option<String>,
+        /// Machine-readable output: this is the contract the agents use.
+        #[arg(long)]
+        json: bool,
+    },
+}
+
+#[derive(clap::Args)]
+struct LaunchArgs {
+    /// The project: lowercase letters, digits and dashes. It names the folder of the logs.
+    #[arg(long)]
+    project: String,
+    /// The folder the agent works in.
+    #[arg(long)]
+    folder: PathBuf,
+    #[command(flatten)]
+    prompt: PromptSource,
+    /// Where it runs. Without it: the settings' surface, else `cli`.
+    #[arg(long, value_parser = PossibleValuesParser::new(["cli", "dry"]))]
+    surface: Option<String>,
+    /// Without it: the principal.
+    #[arg(long, value_parser = PossibleValuesParser::new(ServiceId::ALL.map(ServiceId::id)))]
+    service: Option<String>,
+    /// Without it: the service's own default.
+    #[arg(long)]
+    model: Option<String>,
+    /// Without it: the service's own default.
+    #[arg(long)]
+    effort: Option<String>,
+}
+
+/// The prompt: one of the two, never both.
+#[derive(clap::Args)]
+#[group(required = true, multiple = false)]
+struct PromptSource {
+    /// A UTF-8 file, sent byte for byte.
+    #[arg(long)]
+    prompt_file: Option<PathBuf>,
+    #[arg(long)]
+    prompt: Option<String>,
 }
 
 fn main() -> ExitCode {
@@ -66,6 +129,25 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
             } else {
                 print_human(&brief, catalog);
             }
+            Ok(ExitCode::SUCCESS)
+        }
+        Commands::Agents { command: AgentsCommand::Show { role, writer, json } } => {
+            let assignment = agents_show(&role, writer.as_deref(), settings()?)?;
+            if json {
+                print_json(&serde_json::to_value(&assignment).map_err(|error| error.to_string())?)?;
+            } else {
+                print_assignment(&assignment, catalog);
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+        Commands::Launch(args) => {
+            let (kind, request) = launch_request(&args, settings()?)?;
+            let launched = match kind {
+                SurfaceKind::Cli => regia_agents::Cli::new(Env::of_this_process()).launch(&request),
+                SurfaceKind::Dry => Dry::new().launch(&request),
+            };
+            let receipt: Receipt = launched.map_err(|error| error.to_string())?;
+            print_json(&serde_json::to_value(&receipt).map_err(|error| error.to_string())?)?;
             Ok(ExitCode::SUCCESS)
         }
         Commands::External(argv) => {
@@ -125,6 +207,72 @@ fn passthrough(table: &Table, prototype: &PythonPrototype, command: &str, args: 
     Ok(ExitCode::from(run.exit))
 }
 
+/// The user's agent settings in the configuration folder, or the defaults where there are none.
+fn settings() -> Result<Settings, String> {
+    match config_dir() {
+        Some(dir) => Settings::load(&dir).map_err(|error| error.to_string()),
+        None => Ok(Settings::default()),
+    }
+}
+
+/// `agents show`: what `role` gets under `settings`, for work `writer` wrote.
+fn agents_show(role: &str, writer: Option<&str>, settings: Settings) -> Result<Assignment, String> {
+    let role = Role::parse(role).ok_or_else(|| format!("unknown role `{role}`"))?;
+    let writer = writer.map(|writer| ServiceId::parse(writer).ok_or_else(|| format!("unknown service `{writer}`"))).transpose()?;
+    Ok(Policy::new(settings).map_err(|error| error.to_string())?.assign(role, writer))
+}
+
+/// `launch`, before any effect: the surface the arguments or the settings name, and the request,
+/// checked as the prototype checks it.
+fn launch_request(args: &LaunchArgs, settings: Settings) -> Result<(SurfaceKind, LaunchRequest), String> {
+    let policy = Policy::new(settings).map_err(|error| error.to_string())?;
+    let service = match &args.service {
+        Some(id) => ServiceId::parse(id).ok_or_else(|| format!("unknown service `{id}`"))?,
+        None => policy.principal(),
+    };
+    let kind = match args.surface.as_deref() {
+        Some("cli") => SurfaceKind::Cli,
+        Some("dry") => SurfaceKind::Dry,
+        Some(other) => return Err(format!("unknown surface `{other}`")),
+        None => policy.settings().surface.unwrap_or(SurfaceKind::Cli),
+    };
+    let prompt = match (&args.prompt.prompt, &args.prompt.prompt_file) {
+        (Some(prompt), _) => prompt.clone(),
+        (None, Some(file)) => std::fs::read_to_string(file).map_err(|error| format!("{}: {error}", file.display()))?,
+        (None, None) => return Err("no prompt".to_owned()),
+    };
+    let model = args.model.as_deref().map(ModelId::parse).transpose().map_err(|error| error.to_string())?;
+    let effort = args.effort.as_deref().map(Effort::parse).transpose().map_err(|error| error.to_string())?;
+    let secrets = policy.settings().service(service).map(|entry| entry.secret_env.clone()).unwrap_or_default();
+    let request = LaunchRequest::new(service, &args.project, &args.folder, &prompt)
+        .map_err(|error| error.to_string())?
+        .model(model)
+        .effort(effort)
+        .secret_env(secrets);
+    Ok((kind, request))
+}
+
+/// The assignment as `key: value` lines, with the contract's keys, and the one sentence a reader
+/// needs: that the diversity rule fell back to the same service.
+fn print_assignment(assignment: &Assignment, catalog: &Catalog) {
+    let value = serde_json::to_value(assignment).unwrap_or_default();
+    let text = |value: &Value| match value {
+        Value::Null => "-".to_owned(),
+        Value::String(text) => text.clone(),
+        other => other.to_string(),
+    };
+    for key in ["role", "service", "tier", "model", "effort", "surface", "deadline_minutes", "clean_context", "diversity"] {
+        println!("{key}: {}", text(&value[key]));
+    }
+    if let Some(fallback) = value["fallback"].as_object() {
+        let parts: Vec<String> = ["service", "tier", "model", "effort"].iter().map(|key| text(&fallback[*key])).collect();
+        println!("fallback: {}", parts.join(" "));
+    }
+    if assignment.diversity == Diversity::Degraded {
+        println!("{}", catalog.message("agents-degraded"));
+    }
+}
+
 fn print_json(value: &Value) -> Result<(), String> {
     let text = serde_json::to_string_pretty(value).map_err(|error| error.to_string())?;
     println!("{text}");
@@ -171,5 +319,90 @@ fn print_human(brief: &Brief, catalog: &Catalog) {
     for (project, counts) in &brief.by_project {
         let counts: Vec<String> = counts.iter().map(|(key, count)| format!("{key} {count}")).collect();
         println!("  {project}: {}", counts.join(", "));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const FOLDER: &str = env!("CARGO_MANIFEST_DIR");
+    const FILE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml");
+
+    fn parse(argv: &[&str]) -> Result<Cli, clap::Error> {
+        Cli::try_parse_from(std::iter::once(BIN_NAME).chain(argv.iter().copied()))
+    }
+
+    fn launch_args(argv: &[&str]) -> LaunchArgs {
+        let argv = [&["launch"][..], argv].concat();
+        match parse(&argv).map(|cli| cli.command) {
+            Ok(Commands::Launch(args)) => args,
+            Ok(_) => panic!("not a launch"),
+            Err(error) => panic!("{error}"),
+        }
+    }
+
+    /// Acceptance 2 of #460, through the command: with one service, the review goes to the same
+    /// service in a clean context, and says so.
+    #[test]
+    fn with_one_service_the_review_is_the_same_service_in_a_clean_context() {
+        let one = Settings::parse("principal = \"claude\"\nservices = [\"claude\"]\n").unwrap();
+        let json = serde_json::to_value(agents_show("adversarial_review", None, one).unwrap()).unwrap();
+        assert_eq!(
+            (json["service"].as_str(), json["clean_context"].as_bool(), json["diversity"].as_str()),
+            (Some("claude"), Some(true), Some("degraded"))
+        );
+        for key in ["role", "service", "tier", "model", "effort", "surface", "deadline_minutes", "fallback"] {
+            assert!(json.get(key).is_some(), "{key}");
+        }
+        assert_eq!(json["deadline_minutes"], 20);
+        // With both, another service than the writer's.
+        assert_eq!(agents_show("adversarial_review", None, Settings::default()).unwrap().service, ServiceId::Codex);
+        assert_eq!(agents_show("adversarial_review", Some("codex"), Settings::default()).unwrap().service, ServiceId::Claude);
+        assert!(parse(&["agents", "show", "--role", "adversarial_review", "--json"]).is_ok());
+        assert!(parse(&["agents", "show", "--role", "nobody"]).is_err() && parse(&["agents", "show"]).is_err());
+        assert!(parse(&["agents", "show", "--role", "code", "--writer", "gemini"]).is_err());
+    }
+
+    /// The prototype's command line, on the Dry surface: the prompt from a file, the model and the
+    /// effort; the service is the principal.
+    #[test]
+    fn the_command_line_builds_the_request() {
+        let argv = ["--project", "trial", "--folder", FOLDER, "--prompt-file", FILE, "--surface", "dry", "--model", "haiku", "--effort", "low"];
+        let (kind, request) = launch_request(&launch_args(&argv), Settings::default()).unwrap();
+        assert_eq!(kind, SurfaceKind::Dry);
+        let receipt = serde_json::to_value(Dry::new().launch(&request).unwrap()).unwrap();
+        assert_eq!(
+            (receipt["surface"].as_str(), receipt["service"].as_str(), receipt["model"].as_str(), receipt["effort"].as_str()),
+            (Some("dry"), Some("claude"), Some("haiku"), Some("low"))
+        );
+        assert!(receipt["request"]["prompt"].as_str().unwrap().starts_with("[package]"), "the prompt is the file");
+        let codex = Settings::parse("principal = \"codex\"\nsurface = \"dry\"\n[service.codex]\nsecret_env = [\"OPENAI_API_KEY\"]\n").unwrap();
+        let (kind, request) = launch_request(&launch_args(&["--project", "trial", "--folder", FOLDER, "--prompt", "p"]), codex).unwrap();
+        assert_eq!((kind, request.service, request.secret_env.as_slice()), (SurfaceKind::Dry, ServiceId::Codex, &["OPENAI_API_KEY".to_owned()][..]));
+        assert_eq!(launch_request(&launch_args(&["--project", "trial", "--folder", FOLDER, "--prompt", "p"]), Settings::default()).unwrap().0, SurfaceKind::Cli);
+    }
+
+    /// The prototype's checks: each of these fails before a surface is even chosen.
+    #[test]
+    fn invalid_arguments_launch_nothing() {
+        let base = ["--project", "trial", "--folder", FOLDER, "--prompt", "p"];
+        for extra in [["--service", "gemini"], ["--surface", "ssh"]] {
+            assert!(parse(&[&["launch"][..], &base, &extra].concat()).is_err(), "{extra:?}");
+        }
+        assert!(parse(&["launch", "--project", "trial", "--folder", FOLDER]).is_err(), "a prompt is required");
+        assert!(parse(&["launch", "--project", "trial", "--folder", FOLDER, "--prompt", "p", "--prompt-file", FILE]).is_err(), "one, not both");
+        let missing = format!("{FOLDER}/does-not-exist");
+        for argv in [
+            vec!["--project", "Trial X", "--folder", FOLDER, "--prompt", "p"],
+            vec!["--project", "", "--folder", FOLDER, "--prompt", "p"],
+            vec!["--project", "trial", "--folder", FOLDER, "--prompt", "p", "--effort", "alto; rm"],
+            vec!["--project", "trial", "--folder", FOLDER, "--prompt", "p", "--model", "a b"],
+            vec!["--project", "trial", "--folder", FOLDER, "--prompt", "  "],
+            vec!["--project", "trial", "--folder", missing.as_str(), "--prompt", "p"],
+            vec!["--project", "trial", "--folder", FOLDER, "--prompt-file", missing.as_str()],
+        ] {
+            assert!(launch_request(&launch_args(&argv), Settings::default()).is_err(), "{argv:?}");
+        }
     }
 }

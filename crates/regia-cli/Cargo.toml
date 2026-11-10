@@ -12,6 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap.workspace = true
+regia-agents.workspace = true
 regia-core.workspace = true
 regia-exec.workspace = true
 regia-facade.workspace = true
