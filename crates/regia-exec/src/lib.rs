@@ -162,6 +162,12 @@ pub mod git {
         Args::new().word("rev-parse").word("--verify").word("--end-of-options").value(rev)
     }
 
+    /// `git status --porcelain -- <path>`: what the working copy changed under `path`. The
+    /// environment keeps it from refreshing the index.
+    pub fn status(path: &DossierPath) -> Args {
+        Args::new().word("status").word("--porcelain").word("--").value(path)
+    }
+
     /// `git log -1` on `rev`, or on the last commit of `rev` that touched `path`.
     pub fn last_commit(field: CommitField, rev: &GitRef, path: Option<&DossierPath>) -> Args {
         let args = Args::new().word("log").word("-1").word(field.format()).word("--end-of-options").value(rev);
@@ -191,16 +197,19 @@ pub mod git {
 pub mod python {
     use crate::{Args, DossierPath, InvalidValue, Text};
 
-    /// `python -X utf8 -E -s <script> <argv…>`. `-E` and `-s` keep the `PYTHON*` variables and the
-    /// user's site packages out (threat model §3.2, T06). `-I` would also leave the script's folder
-    /// out of the imports, which the prototype's modules have not been proven without. UTF-8 mode
-    /// is explicit because `-E` ignores the `PYTHONUTF8` the prototype's own sessions set.
+    /// The interpreter's flags for the prototype. `-E` and `-s` keep the `PYTHON*` variables and
+    /// the user's site packages out (threat model §3.2, T06). `-I` would also leave the script's
+    /// folder out of the imports, which the prototype's modules have not been proven without. UTF-8
+    /// mode is explicit because `-E` ignores the `PYTHONUTF8` the prototype's own sessions set.
+    pub const FLAGS: [&str; 4] = ["-X", "utf8", "-E", "-s"];
+
+    /// `python -X utf8 -E -s <script> <argv…>`, with [`FLAGS`].
     ///
     /// Each element of `argv` is an option name from the facade table (`--json`) or a value, and a
     /// value never starts with a dash: the facade passes values untouched, so this is where a
     /// hostile one stops.
     pub fn prototype(script: &DossierPath, argv: &[String]) -> Result<Args, InvalidValue> {
-        let mut args = Args::new().word("-X").word("utf8").word("-E").word("-s").value(script);
+        let mut args = FLAGS.into_iter().fold(Args::new(), Args::word).value(script);
         for item in argv {
             if let Some(name) = item.strip_prefix("--") {
                 let valid = !name.is_empty()
@@ -221,20 +230,39 @@ pub mod python {
 
 #[cfg(feature = "harness")]
 pub mod harness {
-    //! Dev only, for regia-conformance: this workspace's own binaries and the probe. They inherit
-    //! the environment as a shell would, minus what [`Launch::without`] removes, plus what
-    //! [`Launch::env`] sets. The allow-list is a property of the product starting external tools
-    //! (V18), and a test app needs the display variables a desktop session has.
+    //! Dev only, for regia-conformance; a guard test keeps every call to it there.
+    //!
+    //! - [`launch`]: this workspace's own binaries and the probe. They inherit the environment as a
+    //!   shell would, minus what [`Launch::without`] removes, plus what [`Launch::env`] sets. The
+    //!   allow-list is a property of the product starting external tools (V18), and a test app
+    //!   needs the display variables a desktop session has.
+    //! - [`program`]: an external program of the closed list as the product starts it, at its
+    //!   pinned path with the allow-list of its kind, on the harness's own arguments: an oracle
+    //!   script, the prototype through a driver, the prototype's controller. The arguments are not
+    //!   typed because they are the test's, not data.
+    //! - [`start`]: a run the test drives while it goes on.
 
     use std::ffi::OsStr;
     use std::io;
     use std::path::Path;
     use std::process::Stdio;
 
-    use crate::Launch;
+    pub use crate::run::Running;
+    use crate::{ExecError, Launch, Pin};
 
     pub fn launch(binary: &Path, args: &[String], cwd: &Path) -> Launch {
         Launch::harness(binary, args, cwd)
+    }
+
+    pub fn program(pin: &Pin, args: &[String], cwd: &Path) -> Launch {
+        Launch::untyped(pin.clone(), args, cwd)
+    }
+
+    /// Starts a run and hands it over, for a process that holds something until it is told to
+    /// stop. The input, if any, is written first, and stdin stays open until [`Running::finish`].
+    /// No deadline applies: the test ends the run, and dropping the handle kills its tree.
+    pub fn start(launch: Launch) -> Result<Running, ExecError> {
+        launch.start()
     }
 
     /// For the probe's `tree` mode: a process with no pipes that stays in the caller's job or

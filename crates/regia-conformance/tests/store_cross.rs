@@ -26,12 +26,12 @@
 //! subprocess for as long as the Python controller runs.
 
 use std::fs;
-use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+use regia_exec::harness::{self, Running};
+use regia_exec::{Launch, Limits, Output, Pin, Program};
 use regia_identity::prototype_env_var;
 use serde_json::Value;
 
@@ -41,7 +41,8 @@ const MIN_BUSY: u64 = 100;
 
 struct Sides {
     dossier: PathBuf,
-    python: String,
+    /// The interpreter the product would start: an absolute path, found once (threat model T06).
+    python: Pin,
     probe: PathBuf,
     oracle: PathBuf,
 }
@@ -54,10 +55,18 @@ fn sides() -> Sides {
     assert!(dossier.join("tools").join("runtime.py").is_file(), "no tools/runtime.py in {}", dossier.display());
     Sides {
         dossier,
-        python: if cfg!(windows) { "python".to_owned() } else { "python3".to_owned() },
+        python: Pin::resolve(Program::Python).unwrap_or_else(|error| panic!("{error}")),
         probe: PathBuf::from(env!("CARGO_BIN_EXE_store-probe")),
         oracle: Path::new(env!("CARGO_MANIFEST_DIR")).join("oracle").join("store_oracle.py"),
     }
+}
+
+fn words(list: &[&str]) -> Vec<String> {
+    list.iter().map(|word| (*word).to_owned()).collect()
+}
+
+fn text(path: &Path) -> String {
+    path.display().to_string()
 }
 
 /// A fresh, empty state folder under `target/`.
@@ -77,7 +86,7 @@ struct Ran {
     stderr: String,
 }
 
-fn finish(output: std::process::Output) -> Ran {
+fn finish(output: Output) -> Ran {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let last = stdout.lines().rev().find(|line| !line.trim().is_empty()).unwrap_or("null");
     Ran {
@@ -88,48 +97,54 @@ fn finish(output: std::process::Output) -> Ran {
 }
 
 impl Sides {
-    fn rust_command(&self, dir: &Path, args: &[&str]) -> Command {
-        let mut command = Command::new(&self.probe);
-        command.arg("--dir").arg(dir).args(args).env_remove(prototype_env_var("RUNTIME"));
-        command
+    /// `store-probe`, a binary of this workspace.
+    fn rust_launch(&self, dir: &Path, args: &[&str]) -> Launch {
+        let argv = [words(&["--dir"]), vec![text(dir)], words(args)].concat();
+        harness::launch(&self.probe, &argv, dir).without(&prototype_env_var("RUNTIME"))
     }
 
-    fn python_command(&self, dir: &Path, args: &[&str]) -> Command {
-        let mut command = Command::new(&self.python);
-        command.arg("-I").arg(&self.oracle).arg("--dossier").arg(&self.dossier).arg("--dir").arg(dir).args(args);
-        command.env_remove(prototype_env_var("RUNTIME"));
-        command
+    /// The oracle on the prototype's runtime, through `regia-exec` as the product starts Python. `-I`
+    /// already ignores every `PYTHON*` variable, so the allow-list changes nothing it reads.
+    fn python_launch(&self, dir: &Path, args: &[&str]) -> Launch {
+        let argv = [
+            words(&["-I"]),
+            vec![text(&self.oracle)],
+            words(&["--dossier"]),
+            vec![text(&self.dossier)],
+            words(&["--dir"]),
+            vec![text(dir)],
+            words(args),
+        ]
+        .concat();
+        harness::program(&self.python, &argv, dir).without(&prototype_env_var("RUNTIME"))
     }
 
     fn rust(&self, dir: &Path, args: &[&str]) -> Ran {
-        finish(self.rust_command(dir, args).output().expect("run store-probe"))
+        finish(self.rust_launch(dir, args).run().expect("run store-probe"))
     }
 
     fn python(&self, dir: &Path, args: &[&str]) -> Ran {
-        finish(self.python_command(dir, args).output().expect("run the prototype's runtime"))
+        finish(self.python_launch(dir, args).run().expect("run the prototype's runtime"))
     }
 }
 
 /// A process holding a write transaction until it is killed or its stdin closes.
-struct Holding(Child);
+struct Holding(Running);
 
 impl Holding {
-    fn start(mut command: Command) -> Self {
-        let mut child = command.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().expect("spawn");
-        let mut line = String::new();
-        BufReader::new(child.stdout.as_mut().expect("stdout")).read_line(&mut line).expect("read");
+    fn start(launch: Launch) -> Self {
+        let mut running = harness::start(launch).expect("start the holder");
+        let line = running.read_line().expect("read");
         assert_eq!(line.trim(), "\"ready\"", "the holder did not start");
-        Self(child)
+        Self(running)
     }
 
-    fn kill(mut self) {
+    fn kill(self) {
         self.0.kill().expect("kill");
-        self.0.wait().expect("wait");
     }
 
-    fn release(mut self) {
-        drop(self.0.stdin.take());
-        self.0.wait().expect("wait");
+    fn release(self) {
+        self.0.finish().expect("wait");
     }
 }
 
@@ -288,7 +303,7 @@ fn a_backward_wall_jump_keeps_an_expired_lock_alive_across_languages_only() {
 fn a_transaction_held_by_one_language_makes_the_other_busy_and_dying_frees_it() {
     let sides = sides();
     let dir = folder("held-by-python");
-    let held = Holding::start(sides.python_command(&dir, &["hold-tx"]));
+    let held = Holding::start(sides.python_launch(&dir, &["hold-tx"]));
     let refused = sides.rust(&dir, &["--busy-wait-ms", "300", "acquire", "p437", "rs-holder", "60"]);
     assert_eq!((refused.code, &refused.json["contended"]), (3, &Value::Bool(true)), "{refused:?}");
     let status = sides.rust(&dir, &["--busy-wait-ms", "300", "status", "p437"]);
@@ -297,14 +312,14 @@ fn a_transaction_held_by_one_language_makes_the_other_busy_and_dying_frees_it() 
     assert_eq!(sides.rust(&dir, &["acquire", "p437", "rs-holder", "60"]).json["state"], "taken", "a dead holder frees it");
 
     let dir = folder("held-by-rust");
-    let held = Holding::start(sides.rust_command(&dir, &["hold-tx"]));
+    let held = Holding::start(sides.rust_launch(&dir, &["hold-tx"]));
     let refused = sides.python(&dir, &["--busy-wait", "0.3", "acquire", "p437", "py-holder", "60"]);
     assert_eq!((refused.code, s(&refused.json["stato"])), (3, "occupato"), "{refused:?}");
     assert!(s(&refused.json["motivo"]).contains("contesa"), "{refused:?}");
     let status = sides.python(&dir, &["--busy-wait", "0.3", "status", "p437"]);
     assert_eq!((status.json["occupato"].as_bool(), s(&status.json["stato"])), (Some(true), "illeggibile"));
     held.release();
-    let held = Holding::start(sides.rust_command(&dir, &["hold-tx"]));
+    let held = Holding::start(sides.rust_launch(&dir, &["hold-tx"]));
     held.kill();
     assert_eq!(s(&sides.python(&dir, &["acquire", "p437", "py-holder", "60"]).json["stato"]), "preso");
 }
@@ -320,13 +335,18 @@ fn the_controller_lock_excludes_both_ways() {
     assert_eq!(taken.json["state"], "taken", "{taken:?}");
 
     let missing_config = dir.join("no-operations.json");
-    let output = Command::new(&sides.python)
-        .arg(sides.dossier.join("tools").join("controller.py"))
-        .args(["--una-volta", "--lancio", "finto", "--no-ripresa", "--no-sveglia", "--progetto", "p437"])
-        .arg("--config")
-        .arg(&missing_config)
-        .env(prototype_env_var("RUNTIME"), &dir)
-        .output()
+    // `-X utf8`: the allow-list drops the `PYTHONUTF8` this used to inherit, which the prototype's own
+    // launcher sets for every Python it starts. Not `-I`: `import runtime` needs the script's folder.
+    let argv = [
+        words(&["-X", "utf8"]),
+        vec![text(&sides.dossier.join("tools").join("controller.py"))],
+        words(&["--una-volta", "--lancio", "finto", "--no-ripresa", "--no-sveglia", "--progetto", "p437", "--config"]),
+        vec![text(&missing_config)],
+    ]
+    .concat();
+    let output = harness::program(&sides.python, &argv, &dir)
+        .env(&prototype_env_var("RUNTIME"), &dir)
+        .run()
         .expect("run controller.py");
     let stderr = String::from_utf8_lossy(&output.stderr);
     println!("controller.py exit {:?}\nstdout: {}\nstderr: {stderr}", output.status.code(), String::from_utf8_lossy(&output.stdout));
@@ -377,11 +397,16 @@ fn contention_never_gives_two_holders() {
     };
     let rust_args = args("rs-holder", &rust_done, &python_done);
     let python_args = args("py-holder", &python_done, &rust_done);
-    let piped = |mut command: Command| command.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().expect("spawn");
-    let rust = piped(sides.rust_command(&dir, &refs(&rust_args)));
-    let python = piped(sides.python_command(&dir, &refs(&python_args)));
-    let rust = finish(rust.wait_with_output().expect("the Rust side"));
-    let python = finish(python.wait_with_output().expect("the Python side"));
+    // One supervised run per side, at once. A run takes about 20 s on Windows; the default deadline
+    // would end a slow one as a "not JSON" panic instead of a timeout.
+    let limits = Limits { timeout: Duration::from_secs(600), ..Limits::default() };
+    let (rust, python) = thread::scope(|scope| {
+        let rust = scope.spawn(|| sides.rust_launch(&dir, &refs(&rust_args)).limits(limits).run());
+        let python = scope.spawn(|| sides.python_launch(&dir, &refs(&python_args)).limits(limits).run());
+        (rust.join().expect("the Rust side"), python.join().expect("the Python side"))
+    });
+    let rust = finish(rust.expect("the Rust side"));
+    let python = finish(python.expect("the Python side"));
 
     let violations = [&rust, &python].iter().map(|ran| ran.json["violations"].as_u64().unwrap_or(u64::MAX)).sum::<u64>();
     let clean = [&rust, &python].iter().all(|ran| ran.code == 0 && ran.json["anomalies"] == Value::Array(Vec::new()));

@@ -2,10 +2,9 @@
 //! through the facade table, on recorded fixtures. The negative controls prove the test can fail.
 
 use std::fs;
-use std::process::Command;
 
 use regia_conformance::{
-    Case, apply_fixture_env, bin_dir, json_diff, prepare_state_dir, project_query, read_json, regia_binary, run_rust,
+    Case, bin_dir, fixture_for_rust, json_diff, prepare_state_dir, project_query, read_json, regia_binary, run_rust,
     take_not_ported, translate_python,
 };
 use regia_identity::env_var;
@@ -214,10 +213,9 @@ fn another_day_produces_a_diff_and_a_bad_day_is_an_error() {
     let case = Case::named("core");
     let run = |label: &str, day: &str| {
         let state = prepare_state_dir(label);
-        let mut command = Command::new(regia_binary());
-        command.args(&case.spec.args);
-        apply_fixture_env(&mut command, &case.responses_path(), &state);
-        command.env(env_var("TODAY"), day).output().expect("run regia")
+        let launch = regia_exec::harness::launch(&regia_binary(), &case.spec.args, &state);
+        let (launch, _) = fixture_for_rust(launch, &case.responses_path(), &state);
+        launch.env(&env_var("TODAY"), day).run().expect("run regia")
     };
     let later = run("negative-day", "2026-01-12");
     assert!(later.status.success());

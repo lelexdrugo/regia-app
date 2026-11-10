@@ -14,12 +14,14 @@ use proptest::prelude::*;
 use regia_conformance::{bin_dir, workspace_root};
 use regia_exec::git::{self, CommitField};
 use regia_exec::{
-    Args, DossierPath, Effort, ExecError, GitRef, Launch, Limits, ModelId, Pin, Program, Search, Text, gh, python,
+    Args, DossierPath, Effort, ExecError, GitRef, Launch, Limits, ModelId, Pin, Program, Search, Text, gh, harness,
+    python,
 };
 use serde_json::Value;
 
 const PROBE: &str = env!("CARGO_BIN_EXE_probe");
 const FAKE_GH: &str = env!("CARGO_BIN_EXE_fake-gh");
+const STORE_PROBE: &str = env!("CARGO_BIN_EXE_store-probe");
 
 /// The hostile values of V11.
 const HOSTILE: [&str; 16] = [
@@ -86,6 +88,8 @@ fn every_builder_hands_the_program_exactly_its_tokens() {
     assert_eq!(argv(&report), ["log", "-1", "--format=%H", "--end-of-options", "HEAD", "--", "tools/regia.py"]);
     let report = seen(probe_as(Program::Git).launch(git::rev_parse(&GitRef::parse("main").unwrap()), &dir));
     assert_eq!(argv(&report), ["rev-parse", "--verify", "--end-of-options", "main"]);
+    let report = seen(probe_as(Program::Git).launch(git::status(&DossierPath::parse("tools").unwrap()), &dir));
+    assert_eq!(argv(&report), ["status", "--porcelain", "--", "tools"]);
 
     // python: each data value is one token; one that reads as an option stops before the start.
     let facade: Vec<String> = ["--json", "brief", "--progetto", "; & | %PATH% ^ \" @file"].map(str::to_owned).to_vec();
@@ -196,15 +200,25 @@ fn rust_sources(dir: &Path, out: &mut Vec<PathBuf>) {
     }
 }
 
+/// `item` in a `use` list that starts with `prefix`.
+fn listed(text: &str, prefix: &str, item: &str) -> bool {
+    text.match_indices(prefix).any(|(at, _)| {
+        let list = &text[at..];
+        let list = &list[..list.find('}').unwrap_or(list.len())];
+        list.split(|c: char| !c.is_alphanumeric() && c != '_').any(|word| word == item)
+    })
+}
+
 /// `Command` from `std::process`, under any spelling the sources could use.
 fn starts_a_process(text: &str) -> bool {
     let direct = ["Command::new", "process::Command", "CommandExt", "raw_arg"].iter().any(|needle| text.contains(needle));
-    let listed = text.match_indices("process::{").any(|(at, _)| {
-        let list = &text[at..];
-        let list = &list[..list.find('}').unwrap_or(list.len())];
-        list.split(|c: char| !c.is_alphanumeric() && c != '_').any(|item| item == "Command")
-    });
-    direct || listed
+    direct || listed(text, "process::{", "Command")
+}
+
+/// The dev-only part of regia-exec, under any spelling the sources could use.
+fn reaches_the_harness(text: &str) -> bool {
+    ["harness::", "regia_exec::harness", "parent_env("].iter().any(|needle| text.contains(needle))
+        || listed(text, "regia_exec::{", "harness")
 }
 
 /// V12, acceptance 1 of #438: only regia-exec starts a process. Clippy refuses
@@ -257,6 +271,19 @@ fn only_regia_exec_starts_a_process() {
         let allowed = manifest.starts_with(root.join("crates").join("regia-conformance"));
         assert!(!harness || allowed, "{} turns on regia-exec's harness", manifest.display());
     }
+
+    // A workspace build unifies features, so there the harness is on for every crate: only the
+    // conformance crate may call it.
+    let conformance = root.join("crates").join("regia-conformance");
+    let reaching: Vec<String> = sources
+        .iter()
+        .filter(|path| !path.starts_with(&exec) && !path.starts_with(&conformance))
+        .filter(|path| reaches_the_harness(&fs::read_to_string(path).expect("source")))
+        .map(|path| path.display().to_string())
+        .collect();
+    assert!(reaching.is_empty(), "these call regia-exec's harness: {reaching:?}");
+    assert!(reaches_the_harness("use regia_exec::{Launch, harness};"), "the grep misses a list");
+    assert!(!reaches_the_harness("the conformance harness"), "the grep would flag the word");
 }
 
 /// V13: the search skips relative entries and the dossier; a folder put on PATH later, or a `gh` in
@@ -399,6 +426,34 @@ fn all_files(dir: &Path, out: &mut Vec<PathBuf>) {
             out.push(path);
         }
     }
+}
+
+/// The harness's ways past the typed arguments: an external program keeps the allow-list of its
+/// kind, and a run the test drives ends when its stdin closes, when it is killed, or with its handle.
+#[test]
+fn the_harness_keeps_the_allow_list_and_ends_a_driven_run() {
+    let dir = scratch("harness");
+    let mut parent: Vec<(OsString, OsString)> =
+        std::env::vars_os().filter(|(name, _)| !name.eq_ignore_ascii_case("GH_TOKEN")).collect();
+    parent.push(("GH_TOKEN".into(), "canary-gh".into()));
+    let args = ["-x".to_owned(), "a b".to_owned()];
+    let report = seen(harness::program(&probe_as(Program::Gh), &args, &dir).parent_env(parent));
+    assert_eq!(argv(&report), args);
+    let env = report["env"].as_object().expect("env");
+    assert!(!env.keys().any(|name| name.eq_ignore_ascii_case("GH_TOKEN")), "the allow-list of gh still applies");
+
+    // The holder of #437's cross tests: a write transaction, held until its stdin closes.
+    let holder = || {
+        let args = ["--dir".to_owned(), dir.display().to_string(), "hold-tx".to_owned()];
+        let mut running = harness::start(harness::launch(Path::new(STORE_PROBE), &args, &dir)).expect("the holder starts");
+        assert_eq!(running.read_line().expect("a line"), "\"ready\"", "the transaction is held");
+        running
+    };
+    assert!(holder().finish().expect("it ends").success(), "closing stdin ends the transaction");
+    assert!(!holder().kill().expect("it dies").success(), "a killed run does not succeed");
+    drop(holder());
+    // Had the dropped holder lived on, this one would wait out the busy timeout and print nothing.
+    assert!(holder().finish().expect("it ends").success());
 }
 
 /// Rule 6: on the deadline the whole tree dies, grandchild included.

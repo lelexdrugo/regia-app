@@ -16,7 +16,7 @@ const TABLE: &str = include_str!("../table/facade.toml");
 const SCRIPT: &str = "tools/regia.py";
 
 /// A command of the prototype reads the tracker and may write: generous, but bounded.
-const PROTOTYPE_LIMITS: Limits = Limits { timeout: Duration::from_secs(600), stdout: 64 << 20, stderr: 4 << 20 };
+pub const PROTOTYPE_LIMITS: Limits = Limits { timeout: Duration::from_secs(600), stdout: 64 << 20, stderr: 4 << 20 };
 
 #[derive(Debug, thiserror::Error)]
 pub enum FacadeError {
@@ -251,16 +251,20 @@ impl PythonPrototype {
         Self { dossier: dossier.to_path_buf(), script: dossier.join("tools").join("regia.py"), interpreter }
     }
 
+    /// The interpreter at its absolute path: the one named at construction, or the search's.
+    pub fn interpreter(&self) -> Result<Pin, FacadeError> {
+        Ok(match &self.interpreter {
+            Some(name) => Pin::named(Program::Python, Path::new(name), &Search::of_this_process())?,
+            None => Pin::resolve(Program::Python)?,
+        })
+    }
+
     /// The prototype on `argv`, started from the root of the dossier through `regia-exec`: an
     /// absolute interpreter, the environment of [`Program::Python`], and limits.
     pub fn launch(&self, argv: &[String]) -> Result<Launch, FacadeError> {
-        let python = match &self.interpreter {
-            Some(name) => Pin::named(Program::Python, Path::new(name), &Search::of_this_process())?,
-            None => Pin::resolve(Program::Python)?,
-        };
         let script = DossierPath::parse(SCRIPT).map_err(ExecError::from)?;
         let args = regia_exec::python::prototype(&script, argv).map_err(ExecError::from)?;
-        Ok(python.launch(args, &self.dossier).limits(PROTOTYPE_LIMITS))
+        Ok(self.interpreter()?.launch(args, &self.dossier).limits(PROTOTYPE_LIMITS))
     }
 }
 

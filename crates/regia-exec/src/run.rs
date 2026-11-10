@@ -149,6 +149,11 @@ impl Launch {
         Launch::new(Target::Harness(binary.to_path_buf()), args.iter().map(OsString::from).collect(), cwd)
     }
 
+    #[cfg(feature = "harness")]
+    pub(crate) fn untyped(pin: Pin, args: &[String], cwd: &Path) -> Self {
+        Launch::new(Target::Program(pin), args.iter().map(OsString::from).collect(), cwd)
+    }
+
     fn new(target: Target, args: Vec<OsString>, cwd: &Path) -> Self {
         Launch {
             target,
@@ -228,11 +233,9 @@ impl Launch {
         out
     }
 
-    /// Starts the program and waits for it. On the deadline, or past an output cap, the whole tree
-    /// is killed; when the program ends, what it left running is killed too, except a process that
-    /// left the tree on purpose (a new session on Unix, a breakaway on Windows).
-    pub fn run(self) -> Result<Output, ExecError> {
-        let label = self.program_name();
+    /// The program checked against its pin, with its arguments, folder and environment. The
+    /// caller sets the pipes.
+    fn command(&self) -> Result<Command, ExecError> {
         let (path, program) = match &self.target {
             Target::Program(pin) => {
                 pin.check()?;
@@ -242,15 +245,10 @@ impl Launch {
             Target::Harness(path) => (path.clone(), None),
         };
         if batch(&path) && !self.args.iter().all(|arg| safe_for_batch(arg)) {
-            return Err(ExecError::UnsafeForBatch(label));
+            return Err(ExecError::UnsafeForBatch(self.program_name()));
         }
         let mut command = new_command(&path);
-        command
-            .args(&self.args)
-            .current_dir(&self.cwd)
-            .stdin(if self.stdin.is_some() { Stdio::piped() } else { Stdio::null() })
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped());
+        command.args(&self.args).current_dir(&self.cwd);
         match program {
             Some(program) => {
                 command.env_clear().envs(self.environment(program));
@@ -263,6 +261,19 @@ impl Launch {
             }
         }
         tree::prepare(&mut command);
+        Ok(command)
+    }
+
+    /// Starts the program and waits for it. On the deadline, or past an output cap, the whole tree
+    /// is killed; when the program ends, what it left running is killed too, except a process that
+    /// left the tree on purpose (a new session on Unix, a breakaway on Windows).
+    pub fn run(self) -> Result<Output, ExecError> {
+        let label = self.program_name();
+        let mut command = self.command()?;
+        command
+            .stdin(if self.stdin.is_some() { Stdio::piped() } else { Stdio::null() })
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
         let child = command.spawn().map_err(|source| ExecError::Spawn { program: label.clone(), source })?;
         supervise(child, self.stdin, self.limits, label)
     }
@@ -334,15 +345,17 @@ fn read_into(mut pipe: impl Read + Send + 'static, wrap: fn(Vec<u8>) -> Chunk, s
     });
 }
 
+/// The tree of a program that just started. Without one the program does not go on.
+fn adopt(child: &mut Child, label: &str) -> Result<tree::Tree, ExecError> {
+    tree::Tree::adopt(child).map_err(|source| {
+        let _ = child.kill();
+        let _ = child.wait();
+        ExecError::Spawn { program: label.to_owned(), source }
+    })
+}
+
 fn supervise(mut child: Child, input: Option<Vec<u8>>, limits: Limits, label: String) -> Result<Output, ExecError> {
-    let tree = match tree::Tree::adopt(&child) {
-        Ok(tree) => tree,
-        Err(source) => {
-            let _ = child.kill();
-            let _ = child.wait();
-            return Err(ExecError::Spawn { program: label, source });
-        }
-    };
+    let tree = adopt(&mut child, &label)?;
     let writer: Option<JoinHandle<()>> = input.map(|bytes| {
         let mut pipe = child.stdin.take().expect("stdin is piped when there is input");
         thread::spawn(move || {
@@ -429,6 +442,80 @@ fn supervise(mut child: Child, input: Option<Vec<u8>>, limits: Limits, label: St
     match failure {
         Some(error) => Err(error),
         None => Ok(Output { status, stdout: out, stderr: err }),
+    }
+}
+
+#[cfg(feature = "harness")]
+pub use running::Running;
+
+#[cfg(feature = "harness")]
+mod running {
+    use std::io::{self, BufRead, BufReader, Write};
+    use std::process::{Child, ChildStdin, ChildStdout, ExitStatus, Stdio};
+
+    use super::{Launch, adopt};
+    use crate::ExecError;
+    use crate::tree::Tree;
+
+    impl Launch {
+        /// See [`crate::harness::start`].
+        pub(crate) fn start(self) -> Result<Running, ExecError> {
+            let label = self.program_name();
+            let failed = |source| ExecError::Spawn { program: label.clone(), source };
+            let mut command = self.command()?;
+            command.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
+            let mut child = command.spawn().map_err(failed)?;
+            let tree = adopt(&mut child, &label)?;
+            let mut stdin = child.stdin.take();
+            if let (Some(pipe), Some(input)) = (stdin.as_mut(), &self.stdin) {
+                pipe.write_all(input).map_err(failed)?;
+            }
+            let stdout = BufReader::new(child.stdout.take().expect("stdout is piped"));
+            Ok(Running { child, tree, stdin, stdout, label })
+        }
+    }
+
+    /// Dev only: a run the test drives while it goes on, from [`crate::harness::start`]. Its
+    /// stdout is read a line at a time and its stderr is discarded; its tree dies with the handle.
+    pub struct Running {
+        child: Child,
+        tree: Tree,
+        stdin: Option<ChildStdin>,
+        stdout: BufReader<ChildStdout>,
+        label: String,
+    }
+
+    impl Running {
+        /// The next line on stdout, without its line break; empty once stdout is closed.
+        pub fn read_line(&mut self) -> Result<String, ExecError> {
+            let mut line = String::new();
+            self.stdout.read_line(&mut line).map_err(|source| self.failed(source))?;
+            Ok(line.trim_end_matches(['\n', '\r']).to_owned())
+        }
+
+        /// Closes stdin, as a caller with nothing more to say, and waits for the program to end.
+        pub fn finish(mut self) -> Result<ExitStatus, ExecError> {
+            drop(self.stdin.take());
+            self.child.wait().map_err(|source| self.failed(source))
+        }
+
+        /// Kills the whole tree, as a crash would, and reaps the program.
+        pub fn kill(mut self) -> Result<ExitStatus, ExecError> {
+            self.tree.kill();
+            self.child.wait().map_err(|source| self.failed(source))
+        }
+
+        fn failed(&self, source: io::Error) -> ExecError {
+            ExecError::Spawn { program: self.label.clone(), source }
+        }
+    }
+
+    impl Drop for Running {
+        fn drop(&mut self) {
+            self.tree.kill();
+            let _ = self.child.kill();
+            let _ = self.child.wait();
+        }
     }
 }
 
