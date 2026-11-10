@@ -11,7 +11,9 @@ fn files_with_extension(dir: &Path, extensions: &[&str], out: &mut Vec<PathBuf>)
     for entry in fs::read_dir(dir).unwrap() {
         let path = entry.unwrap().path();
         if path.is_dir() {
-            if path.file_name().is_some_and(|name| name != "target" && name != "gen") {
+            // Built or installed, not written here: the frontend's dependencies and its bundle too.
+            let generated = ["target", "gen", "node_modules", "dist"];
+            if path.file_name().is_some_and(|name| !generated.iter().any(|skip| name == *skip)) {
                 files_with_extension(&path, extensions, out);
             }
         } else if path.extension().is_some_and(|ext| extensions.contains(&ext.to_string_lossy().as_ref())) {
@@ -39,7 +41,7 @@ fn only_the_identity_crate_spells_the_name_in_a_string() {
     let root = workspace_root();
     let mut sources = Vec::new();
     files_with_extension(&root.join("crates"), &["rs"], &mut sources);
-    files_with_extension(&root.join("app"), &["rs", "js", "html", "css"], &mut sources);
+    files_with_extension(&root.join("app"), &["rs", "js", "ts", "svelte", "html", "css"], &mut sources);
     let needle = format!("\"{PRODUCT_NAME}\"");
     let this_file = root.join("crates/regia-conformance/tests/guards.rs");
     for path in sources {
@@ -64,7 +66,7 @@ fn no_italian_identifiers_in_the_sources() {
     let root = workspace_root();
     let mut sources = Vec::new();
     files_with_extension(&root.join("crates"), &["rs"], &mut sources);
-    files_with_extension(&root.join("app"), &["rs", "js", "html", "css"], &mut sources);
+    files_with_extension(&root.join("app"), &["rs", "js", "ts", "svelte", "html", "css"], &mut sources);
     let this_file = root.join("crates/regia-conformance/tests/guards.rs");
     let tests_dir = root.join("crates/regia-conformance/tests");
     let facade = root.join("crates/regia-facade/src/lib.rs");
