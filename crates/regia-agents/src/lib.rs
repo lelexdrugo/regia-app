@@ -3,8 +3,9 @@
 //!
 //! - [`AgentService`] says **which agent**: detect it, its sign-in state and guide, describe a launch,
 //!   resume, classify the end, and scrub the child's environment.
-//! - [`LaunchSurface`] says **where it runs**: `Cli` (a detached process with a log) and [`Dry`]
-//!   (starts nothing). They meet at a neutral [`LaunchRequest`], never at an argv.
+//! - [`LaunchSurface`] says **where it runs**: `Cli` (a detached process with a log), [`Orca`]
+//!   (optional, a session in its app), [`Auto`] (Orca, else `Cli`) and [`Dry`] (starts nothing).
+//!   They meet at a neutral [`LaunchRequest`], never at an argv.
 //!
 //! Which service, tier, model and effort a role gets comes from three layers ([`Policy`]): the
 //! product's defaults, each service's file, and the user's settings.
@@ -19,6 +20,7 @@ use serde::{Deserialize, Serialize};
 mod cli;
 mod gates;
 mod launch;
+mod orca;
 mod policy;
 mod wake;
 
@@ -27,6 +29,7 @@ pub use gates::{Gate, GateError, Gates};
 pub use launch::{
     Dry, Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback,
 };
+pub use orca::{Auto, Orca, OrcaWaits, PROMPT_IN_ARGV_MAX, surface};
 pub use policy::{Assignment, Diversity, Fallback, Policy, Role, Settings, SettingsError, Tier};
 pub use wake::{ProbeConsent, WakeAttempt, WakeOutcome, WakeUp};
 
@@ -358,7 +361,7 @@ pub fn claude_slug(folder: &Path) -> String {
     folder.to_string_lossy().chars().map(|c| if c.is_ascii_alphanumeric() { c } else { '-' }).collect()
 }
 
-fn children(dir: &Path) -> Vec<PathBuf> {
+pub(crate) fn children(dir: &Path) -> Vec<PathBuf> {
     let mut out: Vec<PathBuf> =
         std::fs::read_dir(dir).into_iter().flatten().filter_map(Result::ok).map(|entry| entry.path()).collect();
     out.sort();

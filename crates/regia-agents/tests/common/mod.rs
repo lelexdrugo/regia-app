@@ -1,6 +1,6 @@
-//! What the tests of the Cli surface share: a scratch folder under `target/` with the fake agent
-//! copied as `claude` and `codex`, a work folder, a state folder, and the surface pinned to the fakes,
-//! so that no test can reach a real agent.
+//! What the tests of the surfaces share: a scratch folder under `target/` with the fake agent copied
+//! as `claude`, `codex` and `orca`, a work folder, a state folder, and the surfaces pinned to the
+//! fakes, so that no test can reach a real agent or a real Orca.
 
 #![allow(dead_code)]
 
@@ -10,7 +10,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
-use regia_agents::{Cli, Env, LaunchError, LaunchRequest, LaunchSurface, Receipt, ServiceId, Waits};
+use regia_agents::{Cli, Env, LaunchError, LaunchRequest, LaunchSurface, Orca, OrcaWaits, Receipt, ServiceId, Waits};
 use regia_exec::{Pin, Program};
 use regia_identity::prototype_env_var;
 use serde_json::Value;
@@ -51,15 +51,54 @@ impl Trial {
             fs::create_dir_all(folder).expect("a scratch folder");
         }
         let fake = fake();
-        for name in ["claude", "codex"] {
+        for name in ["claude", "codex", "orca"] {
             fs::copy(&fake, trial.bin.join(exe(name))).expect("a copy of the fake");
         }
+        // Where the agents that the fake Orca's app starts write their sessions.
+        fs::write(trial.bin.join("claude-home"), trial.claude_home().display().to_string()).expect("claude's home");
+        fs::write(trial.bin.join("codex-home"), trial.codex_home().display().to_string()).expect("codex's home");
         trial
     }
 
     /// What the fakes do: `dies` or `slow`.
     pub fn mode(&self, mode: &str) {
         fs::write(self.bin.join("mode"), mode).expect("the mode");
+    }
+
+    /// What the fake Orca does: words of `examples/fake_agent.rs`.
+    pub fn orca_mode(&self, modes: &str) {
+        fs::write(self.bin.join("orca-mode"), modes).expect("the mode");
+    }
+
+    /// The Orca surface over the trial's environment, pinned to the fake, with short waits.
+    pub fn orca(&self) -> Orca {
+        self.orca_waiting(Duration::from_secs(4))
+    }
+
+    pub fn orca_waiting(&self, session: Duration) -> Orca {
+        let waits = OrcaWaits {
+            check: Duration::from_secs(20),
+            retry: Duration::from_millis(50),
+            launch: Duration::from_secs(20),
+            session,
+            tick: Duration::from_millis(50),
+        };
+        Orca::new(self.env()).with_state(self.state.clone()).with_pin(self.pin(Program::Orca, "orca")).with_waits(waits)
+    }
+
+    /// Every call the fake Orca got, in order.
+    pub fn orca_calls(&self) -> Vec<Vec<String>> {
+        (0..).map_while(|n| fs::read_to_string(self.bin.join(format!("orca.{n}.json"))).ok()).map(|text| args(&serde_json::from_str(&text).expect("a record"))).collect()
+    }
+
+    /// The arguments of each `orca agent launch`.
+    pub fn agent_launches(&self) -> Vec<Vec<String>> {
+        self.orca_calls().into_iter().filter(|args| args.len() > 1 && args[0] == "agent" && args[1] == "launch").collect()
+    }
+
+    /// The files of the state folder for the trial's launches.
+    pub fn steps(&self) -> Vec<PathBuf> {
+        fs::read_dir(self.state.join("passi").join("trial")).map(|entries| entries.filter_map(Result::ok).map(|entry| entry.path()).collect()).unwrap_or_default()
     }
 
     pub fn claude_home(&self) -> PathBuf {

@@ -93,29 +93,6 @@ impl Cli {
         pinned.map_err(|error| LaunchError::before(error.to_string()))
     }
 
-    /// `<state>/passi/<project>`, created; never inside the temporary folder, which Storage Sense
-    /// empties. The refusal comes before anything is created.
-    fn steps_folder(&self, label: &Label) -> Result<PathBuf, LaunchError> {
-        let variable = prototype_env_var("RUNTIME");
-        let Some(state) = &self.state else {
-            return Err(LaunchError::before(format!("no state folder: set {variable}")));
-        };
-        let temporary = std::env::temp_dir();
-        if is_within(state, &temporary) {
-            return Err(LaunchError::before(format!(
-                "the state folder {} is inside the temporary folder {}, which Storage Sense empties: choose another one with {variable}",
-                state.display(),
-                temporary.display()
-            )));
-        }
-        // Absolute, so the log and codex's last message name one place whatever the child's folder.
-        let state = std::path::absolute(state).unwrap_or_else(|_| state.clone());
-        let folder = state.join(STEPS).join(label.as_str());
-        fs::create_dir_all(&folder)
-            .map_err(|error| LaunchError::before(format!("cannot create {}: {error}", folder.display())))?;
-        Ok(folder)
-    }
-
     /// What the child sees on top of the allow-list of its program (its own folder and the base
     /// variables of regia-exec), from the environment of the surface:
     ///
@@ -224,7 +201,7 @@ impl LaunchSurface for Cli {
     fn launch(&self, request: &LaunchRequest) -> Result<Receipt, LaunchError> {
         let service = AgentService::known(request.service);
         let pin = self.pin(&service)?;
-        let files = Files::reserve(&self.steps_folder(&request.label)?, &request.prompt)?;
+        let files = Files::reserve(&steps_folder(self.state.as_deref(), &request.label)?, &request.prompt)?;
         let args = match request.service {
             ServiceId::Claude => claude::print(request.model.as_ref(), request.effort),
             ServiceId::Codex => {
@@ -249,19 +226,45 @@ impl LaunchSurface for Cli {
     }
 }
 
+/// `<state>/passi/<project>`, created; never inside the temporary folder, which Storage Sense
+/// empties. The refusal comes before anything is created.
+pub(crate) fn steps_folder(state: Option<&Path>, label: &Label) -> Result<PathBuf, LaunchError> {
+    let folder = state_folder(state)?.join(STEPS).join(label.as_str());
+    fs::create_dir_all(&folder).map_err(|error| LaunchError::before(format!("cannot create {}: {error}", folder.display())))?;
+    Ok(folder)
+}
+
+/// The state folder, absolute, so the log and codex's last message name one place whatever the
+/// child's folder; refused inside the temporary folder.
+pub(crate) fn state_folder(state: Option<&Path>) -> Result<PathBuf, LaunchError> {
+    let variable = prototype_env_var("RUNTIME");
+    let Some(state) = state else {
+        return Err(LaunchError::before(format!("no state folder: set {variable}")));
+    };
+    let temporary = std::env::temp_dir();
+    if is_within(state, &temporary) {
+        return Err(LaunchError::before(format!(
+            "the state folder {} is inside the temporary folder {}, which Storage Sense empties: choose another one with {variable}",
+            state.display(),
+            temporary.display()
+        )));
+    }
+    Ok(std::path::absolute(state).unwrap_or_else(|_| state.to_path_buf()))
+}
+
 /// The files of a launch, named by the local time to the second, as the prototype names them; a
 /// second launch in the same second takes `-2`, then `-3`. Creating the prompt file reserves the
 /// name, so two launches never share one.
-struct Files {
-    log: PathBuf,
+pub(crate) struct Files {
+    pub(crate) log: PathBuf,
     /// The prompt, byte for byte, so no line break changes: the child's stdin.
-    prompt: PathBuf,
+    pub(crate) prompt: PathBuf,
     /// Codex's last message.
-    last: PathBuf,
+    pub(crate) last: PathBuf,
 }
 
 impl Files {
-    fn reserve(folder: &Path, prompt_text: &str) -> Result<Files, LaunchError> {
+    pub(crate) fn reserve(folder: &Path, prompt_text: &str) -> Result<Files, LaunchError> {
         let failed = |path: &Path, error: std::io::Error| LaunchError::before(format!("cannot write {}: {error}", path.display()));
         let stamp = chrono::Local::now().format("%Y%m%d-%H%M%S").to_string();
         for n in 1..1000 {
