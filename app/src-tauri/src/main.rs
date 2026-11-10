@@ -61,7 +61,11 @@ fn main() {
     #[cfg(feature = "smoke")]
     smoke::start_watchdog();
     builder(tauri::Builder::default())
-        .setup(|app| Ok(open_main_window(app.handle())?))
+        .setup(|app| {
+            #[cfg(feature = "smoke")]
+            smoke::start_pings(app.handle().clone());
+            Ok(open_main_window(app.handle())?)
+        })
         .run(tauri::generate_context!())
         .expect("the app runs");
 }

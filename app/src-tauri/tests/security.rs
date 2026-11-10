@@ -158,7 +158,7 @@ fn v01_one_capability_covers_the_window_and_it_stays_minimal() {
 
     let smoke = read_json(&directory.join("smoke/smoke.json"));
     assert_eq!(capability_problems(&smoke, &["smoke_report"]), Vec::<String>::new(), "capabilities/smoke/smoke.json");
-    assert_eq!(strings(&smoke["permissions"]), ["allow-smoke-report"]);
+    assert_eq!(strings(&smoke["permissions"]), ["allow-smoke-report", "core:event:allow-listen", "core:event:allow-unlisten"]);
 }
 
 #[test]
@@ -241,7 +241,13 @@ fn command_list_problems(build: &str, main: &str, capability: &Value, smoke_capa
     {
         problems.push(format!("main.json grants {granted:?}, build.rs declares {expected:?}"));
     }
-    let smoke_granted = sorted(strings(&smoke_capability["permissions"]).into_iter().map(str::to_owned).collect());
+    let smoke_granted = sorted(
+        strings(&smoke_capability["permissions"])
+            .into_iter()
+            .filter(|permission| !CORE_PERMISSIONS.contains(permission))
+            .map(str::to_owned)
+            .collect(),
+    );
     if smoke_granted != sorted(smoke_only.iter().map(|command| permission_of(command)).collect()) {
         problems.push(format!("smoke.json grants {smoke_granted:?}, build.rs declares {smoke_only:?}"));
     }

@@ -6,11 +6,12 @@ use std::time::Duration;
 
 use serde::Deserialize;
 use serde_json::Value;
-use tauri::{AppHandle, Runtime};
+use tauri::{AppHandle, Emitter, Runtime};
 
-/// Long enough for a cold webview on a CI runner, much shorter than `app-smoke`'s two minutes: a frontend
-/// that never reports costs this, not the whole timeout, on each language.
-const WATCHDOG: Duration = Duration::from_secs(40);
+/// Shorter than `app-smoke`'s two minutes, so a frontend that never reports costs this on each language,
+/// and long enough for WebKitGTK under xvfb on a CI runner, which takes about 32 s to report, as it did
+/// before this frontend.
+const WATCHDOG: Duration = Duration::from_secs(90);
 
 /// Ends the app if the webview never reports: a script that failed to load, or a navigation that left it.
 pub fn start_watchdog() {
@@ -18,6 +19,18 @@ pub fn start_watchdog() {
         std::thread::sleep(WATCHDOG);
         eprintln!("smoke: the webview sent no report in {} s", WATCHDOG.as_secs());
         std::process::exit(2);
+    });
+}
+
+/// The core's events reach the webview: a ping every 250 ms, which the webview listens to with only
+/// `core:event:allow-listen` and `core:event:allow-unlisten` (the threat model's minimal set, §3.3).
+pub fn start_pings<R: Runtime>(app: AppHandle<R>) {
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(Duration::from_millis(250));
+            // Before the window exists, or after it closed, there is nobody to tell.
+            let _ = app.emit_to("main", "smoke-ping", ());
+        }
     });
 }
 

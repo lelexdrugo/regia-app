@@ -2,6 +2,7 @@
 // could and could not do on this engine, and exits (app/src-tauri/src/smoke.rs judges the checks). In a
 // release build `smoke_report` does not exist, and nothing here runs.
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 interface Check {
   name: string;
@@ -211,6 +212,28 @@ async function acl(): Promise<Check[]> {
   return checks;
 }
 
+/**
+ * The threat model's minimal set for events (§3.3, an open point of V29): the smoke capability grants
+ * only `core:event:allow-listen` and `allow-unlisten`, and the core pings this window.
+ */
+async function events(): Promise<Check[]> {
+  let received = 0;
+  let detail = "";
+  try {
+    const stop = await listen("smoke-ping", () => {
+      received += 1;
+    });
+    for (let waited = 0; received === 0 && waited < 3000; waited += 100) {
+      await sleep(100);
+    }
+    await stop();
+    detail = received > 0 ? "received, then stopped listening" : "no event in 3 s";
+  } catch (error) {
+    detail = `refused: ${String(error)}`;
+  }
+  return [{ name: "events: listen and unlisten with the two event permissions", ok: received > 0, detail }];
+}
+
 export async function runSmoke(language: string): Promise<void> {
   const report = snapshot(language);
   const checks = features();
@@ -218,6 +241,7 @@ export async function runSmoke(language: string): Promise<void> {
   checks.push(...cspChecks);
   checks.push(...(await navigation()));
   checks.push(...(await acl()));
+  checks.push(...(await events()));
 
   for (const probe of expected) {
     const seen = violations.some((violation) => matches(violation, probe));
