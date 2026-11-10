@@ -1,5 +1,5 @@
 {
-  "_note": "Synthetic. The extra blockers of #2 cannot be read: the graph warns and #2 is not ready.",
+  "_note": "Synthetic. Reads that fail: the extra blockers of #2 cannot be read, so the graph warns and #2 is not ready; the extra sub-issues of #3 cannot be read either, and the list still adds the open child it holds.",
   "project_id": "PROJECT_FIXTURE",
   "page_size": 100,
   "issues": [
@@ -7,9 +7,17 @@
     {"number": 2, "title": "approved, ready, closed blockers, but more exist and the read fails", "status": "Approvato",
      "labels": ["progetto:alpha", "maturità:pronto"],
      "blocked_by": [[50,"CLOSED"],[51,"CLOSED"],[52,"CLOSED"],[53,"CLOSED"],[54,"CLOSED"],[55,"CLOSED"],[56,"CLOSED"],[57,"CLOSED"],[58,"CLOSED"],[59,"CLOSED"],[60,"CLOSED"],[61,"CLOSED"],[62,"CLOSED"],[63,"CLOSED"],[64,"CLOSED"],[65,"CLOSED"],[66,"CLOSED"],[67,"CLOSED"],[68,"CLOSED"],[69,"CLOSED"]],
-     "blocked_by_total": 25}
+     "blocked_by_total": 25},
+    {"number": 3, "title": "52 sub-issues, and the read of the rest fails", "status": "Decisione",
+     "labels": ["progetto:alpha"], "sub_total": 52,
+     "sub": [[400,"CLOSED"],[401,"CLOSED"],[402,"CLOSED"],[403,"CLOSED"],[404,"CLOSED"],[405,"CLOSED"],[406,"CLOSED"],[407,"CLOSED"],[408,"CLOSED"],[409,"CLOSED"],[410,"CLOSED"],[411,"CLOSED"],[412,"CLOSED"],[413,"CLOSED"],[414,"CLOSED"],[415,"CLOSED"],[416,"CLOSED"],[417,"CLOSED"],[418,"CLOSED"],[419,"CLOSED"],[420,"CLOSED"],[421,"CLOSED"],[422,"CLOSED"],[423,"CLOSED"],[424,"CLOSED"],[425,"CLOSED"],[426,"CLOSED"],[427,"CLOSED"],[428,"CLOSED"],[429,"CLOSED"],[430,"CLOSED"],[431,"CLOSED"],[432,"CLOSED"],[433,"CLOSED"],[434,"CLOSED"],[435,"CLOSED"],[436,"CLOSED"],[437,"CLOSED"],[438,"CLOSED"],[439,"CLOSED"],[440,"CLOSED"],[441,"CLOSED"],[442,"CLOSED"],[443,"CLOSED"],[444,"CLOSED"],[445,"CLOSED"],[446,"CLOSED"],[447,"CLOSED"],[448,"CLOSED"],[449,"CLOSED"]]},
+    {"number": 4, "title": "open child of 3, missing from its first 50 sub-issues: the list adds it", "status": "Proposta",
+     "labels": ["progetto:alpha"], "parent": 3}
   ],
   "extra_blockers": {
     "2": "error"
+  },
+  "extra_sub_issues": {
+    "3": "error"
   }
 }

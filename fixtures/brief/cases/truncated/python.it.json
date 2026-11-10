@@ -3,6 +3,33 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 2,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 4,
+      "obiettivo": false,
+      "parent": 3,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "sblocca_totale": 1,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "open child of 3, missing from its first 50 sub-issues: the list adds it",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/4"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -16,6 +43,7 @@
       "parent": null,
       "progetto": "alpha",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Decisione",
@@ -23,6 +51,237 @@
       "title": "a decision upstream",
       "updatedAt": "2026-01-02T03:04:05Z",
       "url": "https://tracker.invalid/issues/1"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 3,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [
+        [
+          400,
+          "CLOSED"
+        ],
+        [
+          401,
+          "CLOSED"
+        ],
+        [
+          402,
+          "CLOSED"
+        ],
+        [
+          403,
+          "CLOSED"
+        ],
+        [
+          404,
+          "CLOSED"
+        ],
+        [
+          405,
+          "CLOSED"
+        ],
+        [
+          406,
+          "CLOSED"
+        ],
+        [
+          407,
+          "CLOSED"
+        ],
+        [
+          408,
+          "CLOSED"
+        ],
+        [
+          409,
+          "CLOSED"
+        ],
+        [
+          410,
+          "CLOSED"
+        ],
+        [
+          411,
+          "CLOSED"
+        ],
+        [
+          412,
+          "CLOSED"
+        ],
+        [
+          413,
+          "CLOSED"
+        ],
+        [
+          414,
+          "CLOSED"
+        ],
+        [
+          415,
+          "CLOSED"
+        ],
+        [
+          416,
+          "CLOSED"
+        ],
+        [
+          417,
+          "CLOSED"
+        ],
+        [
+          418,
+          "CLOSED"
+        ],
+        [
+          419,
+          "CLOSED"
+        ],
+        [
+          420,
+          "CLOSED"
+        ],
+        [
+          421,
+          "CLOSED"
+        ],
+        [
+          422,
+          "CLOSED"
+        ],
+        [
+          423,
+          "CLOSED"
+        ],
+        [
+          424,
+          "CLOSED"
+        ],
+        [
+          425,
+          "CLOSED"
+        ],
+        [
+          426,
+          "CLOSED"
+        ],
+        [
+          427,
+          "CLOSED"
+        ],
+        [
+          428,
+          "CLOSED"
+        ],
+        [
+          429,
+          "CLOSED"
+        ],
+        [
+          430,
+          "CLOSED"
+        ],
+        [
+          431,
+          "CLOSED"
+        ],
+        [
+          432,
+          "CLOSED"
+        ],
+        [
+          433,
+          "CLOSED"
+        ],
+        [
+          434,
+          "CLOSED"
+        ],
+        [
+          435,
+          "CLOSED"
+        ],
+        [
+          436,
+          "CLOSED"
+        ],
+        [
+          437,
+          "CLOSED"
+        ],
+        [
+          438,
+          "CLOSED"
+        ],
+        [
+          439,
+          "CLOSED"
+        ],
+        [
+          440,
+          "CLOSED"
+        ],
+        [
+          441,
+          "CLOSED"
+        ],
+        [
+          442,
+          "CLOSED"
+        ],
+        [
+          443,
+          "CLOSED"
+        ],
+        [
+          444,
+          "CLOSED"
+        ],
+        [
+          445,
+          "CLOSED"
+        ],
+        [
+          446,
+          "CLOSED"
+        ],
+        [
+          447,
+          "CLOSED"
+        ],
+        [
+          448,
+          "CLOSED"
+        ],
+        [
+          449,
+          "CLOSED"
+        ],
+        [
+          4,
+          "OPEN"
+        ]
+      ],
+      "title": "52 sub-issues, and the read of the rest fails",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/3"
     }
   ],
   "grafo": {
@@ -35,7 +294,8 @@
   "per_progetto": {
     "alpha": {
       "Approvato": 1,
-      "Decisione": 1
+      "Decisione": 2,
+      "Proposta": 1
     }
   },
   "pronti": []

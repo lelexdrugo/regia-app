@@ -3,6 +3,170 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": "beta",
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "entro": "2026-01-10",
+      "entro_vicino": true,
+      "labels": [
+        "progetto:beta",
+        "sessione"
+      ],
+      "maturita": null,
+      "number": 50,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "due today, with CRLF lines: not overdue, first in waiting and in session",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/50"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 2,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "entro": "2026-01-12",
+      "entro_vicino": true,
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 60,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "sblocca_totale": 1,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "due the same day as 49, with a longer chain: before it",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/60"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": "alpha",
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "entro": "2026-01-12",
+      "entro_vicino": true,
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 49,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "due in two days: first in its section, by date",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/49"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 4,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 33,
+      "obiettivo": false,
+      "parent": 31,
+      "progetto": "alpha",
+      "sblocca": 2,
+      "sblocca_totale": 3,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "child of 31: the computed arc to its parent lifts it; an empty due line",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/33"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 4,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 34,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 2,
+      "sblocca_totale": 3,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "child known only from the sub-issues of 31: the same arc",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/34"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 4,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 35,
+      "obiettivo": false,
+      "parent": 31,
+      "progetto": "alpha",
+      "sblocca": 2,
+      "sblocca_totale": 3,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "child known only from its parent field: the list adds it to the sub-issues of 31",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/35"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": "alpha",
       "catena": 3,
       "ciclo": false,
       "closedAt": null,
@@ -17,6 +181,7 @@
       "parent": 1,
       "progetto": "alpha",
       "sblocca": 2,
+      "sblocca_totale": 2,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Decisione",
@@ -30,13 +195,107 @@
           "CLOSED"
         ]
       ],
-      "title": "decision that unblocks the longest chain",
+      "title": "decision that blocks its own child 8: the arc 8 to 3 would close a cycle, so it does not count",
       "updatedAt": "2026-01-02T03:04:05Z",
       "url": "https://tracker.invalid/issues/3"
     },
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 2,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:gamma"
+      ],
+      "maturita": null,
+      "number": 43,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 1,
+      "sblocca_totale": 1,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [
+        [
+          48,
+          "OPEN"
+        ]
+      ],
+      "title": "three computed arcs close a cycle only together, so all three drop (1 of 3)",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/43"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 2,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:gamma"
+      ],
+      "maturita": null,
+      "number": 44,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 1,
+      "sblocca_totale": 1,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [
+        [
+          46,
+          "OPEN"
+        ]
+      ],
+      "title": "three computed arcs close a cycle only together (2 of 3)",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/44"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 2,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:gamma"
+      ],
+      "maturita": null,
+      "number": 45,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 1,
+      "sblocca_totale": 1,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [
+        [
+          47,
+          "OPEN"
+        ]
+      ],
+      "title": "three computed arcs close a cycle only together (3 of 3)",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/45"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 2,
       "ciclo": false,
       "closedAt": null,
@@ -49,7 +308,8 @@
       "obiettivo": false,
       "parent": null,
       "progetto": "alpha",
-      "sblocca": 2,
+      "sblocca": 0,
+      "sblocca_totale": 2,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Proposta",
@@ -61,6 +321,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -75,6 +336,7 @@
       "parent": 1,
       "progetto": "alpha",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Proposta",
@@ -86,6 +348,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -101,6 +364,7 @@
       "parent": null,
       "progetto": "beta",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Decisione",
@@ -112,6 +376,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -125,6 +390,7 @@
       "parent": null,
       "progetto": "beta",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Proposta",
@@ -136,6 +402,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -149,6 +416,7 @@
       "parent": null,
       "progetto": "beta",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Proposta",
@@ -160,6 +428,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -171,6 +440,7 @@
       "parent": null,
       "progetto": null,
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Decisione",
@@ -182,6 +452,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -195,6 +466,7 @@
       "parent": null,
       "progetto": "gamma",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": "REOPENED",
       "stato": "Decisione",
@@ -206,6 +478,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -219,6 +492,7 @@
       "parent": null,
       "progetto": "",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Decisione",
@@ -228,6 +502,351 @@
       "url": "https://tracker.invalid/issues/30"
     },
     {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "entro": "2026-01-09",
+      "entro_scaduto": true,
+      "labels": [
+        "progetto:gamma"
+      ],
+      "maturita": null,
+      "number": 53,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "overdue since yesterday, after a control character that Python strips: keeps its place, marked",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/53"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:beta"
+      ],
+      "maturita": null,
+      "number": 55,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "the template's placeholder, and a date only in a later YAML block: no due date",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/55"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:beta"
+      ],
+      "maturita": null,
+      "number": 56,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "malformed due date in a section: ignored and listed, the task stays where it is",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/56"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 59,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Proposta",
+      "sub": [],
+      "title": "a due date nested under another key does not count",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/59"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:gamma"
+      ],
+      "maturita": null,
+      "number": 62,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [
+        [
+          300,
+          "CLOSED"
+        ],
+        [
+          301,
+          "CLOSED"
+        ],
+        [
+          302,
+          "CLOSED"
+        ],
+        [
+          303,
+          "CLOSED"
+        ],
+        [
+          304,
+          "CLOSED"
+        ],
+        [
+          305,
+          "CLOSED"
+        ],
+        [
+          306,
+          "CLOSED"
+        ],
+        [
+          307,
+          "CLOSED"
+        ],
+        [
+          308,
+          "CLOSED"
+        ],
+        [
+          309,
+          "CLOSED"
+        ],
+        [
+          310,
+          "CLOSED"
+        ],
+        [
+          311,
+          "CLOSED"
+        ],
+        [
+          312,
+          "CLOSED"
+        ],
+        [
+          313,
+          "CLOSED"
+        ],
+        [
+          314,
+          "CLOSED"
+        ],
+        [
+          315,
+          "CLOSED"
+        ],
+        [
+          316,
+          "CLOSED"
+        ],
+        [
+          317,
+          "CLOSED"
+        ],
+        [
+          318,
+          "CLOSED"
+        ],
+        [
+          319,
+          "CLOSED"
+        ],
+        [
+          320,
+          "CLOSED"
+        ],
+        [
+          321,
+          "CLOSED"
+        ],
+        [
+          322,
+          "CLOSED"
+        ],
+        [
+          323,
+          "CLOSED"
+        ],
+        [
+          324,
+          "CLOSED"
+        ],
+        [
+          325,
+          "CLOSED"
+        ],
+        [
+          326,
+          "CLOSED"
+        ],
+        [
+          327,
+          "CLOSED"
+        ],
+        [
+          328,
+          "CLOSED"
+        ],
+        [
+          329,
+          "CLOSED"
+        ],
+        [
+          330,
+          "CLOSED"
+        ],
+        [
+          331,
+          "CLOSED"
+        ],
+        [
+          332,
+          "CLOSED"
+        ],
+        [
+          333,
+          "CLOSED"
+        ],
+        [
+          334,
+          "CLOSED"
+        ],
+        [
+          335,
+          "CLOSED"
+        ],
+        [
+          336,
+          "CLOSED"
+        ],
+        [
+          337,
+          "CLOSED"
+        ],
+        [
+          338,
+          "CLOSED"
+        ],
+        [
+          339,
+          "CLOSED"
+        ],
+        [
+          340,
+          "CLOSED"
+        ],
+        [
+          341,
+          "CLOSED"
+        ],
+        [
+          342,
+          "CLOSED"
+        ],
+        [
+          343,
+          "CLOSED"
+        ],
+        [
+          344,
+          "CLOSED"
+        ],
+        [
+          345,
+          "CLOSED"
+        ],
+        [
+          346,
+          "CLOSED"
+        ],
+        [
+          347,
+          "CLOSED"
+        ],
+        [
+          348,
+          "CLOSED"
+        ],
+        [
+          349,
+          "CLOSED"
+        ],
+        [
+          350,
+          "CLOSED"
+        ],
+        [
+          351,
+          "CLOSED"
+        ],
+        [
+          352,
+          "OPEN"
+        ]
+      ],
+      "title": "more than 50 sub-issues: the rest are read page by page",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/62"
+    },
+    {
       "bloccato_da": [
         [
           19,
@@ -235,6 +854,7 @@
         ]
       ],
       "bloccato_da_totale": 1,
+      "campo_progetto": null,
       "catena": null,
       "ciclo": true,
       "closedAt": null,
@@ -248,6 +868,7 @@
       "parent": null,
       "progetto": "alpha",
       "sblocca": null,
+      "sblocca_totale": null,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Proposta",
@@ -264,6 +885,7 @@
         ]
       ],
       "bloccato_da_totale": 1,
+      "campo_progetto": null,
       "catena": null,
       "ciclo": true,
       "closedAt": null,
@@ -277,6 +899,7 @@
       "parent": null,
       "progetto": "alpha",
       "sblocca": null,
+      "sblocca_totale": null,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Decisione",
@@ -284,6 +907,20 @@
       "title": "cycle with 18",
       "updatedAt": "2026-01-02T03:04:05Z",
       "url": "https://tracker.invalid/issues/19"
+    }
+  ],
+  "entro_ignorati": [
+    {
+      "numero": 56,
+      "valore": "presto"
+    },
+    {
+      "numero": 57,
+      "valore": "2026-02-30"
+    },
+    {
+      "numero": 58,
+      "valore": "２０２６-０１-１２"
     }
   ],
   "grafo": {
@@ -296,9 +933,51 @@
         20
       ]
     ],
+    "figli_che_aspettano": [
+      [
+        8,
+        3
+      ],
+      [
+        46,
+        44
+      ],
+      [
+        47,
+        45
+      ],
+      [
+        48,
+        43
+      ]
+    ],
     "troncati": []
   },
   "in_corso": [
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "entro": "2026-01-11",
+      "entro_vicino": true,
+      "labels": [
+        "progetto:alpha"
+      ],
+      "maturita": null,
+      "number": 54,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "In corso",
+      "sub": [],
+      "title": "in progress and due tomorrow: first in its section",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/54"
+    },
     {
       "bloccato_da": [
         [
@@ -307,6 +986,7 @@
         ]
       ],
       "bloccato_da_totale": 1,
+      "campo_progetto": null,
       "closedAt": null,
       "createdAt": "2026-01-01T00:00:00Z",
       "labels": [
@@ -329,6 +1009,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "closedAt": null,
       "createdAt": "2026-01-01T00:00:00Z",
       "labels": [
@@ -350,24 +1031,26 @@
   ],
   "per_progetto": {
     "alpha": {
-      "Approvato": 2,
-      "Decisione": 2,
-      "In corso": 1,
-      "Inbox": 1,
-      "Proposta": 3
+      "Approvato": 5,
+      "Decisione": 4,
+      "In corso": 2,
+      "Inbox": 3,
+      "Proposta": 7,
+      "—": 1
     },
     "beta": {
-      "Approvato": 3,
-      "Decisione": 1,
+      "Approvato": 4,
+      "Decisione": 2,
       "Inbox": 3,
-      "Proposta": 2,
+      "Proposta": 4,
       "—": 2
     },
     "gamma": {
-      "Approvato": 2,
-      "Decisione": 1,
+      "Approvato": 7,
+      "Decisione": 3,
       "Fatto": 1,
       "In corso": 1,
+      "Proposta": 3,
       "Scartato": 1
     },
     "omega": {}
@@ -376,6 +1059,36 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": "gamma",
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "entro": "2026-01-13",
+      "entro_vicino": true,
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 51,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "ready, due on the last day of the window, quoted: first among the ready",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/51"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": "alpha",
       "catena": 3,
       "ciclo": false,
       "closedAt": null,
@@ -390,13 +1103,54 @@
       "parent": null,
       "progetto": "beta",
       "sblocca": 3,
+      "sblocca_totale": 4,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Approvato",
       "sub": [],
-      "title": "ready and unblocks two others, so it sorts first",
+      "title": "ready and unblocks two approved others, so it sorts first; its project field differs from its label",
       "updatedAt": "2026-01-02T03:04:05Z",
       "url": "https://tracker.invalid/issues/11"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": "alpha",
+      "catena": 3,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 31,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "sblocca_totale": 2,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [
+        [
+          33,
+          "OPEN"
+        ],
+        [
+          34,
+          "OPEN"
+        ],
+        [
+          35,
+          "OPEN"
+        ]
+      ],
+      "title": "ready parent: its open children rank above it, and it stays ready",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/31"
     },
     {
       "bloccato_da": [
@@ -410,6 +1164,7 @@
         ]
       ],
       "bloccato_da_totale": 2,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -424,11 +1179,12 @@
       "parent": null,
       "progetto": "beta",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Approvato",
       "sub": [],
-      "title": "ready: every blocker closed",
+      "title": "ready: every blocker closed; no project field",
       "updatedAt": "2026-01-02T03:04:05Z",
       "url": "https://tracker.invalid/issues/10"
     },
@@ -528,6 +1284,7 @@
         ]
       ],
       "bloccato_da_totale": 23,
+      "campo_progetto": "gamma",
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -542,6 +1299,7 @@
       "parent": null,
       "progetto": "gamma",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Approvato",
@@ -549,12 +1307,70 @@
       "title": "closed-blocker pages: more than 20 blockers, all read and closed, ready",
       "updatedAt": "2026-01-02T03:04:05Z",
       "url": "https://tracker.invalid/issues/23"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "entro": "2026-01-14",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 52,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "gamma",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "ready, due the day after the window: keeps its place, with the date",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/52"
     }
   ],
   "sessione": [
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": "beta",
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "entro": "2026-01-10",
+      "entro_vicino": true,
+      "labels": [
+        "progetto:beta",
+        "sessione"
+      ],
+      "maturita": null,
+      "number": 50,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Decisione",
+      "sub": [],
+      "title": "due today, with CRLF lines: not overdue, first in waiting and in session",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/50"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -569,6 +1385,7 @@
       "parent": 1,
       "progetto": "alpha",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Proposta",
@@ -580,6 +1397,7 @@
     {
       "bloccato_da": [],
       "bloccato_da_totale": 0,
+      "campo_progetto": null,
       "catena": 1,
       "ciclo": false,
       "closedAt": null,
@@ -595,6 +1413,7 @@
       "parent": null,
       "progetto": "beta",
       "sblocca": 0,
+      "sblocca_totale": 0,
       "state": "OPEN",
       "stateReason": null,
       "stato": "Decisione",

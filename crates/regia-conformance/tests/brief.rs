@@ -2,8 +2,13 @@
 //! through the facade table, on recorded fixtures. The negative controls prove the test can fail.
 
 use std::fs;
+use std::process::Command;
 
-use regia_conformance::{Case, bin_dir, json_diff, project_query, read_json, run_rust, take_not_ported, translate_python};
+use regia_conformance::{
+    Case, apply_fixture_env, bin_dir, json_diff, prepare_state_dir, project_query, read_json, regia_binary, run_rust,
+    take_not_ported, translate_python,
+};
+use regia_identity::env_var;
 use serde_json::{Value, json};
 
 /// The Rust brief, with its declaration of what is not ported checked and removed.
@@ -54,13 +59,60 @@ fn the_cases_exercise_what_they_claim() {
     assert!(!truncated["graph"]["truncated"].as_array().unwrap().is_empty());
     let filtered = translate_python("brief", &Case::named("filtered").python_output()).unwrap();
     assert_eq!(filtered["by_project"].as_object().unwrap().len(), 1);
-    // The scope filters the sections, not the graph: #21 of alpha still counts #29 of beta. Without
-    // this the case could not tell a graph computed after the filter.
-    let unblocks = |brief: &Value| {
-        brief["waiting_on_owner"].as_array().unwrap().iter().find(|t| t["number"] == 21).unwrap()["unblocks"].clone()
+    // The scope filters the sections, not the graph: #21 of alpha still counts #29 of beta, an Inbox, in
+    // its total. Without this the case could not tell a graph computed after the filter.
+    let of_21 = |brief: &Value, key: &str| {
+        brief["waiting_on_owner"].as_array().unwrap().iter().find(|t| t["number"] == 21).unwrap()[key].clone()
     };
-    assert_eq!(unblocks(&filtered), unblocks(&core));
-    assert_eq!(unblocks(&filtered), json!(2));
+    assert_eq!(of_21(&filtered, "unblocks_total"), of_21(&core, "unblocks_total"));
+    assert_eq!(of_21(&filtered, "unblocks_total"), json!(2));
+    assert_eq!(of_21(&filtered, "unblocks"), json!(0), "#22 and #29 are in Inbox: no approved work");
+}
+
+/// The rules of #244, #407 and #338 of the dossier, and of its #505, each have a case that shows them.
+#[test]
+fn the_cases_exercise_the_graph_due_dates_and_project_field() {
+    let core = translate_python("brief", &Case::named("core").python_output()).unwrap();
+    let entries: Vec<&Value> = ["waiting_on_owner", "ready", "in_progress"]
+        .iter()
+        .flat_map(|key| core[key].as_array().unwrap())
+        .collect();
+    let has = |test: &dyn Fn(&Value) -> bool| entries.iter().any(|entry| test(entry));
+    assert!(has(&|e| e["unblocks"] != e["unblocks_total"]), "no entry with work in Inbox downstream");
+    assert!(has(&|e| e["project_field"].is_string()) && has(&|e| e["project_field"].is_null()));
+    assert!(has(&|e| e["project_field"].is_string() && e["project_field"] != e["project"]), "no drift from the label");
+    assert!(has(&|e| e.get("overdue").is_some()), "no overdue entry");
+    assert!(has(&|e| e.get("due").is_some() && e.get("due_soon").is_none() && e.get("overdue").is_none()));
+    for key in ["waiting_on_owner", "ready", "in_progress", "session"] {
+        let first = &core[key][0];
+        assert_eq!(first["due_soon"], json!(true), "the first of {key} is not due soon");
+    }
+    let soon: Vec<&Value> = core["waiting_on_owner"].as_array().unwrap().iter().filter(|e| e.get("due_soon").is_some()).collect();
+    assert!(soon.windows(2).any(|pair| pair[0]["due"] == pair[1]["due"]), "no two due the same day");
+
+    let in_sections: Vec<&Value> = entries.iter().map(|entry| &entry["number"]).collect();
+    let ignored = core["due_ignored"].as_array().unwrap();
+    assert!(ignored.iter().any(|i| in_sections.contains(&&i["number"])), "no malformed date in a section");
+    assert!(ignored.iter().any(|i| !in_sections.contains(&&i["number"])), "no malformed date outside them");
+    let filtered = translate_python("brief", &Case::named("filtered").python_output()).unwrap();
+    assert!(filtered["due_ignored"].as_array().unwrap().len() < ignored.len(), "the scope does not filter them");
+
+    let waiting = core["graph"]["children_waiting"].as_array().unwrap();
+    assert!(waiting.len() >= 4, "the single arc and the three that close a cycle only together");
+
+    let pages: Value = read_json(&Case::named("core").responses_path());
+    assert!(!pages["sub_issue_pages"].as_object().unwrap().is_empty(), "core does not page sub-issues");
+    let longest = |brief: &Value| {
+        ["waiting_on_owner", "ready"]
+            .iter()
+            .flat_map(|key| brief[key].as_array().unwrap())
+            .map(|entry| entry["sub_issues"].as_array().unwrap().len())
+            .max()
+            .unwrap()
+    };
+    assert!(longest(&core) > 50, "the rest of the sub-issues is not read");
+    let truncated = translate_python("brief", &Case::named("truncated").python_output()).unwrap();
+    assert!(longest(&truncated) > 50, "the open child is not added when the rest cannot be read");
 }
 
 /// The fake answers like a server: a field the query does not select is not in the answer.
@@ -71,6 +123,12 @@ fn the_fake_gh_returns_only_what_the_query_selects() {
     let projected = project_query(query, &page).unwrap();
     assert_eq!(projected, json!({"repository": {"a": 1, "b": {"c": 2}, "e": [{"g": 5, "f": 4}], "h": null}}));
     assert!(project_query("{repository{nope}}", &page).is_err(), "an unknown field is an error");
+
+    // A value by field name answers under its alias, and a field with no value answers null.
+    let item = json!({"fieldValueByName": {"Status": {"name": "Inbox", "optionId": "x"}, "Other": {"name": "y"}}});
+    let query = r#"{fieldValueByName(name:"Status"){name} other:fieldValueByName(name: "Other"){name} none:fieldValueByName(name:"Nope"){name}}"#;
+    let projected = project_query(query, &item).unwrap();
+    assert_eq!(projected, json!({"fieldValueByName": {"name": "Inbox"}, "other": {"name": "y"}, "none": null}));
 }
 
 /// The status field is found by id, so a field with another name works, and a wrong id is an error
@@ -110,12 +168,19 @@ fn an_altered_expectation_produces_a_diff() {
     dropped_key["pronti"][0].as_object_mut().unwrap().remove("catena");
     let mut changed_status = original.clone();
     changed_status["in_corso"][0]["stato"] = json!("Fatto");
+    let mut changed_total = original.clone();
+    let total = changed_total["aspetta_me"][0]["sblocca_totale"].as_u64().expect("a measure");
+    changed_total["aspetta_me"][0]["sblocca_totale"] = json!(total + 1);
+    let mut dropped_due = original.clone();
+    dropped_due["pronti"][0].as_object_mut().unwrap().remove("entro_vicino").expect("the first ready is due soon");
 
     for (name, altered) in [
         ("changed number", changed_number),
         ("swapped order", swapped_order),
         ("dropped key", dropped_key),
         ("changed status", changed_status),
+        ("changed unblocks_total", changed_total),
+        ("dropped due_soon", dropped_due),
     ] {
         let python = translate_python("brief", &altered).unwrap();
         assert!(!json_diff(&rust, &python).is_empty(), "the harness did not notice: {name}");
@@ -140,6 +205,30 @@ fn an_altered_tracker_response_produces_a_diff() {
     let rust = rust_brief("negative-tracker", &case, &path);
     let python = translate_python("brief", &case.python_output()).unwrap();
     assert!(!json_diff(&rust, &python).is_empty());
+}
+
+/// Negative control on the day: the fixed day reaches the binary, and another day changes the brief. A
+/// value that is not a date stops the brief instead of falling back to the clock.
+#[test]
+fn another_day_produces_a_diff_and_a_bad_day_is_an_error() {
+    let case = Case::named("core");
+    let run = |label: &str, day: &str| {
+        let state = prepare_state_dir(label);
+        let mut command = Command::new(regia_binary());
+        command.args(&case.spec.args);
+        apply_fixture_env(&mut command, &case.responses_path(), &state);
+        command.env(env_var("TODAY"), day).output().expect("run regia")
+    };
+    let later = run("negative-day", "2026-01-12");
+    assert!(later.status.success());
+    let mut rust: Value = serde_json::from_slice(&later.stdout).unwrap();
+    take_not_ported(&mut rust).unwrap();
+    let python = translate_python("brief", &case.python_output()).unwrap();
+    assert!(!json_diff(&rust, &python).is_empty(), "two days later, nothing changed");
+
+    let bad = run("negative-bad-day", "12/01/2026");
+    assert!(!bad.status.success());
+    assert!(String::from_utf8_lossy(&bad.stderr).contains("12/01/2026"));
 }
 
 /// The fixtures go wherever the repo goes: only synthetic hosts and names.

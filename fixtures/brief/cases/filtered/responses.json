@@ -104,8 +104,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "In corso",
-                      "optionId": "opt-d4"
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -114,14 +116,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "In corso",
                           "optionId": "opt-d4"
                         }
                       ]
@@ -135,7 +141,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "objective of alpha, excluded from every section",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -165,8 +172,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -175,14 +184,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
                         }
                       ]
@@ -196,7 +209,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "objective of omega, a project with no other task",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -228,8 +242,14 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Decisione",
-                      "optionId": "opt-e5"
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -238,15 +258,27 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Decisione",
                           "optionId": "opt-e5"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
                         }
                       ]
                     },
@@ -268,9 +300,10 @@
                     "number": 40,
                     "state": "CLOSED"
                   }
-                ]
+                ],
+                "totalCount": 2
               },
-              "title": "decision that unblocks the longest chain",
+              "title": "decision that blocks its own child 8: the arc 8 to 3 would close a cycle, so it does not count",
               "updatedAt": "2026-01-02T03:04:05Z",
               "url": "https://tracker.invalid/issues/3"
             },
@@ -300,8 +333,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Proposta",
-                      "optionId": "opt-b2"
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -310,14 +345,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Proposta",
                           "optionId": "opt-b2"
                         }
                       ]
@@ -331,7 +370,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "proposal with a session label",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -364,8 +404,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Decisione",
-                      "optionId": "opt-e5"
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -374,14 +416,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Decisione",
                           "optionId": "opt-e5"
                         }
                       ]
@@ -395,7 +441,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "decision with the session label and a draft",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -422,8 +469,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Proposta",
-                      "optionId": "opt-b2"
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -432,14 +481,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Proposta",
                           "optionId": "opt-b2"
                         }
                       ]
@@ -453,7 +506,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "tie on chain and unblocks: lower number first (6)",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -480,8 +534,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Proposta",
-                      "optionId": "opt-b2"
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -490,14 +546,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Proposta",
                           "optionId": "opt-b2"
                         }
                       ]
@@ -511,7 +571,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "tie on chain and unblocks: lower number first (7)",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -558,8 +619,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -568,14 +631,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
                         }
                       ]
@@ -589,7 +656,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "approved and ready but blocked by an open issue, so not ready",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -624,8 +692,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "In corso",
-                      "optionId": "opt-d4"
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -634,14 +704,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "In corso",
                           "optionId": "opt-d4"
                         }
                       ]
@@ -655,7 +729,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "downstream of 8, in progress, no graph keys in this section",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -694,8 +769,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -704,14 +781,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
                         }
                       ]
@@ -725,9 +806,10 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
-              "title": "ready: every blocker closed",
+              "title": "ready: every blocker closed; no project field",
               "updatedAt": "2026-01-02T03:04:05Z",
               "url": "https://tracker.invalid/issues/10"
             },
@@ -755,8 +837,14 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -765,15 +853,27 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
                         }
                       ]
                     },
@@ -786,9 +886,10 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
-              "title": "ready and unblocks two others, so it sorts first",
+              "title": "ready and unblocks two approved others, so it sorts first; its project field differs from its label",
               "updatedAt": "2026-01-02T03:04:05Z",
               "url": "https://tracker.invalid/issues/11"
             },
@@ -818,8 +919,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Inbox",
-                      "optionId": "opt-a1"
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -828,14 +931,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Inbox",
                           "optionId": "opt-a1"
                         }
                       ]
@@ -849,7 +956,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "inbox, blocked by 11",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -884,8 +992,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -894,14 +1004,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
                         }
                       ]
@@ -915,7 +1029,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "approved draft, blocked by 12: draft is never ready",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -944,7 +1059,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "no status at all: counts under the unset key",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -983,16 +1099,43 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Inbox",
-                      "optionId": "other-project-option"
+                      "Progetto": {
+                        "name": "omega",
+                        "optionId": "other-project-value"
+                      },
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "other-project-option"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
                         {
+                          "title": "a text field, not a single select"
+                        },
+                        {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
                           "optionId": "other-project-option"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_PROJECT_FIELD",
+                            "name": "Progetto"
+                          },
+                          "name": "omega",
+                          "optionId": "other-project-value"
                         }
                       ]
                     },
@@ -1005,9 +1148,10 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
-              "title": "only an item in another Project: also unset",
+              "title": "only an item in another Project: also unset, and its project field there does not count",
               "updatedAt": "2026-01-02T03:04:05Z",
               "url": "https://tracker.invalid/issues/15"
             },
@@ -1032,16 +1176,43 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Inbox",
-                      "optionId": "other-project-option"
+                      "Progetto": {
+                        "name": "omega",
+                        "optionId": "other-project-value"
+                      },
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "other-project-option"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
                         {
+                          "title": "a text field, not a single select"
+                        },
+                        {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
                           "optionId": "other-project-option"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_PROJECT_FIELD",
+                            "name": "Progetto"
+                          },
+                          "name": "omega",
+                          "optionId": "other-project-value"
                         }
                       ]
                     },
@@ -1051,8 +1222,14 @@
                   },
                   {
                     "fieldValueByName": {
-                      "name": "Inbox",
-                      "optionId": "opt-a1"
+                      "Progetto": {
+                        "name": "beta",
+                        "optionId": "opt-project-beta"
+                      },
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1061,15 +1238,27 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Inbox",
                           "optionId": "opt-a1"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "beta",
+                          "optionId": "opt-project-beta"
                         }
                       ]
                     },
@@ -1082,9 +1271,10 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
-              "title": "in another Project too, but the configured one wins",
+              "title": "in another Project too, but the configured one wins, project field included",
               "updatedAt": "2026-01-02T03:04:05Z",
               "url": "https://tracker.invalid/issues/16"
             },
@@ -1105,8 +1295,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Decisione",
-                      "optionId": "opt-e5"
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1115,14 +1307,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Decisione",
                           "optionId": "opt-e5"
                         }
                       ]
@@ -1136,7 +1332,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "no project label: in the sections, not in the counts",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1168,8 +1365,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Proposta",
-                      "optionId": "opt-b2"
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1178,14 +1377,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Proposta",
                           "optionId": "opt-b2"
                         }
                       ]
@@ -1199,7 +1402,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "cycle with 19, null measures, sorts last",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1231,8 +1435,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Decisione",
-                      "optionId": "opt-e5"
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1241,14 +1447,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Decisione",
                           "optionId": "opt-e5"
                         }
                       ]
@@ -1262,7 +1472,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "cycle with 18",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1297,8 +1508,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1307,14 +1520,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
                         }
                       ]
@@ -1328,7 +1545,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "blocks itself: a cycle of one",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1355,8 +1573,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Proposta",
-                      "optionId": "opt-b2"
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1365,14 +1585,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Proposta",
                           "optionId": "opt-b2"
                         }
                       ]
@@ -1386,7 +1610,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "upstream of a cycle: counts its nodes",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1434,8 +1659,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Inbox",
-                      "optionId": "opt-a1"
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1444,14 +1671,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Inbox",
                           "optionId": "opt-a1"
                         }
                       ]
@@ -1465,7 +1696,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "blocked by 21 and by the cycle's neighbor",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1576,8 +1808,14 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Progetto": {
+                        "name": "gamma",
+                        "optionId": "opt-project-gamma"
+                      },
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1586,15 +1824,27 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "gamma",
+                          "optionId": "opt-project-gamma"
                         }
                       ]
                     },
@@ -1607,7 +1857,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "closed-blocker pages: more than 20 blockers, all read and closed, ready",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1718,8 +1969,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1728,14 +1981,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
                         }
                       ]
@@ -1749,7 +2006,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "second page of blockers holds an open one, so not ready",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1776,8 +2034,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Decisione",
-                      "optionId": "opt-e5"
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1786,14 +2046,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Decisione",
                           "optionId": "opt-e5"
                         }
                       ]
@@ -1807,7 +2071,8 @@
               "state": "OPEN",
               "stateReason": "REOPENED",
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "<img src=x onerror=alert(1)> hostile title, shown as text",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1834,8 +2099,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "In corso",
-                      "optionId": "opt-d4"
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1844,14 +2111,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "In corso",
                           "optionId": "opt-d4"
                         }
                       ]
@@ -1865,7 +2136,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "accenti, «virgolette» e 日本語 nel titolo",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1892,8 +2164,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Fatto",
-                      "optionId": "opt-f6"
+                      "Status": {
+                        "name": "Fatto",
+                        "optionId": "opt-f6"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1902,14 +2176,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Fatto",
                           "optionId": "opt-f6"
                         }
                       ]
@@ -1923,7 +2201,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "done but still open: in the counts only",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -1950,8 +2229,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Scartato",
-                      "optionId": "opt-g7"
+                      "Status": {
+                        "name": "Scartato",
+                        "optionId": "opt-g7"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -1960,14 +2241,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Scartato",
                           "optionId": "opt-g7"
                         }
                       ]
@@ -1981,7 +2266,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "discarded but still open: in the counts only",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -2025,8 +2311,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Inbox",
-                      "optionId": "opt-a1"
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -2035,14 +2323,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Inbox",
                           "optionId": "opt-a1"
                         }
                       ]
@@ -2056,7 +2348,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "in beta, blocked by 21 of alpha: the scope must not cut the graph",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -2083,8 +2376,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Decisione",
-                      "optionId": "opt-e5"
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -2093,14 +2388,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Decisione",
                           "optionId": "opt-e5"
                         }
                       ]
@@ -2114,11 +2413,2168 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "an empty project label: in the sections, not in the counts",
               "updatedAt": "2026-01-02T03:04:05Z",
               "url": "https://tracker.invalid/issues/30"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 31,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 33,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 34,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 2
+              },
+              "title": "ready parent: its open children rank above it, and it stays ready",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/31"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 31,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 32,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
+                          "optionId": "opt-a1"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "inbox downstream of 31: in the total of 31, not in its unblocks",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/32"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\nprogetto: alpha\nentro:\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 33,
+              "parent": {
+                "number": 31
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "child of 31: the computed arc to its parent lifts it; an empty due line",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/33"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 34,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Decisione",
+                          "optionId": "opt-e5"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "child known only from the sub-issues of 31: the same arc",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/34"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 35,
+              "parent": {
+                "number": 31
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "child known only from its parent field: the list adds it to the sub-issues of 31",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/35"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-5",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 31,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 36,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "no status, downstream of 31: paths go through it, counts skip it",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/36"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 36,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 37,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "approved behind a task with no status: it counts for 31",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/37"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 43,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 48,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "title": "three computed arcs close a cycle only together, so all three drop (1 of 3)",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/43"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 44,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 46,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "title": "three computed arcs close a cycle only together (2 of 3)",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/44"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 45,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 47,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "title": "three computed arcs close a cycle only together (3 of 3)",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/45"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 43,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 46,
+              "parent": {
+                "number": 44
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "blocked by 43, child of 44",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/46"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 44,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 47,
+              "parent": {
+                "number": 45
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "blocked by 44, child of 45",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/47"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-6",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 45,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 48,
+              "parent": {
+                "number": 43
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "blocked by 45, child of 43",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/48"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "A spec.\n\n```yaml\nprogetto: alpha\ndimensione: S\nentro: 2026-01-12\nmaturità: pronto\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 49,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "due in two days: first in its section, by date",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/49"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\r\nprogetto: beta\r\nentro: 2026-01-10\r\n```\r\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "sessione"
+                  }
+                ]
+              },
+              "number": 50,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "beta",
+                        "optionId": "opt-project-beta"
+                      },
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Decisione",
+                          "optionId": "opt-e5"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "beta",
+                          "optionId": "opt-project-beta"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "due today, with CRLF lines: not overdue, first in waiting and in session",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/50"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\nentro: \"2026-01-13\"\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 51,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "gamma",
+                        "optionId": "opt-project-gamma"
+                      },
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "gamma",
+                          "optionId": "opt-project-gamma"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "ready, due on the last day of the window, quoted: first among the ready",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/51"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\nentro: 2026-01-14   # after the window\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 52,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "ready, due the day after the window: keeps its place, with the date",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/52"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\nentro:\u001c2026-01-09\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 53,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Decisione",
+                          "optionId": "opt-e5"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "overdue since yesterday, after a control character that Python strips: keeps its place, marked",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/53"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\nentro: 2026-01-11\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 54,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "In corso",
+                          "optionId": "opt-d4"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "in progress and due tomorrow: first in its section",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/54"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-7",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\nprogetto: beta\nentro: AAAA-MM-GG        # optional\n```\n\nAn example quoted further down:\n\n```yaml\nentro: 2026-01-11\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 55,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "the template's placeholder, and a date only in a later YAML block: no due date",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/55"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\nentro: presto\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 56,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "malformed due date in a section: ignored and listed, the task stays where it is",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/56"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 11,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "```yaml\nentro: 2026-02-30\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 57,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "malformed due date outside the sections: listed, and still not ready",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/57"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\nentro: ２０２６-０１-１２\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 58,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
+                          "optionId": "opt-a1"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a due date in fullwidth digits, outside the sections: malformed on both sides",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/58"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yaml\naltro:\n  entro: 2026-01-11\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 59,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a due date nested under another key does not count",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/59"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "```yml\nentro: 2026-01-12\n```\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 60,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Decisione",
+                          "optionId": "opt-e5"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "due the same day as 49, with a longer chain: before it",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/60"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 60,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "entro: 2026-01-11 (in prose, not in the YAML block)\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 61,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "blocked by 60; a due date in prose, outside the YAML block, does not count",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/61"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-8",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:gamma"
+                  }
+                ]
+              },
+              "number": 62,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Decisione",
+                          "optionId": "opt-e5"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 300,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 301,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 302,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 303,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 304,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 305,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 306,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 307,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 308,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 309,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 310,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 311,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 312,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 313,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 314,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 315,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 316,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 317,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 318,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 319,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 320,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 321,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 322,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 323,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 324,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 325,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 326,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 327,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 328,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 329,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 330,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 331,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 332,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 333,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 334,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 335,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 336,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 337,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 338,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 339,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 340,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 341,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 342,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 343,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 344,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 345,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 346,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 347,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 348,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 349,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 53
+              },
+              "title": "more than 50 sub-issues: the rest are read page by page",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/62"
             }
           ],
           "pageInfo": {
@@ -2128,5 +4584,57 @@
         }
       }
     }
-  ]
+  ],
+  "sub_issue_pages": {
+    "62": [
+      {
+        "repository": {
+          "issue": {
+            "subIssues": {
+              "nodes": [
+                {
+                  "number": 348,
+                  "state": "CLOSED"
+                },
+                {
+                  "number": 349,
+                  "state": "CLOSED"
+                },
+                {
+                  "number": 350,
+                  "state": "CLOSED"
+                },
+                {
+                  "number": 351,
+                  "state": "CLOSED"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": "page-1",
+                "hasNextPage": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "repository": {
+          "issue": {
+            "subIssues": {
+              "nodes": [
+                {
+                  "number": 352,
+                  "state": "OPEN"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": null,
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
 }

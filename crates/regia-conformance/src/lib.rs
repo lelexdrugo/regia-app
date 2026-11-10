@@ -27,6 +27,15 @@ pub fn log_var() -> String {
     env_var("FAKE_GH_LOG")
 }
 
+/// The day every fixture is recorded and checked on, so due dates mean the same on both sides: the
+/// prototype gets it through `oracle/fixed_today.py`, the product through `REGIA_TODAY`.
+pub const FIXTURE_TODAY: &str = "2026-01-10";
+
+/// The prototype's driver that runs it on [`FIXTURE_TODAY`].
+pub fn fixed_today_driver() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("oracle").join("fixed_today.py")
+}
+
 pub fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("..").canonicalize().expect("workspace root")
 }
@@ -143,11 +152,14 @@ pub fn path_with_fake_gh() -> OsString {
     env::join_paths(paths).expect("PATH")
 }
 
-/// Everything a process needs to run against a fixture.
+/// Everything a process needs to run against a fixture. The Codex credentials point at a file that does
+/// not exist: the prototype's brief reads them for a warning, and the machine's own must not leak in.
 pub fn apply_fixture_env(command: &mut Command, responses: &Path, state: &Path) {
     command
         .env("PATH", path_with_fake_gh())
         .env(prototype_env_var("RUNTIME"), state)
+        .env(prototype_env_var("CODEX_AUTH"), state.join("no-codex-auth.json"))
+        .env(env_var("TODAY"), FIXTURE_TODAY)
         .env(responses_var(), responses)
         .env_remove(env_var("ENGINE"))
         .env_remove(prototype_env_var("HOME"));
@@ -188,9 +200,17 @@ pub fn take_not_ported(rust: &mut Value) -> Result<Vec<String>, String> {
 #[derive(Debug)]
 struct Selection {
     name: String,
+    /// The key of the answer, when it is not the field's name.
+    alias: Option<String>,
+    /// A `name: "…"` argument written in the query, for the fields that pick a value by name.
+    by_name: Option<String>,
     fragment: bool,
     children: Vec<Selection>,
 }
+
+/// The one field the fake evaluates with its argument: the fixture holds its values in a map keyed by
+/// field name, and a name with no value answers null, as on the real API.
+const BY_NAME_FIELD: &str = "fieldValueByName";
 
 fn skip_blank(text: &[char], at: &mut usize) {
     while text.get(*at).is_some_and(|c| c.is_whitespace() || *c == ',') {
@@ -206,8 +226,9 @@ fn read_name(text: &[char], at: &mut usize) -> String {
     text[start..*at].iter().collect()
 }
 
-/// Skips `( … )`, which can hold braces and quoted strings.
-fn skip_arguments(text: &[char], at: &mut usize) -> Result<(), String> {
+/// Skips `( … )`, which can hold braces and quoted strings, and returns what was inside.
+fn skip_arguments(text: &[char], at: &mut usize) -> Result<String, String> {
+    let start = *at + 1;
     let mut depth = 0;
     let mut quoted = false;
     while let Some(&c) = text.get(*at) {
@@ -218,13 +239,22 @@ fn skip_arguments(text: &[char], at: &mut usize) -> Result<(), String> {
             ')' if !quoted => {
                 depth -= 1;
                 if depth == 0 {
-                    return Ok(());
+                    return Ok(text[start..*at - 1].iter().collect());
                 }
             }
             _ => {}
         }
     }
     Err("unbalanced parentheses in the query".to_owned())
+}
+
+/// The value of a `name: "…"` argument, if the arguments have one written as a string.
+fn name_argument(arguments: &str) -> Option<String> {
+    arguments.split(',').find_map(|argument| {
+        let value = argument.trim().strip_prefix("name")?.trim_start().strip_prefix(':')?;
+        let value = value.trim().strip_prefix('"')?.strip_suffix('"')?;
+        Some(value.to_owned())
+    })
 }
 
 /// Reads a selection set; `at` is just after its `{`.
@@ -251,16 +281,28 @@ fn parse_selection(text: &[char], at: &mut usize) -> Result<Vec<Selection>, Stri
                     return Err(format!("fragment on {name} has no selection"));
                 }
                 *at += 1;
-                out.push(Selection { name, fragment: true, children: parse_selection(text, at)? });
+                let children = parse_selection(text, at)?;
+                out.push(Selection { name, alias: None, by_name: None, fragment: true, children });
             }
             Some(_) => {
-                let name = read_name(text, at);
+                let mut name = read_name(text, at);
                 if name.is_empty() {
                     return Err(format!("unexpected text in the query at {at}"));
                 }
                 skip_blank(text, at);
+                let mut alias = None;
+                if text.get(*at) == Some(&':') {
+                    *at += 1;
+                    skip_blank(text, at);
+                    alias = Some(std::mem::replace(&mut name, read_name(text, at)));
+                    if name.is_empty() {
+                        return Err(format!("alias {alias:?} names no field"));
+                    }
+                    skip_blank(text, at);
+                }
+                let mut by_name = None;
                 if text.get(*at) == Some(&'(') {
-                    skip_arguments(text, at)?;
+                    by_name = name_argument(&skip_arguments(text, at)?);
                     skip_blank(text, at);
                 }
                 let mut children = Vec::new();
@@ -268,7 +310,7 @@ fn parse_selection(text: &[char], at: &mut usize) -> Result<Vec<Selection>, Stri
                     *at += 1;
                     children = parse_selection(text, at)?;
                 }
-                out.push(Selection { name, fragment: false, children });
+                out.push(Selection { name, alias, by_name, fragment: false, children });
             }
         }
     }
@@ -289,12 +331,19 @@ fn project(selections: &[Selection], value: &Value, optional: bool) -> Result<Va
                     }
                     continue;
                 }
-                match object.get(&selection.name) {
+                let key = selection.alias.clone().unwrap_or_else(|| selection.name.clone());
+                let found = match (&selection.by_name, object.get(&selection.name)) {
+                    (Some(field), Some(values)) if selection.name == BY_NAME_FIELD => {
+                        Some(values.get(field).cloned().unwrap_or(Value::Null))
+                    }
+                    (_, found) => found.cloned(),
+                };
+                match found {
                     Some(inner) if selection.children.is_empty() => {
-                        out.insert(selection.name.clone(), inner.clone());
+                        out.insert(key, inner);
                     }
                     Some(inner) => {
-                        out.insert(selection.name.clone(), project(&selection.children, inner, false)?);
+                        out.insert(key, project(&selection.children, &inner, false)?);
                     }
                     None if optional => {}
                     None => return Err(format!("the query selects `{}`, unknown to the fixture", selection.name)),

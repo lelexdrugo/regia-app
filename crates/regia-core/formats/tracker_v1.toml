@@ -11,6 +11,17 @@ session = "sessione"
 draft = "maturità:abbozzo"
 ready = "maturità:pronto"
 
+# Single-select fields of the Project read by their name, as the prototype reads them. The project field mirrors the
+# project label (ADR 0021 of the dossier): the label stays the source, and the field's value is reported as it is.
+[fields]
+project = "Progetto"
+
+# The first YAML block of an issue's body is its spec. Its optional due line is `<due_key>: YYYY-MM-DD`, and the
+# template's placeholder, copied as it is, means no date (#244 of the dossier).
+[body]
+due_key = "entro"
+due_placeholder = "AAAA-MM-GG"
+
 # Option label in `status_options` of tracker.json → canonical id. Only used once, when the config
 # is loaded, to bind each option id to its canonical id. From then on status is by option id.
 [status_labels]
