@@ -2694,6 +2694,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
+name = "regia-agents"
+version = "0.0.1"
+dependencies = [
+ "chrono",
+ "regia-core",
+ "regia-exec",
+ "regia-identity",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "toml 1.1.8+spec-1.1.0",
+]
+
+[[package]]
 name = "regia-app"
 version = "0.0.1"
 dependencies = [

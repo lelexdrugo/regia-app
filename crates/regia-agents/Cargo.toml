@@ -1,0 +1,17 @@
+[package]
+name = "regia-agents"
+description = "Agent services and launch surfaces (ADR 0001 §6): which agent, with which model and effort, and where it runs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+chrono.workspace = true
+regia-core.workspace = true
+regia-exec.workspace = true
+regia-identity.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+toml.workspace = true

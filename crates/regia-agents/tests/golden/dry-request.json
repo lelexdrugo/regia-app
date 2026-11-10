@@ -1,0 +1,10 @@
+{
+  "service": "claude",
+  "label": "trial",
+  "folder": "<folder>",
+  "model": "sonnet",
+  "effort": "high",
+  "prompt": "do the step\nline two: è l'ora",
+  "clean_context": false,
+  "secret_env": ["ANTHROPIC_API_KEY"]
+}

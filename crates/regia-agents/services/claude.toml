@@ -1,0 +1,24 @@
+# The claude service, layer 2 of ADR 0001 §6. A launch is code, not data: `launch`, `stream` and
+# `transcript` only name the typed builder of regia-exec and the rules the Cli surface knows for this
+# service, and a file that names another service's rules is refused. The rest is data.
+service = "claude"
+launch = "claude_print"
+# The session id is the `session_id` of any line of the JSON stream.
+stream = "claude_stream_json"
+# <home>/projects/<the folder with every character outside [A-Za-z0-9] as `-`>/<session>.jsonl
+transcript = "claude_projects"
+
+# Where the service keeps its files: the variable when it is set, otherwise this folder of the home.
+home_env = "CLAUDE_CONFIG_DIR"
+home_default = ".claude"
+# Present once the user has signed in. Only its presence is checked, never its contents. On macOS the
+# credentials are in the keychain, so there the state is unknown.
+credentials = ".credentials.json"
+# What the user runs to sign in: the interactive session, then its `/login` command.
+login = ["claude", "/login"]
+skills = "skills"
+
+[tiers]
+light = "haiku"
+standard = "sonnet"
+deep = "opus"

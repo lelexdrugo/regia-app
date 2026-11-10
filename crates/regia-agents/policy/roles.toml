@@ -1,0 +1,59 @@
+# Product defaults, layer 1 of ADR 0001 §6, compiled in. A role has a tier and an effort, never a
+# model name: the service's own file maps the tier to a model, and the user's settings may override
+# any of it. `service` is absent for the principal, or `other_than:writer`, the diversity rule; with
+# a single service that rule degrades to the same service in a clean context.
+#
+# Ported from the prototype's `policies/models.yaml`. Its codex entries name no model, so the tier
+# they get maps to none in codex's file: codex runs with its own default, as there.
+
+[default]
+tier = "standard"
+effort = "medium"
+
+[roles.replanning]
+tier = "deep"
+effort = "high"
+
+[roles.scouting_and_reading]
+tier = "standard"
+effort = "medium"
+
+[roles.synthesis_and_maps]
+tier = "standard"
+effort = "high"
+
+[roles.writing]
+tier = "deep"
+effort = "high"
+
+[roles.code]
+tier = "standard"
+effort = "high"
+
+[roles.experiments_and_probes]
+tier = "standard"
+effort = "medium"
+
+# The chronicler of the moviola: one unattended session a day per project at most.
+[roles.chronicler]
+tier = "standard"
+effort = "medium"
+
+# The weekly reconnaissance of lost commitments, per active project.
+[roles.reconnaissance]
+tier = "deep"
+effort = "high"
+
+# A model other than the writer's. Past the deadline, or when that service does not answer, the
+# caller does not wait or launch again: it falls back to the principal, deep, in a clean context.
+[roles.adversarial_review]
+service = "other_than:writer"
+tier = "standard"
+effort = "high"
+deadline_minutes = 20
+fallback = { service = "principal", tier = "deep" }
+
+[roles.second_implementation]
+service = "other_than:writer"
+tier = "standard"
+effort = "medium"

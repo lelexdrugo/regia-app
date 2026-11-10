@@ -1,0 +1,20 @@
+# The product's gates, compiled in: they always go through a decision of the owner. Ported from the
+# prototype's `policies/gates.yaml`. A user setting can add a gate and never remove one of these.
+
+[always_decision]
+message_people = "sending email or messages to people"
+publish = "publishing: sites, teaching platforms, social networks, public artifacts or links"
+submit = "submitting papers or official documents"
+push_shared_repo = "push or merge on a shared repository: one the owner does not own, a public one, or one whose owner or visibility is unknown, unless the project's own rules written by the owner say otherwise"
+deploy_release_visibility = "deploys, releases and visibility changes, on any repository, however they start"
+spend = "spending, new paid services, new accounts"
+delete_unrecoverable = "deleting data that cannot be regenerated"
+change_contract = "changes to the contracts of the system"
+
+[never]
+public_links = "public links to unpublished material"
+credentials_in_files = "credentials or tokens in versioned files"
+
+# Not gates: what the owner's own private repositories allow without asking.
+[not_gates]
+push_owner_private_repo = "push and merge on the owner's private repositories: the dossier, the workers' pushes and the integration of their branches"

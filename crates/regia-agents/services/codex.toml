@@ -1,0 +1,17 @@
+# The codex service, layer 2 of ADR 0001 §6. See claude.toml for what the keys mean.
+service = "codex"
+launch = "codex_exec"
+# The session id is the `thread_id` of the `thread.started` event.
+stream = "codex_json"
+# <home>/sessions/<year>/<month>/<day>/rollout-<time>-<session>.jsonl
+transcript = "codex_sessions"
+
+home_env = "CODEX_HOME"
+home_default = ".codex"
+credentials = "auth.json"
+login = ["codex", "login"]
+skills = "skills"
+
+# No tier names a model: codex runs with its own default, as the prototype's policy has it. A user
+# setting can map a tier to a model.
+[tiers]
