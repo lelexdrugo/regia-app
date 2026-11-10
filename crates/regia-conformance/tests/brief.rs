@@ -20,7 +20,7 @@ fn rust_brief(label: &str, case: &Case, responses: &std::path::Path) -> Value {
 
 fn diff_of(case: &Case) -> Vec<String> {
     let rust = rust_brief(&format!("test-{}", case.name), case, &case.responses_path());
-    let python = translate_python(case.command_name(), &case.python_output()).expect("the table covers the output");
+    let python = translate_python(&case.command_name(), &case.python_output()).expect("the table covers the output");
     json_diff(&rust, &python)
 }
 
@@ -33,7 +33,7 @@ fn write_responses(name: &str, responses: &Value) -> std::path::PathBuf {
 
 #[test]
 fn rust_and_python_agree_on_every_recorded_case() {
-    for case in Case::all() {
+    for case in Case::of_family("brief") {
         let diff = diff_of(&case);
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
     }
@@ -229,12 +229,15 @@ fn another_day_produces_a_diff_and_a_bad_day_is_an_error() {
     assert!(String::from_utf8_lossy(&bad.stderr).contains("12/01/2026"));
 }
 
-/// The fixtures go wherever the repo goes: only synthetic hosts and names.
+/// The fixtures go wherever the repo goes: only synthetic hosts and names, in every file of every case
+/// of every family.
 #[test]
 fn fixtures_are_synthetic() {
     for case in Case::all() {
-        for file in ["responses.json", "python.it.json"] {
-            let text = fs::read_to_string(case.dir.join(file)).unwrap();
+        for entry in fs::read_dir(&case.dir).unwrap() {
+            let path = entry.unwrap().path();
+            let file = path.file_name().unwrap().to_string_lossy().into_owned();
+            let text = fs::read_to_string(&path).unwrap();
             for forbidden in ["github.com", "lelexdrugo", "regia-tasks", "paper", "orca\\\\projects"] {
                 assert!(!text.contains(forbidden), "{}/{file} contains {forbidden}", case.name);
             }

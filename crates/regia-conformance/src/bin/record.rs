@@ -1,16 +1,18 @@
-//! Local only. Expands each synthetic scenario into GraphQL responses, runs the Python prototype on
-//! them through the fake `gh`, on the fixtures' fixed day, and stores its raw output. The prototype is
+//! Local only. Expands each synthetic scenario into GraphQL responses, writes each case's state rows,
+//! runs the Python prototype on them through the fake `gh`, on the fixtures' fixed day, and stores its
+//! raw output: JSON or text, its stderr if any, and the writes it made to the tracker. The prototype is
 //! not modified and the real tracker is never read: a scenario's URLs must come back, or recording
-//! stops.
+//! stops, and so does an exit code other than the case's or an argv other than the one it expects.
 //!
 //!     cargo run -p regia-conformance --bin record -- --dossier <path> [--python <interpreter>]
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, FIXTURE_TODAY, fixed_today_driver, fixture_for_python, fixtures_dir, log_var, prepare_state_dir, read_json,
+    Case, FIXTURE_TODAY, fixed_today_driver, fixture_for_python, fixtures_dir, lf, log_var, prepare_case_state,
+    read_json, writes_of_run,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
 use regia_exec::git::{self, CommitField};
@@ -240,52 +242,93 @@ fn main() {
     let driver = fixed_today_driver().display().to_string();
     let script = prototype.script.display().to_string();
 
+    let mut families = BTreeSet::new();
     for case in Case::all() {
-        let scenario: Scenario = read_json(&fixtures_dir().join("scenarios").join(format!("{}.json", case.spec.scenario)));
-        assert_eq!(scenario.project_id, config.project_id, "scenario and tracker.json must agree");
-        write_json(&case.responses_path(), &responses_of(&scenario, &config, &binding));
+        let responses = match &case.spec.scenario {
+            Some(name) => {
+                let scenario: Scenario = read_json(&case.family_dir().join("scenarios").join(format!("{name}.json")));
+                assert_eq!(scenario.project_id, config.project_id, "scenario and tracker.json must agree");
+                responses_of(&scenario, &config, &binding)
+            }
+            None => json!({"expect": {"o": config.owner, "r": config.repo}}),
+        };
+        write_json(&case.responses_path(), &responses);
 
-        let state = prepare_state_dir(&format!("record-{}", case.name));
+        let state = prepare_case_state(&format!("record-{}", case.name), &case);
         let log = state.join("gh.log");
-        let argv = table
-            .python_argv(case.command_name(), &case.spec.args[1..])
-            .expect("the table knows the case's arguments");
-        let mut command: Vec<String> = python::FLAGS.map(str::to_owned).to_vec();
-        command.extend([driver.clone(), script.clone(), FIXTURE_TODAY.to_owned()]);
-        command.extend(argv);
-        let launch = regia_exec::harness::program(&interpreter, &command, &dossier).limits(PROTOTYPE_LIMITS);
+        let command = case.command_name();
+        let words = command.split(' ').count();
+        let argv = table.python_argv(&command, &case.spec.args[words..]).expect("the table knows the case's arguments");
+        if let Some(expected) = &case.spec.python {
+            assert_eq!(&argv, expected, "{}: the table does not build the argv the case expects", case.name);
+        }
+        let mut launch_args: Vec<String> = python::FLAGS.map(str::to_owned).to_vec();
+        launch_args.extend([driver.clone(), script.clone(), FIXTURE_TODAY.to_owned()]);
+        launch_args.extend(argv.iter().cloned());
+        let launch = regia_exec::harness::program(&interpreter, &launch_args, &dossier).limits(PROTOTYPE_LIMITS);
         let output = fixture_for_python(launch, &case.responses_path(), &state)
             .env(&log_var(), &log)
             .run()
             .expect("run the prototype");
-        assert!(
-            output.status.success(),
-            "{}: the prototype failed: {}",
-            case.name,
-            String::from_utf8_lossy(&output.stderr)
-        );
+        let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+        assert_eq!(output.status.code(), Some(i32::from(case.spec.exit)), "{}: the prototype ended otherwise: {stderr}", case.name);
 
         // Proof that the fake answered and no real data came through.
         let calls = fs::read_to_string(&log).unwrap_or_default();
-        assert!(!calls.is_empty(), "{}: the fake gh was not called", case.name);
-        let python: Value = serde_json::from_slice(&output.stdout).expect("the prototype printed JSON");
-        let text = String::from_utf8_lossy(&output.stdout);
-        let urls = text.matches("\"url\"").count();
-        assert_eq!(text.matches(&format!("\"url\": \"{URL_PREFIX}")).count(), urls, "{}: foreign URL", case.name);
-        write_json(&case.dir.join("python.it.json"), &python);
-        println!("{}: {} calls to the fake gh, {} URLs, all synthetic", case.name, calls.lines().count(), urls);
+        assert!(case.spec.scenario.is_none() || !calls.is_empty(), "{}: the fake gh was not called", case.name);
+        let writes = writes_of_run(&state);
+        let text = String::from_utf8(output.stdout).expect("the prototype printed UTF-8");
+        let recorded = [text.as_str(), stderr.as_str(), &serde_json::to_string(&writes).expect("JSON")].concat();
+        let urls = recorded.matches("https://").count() + recorded.matches("http://").count();
+        assert_eq!(recorded.matches(URL_PREFIX).count(), urls, "{}: foreign URL", case.name);
+        let json = argv.first().is_some_and(|arg| arg == "--json") && table.has_output(&command);
+        let parsed = json.then(|| serde_json::from_str::<Value>(&text).expect("the prototype printed JSON"));
+        replace(&case.dir.join("python.it.json"), parsed);
+        replace_text(&case.dir.join("python.it.txt"), (!json).then(|| lf(&text)).as_deref());
+        replace_text(&case.dir.join("python.it.stderr.txt"), Some(lf(&stderr)).filter(|text| !text.is_empty()).as_deref());
+        replace(&case.dir.join("calls.json"), (!writes.is_empty()).then(|| Value::Array(writes.clone())));
+        println!(
+            "{}/{}: exit {}, {} calls to the fake gh, {} writes, {urls} URLs, all synthetic",
+            case.family,
+            case.name,
+            case.spec.exit,
+            calls.lines().count(),
+            writes.len()
+        );
+        families.insert(case.family_dir());
     }
 
     let head = GitRef::head();
     let regia_py = DossierPath::parse("tools/regia.py").expect("a dossier path");
-    write_json(
-        &fixtures_dir().join("RECORDED.json"),
-        &json!({
-            "oracle_repository": "lelexdrugo/regia",
-            "oracle_commit": git_output(&dossier, git::rev_parse(&head)),
-            "oracle_last_change_to_regia_py": git_output(&dossier, git::last_commit(CommitField::Hash, &head, Some(&regia_py))),
-            "recorded_at": git_output(&dossier, git::last_commit(CommitField::Date, &head, None)),
-            "today": FIXTURE_TODAY,
-        }),
-    );
+    let recorded = json!({
+        "oracle_repository": "lelexdrugo/regia",
+        "oracle_commit": git_output(&dossier, git::rev_parse(&head)),
+        "oracle_last_change_to_regia_py": git_output(&dossier, git::last_commit(CommitField::Hash, &head, Some(&regia_py))),
+        "recorded_at": git_output(&dossier, git::last_commit(CommitField::Date, &head, None)),
+        "today": FIXTURE_TODAY,
+    });
+    for family in families {
+        write_json(&family.join("RECORDED.json"), &recorded);
+    }
+}
+
+/// `value` as the file's content, or no file: a recording leaves nothing of the previous one.
+fn replace(path: &Path, value: Option<Value>) {
+    match value {
+        Some(value) => write_json(path, &value),
+        None => remove(path),
+    }
+}
+
+fn replace_text(path: &Path, text: Option<&str>) {
+    match text {
+        Some(text) => fs::write(path, text).unwrap_or_else(|error| panic!("{}: {error}", path.display())),
+        None => remove(path),
+    }
+}
+
+fn remove(path: &Path) {
+    if path.exists() {
+        fs::remove_file(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+    }
 }

@@ -12,6 +12,12 @@ publish.workspace = true
 name = "fake-gh"
 path = "src/bin/fake_gh.rs"
 
+# Stands in for the interpreter where the prototype is not, as in CI: checks the argv the facade
+# built and replays what the prototype printed for a case, with its exit code.
+[[bin]]
+name = "fake-python"
+path = "src/bin/fake_python.rs"
+
 # Stands in for any program regia-exec starts, in the tests of `tests/exec.rs`: it prints its argv,
 # stdin, environment and folder.
 [[bin]]

@@ -94,8 +94,8 @@ fn every_builder_hands_the_program_exactly_its_tokens() {
     // python: each data value is one token; one that reads as an option stops before the start.
     let facade: Vec<String> = ["--json", "brief", "--progetto", "; & | %PATH% ^ \" @file"].map(str::to_owned).to_vec();
     let report = seen(probe_as(Program::Python).launch(python::prototype(&path, &facade).unwrap(), &dir));
-    assert_eq!(argv(&report)[..5], ["-X", "utf8", "-E", "-s", "tools/regia.py"]);
-    assert_eq!(argv(&report)[5..], facade[..]);
+    assert_eq!(argv(&report)[..4], ["-X", "utf8", "-I", "tools/regia.py"]);
+    assert_eq!(argv(&report)[4..], facade[..]);
     for hostile in ["-x", "--upload-pack=x", "-c core.sshCommand=x", "--", "", "--Upper"] {
         let facade = vec!["brief".to_owned(), hostile.to_owned()];
         assert!(python::prototype(&path, &facade).is_err(), "the facade passed {hostile:?}");
