@@ -207,7 +207,8 @@ async function acl(): Promise<Check[]> {
       ),
       sleep(5000).then(() => "no answer"),
     ]);
-    checks.push({ name: `acl: ${command}`, ok: outcome.startsWith("refused"), detail: outcome });
+    // Refused by the ACL itself, whose message says so: a call it let through could fail in the command.
+    checks.push({ name: `acl: ${command}`, ok: outcome.includes("not allowed"), detail: outcome });
   }
   return checks;
 }

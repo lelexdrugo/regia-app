@@ -16,6 +16,9 @@ const FRONTEND: &str = "../ui/dist";
 fn main() {
     // The proc macro embeds the files without telling Cargo: a rebuilt frontend must rebuild the app.
     println!("cargo:rerun-if-changed={FRONTEND}");
+    // With a path pattern, tauri-build leaves the watch to us: without it, an edited capability would
+    // not reach the compiled ACL until something else rebuilt the app.
+    println!("cargo:rerun-if-changed=capabilities");
     if !Path::new(FRONTEND).join("index.html").is_file() {
         panic!(
             "the frontend is not built: run `npm ci --ignore-scripts` and then `npm run build` in app/ui \

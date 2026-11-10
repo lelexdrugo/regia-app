@@ -107,6 +107,14 @@ mod acl {
         get_ipc_response(window, request).map(|body| body.deserialize::<Value>().unwrap())
     }
 
+    /// Refused by the ACL itself, not failed in the command: a call the ACL let through could fail too.
+    fn assert_refused(outcome: Result<Value, Value>, call: &str) {
+        match outcome {
+            Ok(value) => panic!("{call} was allowed: {value}"),
+            Err(error) => assert!(error.to_string().contains("not allowed"), "{call} failed after the ACL: {error}"),
+        }
+    }
+
     #[test]
     fn the_webview_reaches_its_own_commands() {
         let window = window();
@@ -138,7 +146,7 @@ mod acl {
             refused.push(("smoke_report", json!({ "report": {} })));
         }
         for (command, args) in refused {
-            assert!(invoke(&window, command, args, origin()).is_err(), "{command} was allowed");
+            assert_refused(invoke(&window, command, args, origin()), command);
         }
     }
 
@@ -146,7 +154,7 @@ mod acl {
     fn a_remote_page_reaches_nothing() {
         let window = window();
         for from in ["https://example.invalid", "http://tauri.localhost.attacker.com", "tauri://localhost.attacker.com"] {
-            assert!(invoke(&window, "get_app_info", json!({}), from).is_err(), "get_app_info from {from}");
+            assert_refused(invoke(&window, "get_app_info", json!({}), from), &format!("get_app_info from {from}"));
         }
     }
 }

@@ -511,6 +511,34 @@ fn v03_the_lockfile_has_no_forbidden_plugin() {
     }
 }
 
+/// V04 in every `cargo test`, as `deny.toml` bans it in CI: two IPC advisories fixed in 2.11.6 (threat
+/// model §0, ADR 0001 §14).
+const TAURI_FLOOR: (u64, u64, u64) = (2, 11, 6);
+
+fn tauri_versions_below_the_floor(lock: &toml::Table) -> Vec<String> {
+    lock["package"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|package| package["name"].as_str() == Some("tauri"))
+        .filter_map(|package| package["version"].as_str())
+        .filter(|version| {
+            let mut parts = version.split(['.', '-']).map(|part| part.parse::<u64>().unwrap_or(0));
+            let found = (parts.next().unwrap_or(0), parts.next().unwrap_or(0), parts.next().unwrap_or(0));
+            found < TAURI_FLOOR
+        })
+        .map(str::to_owned)
+        .collect()
+}
+
+#[test]
+fn v04_tauri_is_at_least_the_floor() {
+    let lock: toml::Table = toml::from_str(&read(&app_dir().join("../../Cargo.lock"))).unwrap();
+    assert_eq!(tauri_versions_below_the_floor(&lock), Vec::<String>::new());
+    let altered: toml::Table = toml::from_str("[[package]]\nname = \"tauri\"\nversion = \"2.11.5\"\n").unwrap();
+    assert_eq!(tauri_versions_below_the_floor(&altered), ["2.11.5"], "V04 misses an old Tauri");
+}
+
 #[test]
 fn v03_the_frontend_installs_no_tauri_plugin() {
     let ui = app_dir().join("../ui");
