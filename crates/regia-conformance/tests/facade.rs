@@ -107,6 +107,26 @@ fn the_state_cases_show_what_they_claim() {
     assert_eq!((&budget["provider"]["claude"]["from_cache"], &budget["cache"]["attempt_age_s"]), (&json!(true), &json!(120)));
 }
 
+/// Every shape a recording reaches fails closed: a key the table does not know, added to the output
+/// of any case, at its top or in its first item, is an error and never passes in Italian.
+#[test]
+fn an_unknown_key_fails_closed_in_every_recorded_output() {
+    let mut checked = 0;
+    for case in facade_cases() {
+        let Recorded::Json(mut value) = case.recorded() else { continue };
+        let target = match &mut value {
+            Value::Array(items) => items.first_mut(),
+            other => Some(other),
+        };
+        let Some(Value::Object(object)) = target else { continue };
+        object.insert("chiave_nuova".to_owned(), json!(1));
+        let error = translate_python(&case.command_name(), &value).expect_err(&case.name);
+        assert!(error.to_string().contains("chiave_nuova"), "{}: {error}", case.name);
+        checked += 1;
+    }
+    assert!(checked >= 25, "only {checked} outputs checked");
+}
+
 /// Negative controls: an exit code, an output or an argv other than the case's is a difference, and
 /// a key the table does not know fails closed.
 #[test]
