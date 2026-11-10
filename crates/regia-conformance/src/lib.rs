@@ -4,8 +4,10 @@
 //! printed for it (`python.it.json`, or `python.it.txt` for a command that prints text), recorded
 //! locally because CI cannot read the private dossier. It also holds the exit code both sides must
 //! end with, the rows of the state database before the run, and the writes the prototype made to the
-//! tracker, in order (`calls.json`). Cases live in families, one folder of `fixtures/` per group of
-//! commands, so slices that add cases do not edit the same folder.
+//! tracker, in order (`calls.json`). A case can also name a dossier, a repo the run commits to, and
+//! hold what the repo looked like after (`dossier.json`). Every case is recorded and checked at one
+//! instant, [`FIXTURE_NOW`]. Cases live in families, one folder of `fixtures/` per group of commands,
+//! so slices that add cases do not edit the same folder.
 //!
 //! A case of a ported command runs the real `regia` binary against the same responses through a fake
 //! `gh`, passes the recorded Python output through the facade table, and diffs the two. A case of a
