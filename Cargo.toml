@@ -16,11 +16,16 @@ regia-github = { path = "crates/regia-github" }
 regia-i18n = { path = "crates/regia-i18n" }
 regia-identity = { path = "crates/regia-identity" }
 regia-runtime = { path = "crates/regia-runtime" }
+regia-store = { path = "crates/regia-store" }
 
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde", "std"] }
 clap = { version = "4.6", features = ["derive"] }
 directories = "6.0"
 fluent-bundle = "0.16"
 fluent-syntax = "0.12"
+libc = "0.2"
+regex = "1.13"
+rusqlite = { version = "0.41", default-features = false, features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sys-locale = "0.3"

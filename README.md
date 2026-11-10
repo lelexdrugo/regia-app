@@ -2,7 +2,7 @@
 
 A control room for projects worked on by coding agents: what waits for you, what is ready, what is running. "regia" is a provisional name.
 
-This is a walking skeleton. The architecture is a proposal in [docs/adr/0001-product-architecture.md](docs/adr/0001-product-architecture.md) and nothing here is in production.
+This is a walking skeleton. The architecture is accepted in [docs/adr/0001-product-architecture.md](docs/adr/0001-product-architecture.md), and nothing here is in production.
 
 ## Layout
 
@@ -40,13 +40,13 @@ cargo build -p regia-app --features smoke
 
 The Python prototype is the oracle and lives in a private repo. A fixture case in `fixtures/brief/cases/` holds what the tracker answered and what the prototype printed. The test runs the real `regia` binary against the same answers through a fake `gh`, passes the prototype's output through the facade table, and requires an empty diff. Object key order does not count; array order does.
 
-Fixtures are recorded locally and committed, because CI cannot read the prototype's repo. With a checkout of it:
+Fixtures are recorded locally and committed, because CI cannot read the prototype's repo. With a checkout of it, clean in `tools/`:
 
 ```sh
 cargo run -p regia-conformance --bin record -- --dossier <path>
 ./target/debug/live-check --dossier <path>     # both implementations on the real tracker; prints no data
 ```
 
-Run `live-check` directly, not through `cargo run`: cargo changes `PATH`. Fixtures are synthetic on purpose, because this repo goes to other people and later public. Never record real titles, names or URLs into them; `fixtures_are_synthetic` checks the obvious ones.
+Run `live-check` directly, not through `cargo run`: cargo changes `PATH`. Due dates count from today, so every fixture is recorded and checked on one fixed day, `FIXTURE_TODAY` in `crates/regia-conformance/src/lib.rs`: `record` runs the prototype through `crates/regia-conformance/oracle/fixed_today.py`, which only replaces the prototype's own date function, and the product reads the day from `REGIA_TODAY`. `live-check` uses the real day on both sides. Fixtures are synthetic on purpose, because this repo goes to other people and later public. Never record real titles, names or URLs into them; `fixtures_are_synthetic` checks the obvious ones.
 
 The brief's three machine-local sections (controller, dossier, outside the tracker) are not ported or compared yet. See the ADR.

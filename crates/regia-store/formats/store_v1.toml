@@ -1,0 +1,43 @@
+# Format v1 of the machine-local state, as the prototype writes it (`tools/runtime.py` and ADR 0008 of
+# the dossier). Both implementations read and write these rows while they coexist, so the names stay
+# as they are. They are data, not identifiers, and stay out of the Rust sources (ADR 0001, sections 7
+# and 12).
+
+# The one table of `regia.db`.
+[table]
+name = "documenti"
+kind = "tipo"
+key = "chiave"
+generation = "gen"
+document = "doc"
+
+# Values of the kind column.
+[kinds]
+lock = "lock"
+lease = "lease"
+cursor = "cursore"
+cache = "cache"
+probe = "sonda"
+
+# The fields of a lock document, in the order the prototype writes them.
+[lock]
+project = "progetto"
+holder = "proprietario"
+taken_at = "preso"
+ttl_s = "ttl_s"
+expires_at = "scade"
+replaced = "al_posto_di"
+stolen_at = "rubato_il"
+renewed_at = "rinnovato"
+
+# The monotonic expiry the prototype adds to every lock, lease and probe document. `clock` names the
+# implementation of the clock that wrote it: a reader with another one falls back to `expires_at`.
+[monotonic]
+key = "_m"
+written = "t"
+expires = "scade"
+clock = "o"
+
+# Fields no view shows: the probe's fencing token and the monotonic stamp.
+[view]
+hidden = ["token", "_m"]

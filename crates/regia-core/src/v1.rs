@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+use crate::due::DueRule;
 use crate::model::{Maturity, Status, Task};
 use crate::tracker::RawIssue;
 
@@ -27,7 +28,20 @@ pub enum V1Error {
 #[derive(Debug, Deserialize)]
 struct Vocabulary {
     labels: Labels,
+    fields: Fields,
+    body: Body,
     status_labels: BTreeMap<String, Status>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Fields {
+    project: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct Body {
+    due_key: String,
+    due_placeholder: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -95,6 +109,8 @@ pub struct TrackerBinding {
     session: String,
     draft: String,
     ready: String,
+    project_field: String,
+    due: DueRule,
 }
 
 impl TrackerBinding {
@@ -116,12 +132,19 @@ impl TrackerBinding {
             session: labels.session,
             draft: labels.maturity.draft,
             ready: labels.maturity.ready,
+            project_field: vocabulary.fields.project,
+            due: DueRule::new(&vocabulary.body.due_key, &vocabulary.body.due_placeholder),
         })
     }
 
     /// The tracker label that marks a task as needing a working session with the owner.
     pub fn is_session_label(&self, label: &str) -> bool {
         label == self.session
+    }
+
+    /// The name of the Project field that mirrors the project label.
+    pub fn project_field_name(&self) -> &str {
+        &self.project_field
     }
 
     pub fn resolve(&self, raw: RawIssue) -> Result<Task, V1Error> {
@@ -146,6 +169,13 @@ impl TrackerBinding {
             }
         });
         let objective = raw.labels.contains(&self.objective);
+        // The last value wins, as for the status.
+        let project_field = raw
+            .field_values
+            .iter()
+            .rev()
+            .find(|(field, _)| *field == self.project_field)
+            .map(|(_, option)| option.clone());
         Ok(Task {
             number: raw.number,
             title: raw.title,
@@ -153,6 +183,7 @@ impl TrackerBinding {
             state_reason: raw.state_reason,
             status,
             project,
+            project_field,
             maturity,
             objective,
             labels: raw.labels,
@@ -164,6 +195,7 @@ impl TrackerBinding {
             updated_at: raw.updated_at,
             created_at: raw.created_at,
             closed_at: raw.closed_at,
+            due: self.due.read(&raw.body),
         })
     }
 }
@@ -195,6 +227,7 @@ mod tests {
             title: "t".into(),
             state: IssueState::Open,
             state_reason: None,
+            body: String::new(),
             url: "u".into(),
             updated_at: "d".into(),
             created_at: None,
@@ -205,7 +238,33 @@ mod tests {
             blocked_by: vec![],
             blocked_by_total: 0,
             status_option_id: option.map(str::to_owned),
+            field_values: vec![],
         }
+    }
+
+    #[test]
+    fn the_project_field_is_read_by_its_name_and_the_last_value_wins() {
+        let binding = TrackerBinding::new(&config()).unwrap();
+        let name = binding.project_field_name().to_owned();
+        let mut issue = raw(None);
+        issue.field_values = vec![(name.clone(), "alpha".into()), ("Priority".into(), "High".into()), (name, "beta".into())];
+        assert_eq!(binding.resolve(issue).unwrap().project_field.as_deref(), Some("beta"));
+        let mut other = raw(None);
+        other.field_values = vec![("Priority".into(), "High".into())];
+        assert_eq!(binding.resolve(other).unwrap().project_field, None);
+    }
+
+    #[test]
+    fn the_due_date_comes_from_the_spec_in_the_body() {
+        let binding = TrackerBinding::new(&config()).unwrap();
+        let vocabulary = vocabulary();
+        let mut issue = raw(None);
+        issue.body = format!("```yaml\n{}: 2026-11-05\n```\n", vocabulary.body.due_key);
+        let expected = chrono::NaiveDate::from_ymd_opt(2026, 11, 5).map(crate::model::DueDate::Date);
+        assert_eq!(binding.resolve(issue).unwrap().due, expected);
+        let mut placeholder = raw(None);
+        placeholder.body = format!("```yaml\n{}: {}\n```\n", vocabulary.body.due_key, vocabulary.body.due_placeholder);
+        assert_eq!(binding.resolve(placeholder).unwrap().due, None);
     }
 
     #[test]

@@ -110,6 +110,13 @@ fn answer(args: &[String]) -> Result<String, String> {
             return Err(format!("simulated failure for #{number}"));
         }
         (format!("blockers {number} {index}"), pages[index].clone())
+    } else if query.contains("subIssues(first:100") {
+        let number = number.ok_or("sub-issues query without n")?;
+        let pages = &responses["sub_issue_pages"][&number];
+        if pages.is_string() {
+            return Err(format!("simulated failure for #{number}"));
+        }
+        (format!("sub-issues {number} {index}"), pages[index].clone())
     } else if query.contains("issues(first:") {
         for required in REQUIRED_ON_ISSUES {
             if !query.contains(required) {

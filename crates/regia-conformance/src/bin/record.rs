@@ -1,6 +1,7 @@
 //! Local only. Expands each synthetic scenario into GraphQL responses, runs the Python prototype on
-//! them through the fake `gh`, and stores its raw output. The prototype is not modified and the real
-//! tracker is never read: a scenario's URLs must come back, or recording stops.
+//! them through the fake `gh`, on the fixtures' fixed day, and stores its raw output. The prototype is
+//! not modified and the real tracker is never read: a scenario's URLs must come back, or recording
+//! stops.
 //!
 //!     cargo run -p regia-conformance --bin record -- --dossier <path> [--python <interpreter>]
 
@@ -8,15 +9,22 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use regia_conformance::{Case, fixture_for_python, fixtures_dir, log_var, prepare_state_dir, read_json};
-use regia_core::TrackerConfigV1;
+use regia_conformance::{
+    Case, FIXTURE_TODAY, fixed_today_driver, fixture_for_python, fixtures_dir, log_var, prepare_state_dir, read_json,
+};
+use regia_core::{TrackerBinding, TrackerConfigV1};
 use regia_exec::git::{self, CommitField};
-use regia_exec::{Args, DossierPath, GitRef, Pin, Program};
-use regia_facade::{PythonPrototype, Table};
+use regia_exec::{Args, DossierPath, GitRef, Pin, Program, python};
+use regia_facade::{PROTOTYPE_LIMITS, PythonPrototype, Table};
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
 
 const URL_PREFIX: &str = "https://tracker.invalid/";
+
+/// GitHub's name for the status field. The prototype reads the status by this name, the product by the
+/// field's id.
+const STATUS_FIELD_NAME: &str = "Status";
+const PROJECT_FIELD_ID: &str = "FIELD_PROJECT_FIXTURE";
 
 #[derive(Deserialize)]
 struct Scenario {
@@ -25,6 +33,8 @@ struct Scenario {
     issues: Vec<ScenarioIssue>,
     #[serde(default)]
     extra_blockers: BTreeMap<String, Value>,
+    #[serde(default)]
+    extra_sub_issues: BTreeMap<String, Value>,
 }
 
 #[derive(Deserialize)]
@@ -40,6 +50,9 @@ struct ScenarioIssue {
     parent: Option<u64>,
     #[serde(default)]
     sub: Vec<(u64, String)>,
+    /// More sub-issues than the list query reads, with the rest in `extra_sub_issues`.
+    #[serde(default)]
+    sub_total: Option<u64>,
     #[serde(default)]
     blocked_by: Vec<(u64, String)>,
     #[serde(default)]
@@ -50,33 +63,60 @@ struct ScenarioIssue {
     also_in_other_project: bool,
     #[serde(default)]
     body: Option<String>,
+    /// The option of the Project field that mirrors the project label, if the item has one.
+    #[serde(default)]
+    project_field: Option<String>,
 }
 
 fn pairs(list: &[(u64, String)]) -> Vec<Value> {
     list.iter().map(|(number, state)| json!({"number": number, "state": state})).collect()
 }
 
-fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfigV1) -> Value {
-    // Both ways of reading the status: the prototype by the field's name, the product by its id.
+/// A single-select value, both as `fieldValues` lists it and as `fieldValueByName` answers it.
+fn select_value(field_id: &str, field_name: &str, option_id: &str, option: &str) -> (Value, Value) {
+    let node = json!({"optionId": option_id, "name": option, "field": {"id": field_id, "name": field_name}});
+    (node, json!({"name": option, "optionId": option_id}))
+}
+
+/// An item of a Project. Both ways of reading a field are there: the prototype asks by the field's name,
+/// the product reads the list with each field's id and name. Values of other fields and of a field that is
+/// not a single select are in the list too, and must not count.
+fn project_item(project_id: &str, values: &[(Value, Value, &str)]) -> Value {
+    let mut nodes = vec![
+        json!({"title": "a text field, not a single select"}),
+        json!({"optionId": "opt-another-select", "name": "Medium", "field": {"id": "OTHER_FIELD", "name": "Priority"}}),
+    ];
+    let mut by_name = Map::new();
+    for (node, answer, field_name) in values {
+        nodes.push(node.clone());
+        by_name.insert((*field_name).to_owned(), answer.clone());
+    }
+    json!({"project": {"id": project_id}, "fieldValueByName": by_name, "fieldValues": {"nodes": nodes}})
+}
+
+fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
+    let project_field = binding.project_field_name();
     let mut items = Vec::new();
     if issue.also_in_other_project {
-        items.push(json!({
-            "project": {"id": "OTHER_PROJECT"},
-            "fieldValueByName": {"name": "Inbox", "optionId": "other-project-option"},
-            "fieldValues": {"nodes": [{"optionId": "other-project-option", "field": {"id": "OTHER_FIELD"}}]},
-        }));
+        let (status_node, status) = select_value("OTHER_FIELD", STATUS_FIELD_NAME, "other-project-option", "Inbox");
+        let (project_node, project) = select_value("OTHER_PROJECT_FIELD", project_field, "other-project-value", "omega");
+        items.push(project_item(
+            "OTHER_PROJECT",
+            &[(status_node, status, STATUS_FIELD_NAME), (project_node, project, project_field)],
+        ));
     }
+    let mut values = Vec::new();
     if let Some(status) = &issue.status {
         let option = config.status_options.get(status).unwrap_or_else(|| panic!("unknown status {status}"));
-        items.push(json!({
-            "project": {"id": scenario.project_id},
-            "fieldValueByName": {"name": status, "optionId": option},
-            "fieldValues": {"nodes": [
-                {"title": "a text field, not a single select"},
-                {"optionId": "opt-another-select", "field": {"id": "OTHER_FIELD"}},
-                {"optionId": option, "field": {"id": config.status_field_id}},
-            ]},
-        }));
+        let (node, answer) = select_value(&config.status_field_id, STATUS_FIELD_NAME, option, status);
+        values.push((node, answer, STATUS_FIELD_NAME));
+    }
+    if let Some(value) = &issue.project_field {
+        let (node, answer) = select_value(PROJECT_FIELD_ID, project_field, &format!("opt-project-{value}"), value);
+        values.push((node, answer, project_field));
+    }
+    if !values.is_empty() {
+        items.push(project_item(&scenario.project_id, &values));
     }
     let labels: Vec<Value> = issue.labels.iter().map(|name| json!({"name": name})).collect();
     json!({
@@ -91,7 +131,10 @@ fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfig
         "closedAt": null,
         "labels": {"nodes": labels},
         "parent": issue.parent.map(|number| json!({"number": number})),
-        "subIssues": {"nodes": pairs(&issue.sub)},
+        "subIssues": {
+            "totalCount": issue.sub_total.unwrap_or(issue.sub.len() as u64),
+            "nodes": pairs(&issue.sub),
+        },
         "blockedBy": {
             "totalCount": issue.blocked_by_total.unwrap_or(issue.blocked_by.len() as u64),
             "nodes": pairs(&issue.blocked_by),
@@ -100,27 +143,11 @@ fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfig
     })
 }
 
-fn responses_of(scenario: &Scenario, config: &TrackerConfigV1) -> Value {
-    let chunks: Vec<&[ScenarioIssue]> = if scenario.issues.is_empty() {
-        vec![&[]]
-    } else {
-        scenario.issues.chunks(scenario.page_size).collect()
-    };
-    let pages = chunks.len();
-    let issue_pages: Vec<Value> = chunks
-        .iter()
-        .enumerate()
-        .map(|(i, chunk)| {
-            let nodes: Vec<Value> = chunk.iter().map(|issue| issue_node(issue, scenario, config)).collect();
-            let more = i + 1 < pages;
-            json!({"repository": {"issues": {
-                "pageInfo": {"hasNextPage": more, "endCursor": more.then(|| format!("page-{}", i + 1))},
-                "nodes": nodes,
-            }}})
-        })
-        .collect();
-    let mut blocker_pages = serde_json::Map::new();
-    for (number, value) in &scenario.extra_blockers {
+/// The pages of a connection read one issue at a time (`blockedBy`, `subIssues`), from a scenario's lists
+/// of `[number, state]` pairs. A string instead of the pages makes the read fail.
+fn extra_pages(extra: &BTreeMap<String, Value>, connection: &str) -> Map<String, Value> {
+    let mut out = Map::new();
+    for (number, value) in extra {
         let entry = match value {
             Value::String(_) => value.clone(),
             Value::Array(extra_pages) => {
@@ -137,7 +164,7 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1) -> Value {
                                 .map(|pair| json!({"number": pair[0], "state": pair[1]}))
                                 .collect();
                             let more = i + 1 < count;
-                            json!({"repository": {"issue": {"blockedBy": {
+                            json!({"repository": {"issue": {connection: {
                                 "pageInfo": {"hasNextPage": more, "endCursor": more.then(|| format!("page-{}", i + 1))},
                                 "nodes": nodes,
                             }}}})
@@ -145,19 +172,44 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1) -> Value {
                         .collect(),
                 )
             }
-            other => panic!("extra_blockers.{number}: unexpected {other}"),
+            other => panic!("extra {connection} of #{number}: unexpected {other}"),
         };
-        blocker_pages.insert(number.clone(), entry);
+        out.insert(number.clone(), entry);
     }
+    out
+}
+
+fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
+    let chunks: Vec<&[ScenarioIssue]> = if scenario.issues.is_empty() {
+        vec![&[]]
+    } else {
+        scenario.issues.chunks(scenario.page_size).collect()
+    };
+    let pages = chunks.len();
+    let issue_pages: Vec<Value> = chunks
+        .iter()
+        .enumerate()
+        .map(|(i, chunk)| {
+            let nodes: Vec<Value> = chunk.iter().map(|issue| issue_node(issue, scenario, config, binding)).collect();
+            let more = i + 1 < pages;
+            json!({"repository": {"issues": {
+                "pageInfo": {"hasNextPage": more, "endCursor": more.then(|| format!("page-{}", i + 1))},
+                "nodes": nodes,
+            }}})
+        })
+        .collect();
     json!({
         "expect": {"o": config.owner, "r": config.repo},
         "issue_pages": issue_pages,
-        "blocker_pages": blocker_pages,
+        "blocker_pages": extra_pages(&scenario.extra_blockers, "blockedBy"),
+        "sub_issue_pages": extra_pages(&scenario.extra_sub_issues, "subIssues"),
     })
 }
 
 fn git_output(dossier: &Path, args: Args) -> String {
     let output = Pin::resolve(Program::Git).expect("git").launch(args, dossier).run().expect("git");
+    // An empty answer must mean nothing to report, never a git that failed.
+    assert!(output.status.success(), "git failed: {}", String::from_utf8_lossy(&output.stderr));
     String::from_utf8_lossy(&output.stdout).trim().to_owned()
 }
 
@@ -171,23 +223,37 @@ fn main() {
     let flag = |name: &str| {
         args.iter().position(|arg| arg == name).map(|i| args[i + 1].clone())
     };
-    let dossier = PathBuf::from(flag("--dossier").expect("--dossier <path>"));
+    // Absolute, because the prototype runs from the dossier's root and the driver takes the script's path.
+    let dossier = std::path::absolute(PathBuf::from(flag("--dossier").expect("--dossier <path>"))).expect("the dossier");
     let prototype = PythonPrototype::in_dossier(&dossier, flag("--python"));
     assert!(prototype.script.is_file(), "{} not found", prototype.script.display());
+    // RECORDED.json cites a commit: the prototype that answers must be that commit, not a working copy.
+    let tools = DossierPath::parse("tools").expect("a dossier path");
+    let local_changes = git_output(&dossier, git::status(&tools));
+    assert!(local_changes.is_empty(), "the dossier's tools/ has local changes:\n{local_changes}");
     let config = TrackerConfigV1::read(&fixtures_dir().join("tracker.json")).expect("tracker.json");
+    let binding = TrackerBinding::new(&config).expect("tracker.json binds every status");
     let table = Table::embedded();
+    // The interpreter, its flags and its limits are the facade's: the oracle answers as the product
+    // would start it. Only the driver comes in between, to fix the day.
+    let interpreter = prototype.interpreter().expect("a Python interpreter");
+    let driver = fixed_today_driver().display().to_string();
+    let script = prototype.script.display().to_string();
 
     for case in Case::all() {
         let scenario: Scenario = read_json(&fixtures_dir().join("scenarios").join(format!("{}.json", case.spec.scenario)));
         assert_eq!(scenario.project_id, config.project_id, "scenario and tracker.json must agree");
-        write_json(&case.responses_path(), &responses_of(&scenario, &config));
+        write_json(&case.responses_path(), &responses_of(&scenario, &config, &binding));
 
         let state = prepare_state_dir(&format!("record-{}", case.name));
         let log = state.join("gh.log");
         let argv = table
             .python_argv(case.command_name(), &case.spec.args[1..])
             .expect("the table knows the case's arguments");
-        let launch = prototype.launch(&argv).expect("the prototype");
+        let mut command: Vec<String> = python::FLAGS.map(str::to_owned).to_vec();
+        command.extend([driver.clone(), script.clone(), FIXTURE_TODAY.to_owned()]);
+        command.extend(argv);
+        let launch = regia_exec::harness::program(&interpreter, &command, &dossier).limits(PROTOTYPE_LIMITS);
         let output = fixture_for_python(launch, &case.responses_path(), &state)
             .env(&log_var(), &log)
             .run()
@@ -211,14 +277,15 @@ fn main() {
     }
 
     let head = GitRef::head();
-    let script = DossierPath::parse("tools/regia.py").expect("a dossier path");
+    let regia_py = DossierPath::parse("tools/regia.py").expect("a dossier path");
     write_json(
         &fixtures_dir().join("RECORDED.json"),
         &json!({
             "oracle_repository": "lelexdrugo/regia",
             "oracle_commit": git_output(&dossier, git::rev_parse(&head)),
-            "oracle_last_change_to_regia_py": git_output(&dossier, git::last_commit(CommitField::Hash, &head, Some(&script))),
+            "oracle_last_change_to_regia_py": git_output(&dossier, git::last_commit(CommitField::Hash, &head, Some(&regia_py))),
             "recorded_at": git_output(&dossier, git::last_commit(CommitField::Date, &head, None)),
+            "today": FIXTURE_TODAY,
         }),
     );
 }
