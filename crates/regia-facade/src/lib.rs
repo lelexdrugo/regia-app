@@ -14,7 +14,7 @@ use serde_json::{Map, Value};
 const FILES: &[(&str, &str)] = include!(concat!(env!("OUT_DIR"), "/tables.rs"));
 
 /// The prototype's entry point, relative to the dossier.
-const SCRIPT: &str = "tools/regia.py";
+pub const SCRIPT: &str = "tools/regia.py";
 
 /// A command of the prototype reads the tracker and may write: generous, but bounded.
 pub const PROTOTYPE_LIMITS: Limits = Limits { timeout: Duration::from_secs(600), stdout: 64 << 20, stderr: 4 << 20 };
@@ -306,6 +306,11 @@ impl Table {
 
     pub fn knows_command(&self, command: &str) -> bool {
         self.commands.contains_key(command)
+    }
+
+    /// Whether `command` prints JSON that the table translates, when `--json` is asked.
+    pub fn has_output(&self, command: &str) -> bool {
+        self.commands.get(command).is_some_and(|entry| entry.output.is_some())
     }
 
     /// The command named by the first one or two words of `argv`, the longer name first, and the rest.

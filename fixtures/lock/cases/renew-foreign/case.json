@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. The lock of alpha belongs to another holder and expired long ago, with no monotonic stamp. Renewing it is refused as someone else's, with exit 3, and its view says expired whatever the clock reads, so the case needs no clock.",
+  "args": ["lock", "renew", "alpha", "--holder", "worker-a", "--ttl", "60", "--json"],
+  "exit": 3,
+  "python": ["--json", "lock", "rinnova", "alpha", "--proprietario", "worker-a", "--ttl", "60"],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": {
+        "progetto": "alpha",
+        "proprietario": "worker-b",
+        "preso": "2026-01-01T08:00:00.000+00:00",
+        "ttl_s": 600,
+        "scade": "2026-01-01T08:10:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    }
+  ]
+}

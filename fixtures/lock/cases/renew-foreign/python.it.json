@@ -1,0 +1,16 @@
+{
+  "attuale": {
+    "al_posto_di": null,
+    "preso": "2026-01-01T08:00:00.000+00:00",
+    "progetto": "alpha",
+    "proprietario": "worker-b",
+    "rubato_il": null,
+    "scade": "2026-01-01T08:10:00.000+00:00",
+    "scade_tra_s": 0,
+    "scaduto": true,
+    "ttl_s": 600
+  },
+  "motivo": "lock di worker-b, non tuo",
+  "ok": false,
+  "stato": "altrui"
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "argv": [
+      "issue",
+      "edit",
+      "3",
+      "--repo",
+      "example/tracker",
+      "--add-label",
+      "maturità:pronto",
+      "--remove-label",
+      "maturità:abbozzo"
+    ],
+    "stdin": null
+  }
+]

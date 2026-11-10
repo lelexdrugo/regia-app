@@ -1,0 +1,5 @@
+{
+  "_note": "Synthetic. Marks #3 ready: one edit of its labels, the new maturity added and the other one removed. The prototype prints a line of text, which passes as it is, and reads nothing from the tracker.",
+  "args": ["task", "maturity", "3", "ready"],
+  "python": ["task", "maturita", "3", "pronto"]
+}

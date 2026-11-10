@@ -197,13 +197,14 @@ pub mod git {
 pub mod python {
     use crate::{Args, DossierPath, InvalidValue, Text};
 
-    /// The interpreter's flags for the prototype. `-E` and `-s` keep the `PYTHON*` variables and
-    /// the user's site packages out (threat model §3.2, T06). `-I` would also leave the script's
-    /// folder out of the imports, which the prototype's modules have not been proven without. UTF-8
-    /// mode is explicit because `-E` ignores the `PYTHONUTF8` the prototype's own sessions set.
-    pub const FLAGS: [&str; 4] = ["-X", "utf8", "-E", "-s"];
+    /// The interpreter's flags for the prototype. `-I` keeps the `PYTHON*` variables, the user's site
+    /// packages and the script's folder out (threat model §3.2, T06). The prototype loads its modules
+    /// by path, or puts their folder on `sys.path` itself, and runs the same without it: #440 compared
+    /// output, exit code, writes and activity log with `-E -s`. UTF-8 mode is explicit because `-I`
+    /// ignores the `PYTHONUTF8` the prototype's own sessions set.
+    pub const FLAGS: [&str; 3] = ["-X", "utf8", "-I"];
 
-    /// `python -X utf8 -E -s <script> <argv…>`, with [`FLAGS`].
+    /// `python -X utf8 -I <script> <argv…>`, with [`FLAGS`].
     ///
     /// Each element of `argv` is an option name from the facade table (`--json`) or a value, and a
     /// value never starts with a dash: the facade passes values untouched, so this is where a
