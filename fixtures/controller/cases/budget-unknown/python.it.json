@@ -1,0 +1,575 @@
+{
+  "altered": false,
+  "argv": [
+    "--giri",
+    "5",
+    "--intervallo",
+    "900",
+    "--lancio",
+    "finto",
+    "--no-ripresa"
+  ],
+  "cleanup": {
+    "controller_lock_dropped": true,
+    "records_dropped": {}
+  },
+  "config": {
+    "politica": {
+      "agente": "claude",
+      "effort": "high",
+      "fonte": "policies/models.yaml",
+      "modello": "opus"
+    },
+    "politica_budget": {
+      "aperte_per_progetto": 3,
+      "automatico_max_pct": 75.0,
+      "fonte": "file",
+      "motivo": null,
+      "nuove_per_settimana": 5,
+      "riempimento": true,
+      "riempimento_max_pct": 50.0,
+      "scodare": true,
+      "tetti_proposte": true
+    }
+  },
+  "controller_lock": {
+    "after_cleanup": false,
+    "after_exit": false,
+    "held_during_run": true
+  },
+  "exit": 0,
+  "launches_outside_ticks": [],
+  "moviola": [],
+  "scenario": "budget-unknown",
+  "start": "2026-01-10T09:00:00Z",
+  "ticks": [
+    {
+      "cursors": {},
+      "launches": [],
+      "log": {
+        "budget": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 1,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "decisione": "attesa-idle",
+        "giro": 1,
+        "lanciati": [],
+        "passi_vivi": [],
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "progetti": [],
+        "risveglio": false,
+        "sveglia": {
+          "errore": "sveglia finta: nessuna sessione avviata",
+          "finta": true,
+          "ok": false,
+          "t": "2026-01-10T09:00:00Z"
+        },
+        "t": "2026-01-10T09:00:00Z",
+        "v": 1
+      },
+      "precheck": {
+        "cursore": [
+          {
+            "progetto": "alpha",
+            "valore": "2026-01-10T08:00:00Z"
+          }
+        ],
+        "exit": 3,
+        "motivo": "budget",
+        "outcome": "idle",
+        "payload": {
+          "budget": {
+            "claude_5h_pct": null,
+            "motivo": "sonda: HTTP 429"
+          },
+          "politica": "file",
+          "progetti": [
+            {
+              "esito": "idle",
+              "eventi": 1,
+              "gate": 0,
+              "id": "alpha",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "budget",
+              "pronti": 1,
+              "report": 0,
+              "task": [
+                3
+              ]
+            }
+          ]
+        },
+        "t": "{precheck-t}",
+        "v": 1
+      },
+      "status": {
+        "avviato": "2026-01-10T09:00:00Z",
+        "budget": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 1,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "budget_sconosciuto": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 1,
+          "motivo": "sonda: HTTP 429"
+        },
+        "da_aprire": [],
+        "da_riprendere": 0,
+        "decisione": "attesa-idle",
+        "giro": 1,
+        "intervallo_s": 900.0,
+        "operazioni": {},
+        "passi_vivi": [],
+        "pid": "{pid}",
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "proprietario": "{controller}",
+        "sospese": [],
+        "sveglia": {
+          "errore": "sveglia finta: nessuna sessione avviata",
+          "finta": true,
+          "ok": false,
+          "t": "2026-01-10T09:00:00Z"
+        },
+        "ultimo_giro": "2026-01-10T09:00:00Z",
+        "v": 1
+      }
+    },
+    {
+      "cursors": {},
+      "launches": [],
+      "log": {
+        "budget": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 2,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "decisione": "attesa-idle",
+        "giro": 2,
+        "lanciati": [],
+        "passi_vivi": [],
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "progetti": [],
+        "risveglio": false,
+        "t": "2026-01-10T09:15:00Z",
+        "v": 1
+      },
+      "precheck": {
+        "cursore": [
+          {
+            "progetto": "alpha",
+            "valore": "2026-01-10T08:00:00Z"
+          }
+        ],
+        "exit": 3,
+        "motivo": "budget",
+        "outcome": "idle",
+        "payload": {
+          "budget": {
+            "claude_5h_pct": null,
+            "motivo": "sonda: HTTP 429"
+          },
+          "politica": "file",
+          "progetti": [
+            {
+              "esito": "idle",
+              "eventi": 1,
+              "gate": 0,
+              "id": "alpha",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "budget",
+              "pronti": 1,
+              "report": 0,
+              "task": [
+                3
+              ]
+            }
+          ]
+        },
+        "t": "{precheck-t}",
+        "v": 1
+      },
+      "status": {
+        "avviato": "2026-01-10T09:00:00Z",
+        "budget": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 2,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "budget_sconosciuto": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 2,
+          "motivo": "sonda: HTTP 429"
+        },
+        "da_aprire": [],
+        "da_riprendere": 0,
+        "decisione": "attesa-idle",
+        "giro": 2,
+        "intervallo_s": 900.0,
+        "operazioni": {},
+        "passi_vivi": [],
+        "pid": "{pid}",
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "proprietario": "{controller}",
+        "sospese": [],
+        "sveglia": {
+          "errore": "sveglia finta: nessuna sessione avviata",
+          "finta": true,
+          "ok": false,
+          "t": "2026-01-10T09:00:00Z"
+        },
+        "ultimo_giro": "2026-01-10T09:15:00Z",
+        "v": 1
+      }
+    },
+    {
+      "cursors": {},
+      "launches": [],
+      "log": {
+        "budget": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 3,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "decisione": "attesa-idle",
+        "giro": 3,
+        "lanciati": [],
+        "passi_vivi": [],
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "progetti": [],
+        "risveglio": false,
+        "t": "2026-01-10T09:30:00Z",
+        "v": 1
+      },
+      "precheck": {
+        "cursore": [
+          {
+            "progetto": "alpha",
+            "valore": "2026-01-10T08:00:00Z"
+          }
+        ],
+        "exit": 3,
+        "motivo": "budget",
+        "outcome": "idle",
+        "payload": {
+          "budget": {
+            "claude_5h_pct": null,
+            "motivo": "sonda: HTTP 429"
+          },
+          "politica": "file",
+          "progetti": [
+            {
+              "esito": "idle",
+              "eventi": 1,
+              "gate": 0,
+              "id": "alpha",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "budget",
+              "pronti": 1,
+              "report": 0,
+              "task": [
+                3
+              ]
+            }
+          ]
+        },
+        "t": "{precheck-t}",
+        "v": 1
+      },
+      "status": {
+        "avviato": "2026-01-10T09:00:00Z",
+        "budget": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 3,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "budget_sconosciuto": {
+          "allarme": false,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 3,
+          "motivo": "sonda: HTTP 429"
+        },
+        "da_aprire": [],
+        "da_riprendere": 0,
+        "decisione": "attesa-idle",
+        "giro": 3,
+        "intervallo_s": 900.0,
+        "operazioni": {},
+        "passi_vivi": [],
+        "pid": "{pid}",
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "proprietario": "{controller}",
+        "sospese": [],
+        "sveglia": {
+          "errore": "sveglia finta: nessuna sessione avviata",
+          "finta": true,
+          "ok": false,
+          "t": "2026-01-10T09:00:00Z"
+        },
+        "ultimo_giro": "2026-01-10T09:30:00Z",
+        "v": 1
+      }
+    },
+    {
+      "cursors": {},
+      "launches": [],
+      "log": {
+        "budget": {
+          "allarme": true,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 4,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "decisione": "attesa-idle",
+        "giro": 4,
+        "lanciati": [],
+        "passi_vivi": [],
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "progetti": [],
+        "risveglio": false,
+        "t": "2026-01-10T09:45:00Z",
+        "v": 1
+      },
+      "precheck": {
+        "cursore": [
+          {
+            "progetto": "alpha",
+            "valore": "2026-01-10T08:00:00Z"
+          }
+        ],
+        "exit": 3,
+        "motivo": "budget",
+        "outcome": "idle",
+        "payload": {
+          "budget": {
+            "claude_5h_pct": null,
+            "motivo": "sonda: HTTP 429"
+          },
+          "politica": "file",
+          "progetti": [
+            {
+              "esito": "idle",
+              "eventi": 1,
+              "gate": 0,
+              "id": "alpha",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "budget",
+              "pronti": 1,
+              "report": 0,
+              "task": [
+                3
+              ]
+            }
+          ]
+        },
+        "t": "{precheck-t}",
+        "v": 1
+      },
+      "status": {
+        "avviato": "2026-01-10T09:00:00Z",
+        "budget": {
+          "allarme": true,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 4,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "budget_sconosciuto": {
+          "allarme": true,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 4,
+          "motivo": "sonda: HTTP 429"
+        },
+        "da_aprire": [],
+        "da_riprendere": 0,
+        "decisione": "attesa-idle",
+        "giro": 4,
+        "intervallo_s": 900.0,
+        "operazioni": {},
+        "passi_vivi": [],
+        "pid": "{pid}",
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "proprietario": "{controller}",
+        "sospese": [],
+        "sveglia": {
+          "errore": "sveglia finta: nessuna sessione avviata",
+          "finta": true,
+          "ok": false,
+          "t": "2026-01-10T09:00:00Z"
+        },
+        "ultimo_giro": "2026-01-10T09:45:00Z",
+        "v": 1
+      }
+    },
+    {
+      "cursors": {},
+      "launches": [],
+      "log": {
+        "budget": {
+          "allarme": true,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 5,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "decisione": "attesa-idle",
+        "giro": 5,
+        "lanciati": [],
+        "passi_vivi": [],
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "progetti": [],
+        "risveglio": false,
+        "sveglia": {
+          "errore": "sveglia finta: nessuna sessione avviata",
+          "finta": true,
+          "ok": false,
+          "t": "2026-01-10T10:00:00Z"
+        },
+        "t": "2026-01-10T10:00:00Z",
+        "v": 1
+      },
+      "precheck": {
+        "cursore": [
+          {
+            "progetto": "alpha",
+            "valore": "2026-01-10T08:00:00Z"
+          }
+        ],
+        "exit": 3,
+        "motivo": "budget",
+        "outcome": "idle",
+        "payload": {
+          "budget": {
+            "claude_5h_pct": null,
+            "motivo": "sonda: HTTP 429"
+          },
+          "politica": "file",
+          "progetti": [
+            {
+              "esito": "idle",
+              "eventi": 1,
+              "gate": 0,
+              "id": "alpha",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "budget",
+              "pronti": 1,
+              "report": 0,
+              "task": [
+                3
+              ]
+            }
+          ]
+        },
+        "t": "{precheck-t}",
+        "v": 1
+      },
+      "status": {
+        "avviato": "2026-01-10T09:00:00Z",
+        "budget": {
+          "allarme": true,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 5,
+          "motivo": "sonda: HTTP 429",
+          "sconosciuto": true
+        },
+        "budget_sconosciuto": {
+          "allarme": true,
+          "da": "2026-01-10T09:00:00Z",
+          "giri": 5,
+          "motivo": "sonda: HTTP 429"
+        },
+        "da_aprire": [],
+        "da_riprendere": 0,
+        "decisione": "attesa-idle",
+        "giro": 5,
+        "intervallo_s": 900.0,
+        "operazioni": {},
+        "passi_vivi": [],
+        "pid": "{pid}",
+        "precheck": {
+          "exit": 3,
+          "motivo": "budget",
+          "outcome": "idle",
+          "t": "{precheck-t}"
+        },
+        "proprietario": "{controller}",
+        "sospese": [],
+        "sveglia": {
+          "errore": "sveglia finta: nessuna sessione avviata",
+          "finta": true,
+          "ok": false,
+          "t": "2026-01-10T10:00:00Z"
+        },
+        "ultimo_giro": "2026-01-10T10:00:00Z",
+        "v": 1
+      }
+    }
+  ],
+  "version": 1
+}

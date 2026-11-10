@@ -1,0 +1,49 @@
+{
+  "_note": "Synthetic. alpha has a ready task but another orchestrator holds its lock: idle/occupato, counted in the stall series. beta has a ready task and is launched. Two minutes later beta's step is still in its grace window and is skipped as alive, while alpha is still busy.",
+  "scenario": "project-busy",
+  "start": "2026-01-10T09:00:00Z",
+  "args": [
+    "--giri",
+    "2",
+    "--intervallo",
+    "120",
+    "--lancio",
+    "finto",
+    "--no-ripresa"
+  ],
+  "usage": {
+    "generato": "2026-01-10T08:59:00+00:00",
+    "provider": {
+      "claude": {
+        "provider": "claude",
+        "stato": "ok",
+        "piano": "max",
+        "finestre": {
+          "5h": {
+            "stato": "ok",
+            "usato_pct": 20.0,
+            "residuo_pct": 80.0,
+            "reset": "2026-01-10T12:00:00+00:00",
+            "reset_tra_s": 10800
+          },
+          "7d": {
+            "stato": "ok",
+            "usato_pct": 30.0,
+            "residuo_pct": 70.0,
+            "reset": "2026-01-14T00:00:00+00:00",
+            "reset_tra_s": 334800
+          }
+        },
+        "eta_s": 60,
+        "da_cache": true
+      }
+    },
+    "cache": {
+      "da_cache": true,
+      "min_intervallo_s": 300,
+      "eta_tentativo_s": 60
+    }
+  },
+  "reports": {},
+  "negative_control": "#4 is a proposal instead of approved, so only the busy project is left and nothing is launched"
+}

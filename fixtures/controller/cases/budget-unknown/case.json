@@ -1,0 +1,34 @@
+{
+  "_note": "Synthetic. A ready task on alpha, and the usage probe has no data (HTTP 429). Five ticks: the unknown-budget counter grows, the alarm starts at the fourth, and the wake-up (fake with the fake launcher) runs at the first and again at the fifth, one hour later.",
+  "scenario": "budget-unknown",
+  "start": "2026-01-10T09:00:00Z",
+  "args": [
+    "--giri",
+    "5",
+    "--intervallo",
+    "900",
+    "--lancio",
+    "finto",
+    "--no-ripresa"
+  ],
+  "usage": {
+    "generato": null,
+    "provider": {
+      "claude": {
+        "provider": "claude",
+        "stato": "sconosciuto",
+        "motivo": "HTTP 429",
+        "finestre": {},
+        "eta_s": null,
+        "da_cache": true
+      }
+    },
+    "cache": {
+      "da_cache": true,
+      "min_intervallo_s": 300,
+      "eta_tentativo_s": 60
+    }
+  },
+  "reports": {},
+  "negative_control": "#3 is a proposal instead of approved, so there is no candidate and the budget is not read"
+}

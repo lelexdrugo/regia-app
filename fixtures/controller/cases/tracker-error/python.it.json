@@ -1,0 +1,103 @@
+{
+  "altered": false,
+  "argv": [
+    "--una-volta",
+    "--intervallo",
+    "900",
+    "--lancio",
+    "finto",
+    "--no-ripresa"
+  ],
+  "cleanup": {
+    "controller_lock_dropped": true,
+    "records_dropped": {}
+  },
+  "config": {
+    "politica": {
+      "agente": "claude",
+      "effort": "high",
+      "fonte": "policies/models.yaml",
+      "modello": "opus"
+    },
+    "politica_budget": {
+      "aperte_per_progetto": 3,
+      "automatico_max_pct": 75.0,
+      "fonte": "file",
+      "motivo": null,
+      "nuove_per_settimana": 5,
+      "riempimento": true,
+      "riempimento_max_pct": 50.0,
+      "scodare": true,
+      "tetti_proposte": true
+    }
+  },
+  "controller_lock": {
+    "after_cleanup": false,
+    "after_exit": false,
+    "held_during_run": true
+  },
+  "exit": 0,
+  "launches_outside_ticks": [],
+  "moviola": [],
+  "scenario": "tracker-error",
+  "start": "2026-01-10T09:00:00Z",
+  "ticks": [
+    {
+      "cursors": {},
+      "launches": [],
+      "log": {
+        "budget": null,
+        "decisione": "attesa-errore",
+        "giro": 1,
+        "lanciati": [],
+        "passi_vivi": [],
+        "precheck": {
+          "exit": 1,
+          "motivo": "tracker",
+          "outcome": "error",
+          "t": "{precheck-t}"
+        },
+        "progetti": [],
+        "risveglio": false,
+        "t": "2026-01-10T09:00:00Z",
+        "v": 1
+      },
+      "precheck": {
+        "cursore": null,
+        "exit": 1,
+        "motivo": "tracker",
+        "outcome": "error",
+        "payload": {
+          "dettaglio": "RegiaError: gh api graphql -f…: fake gh: simulated failure for the issues list"
+        },
+        "t": "{precheck-t}",
+        "v": 1
+      },
+      "status": {
+        "avviato": "2026-01-10T09:00:00Z",
+        "budget": null,
+        "budget_sconosciuto": null,
+        "da_aprire": [],
+        "da_riprendere": 0,
+        "decisione": "attesa-errore",
+        "giro": 1,
+        "intervallo_s": 900.0,
+        "operazioni": {},
+        "passi_vivi": [],
+        "pid": "{pid}",
+        "precheck": {
+          "exit": 1,
+          "motivo": "tracker",
+          "outcome": "error",
+          "t": "{precheck-t}"
+        },
+        "proprietario": "{controller}",
+        "sospese": [],
+        "sveglia": null,
+        "ultimo_giro": "2026-01-10T09:00:00Z",
+        "v": 1
+      }
+    }
+  ],
+  "version": 1
+}

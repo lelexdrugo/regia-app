@@ -1,0 +1,49 @@
+{
+  "_note": "Synthetic. One ready task on alpha, with the budget known and under the threshold. The step is launched; at the second tick, 15 minutes later, the step without a pid is past its grace window, is reaped and launched again. The issues come in pages of two. The live state had two records of alpha in the steps registry, one suspended and one resuming: the copy drops them, so alpha launches instead of being skipped as suspended.",
+  "scenario": "work",
+  "start": "2026-01-10T09:00:00Z",
+  "args": [
+    "--giri",
+    "2",
+    "--intervallo",
+    "900",
+    "--lancio",
+    "finto",
+    "--no-ripresa"
+  ],
+  "usage": {
+    "generato": "2026-01-10T08:59:00+00:00",
+    "provider": {
+      "claude": {
+        "provider": "claude",
+        "stato": "ok",
+        "piano": "max",
+        "finestre": {
+          "5h": {
+            "stato": "ok",
+            "usato_pct": 20.0,
+            "residuo_pct": 80.0,
+            "reset": "2026-01-10T12:00:00+00:00",
+            "reset_tra_s": 10800
+          },
+          "7d": {
+            "stato": "ok",
+            "usato_pct": 30.0,
+            "residuo_pct": 70.0,
+            "reset": "2026-01-14T00:00:00+00:00",
+            "reset_tra_s": 334800
+          }
+        },
+        "eta_s": 60,
+        "da_cache": true
+      }
+    },
+    "cache": {
+      "da_cache": true,
+      "min_intervallo_s": 300,
+      "eta_tentativo_s": 60
+    }
+  },
+  "reports": {},
+  "negative_control": "#3 is a proposal instead of approved, so nothing is ready"
+}

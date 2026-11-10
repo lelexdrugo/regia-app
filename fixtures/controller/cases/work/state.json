@@ -1,0 +1,138 @@
+{
+  "documents": [
+    {
+      "tipo": "lock",
+      "chiave": "controller",
+      "doc": {
+        "progetto": "controller",
+        "proprietario": "controller-4242-live0000",
+        "preso": "2026-01-10T08:45:00.000+00:00",
+        "ttl_s": 600,
+        "scade": "2999-01-01T00:00:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    },
+    {
+      "tipo": "cursore",
+      "chiave": "alpha",
+      "doc": {
+        "valore": {
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        },
+        "aggiornato": "2026-01-10T08:00:00.000+00:00"
+      }
+    },
+    {
+      "tipo": "cursore",
+      "chiave": "beta",
+      "doc": {
+        "valore": {
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        },
+        "aggiornato": "2026-01-10T08:00:00.000+00:00"
+      }
+    },
+    {
+      "tipo": "cursore",
+      "chiave": "controller:passi",
+      "doc": {
+        "valore": {
+          "v": 1,
+          "passi": {
+            "alpha/sess-suspended": {
+              "progetto": "alpha",
+              "cartella": "{dossier}/alpha",
+              "origine": "controller",
+              "adapter": "cli",
+              "agente": "claude",
+              "modello": "opus",
+              "effort": "high",
+              "sessione": "sess-suspended",
+              "sessione_resume": "sess-suspended",
+              "sessione_orca": null,
+              "transcript": null,
+              "pid": null,
+              "log": null,
+              "marcatore": null,
+              "avviato_t": 1768032000.0,
+              "avviato": "2026-01-10T08:00:00Z",
+              "stato": "sospesa",
+              "aggiornato_t": 1768032000.0,
+              "riprese": []
+            },
+            "alpha/sess-resuming": {
+              "progetto": "alpha",
+              "cartella": "{dossier}/alpha",
+              "origine": "controller",
+              "adapter": "cli",
+              "agente": "claude",
+              "modello": "opus",
+              "effort": "high",
+              "sessione": "sess-resuming",
+              "sessione_resume": "sess-resuming",
+              "sessione_orca": null,
+              "transcript": null,
+              "pid": null,
+              "log": null,
+              "marcatore": null,
+              "avviato_t": 1768033800.0,
+              "avviato": "2026-01-10T08:30:00Z",
+              "stato": "in-ripresa",
+              "aggiornato_t": 1768033800.0,
+              "riprese": []
+            },
+            "beta/sess-finished": {
+              "progetto": "beta",
+              "cartella": "{dossier}/beta",
+              "origine": "controller",
+              "adapter": "cli",
+              "agente": "claude",
+              "modello": "opus",
+              "effort": "high",
+              "sessione": "sess-finished",
+              "sessione_resume": "sess-finished",
+              "sessione_orca": null,
+              "transcript": null,
+              "pid": null,
+              "log": null,
+              "marcatore": null,
+              "avviato_t": 1767949200.0,
+              "avviato": "2026-01-09T09:00:00Z",
+              "stato": "finito",
+              "aggiornato_t": 1767949200.0,
+              "riprese": []
+            }
+          }
+        },
+        "aggiornato": "2026-01-10T08:00:00.000+00:00"
+      }
+    }
+  ],
+  "files": {
+    "tracker.json": {
+      "_note": "Synthetic. Same format as the prototype's config/tracker.json; the ids are invented.",
+      "owner": "example",
+      "repo": "tracker",
+      "project_number": 1,
+      "project_id": "PROJECT_FIXTURE",
+      "project_url": "https://tracker.invalid/projects/1",
+      "status_field_id": "FIELD_FIXTURE",
+      "status_options": {
+        "Inbox": "opt-a1",
+        "Proposta": "opt-b2",
+        "Approvato": "opt-c3",
+        "In corso": "opt-d4",
+        "Decisione": "opt-e5",
+        "Fatto": "opt-f6",
+        "Scartato": "opt-g7"
+      }
+    }
+  }
+}

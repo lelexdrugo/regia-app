@@ -1,0 +1,28 @@
+{
+  "oracle_repository": "lelexdrugo/regia",
+  "oracle_commit": "25535c174e78c8c1c5ff59bccca745e8974f02bc",
+  "oracle_last_change": {
+    "tools/controller.py": "e0517d416312f67a3c5daa11a9f32106e936aa40",
+    "tools/precheck.py": "ab54425c3083fd4c68468e52c0c185dadd41ae33",
+    "tools/runtime.py": "e90a3e14094fafdd9050c78bc2e5caa377bd23fd",
+    "tools/sospese.py": "6b8fee6ba25351c8381b54924d0c6a1b431547d0",
+    "tools/regia.py": "9cda78f3c133d0f7f2e2afabd829a3aa8b9dd84c",
+    "tools/politica_budget.py": "8774a57f1d1d6593c6e3462e8c2b26a8da12771f",
+    "tools/lancio.py": "2273e16901496f39a50539298858f93d506bf232",
+    "policies/budget.yaml": "56ca936ae89b5a1bc4f2e76416a828b751105766",
+    "policies/models.yaml": "56ca936ae89b5a1bc4f2e76416a828b751105766"
+  },
+  "driver": "docs/app/ombra/driver.py",
+  "recorded_at": "2026-11-10",
+  "start": "2026-01-10T09:00:00Z",
+  "python_it_sha256": {
+    "no-work": "ec2738e0999fd1e6dacd024219d5fc7c76b3f508b68299db95e8ce535c91350a",
+    "work": "509e40565667c049e8cd242fe3c8f1941003e957f79003720871554c637db845",
+    "budget-over": "ad97c6d0fe5949069c4ab6f3acfbe440a6075f0e839442365cdee90013002ac5",
+    "budget-unknown": "6ff9a59387baa8dfbb5b9c897987066a2a964fcc1721b66c73719314b5ab06da",
+    "stall": "6c5ca8944b099c51faac645de55852c84966e28f640cb74f61fd94ea62c524dd",
+    "project-busy": "63ab78856698fab0bedd634dd652616b8d331f911a8285e4b3070de2a0501f4b",
+    "round-limit": "4f01cfaae3bfcd0aa070f858c424a4163df4df028793a32c153b3f10fab11185",
+    "tracker-error": "fda6f507232f77c68eeff7f69c680f8049812a3bdd77b84bc193c96fabce6d23"
+  }
+}

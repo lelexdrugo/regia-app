@@ -1,0 +1,10 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "issue_pages": "simulated failure",
+  "blocker_pages": {},
+  "sub_issue_pages": {},
+  "comments": {}
+}

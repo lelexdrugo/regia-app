@@ -1,0 +1,245 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "issue_pages": [
+    {
+      "repository": {
+        "issues": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": [
+            {
+              "number": 1,
+              "title": "objective of alpha",
+              "state": "OPEN",
+              "stateReason": null,
+              "body": "Synthetic objective of alpha.\n\n<!-- regia:progetto\nid: alpha\ncartella: {dossier}/alpha\nwip: 2\npriorita: 3\n-->\n",
+              "url": "https://tracker.invalid/issues/1",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "createdAt": "2026-01-01T00:00:00Z",
+              "closedAt": null,
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "parent": null,
+              "subIssues": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "blockedBy": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    },
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "optionId": "opt-another-select",
+                          "name": "Medium",
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          }
+                        },
+                        {
+                          "optionId": "opt-d4",
+                          "name": "In corso",
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "number": 2,
+              "title": "objective of beta",
+              "state": "OPEN",
+              "stateReason": null,
+              "body": "Synthetic objective of beta.\n\n<!-- regia:progetto\nid: beta\ncartella: {dossier}/beta\nwip: 2\npriorita: 3\n-->\n",
+              "url": "https://tracker.invalid/issues/2",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "createdAt": "2026-01-01T00:00:00Z",
+              "closedAt": null,
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "parent": null,
+              "subIssues": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "blockedBy": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    },
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "optionId": "opt-another-select",
+                          "name": "Medium",
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          }
+                        },
+                        {
+                          "optionId": "opt-d4",
+                          "name": "In corso",
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "number": 3,
+              "title": "proposal waiting for the owner, with no new comment",
+              "state": "OPEN",
+              "stateReason": null,
+              "body": "",
+              "url": "https://tracker.invalid/issues/3",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "createdAt": "2026-01-01T00:00:00Z",
+              "closedAt": null,
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "parent": null,
+              "subIssues": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "blockedBy": {
+                "totalCount": 0,
+                "nodes": []
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    },
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "optionId": "opt-another-select",
+                          "name": "Medium",
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          }
+                        },
+                        {
+                          "optionId": "opt-b2",
+                          "name": "Proposta",
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "blocker_pages": {},
+  "sub_issue_pages": {},
+  "comments": {
+    "3": {
+      "repository": {
+        "issue": {
+          "comments": {
+            "nodes": [
+              {
+                "databaseId": 901,
+                "createdAt": "2026-01-09T10:00:00Z",
+                "body": "An older comment by a person: before the cursor, so not an event."
+              },
+              {
+                "databaseId": 902,
+                "createdAt": "2026-01-10T08:30:00Z",
+                "body": "A newer comment, signed by the regia: not the owner's.\n\n— regia · worker\n<!-- regia:autore ruolo=worker sessione=fixture -->"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

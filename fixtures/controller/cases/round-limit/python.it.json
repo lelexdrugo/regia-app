@@ -1,0 +1,480 @@
+{
+  "altered": false,
+  "argv": [
+    "--giri",
+    "2",
+    "--intervallo",
+    "900",
+    "--lancio",
+    "finto",
+    "--no-ripresa"
+  ],
+  "cleanup": {
+    "controller_lock_dropped": true,
+    "records_dropped": {}
+  },
+  "config": {
+    "politica": {
+      "agente": "claude",
+      "effort": "high",
+      "fonte": "policies/models.yaml",
+      "modello": "opus"
+    },
+    "politica_budget": {
+      "aperte_per_progetto": 3,
+      "automatico_max_pct": 75.0,
+      "fonte": "file",
+      "motivo": null,
+      "nuove_per_settimana": 5,
+      "riempimento": true,
+      "riempimento_max_pct": 50.0,
+      "scodare": true,
+      "tetti_proposte": true
+    }
+  },
+  "controller_lock": {
+    "after_cleanup": false,
+    "after_exit": false,
+    "held_during_run": true
+  },
+  "exit": 0,
+  "launches_outside_ticks": [],
+  "moviola": [],
+  "scenario": "round-limit",
+  "start": "2026-01-10T09:00:00Z",
+  "ticks": [
+    {
+      "cursors": {
+        "alpha:rilevatore": {
+          "serie": {
+            "da": "2026-01-10T09:00:00Z",
+            "digest": "04869aa882cb",
+            "n": 1,
+            "ultimo": "2026-01-10T09:00:00Z",
+            "visti": {}
+          },
+          "v": 1
+        },
+        "beta:rilevatore": {
+          "serie": {
+            "da": "2026-01-10T09:00:00Z",
+            "digest": "da67e649da5e",
+            "n": 1,
+            "ultimo": "2026-01-10T09:00:00Z",
+            "visti": {}
+          },
+          "v": 1
+        },
+        "beta:rinvio": {
+          "giro": 1,
+          "id": "{rinvio-1}",
+          "motivo": "rinviato-limite-giro",
+          "t": "2026-01-10T09:00:00Z",
+          "v": 1
+        },
+        "controller:passi": {
+          "passi": {
+            "alpha/t1768035600": {
+              "adapter": "finto",
+              "agente": "claude",
+              "aggiornato_t": 1768035600.0,
+              "avviato": "2026-01-10T09:00:00Z",
+              "avviato_t": 1768035600.0,
+              "cartella": "{dossier}/alpha",
+              "effort": "high",
+              "log": null,
+              "marcatore": null,
+              "modello": "opus",
+              "origine": "controller",
+              "pid": null,
+              "progetto": "alpha",
+              "riprese": [],
+              "sessione": null,
+              "sessione_orca": null,
+              "sessione_resume": null,
+              "stato": "lanciato",
+              "transcript": null
+            }
+          },
+          "v": 1
+        }
+      },
+      "launches": [
+        {
+          "folder": "{dossier}/alpha",
+          "options": {
+            "agente": "claude",
+            "effort": "high",
+            "modello": "opus"
+          },
+          "project": "alpha",
+          "prompt": "Sei un passo di orchestratore della regia sul progetto \"alpha\" (cartella {dossier}/alpha), avviato dal controller residente: nessuno ti segue in chat e nessuno può rispondere durante il passo.\n\nUsa la skill regia ed esegui UN solo passo di orchestratore su questo progetto, secondo il protocollo §1: comincia con `regia passo inizio --progetto alpha` (se esce 3 un altro orchestratore è già attivo: fermati e dillo, non ripianificare), poi osserva, ripianifica, dispaccia e registra, e chiudi con `regia passo fine --progetto alpha --proprietario <il tuo id>`. Poi fermati: non iniziare un altro giro.\nUn passo è un'ondata: dispaccia insieme tutti i task eseguibili e indipendenti, fino al wip del progetto e al budget (§1.3), e lascia che ogni worker divida il proprio task fra sottoagenti. Non aspettare i worker: i loro report faranno partire il passo successivo.\nI worker si lanciano secondo il protocollo §1.3: con `orca orchestration worker-start` se Orca è raggiungibile e `run-create` riesce, altrimenti con i sottoagenti. I gate del protocollo valgono come sempre: ciò che è irreversibile o esce verso l'esterno passa da Decisione.\n\nIl controller ha rilevato lavoro (new-activity/pronti, precheck del {precheck-t}). Solo conteggi e id: i fatti rileggili dal tracker e da .regia/.\n{\"progetti\":[{\"id\":\"alpha\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[3],\"serie\":1},{\"id\":\"beta\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[4],\"serie\":1}],\"budget\":{\"claude_5h_pct\":20.0},\"politica\":\"file\"}\n"
+        }
+      ],
+      "log": {
+        "budget": {
+          "claude_5h_pct": 20.0,
+          "sconosciuto": false
+        },
+        "decisione": "lancio",
+        "giro": 1,
+        "lanciati": [
+          {
+            "adapter": "finto",
+            "agente": "claude",
+            "avviato": false,
+            "effort": "high",
+            "log": null,
+            "modello": "opus",
+            "pid": null,
+            "progetto": "alpha",
+            "sessione": null,
+            "transcript": null
+          }
+        ],
+        "passi_vivi": [
+          "alpha"
+        ],
+        "precheck": {
+          "exit": 0,
+          "motivo": "pronti",
+          "outcome": "new-activity",
+          "t": "{precheck-t}"
+        },
+        "progetti": [
+          {
+            "azione": "lanciato",
+            "esito": "new-activity",
+            "motivo": "pronti",
+            "progetto": "alpha"
+          },
+          {
+            "azione": "rinviato-limite-giro",
+            "esito": "new-activity",
+            "motivo": "pronti",
+            "progetto": "beta"
+          }
+        ],
+        "risveglio": false,
+        "t": "2026-01-10T09:00:00Z",
+        "v": 1
+      },
+      "precheck": {
+        "cursore": [
+          {
+            "progetto": "alpha",
+            "valore": "2026-01-10T08:00:00Z"
+          },
+          {
+            "progetto": "beta",
+            "valore": "2026-01-10T08:00:00Z"
+          }
+        ],
+        "exit": 0,
+        "motivo": "pronti",
+        "outcome": "new-activity",
+        "payload": {
+          "budget": {
+            "claude_5h_pct": 20.0
+          },
+          "politica": "file",
+          "progetti": [
+            {
+              "esito": "new-activity",
+              "eventi": 1,
+              "gate": 0,
+              "id": "alpha",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "pronti",
+              "pronti": 1,
+              "report": 0,
+              "serie": 1,
+              "task": [
+                3
+              ]
+            },
+            {
+              "esito": "new-activity",
+              "eventi": 1,
+              "gate": 0,
+              "id": "beta",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "pronti",
+              "pronti": 1,
+              "report": 0,
+              "serie": 1,
+              "task": [
+                4
+              ]
+            }
+          ]
+        },
+        "t": "{precheck-t}",
+        "v": 1
+      },
+      "status": {
+        "avviato": "2026-01-10T09:00:00Z",
+        "budget": {
+          "claude_5h_pct": 20.0,
+          "sconosciuto": false
+        },
+        "budget_sconosciuto": null,
+        "da_aprire": [],
+        "da_riprendere": 0,
+        "decisione": "lancio",
+        "giro": 1,
+        "intervallo_s": 900.0,
+        "operazioni": {},
+        "passi_vivi": [
+          "alpha"
+        ],
+        "pid": "{pid}",
+        "precheck": {
+          "exit": 0,
+          "motivo": "pronti",
+          "outcome": "new-activity",
+          "t": "{precheck-t}"
+        },
+        "proprietario": "{controller}",
+        "sospese": [],
+        "sveglia": null,
+        "ultimo_giro": "2026-01-10T09:00:00Z",
+        "v": 1
+      }
+    },
+    {
+      "cursors": {
+        "alpha:rilevatore": {
+          "serie": {
+            "da": "2026-01-10T09:00:00Z",
+            "digest": "04869aa882cb",
+            "n": 2,
+            "ultimo": "2026-01-10T09:15:00Z",
+            "visti": {}
+          },
+          "v": 1
+        },
+        "beta:rilevatore": {
+          "serie": {
+            "da": "2026-01-10T09:00:00Z",
+            "digest": "da67e649da5e",
+            "n": 1,
+            "ultimo": "2026-01-10T09:15:00Z",
+            "visti": {
+              "p": "{rinvio-1}"
+            }
+          },
+          "v": 1
+        },
+        "beta:rinvio": {
+          "giro": 2,
+          "id": "{rinvio-2}",
+          "motivo": "rinviato-limite-giro",
+          "t": "2026-01-10T09:15:00Z",
+          "v": 1
+        },
+        "controller:passi": {
+          "passi": {
+            "alpha/t1768035600": {
+              "adapter": "finto",
+              "agente": "claude",
+              "aggiornato_t": 1768036500.0,
+              "avviato": "2026-01-10T09:00:00Z",
+              "avviato_t": 1768035600.0,
+              "cartella": "{dossier}/alpha",
+              "effort": "high",
+              "log": null,
+              "marcatore": null,
+              "modello": "opus",
+              "origine": "controller",
+              "pid": null,
+              "progetto": "alpha",
+              "riprese": [],
+              "sessione": null,
+              "sessione_orca": null,
+              "sessione_resume": null,
+              "stato": "finito",
+              "transcript": null
+            },
+            "alpha/t1768036500": {
+              "adapter": "finto",
+              "agente": "claude",
+              "aggiornato_t": 1768036500.0,
+              "avviato": "2026-01-10T09:15:00Z",
+              "avviato_t": 1768036500.0,
+              "cartella": "{dossier}/alpha",
+              "effort": "high",
+              "log": null,
+              "marcatore": null,
+              "modello": "opus",
+              "origine": "controller",
+              "pid": null,
+              "progetto": "alpha",
+              "riprese": [],
+              "sessione": null,
+              "sessione_orca": null,
+              "sessione_resume": null,
+              "stato": "lanciato",
+              "transcript": null
+            }
+          },
+          "v": 1
+        }
+      },
+      "launches": [
+        {
+          "folder": "{dossier}/alpha",
+          "options": {
+            "agente": "claude",
+            "effort": "high",
+            "modello": "opus"
+          },
+          "project": "alpha",
+          "prompt": "Sei un passo di orchestratore della regia sul progetto \"alpha\" (cartella {dossier}/alpha), avviato dal controller residente: nessuno ti segue in chat e nessuno può rispondere durante il passo.\n\nUsa la skill regia ed esegui UN solo passo di orchestratore su questo progetto, secondo il protocollo §1: comincia con `regia passo inizio --progetto alpha` (se esce 3 un altro orchestratore è già attivo: fermati e dillo, non ripianificare), poi osserva, ripianifica, dispaccia e registra, e chiudi con `regia passo fine --progetto alpha --proprietario <il tuo id>`. Poi fermati: non iniziare un altro giro.\nUn passo è un'ondata: dispaccia insieme tutti i task eseguibili e indipendenti, fino al wip del progetto e al budget (§1.3), e lascia che ogni worker divida il proprio task fra sottoagenti. Non aspettare i worker: i loro report faranno partire il passo successivo.\nI worker si lanciano secondo il protocollo §1.3: con `orca orchestration worker-start` se Orca è raggiungibile e `run-create` riesce, altrimenti con i sottoagenti. I gate del protocollo valgono come sempre: ciò che è irreversibile o esce verso l'esterno passa da Decisione.\n\nIl controller ha rilevato lavoro (new-activity/pronti, precheck del {precheck-t}). Solo conteggi e id: i fatti rileggili dal tracker e da .regia/.\n{\"progetti\":[{\"id\":\"alpha\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[3],\"serie\":2},{\"id\":\"beta\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[4],\"serie\":1,\"rinviato\":true}],\"budget\":{\"claude_5h_pct\":20.0},\"politica\":\"file\"}\n"
+        }
+      ],
+      "log": {
+        "budget": {
+          "claude_5h_pct": 20.0,
+          "sconosciuto": false
+        },
+        "decisione": "lancio",
+        "giro": 2,
+        "lanciati": [
+          {
+            "adapter": "finto",
+            "agente": "claude",
+            "avviato": false,
+            "effort": "high",
+            "log": null,
+            "modello": "opus",
+            "pid": null,
+            "progetto": "alpha",
+            "sessione": null,
+            "transcript": null
+          }
+        ],
+        "passi_finiti": [
+          {
+            "perche": "senza pid: grazia finita",
+            "progetto": "alpha"
+          }
+        ],
+        "passi_vivi": [
+          "alpha"
+        ],
+        "precheck": {
+          "exit": 0,
+          "motivo": "pronti",
+          "outcome": "new-activity",
+          "t": "{precheck-t}"
+        },
+        "progetti": [
+          {
+            "azione": "lanciato",
+            "esito": "new-activity",
+            "motivo": "pronti",
+            "progetto": "alpha"
+          },
+          {
+            "azione": "rinviato-limite-giro",
+            "esito": "new-activity",
+            "motivo": "pronti",
+            "progetto": "beta"
+          }
+        ],
+        "risveglio": false,
+        "t": "2026-01-10T09:15:00Z",
+        "v": 1
+      },
+      "precheck": {
+        "cursore": [
+          {
+            "progetto": "alpha",
+            "valore": "2026-01-10T08:00:00Z"
+          },
+          {
+            "progetto": "beta",
+            "valore": "2026-01-10T08:00:00Z"
+          }
+        ],
+        "exit": 0,
+        "motivo": "pronti",
+        "outcome": "new-activity",
+        "payload": {
+          "budget": {
+            "claude_5h_pct": 20.0
+          },
+          "politica": "file",
+          "progetti": [
+            {
+              "esito": "new-activity",
+              "eventi": 1,
+              "gate": 0,
+              "id": "alpha",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "pronti",
+              "pronti": 1,
+              "report": 0,
+              "serie": 2,
+              "task": [
+                3
+              ]
+            },
+            {
+              "esito": "new-activity",
+              "eventi": 1,
+              "gate": 0,
+              "id": "beta",
+              "inbox": 0,
+              "lease": 0,
+              "motivo": "pronti",
+              "pronti": 1,
+              "report": 0,
+              "rinviato": true,
+              "serie": 1,
+              "task": [
+                4
+              ]
+            }
+          ]
+        },
+        "t": "{precheck-t}",
+        "v": 1
+      },
+      "status": {
+        "avviato": "2026-01-10T09:00:00Z",
+        "budget": {
+          "claude_5h_pct": 20.0,
+          "sconosciuto": false
+        },
+        "budget_sconosciuto": null,
+        "da_aprire": [],
+        "da_riprendere": 0,
+        "decisione": "lancio",
+        "giro": 2,
+        "intervallo_s": 900.0,
+        "operazioni": {},
+        "passi_vivi": [
+          "alpha"
+        ],
+        "pid": "{pid}",
+        "precheck": {
+          "exit": 0,
+          "motivo": "pronti",
+          "outcome": "new-activity",
+          "t": "{precheck-t}"
+        },
+        "proprietario": "{controller}",
+        "sospese": [],
+        "sveglia": null,
+        "ultimo_giro": "2026-01-10T09:15:00Z",
+        "v": 1
+      }
+    }
+  ],
+  "version": 1
+}

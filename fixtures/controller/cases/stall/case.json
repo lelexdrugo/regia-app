@@ -1,0 +1,49 @@
+{
+  "_note": "Synthetic. A ready task on alpha that the launched steps never consume. Five ticks of 15 minutes: four launches of the orchestrator step while the stall series grows, then the series reaches three ticks and one hour and the fifth tick launches the stall-signalling step.",
+  "scenario": "stall",
+  "start": "2026-01-10T09:00:00Z",
+  "args": [
+    "--giri",
+    "5",
+    "--intervallo",
+    "900",
+    "--lancio",
+    "finto",
+    "--no-ripresa"
+  ],
+  "usage": {
+    "generato": "2026-01-10T08:59:00+00:00",
+    "provider": {
+      "claude": {
+        "provider": "claude",
+        "stato": "ok",
+        "piano": "max",
+        "finestre": {
+          "5h": {
+            "stato": "ok",
+            "usato_pct": 20.0,
+            "residuo_pct": 80.0,
+            "reset": "2026-01-10T12:00:00+00:00",
+            "reset_tra_s": 10800
+          },
+          "7d": {
+            "stato": "ok",
+            "usato_pct": 30.0,
+            "residuo_pct": 70.0,
+            "reset": "2026-01-14T00:00:00+00:00",
+            "reset_tra_s": 334800
+          }
+        },
+        "eta_s": 60,
+        "da_cache": true
+      }
+    },
+    "cache": {
+      "da_cache": true,
+      "min_intervallo_s": 300,
+      "eta_tentativo_s": 60
+    }
+  },
+  "reports": {},
+  "negative_control": "#3 is a proposal instead of approved, so the project waits for the owner and never stalls"
+}
