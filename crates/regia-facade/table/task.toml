@@ -1,0 +1,11 @@
+# `task`: the tracker's tasks. Only `task maturity` for now, the text and mutation case of the
+# facade's engine; the other subcommands come with their slice. Name from the conformance study, §8
+# (`conformita.md` of the dossier), not decided: it goes to the gate of the names with the rest.
+schema = 1
+
+# Prints a line of text, which passes as it is: the skill reads only the exit code.
+[commands."task maturity"]
+python = ["task", "maturita"]
+group = "writes"
+# The issue number passes; the maturity translates.
+positionals = [{}, { enum = "maturity" }]

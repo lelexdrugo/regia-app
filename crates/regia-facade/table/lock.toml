@@ -1,0 +1,53 @@
+# `lock`: the project lock, one orchestrator at a time; a refusal exits with 3. Only `lock renew` for
+# now, the exit-3 case of the facade's engine; the other subcommands come with their slice. Names
+# from the conformance study, §8 (`conformita.md` of the dossier), not decided: they go to the gate
+# of the names with the rest.
+schema = 1
+
+[commands."lock renew"]
+python = ["lock", "rinnova"]
+group = "state"
+output = "lock_outcome"
+positionals = [{}]
+[commands."lock renew".args]
+"--holder" = "--proprietario"
+"--ttl" = "--ttl"
+
+[enums.lock_status]
+preso = "taken"
+rinnovato = "renewed"
+rubato = "stolen"
+occupato = "busy"
+rilasciato = "released"
+altrui = "foreign"
+assente = "absent"
+libero = "free"
+
+# An outcome is the view of the lock it wrote, or a refusal with the reason and the lock as it is.
+[shapes.lock_outcome.fields]
+ok = { to = "ok" }
+stato = { to = "status", enum = "lock_status" }
+motivo = { to = "reason" }
+attuale = { to = "current", shape = "lock_view" }
+progetto = { to = "project" }
+proprietario = { to = "holder" }
+preso = { to = "taken_at" }
+ttl_s = { to = "ttl_s" }
+scade = { to = "expires_at" }
+al_posto_di = { to = "replaced" }
+rubato_il = { to = "stolen_at" }
+rinnovato = { to = "renewed_at" }
+scaduto = { to = "expired" }
+scade_tra_s = { to = "expires_in_s" }
+
+[shapes.lock_view.fields]
+progetto = { to = "project" }
+proprietario = { to = "holder" }
+preso = { to = "taken_at" }
+ttl_s = { to = "ttl_s" }
+scade = { to = "expires_at" }
+al_posto_di = { to = "replaced" }
+rubato_il = { to = "stolen_at" }
+rinnovato = { to = "renewed_at" }
+scaduto = { to = "expired" }
+scade_tra_s = { to = "expires_in_s" }

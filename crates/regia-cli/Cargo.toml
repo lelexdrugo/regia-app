@@ -13,6 +13,7 @@ path = "src/main.rs"
 [dependencies]
 clap.workspace = true
 regia-core.workspace = true
+regia-exec.workspace = true
 regia-facade.workspace = true
 regia-i18n.workspace = true
 regia-identity.workspace = true

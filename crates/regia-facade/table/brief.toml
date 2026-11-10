@@ -1,32 +1,13 @@
-# The facade table (ADR 0017 §4, ADR 0001 "Facade"). Disposable: it disappears with the Python.
-#
-# Translation walks the JSON by shape, so data is never touched: a project called like a key stays
-# as it is. It fails closed on keys and on listed enums: an unknown one is an error. Values of other
-# fields pass as they are, so tracker labels and the prototype's prose stay in its language; they are
-# data, not contract. A key that goes missing is caught by the conformance diff, not here. Only the
-# commands listed here exist for the facade.
+# `brief`: what waits for the owner, what is ready, what is running. The rules of the table are in
+# `common.toml`, with the status, the maturity and the task this file uses.
 schema = 1
 
 [commands.brief]
 python = ["brief"]
+group = "state"
 output = "brief"
 [commands.brief.args]
 "--project" = "--progetto"
-
-[enums.status]
-"Inbox" = "inbox"
-"Proposta" = "proposal"
-"Approvato" = "approved"
-"In corso" = "in_progress"
-"Decisione" = "decision"
-"Fatto" = "done"
-"Scartato" = "discarded"
-# Key of the per-project counts for a task with no status.
-"—" = "unset"
-
-[enums.maturity]
-abbozzo = "draft"
-pronto = "ready"
 
 [enums.dossier_problem]
 cartella-mancante = "folder_missing"
@@ -48,33 +29,6 @@ entro_ignorati = { to = "due_ignored", items = "due_ignored_item" }
 controller = { to = "controller", shape = "controller_warnings" }
 dossier = { to = "dossier", items = "dossier_warning" }
 fuori_dal_tracker = { to = "outside_tracker", values = "outside_tracker_project" }
-
-[shapes.task.fields]
-number = { to = "number" }
-title = { to = "title" }
-state = { to = "state" }
-stateReason = { to = "state_reason" }
-stato = { to = "status", enum = "status" }
-progetto = { to = "project" }
-campo_progetto = { to = "project_field" }
-maturita = { to = "maturity", enum = "maturity" }
-obiettivo = { to = "objective" }
-labels = { to = "labels" }
-parent = { to = "parent" }
-sub = { to = "sub_issues" }
-bloccato_da = { to = "blocked_by" }
-bloccato_da_totale = { to = "blocked_by_total" }
-url = { to = "url" }
-updatedAt = { to = "updated_at" }
-createdAt = { to = "created_at" }
-closedAt = { to = "closed_at" }
-sblocca = { to = "unblocks" }
-sblocca_totale = { to = "unblocks_total" }
-catena = { to = "chain" }
-ciclo = { to = "cycle" }
-entro = { to = "due" }
-entro_vicino = { to = "due_soon" }
-entro_scaduto = { to = "overdue" }
 
 [shapes.status_counts]
 key_enum = "status"

@@ -49,7 +49,8 @@ fn main() -> ExitCode {
         let args = ["brief".to_owned(), "--json".to_owned()];
         let output = regia_exec::harness::launch(&regia_binary(), &args, &dossier)
             .env(&prototype_env_var("HOME"), &dossier)
-            .without(&env_var("ENGINE"))
+            // With the dossier here, the brief would go to the prototype: this side must be the Rust one.
+            .env(&env_var("ENGINE"), "rust")
             .run()
             .expect("run regia");
         assert!(output.status.success(), "regia failed: {}", String::from_utf8_lossy(&output.stderr));

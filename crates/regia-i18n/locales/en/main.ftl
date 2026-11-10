@@ -10,3 +10,6 @@ brief-error = The brief could not be read: { $reason }
 brief-partial = Not ported yet: controller, dossier and outside-tracker warnings are not shown.
 brief-cycle = Dependencies in a cycle, no graph order: { $reason }
 brief-truncated = Dependencies only partly read: { $reason }
+facade-not-ported = `{ $command }` is not ported to this version yet, and there is no prototype on this machine to run it.
+facade-no-prototype = `{ $command }` was sent to the prototype, but there is no prototype on this machine.
+facade-no-python = `{ $command }` runs on the prototype, and no Python interpreter was found to start it.

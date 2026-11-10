@@ -1,0 +1,14 @@
+# Where a command runs on a machine that has the prototype, by group (ADR 0001 §11). Each gate of the
+# dossier flips one line when it passes: `reads` at #500, `writes` at #501, `state` at #502. A command
+# this binary does not implement goes to the prototype whatever its group says, and on a machine with
+# no prototype a command that is ported runs natively. `REGIA_ENGINE` overrides the switch, for checks.
+schema = 1
+
+[groups.reads]
+route = "prototype"
+
+[groups.writes]
+route = "prototype"
+
+[groups.state]
+route = "prototype"
