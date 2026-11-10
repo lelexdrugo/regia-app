@@ -10,6 +10,7 @@ publish = false
 
 [workspace.dependencies]
 regia-core = { path = "crates/regia-core" }
+regia-exec = { path = "crates/regia-exec" }
 regia-facade = { path = "crates/regia-facade" }
 regia-github = { path = "crates/regia-github" }
 regia-i18n = { path = "crates/regia-i18n" }

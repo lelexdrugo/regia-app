@@ -7,10 +7,11 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
-use regia_conformance::{Case, apply_fixture_env, fixtures_dir, log_var, prepare_state_dir, read_json};
+use regia_conformance::{Case, fixture_for_python, fixtures_dir, log_var, prepare_state_dir, read_json};
 use regia_core::TrackerConfigV1;
+use regia_exec::git::{self, CommitField};
+use regia_exec::{Args, DossierPath, GitRef, Pin, Program};
 use regia_facade::{PythonPrototype, Table};
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -155,8 +156,8 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1) -> Value {
     })
 }
 
-fn git_output(dossier: &Path, args: &[&str]) -> String {
-    let output = Command::new("git").arg("-C").arg(dossier).args(args).output().expect("git");
+fn git_output(dossier: &Path, args: Args) -> String {
+    let output = Pin::resolve(Program::Git).expect("git").launch(args, dossier).run().expect("git");
     String::from_utf8_lossy(&output.stdout).trim().to_owned()
 }
 
@@ -186,10 +187,11 @@ fn main() {
         let argv = table
             .python_argv(case.command_name(), &case.spec.args[1..])
             .expect("the table knows the case's arguments");
-        let mut command = prototype.command(&argv);
-        apply_fixture_env(&mut command, &case.responses_path(), &state);
-        command.env(log_var(), &log);
-        let output = command.output().expect("run the prototype");
+        let launch = prototype.launch(&argv).expect("the prototype");
+        let output = fixture_for_python(launch, &case.responses_path(), &state)
+            .env(&log_var(), &log)
+            .run()
+            .expect("run the prototype");
         assert!(
             output.status.success(),
             "{}: the prototype failed: {}",
@@ -208,13 +210,15 @@ fn main() {
         println!("{}: {} calls to the fake gh, {} URLs, all synthetic", case.name, calls.lines().count(), urls);
     }
 
+    let head = GitRef::head();
+    let script = DossierPath::parse("tools/regia.py").expect("a dossier path");
     write_json(
         &fixtures_dir().join("RECORDED.json"),
         &json!({
             "oracle_repository": "lelexdrugo/regia",
-            "oracle_commit": git_output(&dossier, &["rev-parse", "HEAD"]),
-            "oracle_last_change_to_regia_py": git_output(&dossier, &["log", "-1", "--format=%H", "--", "tools/regia.py"]),
-            "recorded_at": git_output(&dossier, &["log", "-1", "--format=%cs"]),
+            "oracle_commit": git_output(&dossier, git::rev_parse(&head)),
+            "oracle_last_change_to_regia_py": git_output(&dossier, git::last_commit(CommitField::Hash, &head, Some(&script))),
+            "recorded_at": git_output(&dossier, git::last_commit(CommitField::Date, &head, None)),
         }),
     );
 }

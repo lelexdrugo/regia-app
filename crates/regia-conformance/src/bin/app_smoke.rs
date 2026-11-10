@@ -4,10 +4,11 @@
 //!
 //!     cargo run -p regia-conformance --bin app-smoke
 
-use std::process::{Command, ExitCode};
+use std::process::ExitCode;
 use std::time::{Duration, Instant};
 
-use regia_conformance::{Case, apply_fixture_env, bin_dir, prepare_state_dir, read_json, run_rust};
+use regia_conformance::{Case, bin_dir, fixture_for_rust, prepare_state_dir, read_json, run_rust};
+use regia_exec::Limits;
 use regia_i18n::{Catalog, Language};
 use regia_identity::env_var;
 use serde::Deserialize;
@@ -38,24 +39,17 @@ fn check(language: Language, case: &Case, expected: &Value) -> Result<(), String
     let state = prepare_state_dir(&format!("smoke-{language}"));
     let out = state.join("smoke.json");
     let app = bin_dir().join(format!("{}-app{}", regia_identity::PRODUCT_NAME, std::env::consts::EXE_SUFFIX));
-    let mut command = Command::new(&app);
-    apply_fixture_env(&mut command, &case.responses_path(), &state);
-    command.env(env_var("LANG"), language.tag()).env(env_var("SMOKE_OUT"), &out);
-    let mut child = command.spawn().map_err(|error| format!("{}: {error}", app.display()))?;
+    let (launch, _) = fixture_for_rust(regia_exec::harness::launch(&app, &[], &state), &case.responses_path(), &state);
+    let launch = launch
+        .env(&env_var("LANG"), language.tag())
+        .env(&env_var("SMOKE_OUT"), &out)
+        .limits(Limits { timeout: TIMEOUT, stdout: 8 << 20, stderr: 8 << 20 });
 
     let start = Instant::now();
-    let status = loop {
-        if let Some(status) = child.try_wait().map_err(|error| error.to_string())? {
-            break status;
-        }
-        if start.elapsed() > TIMEOUT {
-            let _ = child.kill();
-            return Err(format!("{language}: the app did not report within {TIMEOUT:?}"));
-        }
-        std::thread::sleep(Duration::from_millis(200));
-    };
-    if !status.success() {
-        return Err(format!("{language}: the app exited with {status}"));
+    let output = launch.run().map_err(|error| format!("{language}: {error}"))?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("{language}: the app exited with {}: {}", output.status, stderr.trim()));
     }
     let report: Report = read_json(&out);
     println!("{language}: reported after {:.1}s: {:?}", start.elapsed().as_secs_f32(), report.sections);

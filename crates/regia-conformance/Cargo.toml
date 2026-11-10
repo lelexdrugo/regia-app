@@ -6,11 +6,17 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
-# Stands in for the real `gh`: the harness copies it to a folder of its own, as `gh`, and puts that
-# folder first on PATH. It only answers from a fixture file.
+# Stands in for the real `gh`. It only answers from a fixture file. The prototype finds it first on
+# PATH; the product gets a copy at an absolute path, with the fixture named beside it.
 [[bin]]
 name = "fake-gh"
 path = "src/bin/fake_gh.rs"
+
+# Stands in for any program regia-exec starts, in the tests of `tests/exec.rs`: it prints its argv,
+# stdin, environment and folder.
+[[bin]]
+name = "probe"
+path = "src/bin/probe.rs"
 
 # Local only: needs the private dossier. Regenerates the fixtures from the Python oracle.
 [[bin]]
@@ -29,9 +35,13 @@ path = "src/bin/app_smoke.rs"
 
 [dependencies]
 regia-core.workspace = true
+regia-exec = { workspace = true, features = ["harness"] }
 regia-facade.workspace = true
 regia-i18n.workspace = true
 regia-identity.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 toml.workspace = true
+
+[dev-dependencies]
+proptest = { version = "1", default-features = false, features = ["std"] }

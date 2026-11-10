@@ -4,18 +4,23 @@
 //! printed for it (`python.it.json`), recorded locally because CI cannot read the private dossier.
 //! Each test runs the real `regia` binary against the same responses through a fake `gh`, passes the
 //! recorded Python output through the facade table, and diffs the two.
+//!
+//! The two sides reach the fake differently. The prototype looks `gh` up on `PATH`, so for it the
+//! fake goes first there. The product starts only an absolute path (threat model T06), so it gets a
+//! copy of the fake named by `REGIA_GH`, which reads its fixture from a file beside it: the product
+//! does not pass the fixture's variables to `gh`, and should not.
 
 use std::env;
 use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
 use std::sync::OnceLock;
 
+use regia_exec::{Launch, Program};
 use regia_facade::{FacadeError, Table};
 use regia_identity::{env_var, prototype_env_var};
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{Value, json};
 
 /// Read by the fake `gh`: the responses file to answer from.
 pub fn responses_var() -> String {
@@ -26,6 +31,9 @@ pub fn responses_var() -> String {
 pub fn log_var() -> String {
     env_var("FAKE_GH_LOG")
 }
+
+/// Beside a copy of the fake `gh`: `{"responses": …, "log": …}`, read when the variables are unset.
+pub const FAKE_GH_SIDECAR: &str = "fixture.json";
 
 pub fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("..").canonicalize().expect("workspace root")
@@ -143,29 +151,59 @@ pub fn path_with_fake_gh() -> OsString {
     env::join_paths(paths).expect("PATH")
 }
 
-/// Everything a process needs to run against a fixture.
-pub fn apply_fixture_env(command: &mut Command, responses: &Path, state: &Path) {
-    command
+/// The prototype against a fixture: the fake first on PATH, the fixture in its variables.
+pub fn fixture_for_python(launch: Launch, responses: &Path, state: &Path) -> Launch {
+    launch
         .env("PATH", path_with_fake_gh())
-        .env(prototype_env_var("RUNTIME"), state)
-        .env(responses_var(), responses)
-        .env_remove(env_var("ENGINE"))
-        .env_remove(prototype_env_var("HOME"));
+        .env(&prototype_env_var("RUNTIME"), state)
+        .env(&responses_var(), responses)
+        .without(&env_var("ENGINE"))
+        .without(&prototype_env_var("HOME"))
+}
+
+/// A copy of the fake `gh` in `state/fake-gh/`, with its fixture beside it. Returns its path and the
+/// log of its calls.
+pub fn fake_gh_for_run(state: &Path, responses: &Path) -> (PathBuf, PathBuf) {
+    let suffix = env::consts::EXE_SUFFIX;
+    let dir = state.join("fake-gh");
+    fs::create_dir_all(&dir).expect("fake gh folder");
+    let source = bin_dir().join(format!("fake-gh{suffix}"));
+    let copy = dir.join(format!("gh{suffix}"));
+    fs::copy(&source, &copy).unwrap_or_else(|error| panic!("{}: {error}", source.display()));
+    let log = dir.join("calls.log");
+    let sidecar = json!({"responses": responses, "log": log});
+    fs::write(dir.join(FAKE_GH_SIDECAR), sidecar.to_string()).expect("fake gh fixture");
+    (copy, log)
+}
+
+/// The product, or the app, against a fixture: its `gh` is the copy at an absolute path, and the
+/// fake is nowhere on PATH.
+pub fn fixture_for_rust(launch: Launch, responses: &Path, state: &Path) -> (Launch, PathBuf) {
+    let (gh, log) = fake_gh_for_run(state, responses);
+    let launch = launch
+        .env(&Program::Gh.env_name(), gh)
+        .env(&prototype_env_var("RUNTIME"), state)
+        .without(&env_var("ENGINE"))
+        .without(&prototype_env_var("HOME"));
+    (launch, log)
 }
 
 pub fn regia_binary() -> PathBuf {
     bin_dir().join(format!("{}{}", regia_identity::BIN_NAME, env::consts::EXE_SUFFIX))
 }
 
-/// Runs the real binary on `responses` and returns its parsed stdout.
+/// Runs the real binary on `responses` and returns its parsed stdout. The fake's log proves that the
+/// copy named by its absolute path answered.
 pub fn run_rust(label: &str, args: &[String], responses: &Path) -> Result<Value, String> {
     let state = prepare_state_dir(label);
-    let mut command = Command::new(regia_binary());
-    command.args(args);
-    apply_fixture_env(&mut command, responses, &state);
-    let output: Output = command.output().map_err(|error| error.to_string())?;
+    let launch = regia_exec::harness::launch(&regia_binary(), args, &state);
+    let (launch, log) = fixture_for_rust(launch, responses, &state);
+    let output = launch.run().map_err(|error| error.to_string())?;
     if !output.status.success() {
         return Err(format!("regia failed: {}", String::from_utf8_lossy(&output.stderr)));
+    }
+    if fs::read_to_string(&log).unwrap_or_default().is_empty() {
+        return Err("the fake gh at its absolute path was not called".to_owned());
     }
     serde_json::from_slice(&output.stdout).map_err(|error| format!("regia printed invalid JSON: {error}"))
 }

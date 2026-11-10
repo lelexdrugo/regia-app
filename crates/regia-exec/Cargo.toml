@@ -1,0 +1,31 @@
+[package]
+name = "regia-exec"
+description = "The only crate that starts a process: a closed list of programs at absolute paths, typed arguments, an environment allow-list, limits, and a process tree that dies with the run."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[features]
+# Dev only, for regia-conformance: start the workspace's own binaries and the probe. A guard test
+# checks that no other crate turns it on.
+harness = []
+
+[dependencies]
+directories.workspace = true
+regia-identity.workspace = true
+thiserror.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+  "Win32_Foundation",
+  "Win32_Security",
+  "Win32_System_JobObjects",
+  "Win32_System_Threading",
+] }
+
+[dev-dependencies]
+proptest = { version = "1", default-features = false, features = ["std"] }

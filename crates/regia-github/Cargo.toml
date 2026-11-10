@@ -8,5 +8,6 @@ publish.workspace = true
 
 [dependencies]
 regia-core.workspace = true
+regia-exec.workspace = true
 serde.workspace = true
 serde_json.workspace = true

@@ -1,0 +1,5 @@
+# Only regia-exec starts a process (threat model §3.6, V12). Its one call site allows this lint by
+# name; CI denies it everywhere else, and a test keeps this rule from being dropped.
+disallowed-methods = [
+    { path = "std::process::Command::new", reason = "start processes through regia-exec only (threat model §3.6, V12)" },
+]

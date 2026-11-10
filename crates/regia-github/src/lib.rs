@@ -1,11 +1,12 @@
 //! The GitHub adapter. Everything GitHub-specific stays in this crate. The user's `gh` does the
 //! authentication, so the product never sees a token (ADR 0001, "GitHub").
 
-use std::process::Command;
+use std::path::PathBuf;
 
 use regia_core::{IssueState, RawIssue, Tracker, TrackerConfigV1, TrackerError};
+use regia_exec::{Pin, Program};
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{Value, json};
 
 const ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$after:String){repository(owner:$o,name:$r){
   issues(first:100,after:$after,states:[OPEN],orderBy:{field:CREATED_AT,direction:ASC}){
@@ -22,7 +23,9 @@ const BLOCKERS_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:Strin
   blockedBy(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{number state}}}}}"#;
 
 pub struct GhTracker {
-    program: String,
+    /// Resolved once, to an absolute path. A gh that cannot be found fails the first call.
+    gh: Result<Pin, String>,
+    work_dir: PathBuf,
     owner: String,
     repo: String,
     project_id: String,
@@ -32,7 +35,8 @@ pub struct GhTracker {
 impl GhTracker {
     pub fn new(config: &TrackerConfigV1) -> Self {
         Self {
-            program: "gh".to_owned(),
+            gh: Pin::resolve(Program::Gh).map_err(|error| error.to_string()),
+            work_dir: regia_exec::neutral_folder(),
             owner: config.owner.clone(),
             repo: config.repo.clone(),
             project_id: config.project_id.clone(),
@@ -46,27 +50,21 @@ impl GhTracker {
         number: Option<u64>,
         after: Option<&str>,
     ) -> Result<T, TrackerError> {
-        let mut command = Command::new(&self.program);
-        command
-            .args(["api", "graphql", "-f"])
-            .arg(format!("query={query}"))
-            .args(["-f", &format!("o={}", self.owner), "-f", &format!("r={}", self.repo)]);
+        let gh = self.gh.as_ref().map_err(|error| TrackerError::Unavailable(error.clone()))?;
+        // The whole request, with typed variables, goes on stdin: no value reaches gh's argv.
+        let mut variables = json!({"o": self.owner, "r": self.repo});
         if let Some(number) = number {
-            command.args(["-F", &format!("n={number}")]);
+            variables["n"] = json!(number);
         }
         if let Some(after) = after {
-            command.args(["-f", &format!("after={after}")]);
+            variables["after"] = json!(after);
         }
-        // The release app has no console: without this flag every call would flash a window.
-        #[cfg(windows)]
-        {
-            use std::os::windows::process::CommandExt;
-            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-            command.creation_flags(CREATE_NO_WINDOW);
-        }
-        let output = command
-            .output()
-            .map_err(|error| TrackerError::Unavailable(format!("cannot run gh: {error}")))?;
+        let body = json!({"query": query, "variables": variables}).to_string();
+        let output = gh
+            .launch(regia_exec::gh::graphql(), &self.work_dir)
+            .stdin(body)
+            .run()
+            .map_err(|error| TrackerError::Unavailable(error.to_string()))?;
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             return Err(TrackerError::Unavailable(format!("gh api graphql: {}", stderr.trim())));

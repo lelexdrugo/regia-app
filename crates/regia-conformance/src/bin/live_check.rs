@@ -5,10 +5,10 @@
 //!
 //!     ./target/debug/live-check --dossier <path> [--python <interpreter>]
 //!
-//! Run it directly: `cargo run` changes PATH.
+//! Run it directly: `cargo run` changes PATH, where both sides look their tools up.
 
 use std::path::PathBuf;
-use std::process::{Command, ExitCode};
+use std::process::ExitCode;
 
 use regia_conformance::{json_diff, regia_binary, take_not_ported, translate_python};
 use regia_facade::{PythonPrototype, Table};
@@ -33,7 +33,7 @@ fn main() -> ExitCode {
     let argv = Table::embedded().python_argv("brief", &cli_args).expect("known command");
 
     for attempt in 1..=3 {
-        let output = prototype.command(&argv).output().expect("run the prototype");
+        let output = prototype.launch(&argv).expect("the prototype").run().expect("run the prototype");
         assert!(output.status.success(), "the prototype failed");
         let python: Value = serde_json::from_slice(&output.stdout).expect("JSON from the prototype");
         let mut python = match translate_python("brief", &python) {
@@ -46,11 +46,11 @@ fn main() -> ExitCode {
             }
         };
 
-        let output = Command::new(regia_binary())
-            .args(["brief", "--json"])
-            .env(prototype_env_var("HOME"), &dossier)
-            .env_remove(env_var("ENGINE"))
-            .output()
+        let args = ["brief".to_owned(), "--json".to_owned()];
+        let output = regia_exec::harness::launch(&regia_binary(), &args, &dossier)
+            .env(&prototype_env_var("HOME"), &dossier)
+            .without(&env_var("ENGINE"))
+            .run()
             .expect("run regia");
         assert!(output.status.success(), "regia failed: {}", String::from_utf8_lossy(&output.stderr));
         let mut rust: Value = serde_json::from_slice(&output.stdout).expect("JSON from regia");
