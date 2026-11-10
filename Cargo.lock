@@ -2646,6 +2646,8 @@ dependencies = [
 name = "regia-core"
 version = "0.0.1"
 dependencies = [
+ "chrono",
+ "regex",
  "regia-identity",
  "serde",
  "serde_json",

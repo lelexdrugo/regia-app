@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
 /// Canonical status ids (ADR 0017). Bound to the option id of the GitHub field, never to its label.
@@ -30,6 +31,11 @@ impl Status {
     pub fn waits_on_owner(self) -> bool {
         matches!(self, Status::Proposal | Status::Decision)
     }
+
+    /// Approved work, whether it waits to start, runs, or waits for a decision: what `unblocks` counts.
+    pub fn is_approved_work(self) -> bool {
+        matches!(self, Status::Approved | Status::InProgress | Status::Decision)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -47,6 +53,14 @@ pub enum IssueState {
     Closed,
 }
 
+/// The due date a task's spec declares.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DueDate {
+    Date(NaiveDate),
+    /// A value that is not a date: ignored, and reported as it was written.
+    Malformed(String),
+}
+
 /// An issue of the tracker with its project field and labels resolved.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Task {
@@ -55,7 +69,10 @@ pub struct Task {
     pub state: IssueState,
     pub state_reason: Option<String>,
     pub status: Option<Status>,
+    /// From the project label, the source of truth.
     pub project: Option<String>,
+    /// The Project field that mirrors the label, as it is: a drift from the label is reported, not fixed.
+    pub project_field: Option<String>,
     pub maturity: Option<Maturity>,
     pub objective: bool,
     pub labels: Vec<String>,
@@ -67,6 +84,9 @@ pub struct Task {
     pub updated_at: String,
     pub created_at: Option<String>,
     pub closed_at: Option<String>,
+    /// The brief shows it through its own keys, only where it applies.
+    #[serde(skip)]
+    pub due: Option<DueDate>,
 }
 
 impl Task {

@@ -32,8 +32,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Decisione",
-                      "optionId": "opt-e5"
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -42,14 +44,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Decisione",
                           "optionId": "opt-e5"
                         }
                       ]
@@ -63,7 +69,8 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "a decision upstream",
               "updatedAt": "2026-01-02T03:04:05Z",
@@ -174,8 +181,10 @@
                 "nodes": [
                   {
                     "fieldValueByName": {
-                      "name": "Approvato",
-                      "optionId": "opt-c3"
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
                     },
                     "fieldValues": {
                       "nodes": [
@@ -184,14 +193,18 @@
                         },
                         {
                           "field": {
-                            "id": "OTHER_FIELD"
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
                           },
+                          "name": "Medium",
                           "optionId": "opt-another-select"
                         },
                         {
                           "field": {
-                            "id": "FIELD_FIXTURE"
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
                           },
+                          "name": "Approvato",
                           "optionId": "opt-c3"
                         }
                       ]
@@ -205,11 +218,345 @@
               "state": "OPEN",
               "stateReason": null,
               "subIssues": {
-                "nodes": []
+                "nodes": [],
+                "totalCount": 0
               },
               "title": "approved, ready, closed blockers, but more exist and the read fails",
               "updatedAt": "2026-01-02T03:04:05Z",
               "url": "https://tracker.invalid/issues/2"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 3,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Decisione",
+                          "optionId": "opt-e5"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 400,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 401,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 402,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 403,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 404,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 405,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 406,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 407,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 408,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 409,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 410,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 411,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 412,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 413,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 414,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 415,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 416,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 417,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 418,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 419,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 420,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 421,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 422,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 423,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 424,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 425,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 426,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 427,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 428,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 429,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 430,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 431,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 432,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 433,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 434,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 435,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 436,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 437,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 438,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 439,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 440,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 441,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 442,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 443,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 444,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 445,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 446,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 447,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 448,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 449,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 52
+              },
+              "title": "52 sub-issues, and the read of the rest fails",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/3"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 4,
+              "parent": {
+                "number": 3
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "open child of 3, missing from its first 50 sub-issues: the list adds it",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/4"
             }
           ],
           "pageInfo": {
@@ -219,5 +566,8 @@
         }
       }
     }
-  ]
+  ],
+  "sub_issue_pages": {
+    "3": "error"
+  }
 }

@@ -54,7 +54,8 @@ fn run(cli: Cli) -> Result<(), String> {
                 }
                 return passthrough("brief", &args);
             }
-            let brief = load_brief(&BriefOptions { project }).map_err(|error| error.to_string())?;
+            let brief =
+                load_brief(&BriefOptions { project, ..BriefOptions::default() }).map_err(|error| error.to_string())?;
             let catalog = Catalog::new(Language::detect());
             eprintln!("{}", catalog.message("brief-partial"));
             if json {
