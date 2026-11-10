@@ -20,6 +20,7 @@ mod cli;
 mod gates;
 mod launch;
 mod policy;
+mod wake;
 
 pub use cli::{Cli, Waits};
 pub use gates::{Gate, GateError, Gates};
@@ -27,6 +28,7 @@ pub use launch::{
     Dry, Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback,
 };
 pub use policy::{Assignment, Diversity, Fallback, Policy, Role, Settings, SettingsError, Tier};
+pub use wake::{ProbeConsent, WakeAttempt, WakeOutcome, WakeUp};
 
 /// The agent services the product knows. Only these two: every other one needs code of its own,
 /// for its argv, its stream, its transcript and its usage (ADR 0001 §6).
