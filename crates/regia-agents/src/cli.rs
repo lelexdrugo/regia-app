@@ -108,6 +108,8 @@ impl Cli {
                 temporary.display()
             )));
         }
+        // Absolute, so the log and codex's last message name one place whatever the child's folder.
+        let state = std::path::absolute(state).unwrap_or_else(|_| state.clone());
         let folder = state.join(STEPS).join(label.as_str());
         fs::create_dir_all(&folder)
             .map_err(|error| LaunchError::before(format!("cannot create {}: {error}", folder.display())))?;
