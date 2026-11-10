@@ -21,3 +21,10 @@ regia-runtime.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tauri.workspace = true
+
+# Tests only: ts-rs writes the TypeScript of the IPC types (src/ipc.rs), and Tauri's mock runtime runs the
+# webview's calls through this build's ACL (V10). Neither reaches a release build.
+[dev-dependencies]
+tauri = { workspace = true, features = ["test"] }
+toml.workspace = true
+ts-rs.workspace = true

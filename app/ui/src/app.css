@@ -1,0 +1,39 @@
+/* The plumbing's stylesheet. The design system, its tokens, fonts and three directions come with the
+   app's shell (#475); this keeps the brief readable meanwhile, in the system's colours. */
+:root {
+  color-scheme: light dark;
+  font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 1.5rem;
+}
+
+h1 {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+}
+
+h2 {
+  font-size: 1rem;
+  margin: 1.5rem 0 0.25rem;
+}
+
+ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.note {
+  opacity: 0.75;
+}
+
+.number {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid Highlight;
+  outline-offset: 1px;
+}
