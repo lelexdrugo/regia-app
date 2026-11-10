@@ -56,7 +56,7 @@ in Python past v0.1, uses 3 for *nothing to do*. The facade passes every exit co
 | Variable | Meaning | Status |
 |---|---|---|
 | `REGIA_ENGINE` | `python` runs the command on the prototype, `rust` in the binary; another value is an error | #440, new value `rust` |
-| `REGIA_NOW` | the instant the product's clock reads, ISO 8601 with its offset; set by the harness to the fixtures' instant, `2026-01-10T09:00:00Z` | **new** (#440/V3): the harness sets it on every run; a native lock, lease or step reads it |
+| `REGIA_NOW` | the instant the product's clock reads, ISO 8601 with its offset; set by the harness to the fixtures' instant, `2026-01-10T09:00:00Z` | **new** (#440/V3): the harness sets it on every run; a native lock, lease or step must read it, and none does yet |
 | `REGIA_TODAY` | the day the brief counts due dates from | existing |
 | `REGIA_HOME`, `REGIA_RUNTIME`, `REGIA_PYTHON`, `REGIA_CLAUDE_CREDENTIALS`, `REGIA_CODEX_AUTH` | the prototype's, unchanged | prototype |
 
@@ -246,6 +246,11 @@ if it comes, is #460's.
 | `controlla` | `check` | `audit` | short, and `per_check`, `check` say what each finding came from; `audit` suggests a review by someone |
 | `lease battito` | `lease heartbeat` | `lease beat`, `lease ping` | the usual name for a signal that keeps a lease alive |
 | `--proprietario` | `--holder` | `--owner` | `owner` collides with the GitHub owner of the tracker and with the owner of the regia |
+| `--cartella`, `cartella` | `--folder`, `folder` | `--dossier-dir`, `--path` | the project's folder, as the registry names it; `--path` says nothing of what it is, and `--dossier-dir` repeats the `dossier` of the outcome |
+| `--ruolo` (`declare`), its values | `--role`, values as they are | translating the values through an enum (`orchestratore` → `orchestrator`, `titolare` → `owner`) | the activity log stores the role and the moviola reads the stored words: a translated value would change data written since #146 |
+| `esito` | `outcome` | `result` | what happened to the dossier; `result` reads as the return of any call |
+| `dossier` | `dossier` | `repo`, `project_repo` | the regia's word for a project's repo of state and decisions; `repo` would mix it with the repos of the products |
+| `motivo` | `reason` | `cause`, `message` | always a sentence that says why |
 | `rubato` | `stolen` | `taken_over` | a lock taken from an expired holder; `stolen` is what the prototype says |
 | `altrui` | `foreign` | `not_yours`, `other` | someone else's: one word, as the other states |
 | `al_posto_di` | `replaced` | `instead_of`, `previous_holder` | the expired holder replaced; a past participle like `stolen_at` |
@@ -259,6 +264,7 @@ if it comes, is #460's.
 | `--contro-il-disco` | `--against-disk` | `--on-disk` | the state of HEAD against the file on disk, as `step finish` does |
 | `in_scadenza` | `expiring` | `expiring_soon` | the token expires within the threshold |
 | `controller --una-volta` | `--once` | `--single` | the name the plan uses (F27) |
+| `controller --giri` | `--rounds` | `--ticks`, `--cycles` | a round of the controller as its user sees it; `tick` is the engine's method (F25) |
 | `controller --lancio finto` | `--launcher fake` | `--launcher dry` | `dry` is a surface of `launch` (#460) with another meaning: a request not sent |
 | `moviola esporta` | `moviola export` | `moviola dump` | the history as a document |
 
@@ -268,4 +274,5 @@ if it comes, is #460's.
   form before #406. The table expects an object, so `step start --json` on such a cursor would exit 1 after the
   lock is taken. No writer of today writes the string form; the fixtures do not hold one.
 - **The fixtures' instant.** Every case is recorded and checked at `2026-01-10T09:00:00Z` with local time UTC:
-  the prototype through `crates/regia-conformance/oracle/fixed_now.py`, the product through `REGIA_NOW`.
+  the prototype through `crates/regia-conformance/oracle/fixed_now.py`, the product through `REGIA_NOW`, which
+  no native command reads yet.
