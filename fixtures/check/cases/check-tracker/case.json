@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. The checks of alpha on the tracker alone, its registry having no folder: the task In progress with no lease and the decision signed chat are findings, and the dossier's checks are skipped with a warning.",
+  "scenario": "tracker",
+  "args": [
+    "check",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "controlla",
+    "--progetto",
+    "alpha"
+  ]
+}

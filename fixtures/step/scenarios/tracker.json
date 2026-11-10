@@ -1,0 +1,11 @@
+{
+  "_note": "Synthetic. The objective of alpha, with no folder in its registry; a task In progress untouched since the 2nd, with no live lease; a decision whose last comment, on the 8th, is a «Decisione:» signed chat.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {"number": 1, "title": "objective of alpha", "status": "In corso", "labels": ["progetto:alpha", "tipo:obiettivo"], "body": "registry without a folder"},
+    {"number": 5, "title": "a task in progress with no live lease", "status": "In corso", "labels": ["progetto:alpha", "maturità:pronto"], "parent": 1},
+    {"number": 6, "title": "a decision answered in chat", "status": "Decisione", "labels": ["progetto:alpha"], "parent": 1,
+     "comments": [{"id": 9001, "created_at": "2026-01-08T10:00:00Z", "body": "Decisione: A, as advised.\n\n<!-- regia:autore ruolo=chat -->"}]}
+  ]
+}

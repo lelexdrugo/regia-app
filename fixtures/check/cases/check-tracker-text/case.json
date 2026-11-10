@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic. The same checks in text: the findings on stdout, the warnings on stderr.",
+  "scenario": "tracker",
+  "args": [
+    "check",
+    "--project",
+    "alpha"
+  ],
+  "python": [
+    "controlla",
+    "--progetto",
+    "alpha"
+  ]
+}

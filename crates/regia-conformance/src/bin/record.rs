@@ -69,6 +69,38 @@ struct ScenarioIssue {
     /// The option of the Project field that mirrors the project label, if the item has one.
     #[serde(default)]
     project_field: Option<String>,
+    /// Recent comments, which the checks read.
+    #[serde(default)]
+    comments: Vec<ScenarioComment>,
+}
+
+#[derive(Deserialize)]
+struct ScenarioComment {
+    id: u64,
+    created_at: String,
+    body: String,
+}
+
+/// The checks' read of recent comments: one page with the issues that have comments.
+fn comment_pages(scenario: &Scenario) -> Value {
+    let nodes: Vec<Value> = scenario
+        .issues
+        .iter()
+        .filter(|issue| !issue.comments.is_empty())
+        .map(|issue| {
+            let labels: Vec<Value> = issue.labels.iter().map(|name| json!({"name": name})).collect();
+            let comments: Vec<Value> = issue
+                .comments
+                .iter()
+                .map(|comment| {
+                    let url = format!("{URL_PREFIX}issues/{}#issuecomment-{}", issue.number, comment.id);
+                    json!({"databaseId": comment.id, "createdAt": comment.created_at, "body": comment.body, "url": url})
+                })
+                .collect();
+            json!({"number": issue.number, "state": "OPEN", "closedAt": null, "labels": {"nodes": labels}, "comments": {"nodes": comments}})
+        })
+        .collect();
+    json!([{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": nodes}}}])
 }
 
 fn pairs(list: &[(u64, String)]) -> Vec<Value> {
@@ -206,6 +238,9 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &Tracker
         "issue_pages": issue_pages,
         "blocker_pages": extra_pages(&scenario.extra_blockers, "blockedBy"),
         "sub_issue_pages": extra_pages(&scenario.extra_sub_issues, "subIssues"),
+        "comment_pages": comment_pages(scenario),
+        // Every scenario issue is open.
+        "closed_pages": [{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}],
     })
 }
 

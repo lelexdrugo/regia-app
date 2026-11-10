@@ -1,4 +1,6 @@
-//! A stand-in for `gh`. It answers `gh api graphql` from a fixture and fails loudly on anything else.
+//! A stand-in for `gh`. It answers `gh api graphql` from a fixture and fails loudly on anything else:
+//! the issues, their blockers and sub-issues, and for the checks the recent comments and the closed
+//! issues.
 //! The fixture is named by the environment (the prototype's runs) or by a file beside the fake (the
 //! product's, which do not pass those variables on). Without either it refuses to run, so it can
 //! never pass for the real tool by accident. It returns only what the query selects, and refuses a
@@ -165,6 +167,8 @@ fn answer(args: &[String]) -> Result<String, String> {
         match key.as_str() {
             "n" => number = Some(value),
             "after" => after = Some(value),
+            // The window of the comments the checks read: the fixture holds the comments it answers.
+            "since" => {}
             "o" | "r" => {
                 if responses["expect"][&key] != value.as_str() {
                     return Err(format!("variable {key} is {value}, the fixture expects {}", responses["expect"][&key]));
@@ -194,6 +198,11 @@ fn answer(args: &[String]) -> Result<String, String> {
             return Err(format!("simulated failure for #{number}"));
         }
         (format!("sub-issues {number} {index}"), pages[index].clone())
+    } else if query.contains("filterBy:{since:$since}") {
+        // The checks' read of recent comments, on open and closed issues alike.
+        (format!("comments {index}"), responses["comment_pages"][index].clone())
+    } else if query.contains("states:[CLOSED]") {
+        (format!("closed {index}"), responses["closed_pages"][index].clone())
     } else if query.contains("issues(first:") {
         for required in REQUIRED_ON_ISSUES {
             if !query.contains(required) {
