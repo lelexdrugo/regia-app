@@ -254,6 +254,12 @@ impl Assignment {
     pub fn effort_level(&self) -> Effort {
         Effort::parse(self.effort).expect("an assignment holds a known effort")
     }
+
+    /// The core's guard for a job of this role that started at `started`, when the role has a
+    /// deadline. It is the same for every service and surface; past it the caller takes `fallback`.
+    pub fn deadline(&self, started: chrono::DateTime<chrono::Utc>) -> Option<regia_core::Deadline> {
+        self.deadline_minutes.map(|minutes| regia_core::Deadline::minutes(started, minutes))
+    }
 }
 
 /// The three layers, checked once.
@@ -424,6 +430,24 @@ mod tests {
         assert_eq!(review.model.as_deref(), Some("sonnet"));
         assert_eq!(one.assign(Role::SecondImplementation, None).diversity, Diversity::Degraded);
         assert_eq!(one.assign(Role::Code, None).diversity, Diversity::NotRequired);
+    }
+
+    /// The review's deadline is the core's guard, with one service or two: past it, or without a
+    /// result, the fallback is the principal, deep, in a clean context.
+    #[test]
+    fn past_the_review_deadline_the_fallback_takes_over() {
+        use regia_core::{FallbackReason, JobState, Verdict};
+        let started = chrono::DateTime::parse_from_rfc3339("2026-11-10T12:00:00Z").unwrap().to_utc();
+        for text in ["", "services = [\"claude\"]\n"] {
+            let review = policy(text).assign(Role::AdversarialReview, None);
+            let deadline = review.deadline(started).expect("the review has a deadline");
+            assert_eq!(deadline.expires_at(), started + chrono::TimeDelta::minutes(20));
+            let late = started + chrono::TimeDelta::minutes(21);
+            assert_eq!(deadline.judge(late, JobState::Running), Verdict::FallBack(FallbackReason::DeadlinePassed));
+            let fallback = review.fallback.expect("a fallback");
+            assert_eq!((fallback.service, fallback.tier, fallback.clean_context), (ServiceId::Claude, Tier::Deep, true));
+        }
+        assert!(policy("").assign(Role::Code, None).deadline(started).is_none(), "code has no deadline");
     }
 
     #[test]
