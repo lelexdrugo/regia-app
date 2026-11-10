@@ -2,7 +2,7 @@
 //! what a tool could read as an option, or what could change meaning on the way: a leading dash,
 //! control characters, `..`, `@`, spaces where the tool has no use for them, excessive length.
 
-use std::path::PathBuf;
+use std::path::{Component, Path, PathBuf, Prefix};
 
 /// Why a value was refused. It never repeats the value, which may be hostile and would end up on a
 /// terminal.
@@ -58,7 +58,7 @@ macro_rules! arg_value {
     )*};
 }
 
-arg_value!(IssueNumber, RepoSlug, GitRef, ModelId, Effort, DossierPath, Text);
+arg_value!(IssueNumber, RepoSlug, GitRef, ModelId, Effort, DossierPath, AbsolutePath, Text);
 
 /// A GitHub issue number, from 1 to 2³¹ − 1, the range of GraphQL's `Int`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -269,6 +269,49 @@ impl DossierPath {
     }
 }
 
+/// An absolute path on this machine, for a tool that takes one (`codex exec --cd=…`). It is written
+/// with `/` on Windows too, so that it passes the alphabet of a `.cmd` shim, as npm's `codex.cmd` is:
+/// there a folder with a space or a letter outside ASCII is refused when the run starts, before
+/// anything does ([`Launch::run`](crate::Launch::run)). Refused here: a relative path, a `.` or `..`
+/// component, a control character, a prefix other than a drive (`\\?\`, `\\server\share`), and more
+/// than 1024 bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct AbsolutePath {
+    text: String,
+    path: PathBuf,
+}
+
+impl AbsolutePath {
+    const KIND: &str = "absolute path";
+
+    pub fn new(path: &Path) -> Result<Self, InvalidValue> {
+        let Some(text) = path.to_str() else { return refuse(Self::KIND, "is not valid Unicode") };
+        common(Self::KIND, text, 1024)?;
+        if !path.is_absolute() {
+            return refuse(Self::KIND, "is not absolute");
+        }
+        if let Some(Component::Prefix(prefix)) = path.components().next()
+            && !matches!(prefix.kind(), Prefix::Disk(_))
+        {
+            return refuse(Self::KIND, "is not on a drive");
+        }
+        let separators: &[char] = if cfg!(windows) { &['/', '\\'] } else { &['/'] };
+        if text.split(separators).any(|component| component == "." || component == "..") {
+            return refuse(Self::KIND, "has a misplaced dot");
+        }
+        let text = if cfg!(windows) { text.replace('\\', "/") } else { text.to_owned() };
+        Ok(Self { text, path: path.to_path_buf() })
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.text
+    }
+
+    pub fn as_path(&self) -> &Path {
+        &self.path
+    }
+}
+
 /// `CON`, `NUL`, `COM1`… with or without an extension.
 fn reserved_on_windows(component: &str) -> bool {
     let stem = component.split('.').next().unwrap_or("").to_ascii_uppercase();
@@ -353,6 +396,29 @@ mod tests {
             assert!(ModelId::parse(&value).is_err(), "model took {value:?}");
             assert!(Effort::parse(&value).is_err(), "effort took {value:?}");
             assert!(DossierPath::parse(&value).is_err(), "dossier path took {value:?}");
+            assert!(AbsolutePath::new(Path::new(&value)).is_err(), "absolute path took {value:?}");
+        }
+    }
+
+    #[test]
+    fn an_absolute_path_is_written_with_slashes_and_nothing_else_passes() {
+        let root = if cfg!(windows) { r"C:\Users\a b\x" } else { "/home/a b/x" };
+        let path = AbsolutePath::new(Path::new(root)).unwrap();
+        assert_eq!(path.as_str(), if cfg!(windows) { "C:/Users/a b/x" } else { root });
+        assert_eq!(path.as_path(), Path::new(root));
+        let here = std::env::current_dir().unwrap();
+        if cfg!(windows) {
+            assert!(!AbsolutePath::new(&here).unwrap().as_str().contains('\\'));
+        }
+        let mut refused = vec!["x", "./x", "x/../y"].into_iter().map(PathBuf::from).collect::<Vec<_>>();
+        if cfg!(windows) {
+            refused.extend([r"C:\a\..\b", r"C:\a\.\b", r"\\?\C:\x", r"\\server\share\x", r"\x", "C:x"].map(PathBuf::from));
+        } else {
+            refused.extend(["/a/../b", "/a/./b", "/a\u{1b}b"].map(PathBuf::from));
+        }
+        refused.push(here.join("x".repeat(1100)));
+        for path in refused {
+            assert!(AbsolutePath::new(&path).is_err(), "{}", path.display());
         }
     }
 
@@ -427,6 +493,20 @@ mod tests {
         fn any_string_is_judged_without_panicking(text in any::<String>()) {
             let _ = (IssueNumber::parse(&text), RepoSlug::parse(&text), GitRef::parse(&text));
             let _ = (ModelId::parse(&text), Effort::parse(&text), DossierPath::parse(&text), Text::parse(&text));
+            let _ = AbsolutePath::new(Path::new(&text));
+        }
+
+        /// An absolute path may hold spaces and other letters, which only a `.cmd` refuses; whatever
+        /// it accepts is absolute, has no `.` or `..`, no control character and no backslash on Windows.
+        #[test]
+        fn accepted_absolute_paths_keep_their_properties(text in "(/|C:\\\\|C:/|\\\\\\\\|x)[a-z .\\\\/\u{1b}é-]{0,24}") {
+            if let Ok(value) = AbsolutePath::new(Path::new(&text)) {
+                let rendered = value.as_str();
+                prop_assert!(value.as_path().is_absolute() && !rendered.starts_with('-'));
+                prop_assert!(!rendered.chars().any(char::is_control));
+                prop_assert!(!rendered.split('/').any(|component| component == "." || component == ".."));
+                prop_assert!(!cfg!(windows) || !rendered.contains('\\'));
+            }
         }
     }
 }

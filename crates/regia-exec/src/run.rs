@@ -3,6 +3,7 @@
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fmt;
+use std::fs::File;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStderr, ChildStdout, Command, ExitStatus, Stdio};
@@ -234,7 +235,8 @@ impl Launch {
     }
 
     /// The program checked against its pin, with its arguments, folder and environment. The
-    /// caller sets the pipes.
+    /// caller sets the pipes and the tree: [`tree::prepare`] for a run it follows, a detached start
+    /// otherwise.
     fn command(&self) -> Result<Command, ExecError> {
         let (path, program) = match &self.target {
             Target::Program(pin) => {
@@ -260,7 +262,6 @@ impl Launch {
                 command.envs(self.set.iter().map(|(name, value)| (name, value)));
             }
         }
-        tree::prepare(&mut command);
         Ok(command)
     }
 
@@ -270,12 +271,77 @@ impl Launch {
     pub fn run(self) -> Result<Output, ExecError> {
         let label = self.program_name();
         let mut command = self.command()?;
+        tree::prepare(&mut command);
         command
             .stdin(if self.stdin.is_some() { Stdio::piped() } else { Stdio::null() })
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
         let child = command.spawn().map_err(|source| ExecError::Spawn { program: label.clone(), source })?;
         supervise(child, self.stdin, self.limits, label)
+    }
+
+    /// Starts the program on its own and returns at once, for an agent's session (ADR 0001 §6):
+    /// stdin is the file `input`, and stdout and stderr go to the file `log`, created or emptied. It
+    /// leaves the caller's console and terminal: on Windows no window, a process group of its own,
+    /// and out of the caller's job where that job allows it; on Unix a session of its own. No
+    /// deadline or output cap applies, a [`Launch::stdin`] is not used, and nothing kills the
+    /// program when it ends or when the handle is dropped: [`Detached::kill`] does, on request.
+    ///
+    /// An error means that no process is running: everything that can fail is checked before the
+    /// start, and a tree that cannot be set up afterwards leaves [`Detached::kill`] with the program
+    /// alone.
+    pub fn detach(self, input: &Path, log: &Path) -> Result<Detached, ExecError> {
+        let label = self.program_name();
+        let failed = |source| ExecError::Spawn { program: label.clone(), source };
+        let mut command = self.command()?;
+        let input = File::open(input).map_err(failed)?;
+        let output = File::create(log).map_err(failed)?;
+        let errors = output.try_clone().map_err(failed)?;
+        command.stdin(input).stdout(output).stderr(errors);
+        let child = tree::spawn_detached(&mut command).map_err(failed)?;
+        let tree = tree::Tree::adopt_detached(&child).ok();
+        Ok(Detached { child, tree, label })
+    }
+}
+
+/// A program started with [`Launch::detach`]. Dropping the handle neither kills nor reaps it: a
+/// caller that lives on reaps it with [`Detached::try_wait`].
+pub struct Detached {
+    child: Child,
+    tree: Option<tree::Tree>,
+    label: String,
+}
+
+impl Detached {
+    pub fn pid(&self) -> u32 {
+        self.child.id()
+    }
+
+    /// The exit status once the program has ended, `None` while it runs.
+    pub fn try_wait(&mut self) -> Result<Option<ExitStatus>, ExecError> {
+        self.child.try_wait().map_err(|source| ExecError::Spawn { program: self.label.clone(), source })
+    }
+
+    /// Kills the program and what it started: its job on Windows, its session's group on Unix, or
+    /// the program alone when the tree could not be set up. Then reaps it.
+    pub fn kill(&mut self) -> Result<ExitStatus, ExecError> {
+        match &self.tree {
+            Some(tree) => tree.kill(),
+            None => {
+                let _ = self.child.kill();
+            }
+        }
+        self.child.wait().map_err(|source| ExecError::Spawn { program: self.label.clone(), source })
+    }
+}
+
+impl fmt::Debug for Detached {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Detached")
+            .field("program", &self.label)
+            .field("pid", &self.pid())
+            .field("tree", &self.tree.is_some())
+            .finish()
     }
 }
 
@@ -463,6 +529,7 @@ mod running {
             let label = self.program_name();
             let failed = |source| ExecError::Spawn { program: label.clone(), source };
             let mut command = self.command()?;
+            crate::tree::prepare(&mut command);
             command.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::null());
             let mut child = command.spawn().map_err(failed)?;
             let tree = adopt(&mut child, &label)?;
@@ -569,6 +636,42 @@ mod tests {
         let text = format!("{launch:?}");
         assert!(!text.contains("secret prompt") && !text.contains("canary"), "{text}");
         assert!(text.contains("SOME_TOKEN") && text.contains("17"), "names and lengths stay: {text}");
+    }
+
+    /// A detached start, on this test binary asked for the list of its tests: it returns at once, the
+    /// output lands in the log, and a pin that no longer matches starts nothing and writes no log.
+    #[test]
+    fn a_detached_program_writes_its_log_and_a_changed_pin_starts_nothing() {
+        let exe = std::env::current_exe().unwrap();
+        let dir = exe.parent().unwrap().join("detach-unit");
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let (input, log) = (dir.join("input.txt"), dir.join("out.log"));
+        std::fs::write(&input, "unused").unwrap();
+        let pin = Pin::at(Program::Claude, &exe).unwrap();
+        let mut detached = pin.launch(Args::new().word("--list"), &dir).detach(&input, &log).unwrap();
+        assert!(detached.pid() > 0 && format!("{detached:?}").contains("pid"));
+        let started = std::time::Instant::now();
+        let status = loop {
+            if let Some(status) = detached.try_wait().unwrap() {
+                break status;
+            }
+            assert!(started.elapsed() < Duration::from_secs(60), "the listing did not end");
+            thread::sleep(TICK);
+        };
+        assert!(status.success());
+        let listed = std::fs::read_to_string(&log).unwrap();
+        assert!(listed.contains("a_detached_program_writes_its_log_and_a_changed_pin_starts_nothing"), "{listed}");
+        assert!(detached.kill().unwrap().success(), "killing an ended program only reaps it");
+
+        let copy = dir.join(exe.file_name().unwrap());
+        std::fs::copy(&exe, &copy).unwrap();
+        let stale = Pin::at(Program::Claude, &copy).unwrap();
+        std::fs::write(&copy, b"another file").unwrap();
+        let other_log = dir.join("never.log");
+        let refused = stale.launch(Args::new(), &dir).detach(&input, &other_log).unwrap_err();
+        assert!(matches!(refused, ExecError::Changed { .. }), "{refused:?}");
+        assert!(!other_log.exists(), "nothing was started, and nothing written");
     }
 
     #[test]

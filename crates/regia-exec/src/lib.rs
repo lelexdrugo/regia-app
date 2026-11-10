@@ -7,7 +7,8 @@
 //!   `String`. Options are `--name=value`; values never start with a dash (T04).
 //! - **Environment:** built from an allow-list per program, not inherited (T03, T22).
 //! - **Folder, input, limits:** the folder is always explicit, input goes on stdin, a run has a
-//!   deadline and a cap on its output, and nothing it started outlives it ([`Launch::run`]).
+//!   deadline and a cap on its output, and nothing it started outlives it ([`Launch::run`]). An
+//!   agent's session is the exception: it is started on its own, with a log ([`Launch::detach`]).
 
 use std::ffi::{OsStr, OsString};
 use std::fmt;
@@ -19,9 +20,11 @@ mod search;
 mod tree;
 mod values;
 
-pub use run::{Launch, Limits, Output};
+pub use run::{Detached, Launch, Limits, Output};
 pub use search::{Pin, Search, usual_folders};
-pub use values::{ArgValue, DossierPath, Effort, GitRef, InvalidValue, IssueNumber, ModelId, RepoSlug, Text};
+pub use values::{
+    AbsolutePath, ArgValue, DossierPath, Effort, GitRef, InvalidValue, IssueNumber, ModelId, RepoSlug, Text,
+};
 
 /// The programs regia may start, and nothing else. No shell is on the list.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -229,6 +232,110 @@ pub mod python {
     }
 }
 
+/// `claude` as the Cli surface starts it (ADR 0001 §6): fixed flags, the prompt on stdin.
+pub mod claude {
+    use crate::{Args, Effort, ModelId};
+
+    /// `claude -p --output-format=stream-json --verbose --dangerously-skip-permissions [--model=…]
+    /// [--effort=…]`: a session with nobody at the keyboard, which prints its events on stdout, one
+    /// JSON object a line. The prompt goes on stdin, never in argv.
+    pub fn print(model: Option<&ModelId>, effort: Option<Effort>) -> Args {
+        let args = Args::new()
+            .word("-p")
+            .word("--output-format=stream-json")
+            .word("--verbose")
+            .word("--dangerously-skip-permissions");
+        let args = match model {
+            Some(model) => args.opt("--model", model),
+            None => args,
+        };
+        match effort {
+            Some(effort) => args.opt("--effort", &effort),
+            None => args,
+        }
+    }
+}
+
+/// `codex` as the Cli surface starts it (ADR 0001 §6): fixed flags, the prompt on stdin.
+pub mod codex {
+    use crate::{AbsolutePath, Args, Effort, ModelId};
+
+    /// `codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check
+    /// --cd=<folder> --output-last-message=<file> [--model=…] [--config=model_reasoning_effort=…] -`.
+    /// The last `-` makes it read the prompt from stdin. On Windows codex is `codex.cmd`, so the
+    /// paths are written with `/` ([`AbsolutePath`]).
+    pub fn exec(folder: &AbsolutePath, last_message: &AbsolutePath, model: Option<&ModelId>, effort: Option<Effort>) -> Args {
+        let mut args = Args::new()
+            .word("exec")
+            .word("--json")
+            .word("--dangerously-bypass-approvals-and-sandbox")
+            .word("--skip-git-repo-check")
+            .opt("--cd", folder)
+            .opt("--output-last-message", last_message);
+        if let Some(model) = model {
+            args = args.opt("--model", model);
+        }
+        if let Some(effort) = effort {
+            // A key of codex's configuration and a level of the closed list: one token.
+            args = args.push(format!("--config=model_reasoning_effort={}", effort.as_str()).into());
+        }
+        args.word("-")
+    }
+}
+
+/// `orca`, for the Orca surface of #462: its builders only. Every command asks for `--json`.
+pub mod orca {
+    use crate::{AbsolutePath, Args, Effort, InvalidValue, ModelId, Program, Text};
+
+    /// `orca status --json`: whether the runtime is reachable.
+    pub fn status() -> Args {
+        Args::new().word("status").word("--json")
+    }
+
+    /// `orca worktree show --worktree=path:<folder> --json`: whether a folder is a workspace of Orca.
+    pub fn worktree_show(folder: &AbsolutePath) -> Args {
+        Args::new().word("worktree").word("show").push(selector(folder)).word("--json")
+    }
+
+    /// `orca agent launch --agent=<claude|codex> --worktree=path:<folder> --prompt=<text>
+    /// [--model=…] [--effort=…] --json`. Orca takes the prompt as an argument, so its surface keeps
+    /// it short and writes a long one to a file, as the prototype does.
+    pub fn agent_launch(
+        agent: Program,
+        folder: &AbsolutePath,
+        prompt: &Text,
+        model: Option<&ModelId>,
+        effort: Option<Effort>,
+    ) -> Result<Args, InvalidValue> {
+        let agent = match agent {
+            Program::Claude => "--agent=claude",
+            Program::Codex => "--agent=codex",
+            _ => return Err(InvalidValue { kind: "agent", reason: "is not an agent service" }),
+        };
+        let mut args = Args::new().word("agent").word("launch").word(agent).push(selector(folder)).opt("--prompt", prompt);
+        if let Some(model) = model {
+            args = args.opt("--model", model);
+        }
+        if let Some(effort) = effort {
+            args = args.opt("--effort", &effort);
+        }
+        Ok(args.word("--json"))
+    }
+
+    /// `--worktree=path:<folder>`, the folder with `/`, as the prototype's selector.
+    fn selector(folder: &AbsolutePath) -> std::ffi::OsString {
+        format!("--worktree=path:{}", folder.as_str()).into()
+    }
+}
+
+impl Args {
+    /// A token this crate built from a literal and a typed value.
+    fn push(mut self, token: std::ffi::OsString) -> Self {
+        self.0.push(token);
+        self
+    }
+}
+
 #[cfg(feature = "harness")]
 pub mod harness {
     //! Dev only, for regia-conformance; a guard test keeps every call to it there.
@@ -277,5 +384,79 @@ pub mod harness {
             .stdout(Stdio::null())
             .stderr(Stdio::null());
         command.spawn().map(drop)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tokens(args: &Args) -> Vec<String> {
+        args.tokens().map(|token| token.to_string_lossy().into_owned()).collect()
+    }
+
+    fn absolute(text: &str) -> AbsolutePath {
+        AbsolutePath::new(std::path::Path::new(text)).unwrap()
+    }
+
+    /// The prototype's argv (`claude -p --output-format stream-json …`, `codex exec … -C <folder> …`) in
+    /// the `--name=value` form of T04: same options, same values, same order of the fixed part.
+    #[test]
+    fn the_agents_builders_spell_the_prototype_argv() {
+        let opus = ModelId::parse("opus").unwrap();
+        assert_eq!(
+            tokens(&claude::print(Some(&opus), Some(Effort::High))),
+            ["-p", "--output-format=stream-json", "--verbose", "--dangerously-skip-permissions", "--model=opus", "--effort=high"]
+        );
+        assert_eq!(tokens(&claude::print(None, None)).len(), 4, "no model, no effort: nothing more");
+
+        let (folder, last) = if cfg!(windows) {
+            (absolute(r"C:\work\trial"), absolute(r"C:\state\steps\trial\1.last.txt"))
+        } else {
+            (absolute("/work/trial"), absolute("/state/steps/trial/1.last.txt"))
+        };
+        let model = ModelId::parse("gpt-x").unwrap();
+        let args = tokens(&codex::exec(&folder, &last, Some(&model), Some(Effort::High)));
+        let root = if cfg!(windows) { "C:/" } else { "/" };
+        assert_eq!(
+            args,
+            [
+                "exec".to_owned(),
+                "--json".to_owned(),
+                "--dangerously-bypass-approvals-and-sandbox".to_owned(),
+                "--skip-git-repo-check".to_owned(),
+                format!("--cd={root}work/trial"),
+                format!("--output-last-message={root}state/steps/trial/1.last.txt"),
+                "--model=gpt-x".to_owned(),
+                "--config=model_reasoning_effort=high".to_owned(),
+                "-".to_owned(),
+            ]
+        );
+        assert_eq!(tokens(&codex::exec(&folder, &last, None, None)).last().map(String::as_str), Some("-"));
+    }
+
+    #[test]
+    fn the_orca_builders_ask_for_json_and_take_only_agents() {
+        let folder = absolute(if cfg!(windows) { r"C:\work\trial" } else { "/work/trial" });
+        let path = if cfg!(windows) { "C:/work/trial" } else { "/work/trial" };
+        assert_eq!(tokens(&orca::status()), ["status", "--json"]);
+        assert_eq!(tokens(&orca::worktree_show(&folder)), ["worktree", "show", &format!("--worktree=path:{path}"), "--json"]);
+        let prompt = Text::parse("do the step\nline two").unwrap();
+        let haiku = ModelId::parse("haiku").unwrap();
+        let args = orca::agent_launch(Program::Claude, &folder, &prompt, Some(&haiku), Some(Effort::Low)).unwrap();
+        assert_eq!(
+            tokens(&args),
+            [
+                "agent",
+                "launch",
+                "--agent=claude",
+                &format!("--worktree=path:{path}"),
+                "--prompt=do the step\nline two",
+                "--model=haiku",
+                "--effort=low",
+                "--json"
+            ]
+        );
+        assert!(orca::agent_launch(Program::Gh, &folder, &prompt, None, None).is_err());
     }
 }
