@@ -184,6 +184,9 @@ impl ModelId {
         if !text.starts_with(|c: char| c.is_ascii_alphanumeric()) {
             return refuse(Self::KIND, "does not start with a letter or a digit");
         }
+        if text.contains("..") {
+            return refuse(Self::KIND, "has a misplaced dot");
+        }
         Ok(Self(text.to_owned()))
     }
 
@@ -226,7 +229,8 @@ impl Effort {
 }
 
 /// A path inside the dossier, relative, with `/`. Components are letters, digits, `.`, `_` and
-/// `-`; none is `.` or `..`, starts with `-`, ends with `.`, or is a name Windows reserves.
+/// `-`; none is `.`, starts with `-`, ends with `.`, or is a name Windows reserves, and no `..`
+/// appears anywhere.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct DossierPath(String);
 
@@ -236,6 +240,9 @@ impl DossierPath {
     pub fn parse(text: &str) -> Result<Self, InvalidValue> {
         common(Self::KIND, text, 240)?;
         only(Self::KIND, text, |c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | '-' | '/'))?;
+        if text.contains("..") {
+            return refuse(Self::KIND, "has a misplaced dot");
+        }
         for component in text.split('/') {
             if component.is_empty() {
                 return refuse(Self::KIND, "has an empty component");

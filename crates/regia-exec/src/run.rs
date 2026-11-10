@@ -2,6 +2,7 @@
 
 use std::env;
 use std::ffi::{OsStr, OsString};
+use std::fmt;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStderr, ChildStdout, Command, ExitStatus, Stdio};
@@ -101,11 +102,21 @@ impl Default for Limits {
     }
 }
 
-#[derive(Debug)]
 pub struct Output {
     pub status: ExitStatus,
     pub stdout: Vec<u8>,
     pub stderr: Vec<u8>,
+}
+
+/// Lengths only: what a program printed can be private, and `{:?}` ends up in logs (T10).
+impl fmt::Debug for Output {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Output")
+            .field("status", &self.status)
+            .field("stdout_bytes", &self.stdout.len())
+            .field("stderr_bytes", &self.stderr.len())
+            .finish()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -116,7 +127,7 @@ enum Target {
 }
 
 /// A run, described and not started. [`Launch::run`] starts it.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Launch {
     target: Target,
     args: Vec<OsString>,
@@ -254,6 +265,21 @@ impl Launch {
         tree::prepare(&mut command);
         let child = command.spawn().map_err(|source| ExecError::Spawn { program: label.clone(), source })?;
         supervise(child, self.stdin, self.limits, label)
+    }
+}
+
+/// Names and lengths only: a prompt, a body or a variable set by name never reaches a log through
+/// `{:?}` (T10).
+impl fmt::Debug for Launch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Launch")
+            .field("program", &self.program_name())
+            .field("args", &self.args.len())
+            .field("cwd", &self.cwd)
+            .field("stdin_bytes", &self.stdin.as_ref().map(Vec::len))
+            .field("env_set", &self.set.iter().map(|(name, _)| name).collect::<Vec<_>>())
+            .field("env_removed", &self.removed)
+            .finish_non_exhaustive()
     }
 }
 
@@ -447,6 +473,15 @@ mod tests {
         let python_names = names(&python.environment(Program::Python));
         assert!(python_names.contains(&"REGIA_HOME".to_owned()) && python_names.contains(&"MOVIOLA_TASKS".to_owned()));
         assert!(!python_names.contains(&"REGIA_X_TOKEN".to_owned()), "a secret by name never passes by prefix");
+    }
+
+    #[test]
+    fn debug_output_shows_no_input_secret_or_output() {
+        let pin = Pin::at(Program::Claude, &std::env::current_exe().unwrap()).unwrap();
+        let launch = pin.launch(Args::new(), Path::new(".")).stdin("the secret prompt").env("SOME_TOKEN", "canary");
+        let text = format!("{launch:?}");
+        assert!(!text.contains("secret prompt") && !text.contains("canary"), "{text}");
+        assert!(text.contains("SOME_TOKEN") && text.contains("17"), "names and lengths stay: {text}");
     }
 
     #[test]
