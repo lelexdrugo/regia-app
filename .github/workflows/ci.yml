@@ -220,4 +220,7 @@ jobs:
         run: |
           cargo tree --locked -p regia-app -e normal,build,features -i tauri --target all > tauri-features.txt
           grep -q 'tauri feature "custom-protocol"' tauri-features.txt
-          ! grep -q 'tauri feature "devtools"' tauri-features.txt
+          if grep -q 'tauri feature "devtools"' tauri-features.txt; then
+            echo "the release graph turns on tauri's devtools feature"
+            exit 1
+          fi
