@@ -3,12 +3,18 @@
 #[cfg(all(feature = "smoke", not(debug_assertions)))]
 compile_error!("the smoke feature lets the webview write a file and quit the app: never in a release build");
 
+mod navigation;
+
 use std::collections::BTreeMap;
 
 use regia_core::{Brief, BriefOptions};
 use regia_i18n::{Catalog, Language};
 use regia_runtime::load_brief;
 use serde::Serialize;
+use tauri::webview::NewWindowResponse;
+use tauri::{AppHandle, Runtime, WebviewWindowBuilder};
+
+use crate::navigation::AppOrigin;
 
 #[derive(Serialize)]
 struct Bootstrap {
@@ -44,8 +50,21 @@ fn smoke_report(app: tauri::AppHandle, report: serde_json::Value) -> Result<(), 
     Ok(())
 }
 
+/// The main window keeps its size and title in `tauri.conf.json`, where `create: false` leaves it to this
+/// function: the two handlers that keep the webview inside the app exist only on the builder (V09).
+fn open_main_window<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
+    let config = app.config().app.windows.iter().find(|window| window.label == "main").cloned();
+    let config = config.expect("tauri.conf.json declares the main window");
+    let origin = AppOrigin::current();
+    WebviewWindowBuilder::from_config(app, &config)?
+        .on_navigation(move |url| origin.allows(url))
+        .on_new_window(|_, _| NewWindowResponse::Deny)
+        .build()?;
+    Ok(())
+}
+
 fn main() {
-    let builder = tauri::Builder::default();
+    let builder = tauri::Builder::default().setup(|app| Ok(open_main_window(app.handle())?));
     #[cfg(feature = "smoke")]
     let builder = builder.invoke_handler(tauri::generate_handler![bootstrap, get_brief, smoke_report]);
     #[cfg(not(feature = "smoke"))]

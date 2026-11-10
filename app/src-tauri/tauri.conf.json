@@ -9,9 +9,11 @@
     "withGlobalTauri": true,
     "windows": [
       {
+        "label": "main",
         "title": "regia",
         "width": 960,
-        "height": 720
+        "height": 720,
+        "create": false
       }
     ],
     "security": {
