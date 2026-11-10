@@ -461,8 +461,14 @@ pub enum Writes {
     Skip,
 }
 
+/// Text with its line breaks as LF. The one normalization of text, declared: the prototype writes
+/// CRLF on Windows, the repo stores LF, and the Rust side writes LF (ADR 0001 §11).
+pub fn lf(text: &str) -> String {
+    text.replace("\r\n", "\n")
+}
+
 /// Every way `run` differs from what the prototype did for `case`: exit code, stdout through the
-/// table, stderr, and with [`Writes::Compare`] the writes in order. Empty when they agree.
+/// table or as text, stderr, and with [`Writes::Compare`] the writes in order. Empty when they agree.
 pub fn differences(case: &Case, run: &CliRun, writes: Writes) -> Vec<String> {
     let mut out = Vec::new();
     if run.exit != Some(i32::from(case.spec.exit)) {
@@ -475,13 +481,14 @@ pub fn differences(case: &Case, run: &CliRun, writes: Writes) -> Vec<String> {
             (_, Err(error)) => out.push(format!("stdout: the table does not cover the prototype's output: {error}")),
         },
         Recorded::Text(python) => {
-            if run.stdout != python.as_bytes() {
-                out.push(format!("stdout: rust {:?}, python {python:?}", String::from_utf8_lossy(&run.stdout)));
+            let rust = lf(&String::from_utf8_lossy(&run.stdout));
+            if rust != python {
+                out.push(format!("stdout: rust {rust:?}, python {python:?}"));
             }
         }
     }
     let stderr = case.recorded_stderr();
-    if case.spec.python.is_some() && run.stderr != stderr {
+    if case.spec.python.is_some() && lf(&run.stderr) != stderr {
         out.push(format!("stderr: rust {:?}, python {stderr:?}", run.stderr));
     }
     if writes == Writes::Compare {

@@ -11,8 +11,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, FIXTURE_TODAY, fixed_today_driver, fixture_for_python, fixtures_dir, log_var, prepare_case_state, read_json,
-    writes_of_run,
+    Case, FIXTURE_TODAY, fixed_today_driver, fixture_for_python, fixtures_dir, lf, log_var, prepare_case_state,
+    read_json, writes_of_run,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
 use regia_exec::git::{self, CommitField};
@@ -284,8 +284,8 @@ fn main() {
         let json = argv.first().is_some_and(|arg| arg == "--json") && table.has_output(&command);
         let parsed = json.then(|| serde_json::from_str::<Value>(&text).expect("the prototype printed JSON"));
         replace(&case.dir.join("python.it.json"), parsed);
-        replace_text(&case.dir.join("python.it.txt"), (!json).then_some(text.as_str()));
-        replace_text(&case.dir.join("python.it.stderr.txt"), Some(stderr.as_str()).filter(|text| !text.is_empty()));
+        replace_text(&case.dir.join("python.it.txt"), (!json).then(|| lf(&text)).as_deref());
+        replace_text(&case.dir.join("python.it.stderr.txt"), Some(lf(&stderr)).filter(|text| !text.is_empty()).as_deref());
         replace(&case.dir.join("calls.json"), (!writes.is_empty()).then(|| Value::Array(writes.clone())));
         println!(
             "{}/{}: exit {}, {} calls to the fake gh, {} writes, {urls} URLs, all synthetic",
