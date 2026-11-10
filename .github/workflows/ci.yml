@@ -1,9 +1,11 @@
 name: ci
 
 # Minutes on a private repo are billed against a small monthly allowance, and macOS costs about ten
-# times Linux. A push to main that touches the build runs Linux and Windows; the full matrix, with
-# macOS, runs only by hand. Spike branches trigger nothing. The supply-chain, MSRV and release jobs
-# run on Linux only, on every run: they read the lockfile or build for the same targets.
+# times Linux. A push to main that touches the build runs Linux and Windows. macOS runs only by hand,
+# as one job that builds what app-smoke starts and nothing else. A run by hand can also pick a single
+# engine (`only`), to check WebKitGTK or WKWebView at the price of one job. Spike branches trigger
+# nothing. The supply-chain, MSRV and release jobs run on Linux only: they read the lockfiles or build
+# for the same targets.
 on:
   push:
     branches: [main]
@@ -17,6 +19,12 @@ on:
       - "crates/**"
       - "fixtures/**"
   workflow_dispatch:
+    inputs:
+      only:
+        description: "all: every job, with macOS. linux or macos: that engine's smoke leg alone."
+        type: choice
+        options: [all, linux, macos]
+        default: all
 
 # Queued, never cancelled: each pushed commit gets its verdict.
 concurrency:
@@ -32,12 +40,13 @@ env:
 jobs:
   build:
     name: ${{ matrix.os }}
+    if: github.event_name == 'push' || inputs.only != 'macos'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJSON(github.event_name == 'workflow_dispatch' && '["ubuntu-24.04","windows-2025","macos-15"]' || '["ubuntu-24.04","windows-2025"]') }}
+        os: ${{ fromJSON(inputs.only == 'linux' && '["ubuntu-24.04"]' || '["ubuntu-24.04","windows-2025"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: System packages for Tauri
@@ -46,6 +55,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev \
             libayatana-appindicator3-dev librsvg2-dev xvfb
+          dpkg-query -W libwebkit2gtk-4.1-0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: The frontend's dependencies, from the lockfile, without install scripts (V23)
+        working-directory: app/ui
+        run: npm ci --ignore-scripts
+      - name: Types and Svelte's compile-time checks
+        if: runner.os == 'Linux'
+        working-directory: app/ui
+        run: npm run check
+      - name: The frontend the app embeds
+        working-directory: app/ui
+        run: npm run build
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
@@ -55,19 +78,74 @@ jobs:
         run: cargo build --workspace --locked
       - name: Only regia-exec starts a process (V12)
         run: cargo clippy --workspace --all-targets --locked -- -D clippy::disallowed-methods
-      - name: Test, with the brief's conformance and regia-exec's checks
+      - name: Test, with the brief's conformance, regia-exec's checks and the app's (V01-V05, V09, V10, V27, V28)
         run: cargo test --workspace --locked
       - name: Build the app for the smoke test
         run: cargo build -p regia-app --features smoke --locked
-      - name: The app shows the CLI's brief, in each language (Linux)
+      - name: The app shows the CLI's brief, in each language, and passes its engine checks (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a ./target/debug/app-smoke
-      - name: The app shows the CLI's brief, in each language
+      - name: The app shows the CLI's brief, in each language, and passes its engine checks
         if: runner.os != 'Linux'
         run: ./target/debug/app-smoke
+      - name: What the engine reported
+        if: always()
+        shell: bash
+        run: |
+          for report in target/debug/conformance-state/smoke-*/smoke.json; do
+            [ -f "$report" ] || continue
+            node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+              console.log(r.language, r.user_agent);
+              for (const c of r.checks ?? []) console.log(c.ok ? "  ok  " : "  FAIL", c.name, "|", c.detail);' "$report"
+          done
+
+  macos:
+    name: macos-15 (app-smoke)
+    if: github.event_name == 'workflow_dispatch' && inputs.only != 'linux'
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      # No debug info: this job only runs the app, and compiles and links faster without it.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: The system and its WebKit
+        run: |
+          sw_vers
+          defaults read /Applications/Safari.app/Contents/Info CFBundleShortVersionString || true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: The frontend the app embeds
+        working-directory: app/ui
+        run: npm ci --ignore-scripts && npm run build
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          # A branch's cache serves only that branch; main's serves every later run by hand.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build what app-smoke starts
+        run: |
+          cargo build --locked -p regia-cli -p regia-conformance --bin regia --bin fake-gh --bin app-smoke
+          cargo build --locked -p regia-app --features smoke
+      - name: The app shows the CLI's brief, in each language, and passes its engine checks (WKWebView)
+        run: ./target/debug/app-smoke
+      - name: What the engine reported
+        if: always()
+        shell: bash
+        run: |
+          for report in target/debug/conformance-state/smoke-*/smoke.json; do
+            [ -f "$report" ] || continue
+            node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+              console.log(r.language, r.user_agent);
+              for (const c of r.checks ?? []) console.log(c.ok ? "  ok  " : "  FAIL", c.name, "|", c.detail);' "$report"
+          done
 
   supply-chain:
-    name: cargo deny and cargo audit
+    name: cargo deny, cargo audit and npm audit
+    if: github.event_name == 'push' || inputs.only == 'all'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -82,9 +160,16 @@ jobs:
         run: cargo deny --locked check
       - name: Advisories on the lockfile (V23)
         run: cargo audit
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Advisories on what the frontend ships (V23)
+        working-directory: app/ui
+        run: npm audit --omit=dev
 
   msrv:
     name: build with Rust 1.90
+    if: github.event_name == 'push' || inputs.only == 'all'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -94,6 +179,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev \
             libayatana-appindicator3-dev librsvg2-dev
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: The frontend the app embeds
+        working-directory: app/ui
+        run: npm ci --ignore-scripts && npm run build
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: "1.90"
@@ -103,6 +194,7 @@ jobs:
 
   release:
     name: release profile
+    if: github.event_name == 'push' || inputs.only == 'all'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -112,9 +204,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev \
             libayatana-appindicator3-dev librsvg2-dev
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: The frontend the app embeds
+        working-directory: app/ui
+        run: npm ci --ignore-scripts && npm run build
       - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
         with:
           toolchain: stable
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
       - name: Build the CLI and the app as they ship
         run: cargo build --release --locked -p regia-cli -p regia-app
+      - name: No devtools in the release graph (V27)
+        run: |
+          cargo tree --locked -p regia-app -e normal,build,features -i tauri --target all > tauri-features.txt
+          grep -q 'tauri feature "custom-protocol"' tauri-features.txt
+          ! grep -q 'tauri feature "devtools"' tauri-features.txt
