@@ -8,6 +8,9 @@ export const VIEWS = [
   "#/settings?data=demo&density=comfortable&dir=nero",
   // The help, open over a screen: the keys and the words.
   "#/settings?data=demo&help=1",
+  // The sidebar's quota on a fixture (#439/D29), under and over the 75 % where nothing starts by itself.
+  "#/brief?data=demo&quota=6",
+  "#/console?data=demo&quota=82",
   ...["demo", "worst", "empty", "one", "huge"].map((data) => `#/document?data=${data}`),
   "#/corpus?data=hostile",
 ];

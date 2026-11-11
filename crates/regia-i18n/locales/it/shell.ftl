@@ -26,3 +26,7 @@ shell-later = Questa schermata non c'è ancora in questa versione: arriva con un
 ## Each language by its own name, in the choice of the language.
 
 language-self = Italiano
+
+## The quota in the sidebar says what is used and what is left (#439/D29).
+
+nav-quota-used-left = { $used } % usato, { $left } % rimasto

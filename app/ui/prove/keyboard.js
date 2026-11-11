@@ -4,8 +4,9 @@
 // heading, and nothing with a modifier or a letter too late; the help on ? and away on Esc, with the focus back
 // where it was; the help's words, those #439/D31 asked for among them, in both languages; the Tab order from the
 // skip link, with a ring on every stop; the skip link; the settings changed with the arrow keys and saved; no
-// transition under prefers-reduced-motion. The negative control: the same checks on the harness's control page,
-// which has none of it, must fail, and so must the prototype's glossary against #439/D31's words.
+// transition under prefers-reduced-motion; the sidebar's quota in words, used and left (#439/D29). The negative
+// control: the same checks on the harness's control page, which has none of it, must fail, and so must the
+// prototype's glossary against #439/D31's words and its "claude 6 %" against #439/D29.
 import { all, find, focus, focused, named } from "./roles.js";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -159,6 +160,16 @@ export const keyboard = {
     await page.send("Emulation.setEmulatedMedia", { features: [] });
     check("prefers-reduced-motion: no transition", /^0s(, 0s)*$/.test(still) && !/^0s(, 0s)*$/.test(moving), `${moving} → ${still}`);
 
+    // The sidebar's quota says what is used and what is left (#439/D29), in words and as a meter.
+    const says = (text, language) => (language === "en" ? /\b6 % used, 94 % left\b/ : /\b6 % usato, 94 % rimasto\b/).test(text);
+    for (const language of ["en", "it"]) {
+      await fresh(page, harness, `#/brief?data=demo&quota=6&lang=${language}`);
+      const meter = (await all(page, "meter"))[0];
+      const text = await page.evaluate(`document.querySelector("aside")?.innerText ?? ""`);
+      check(`the quota says used and left, in ${language === "en" ? "English" : "Italian"}`, says(text, language) && meter !== undefined && meter.name !== "", named(meter));
+    }
+    const prototypeQuota = says("claude 6 %", "en");
+
     // The control: a page with none of it.
     await fresh(page, harness, "#/control?data=planted&lang=en");
     const control = [];
@@ -166,12 +177,12 @@ export const keyboard = {
     if ((await help(page)).dialog) control.push("? opened a help");
     const first = (await tabs(page, 1))[0];
     if (named(first.node) === 'link "Skip to content"') control.push("Tab found a skip link");
-    const caught = control.length === 0 && missing(PROTOTYPE, "en").length > 0;
+    const caught = control.length === 0 && missing(PROTOTYPE, "en").length > 0 && !prototypeQuota;
 
     for (const [name, ok, detail] of results) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
     const failed = results.filter(([, ok]) => !ok).length;
     console.log(`keyboard checks: ${results.length}; failed: ${failed}`);
-    console.log(`negative control, the control page and the prototype's glossary: ${caught ? "caught" : "NOT CAUGHT"} (prototype misses ${JSON.stringify(missing(PROTOTYPE, "en"))}${control.length ? `; passed: ${control.join(", ")}` : ""})`);
+    console.log(`negative control, the control page, the prototype's glossary and its "claude 6 %": ${caught ? "caught" : "NOT CAUGHT"} (prototype misses ${JSON.stringify(missing(PROTOTYPE, "en"))}${control.length ? `; passed: ${control.join(", ")}` : ""})`);
     const newErrors = page.consoleErrors.slice(errors);
     console.log(`errors in the console: ${newErrors.length}`);
     for (const error of [...new Set(newErrors)].slice(0, 10)) console.log(`  ${error}`);

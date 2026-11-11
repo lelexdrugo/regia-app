@@ -7,6 +7,7 @@
   import type { Saving } from "../lib/look";
   import { href, type Section } from "../lib/route";
   import LanguageSwitch from "./LanguageSwitch.svelte";
+  import QuotaView, { type Quota } from "./Quota.svelte";
 
   interface Props {
     strings: Catalog;
@@ -18,9 +19,11 @@
     saving: Saving;
     onlanguage: (language: LanguageTag) => void;
     onhelp: () => void;
+    /** The principal service's quota, when something tells it: no command of this version does (#463's budget). */
+    quota: Quota | null;
   }
 
-  let { strings, catalogFor, product, current, saving, onlanguage, onhelp }: Props = $props();
+  let { strings, catalogFor, product, current, saving, onlanguage, onhelp, quota }: Props = $props();
 
   const MAIN: { section: Section; label: string }[] = [
     { section: "brief", label: "nav-brief" },
@@ -70,6 +73,9 @@
     <LanguageSwitch {strings} {catalogFor} name="language-sidebar" {onlanguage} />
     {#if saving.kind === "failed"}
       <p class="warning side-note" role="alert">{strings.message("settings-save-failed", { reason: saving.reason })}</p>
+    {/if}
+    {#if quota}
+      <QuotaView {strings} {quota} />
     {/if}
   </div>
 </aside>

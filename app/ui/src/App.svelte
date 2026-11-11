@@ -11,6 +11,7 @@
   import Later from "./screens/Later.svelte";
   import Settings from "./screens/Settings.svelte";
   import Help from "./shell/Help.svelte";
+  import type { Quota } from "./shell/Quota.svelte";
   import Sidebar from "./shell/Sidebar.svelte";
 
   interface Props {
@@ -24,11 +25,13 @@
     settings: Saved;
     /** Saves the fields given, and answers what is saved (`set_settings`). */
     save: (change: SettingsChange) => Promise<Saved>;
+    /** The principal service's quota for the sidebar, or none: no command of this version gives it. */
+    quota?: Quota | null;
     /** Called each time the screen the address names has drawn: the brief once its data or error is in the DOM. */
     onsettled?: () => void;
   }
 
-  let { strings, catalogFor, product, load, settings, save, onsettled }: Props = $props();
+  let { strings, catalogFor, product, load, settings, save, quota = null, onsettled }: Props = $props();
 
   let route: Route = $state(parse(location.hash));
   let main: HTMLElement | undefined = $state();
@@ -174,6 +177,7 @@
     current={route.section}
     onlanguage={changeLanguage}
     onhelp={openHelp}
+    {quota}
   />
   <main id="main" tabindex="-1" bind:this={main}>
     {#if route.section === "brief"}

@@ -133,7 +133,7 @@ let mounts = 0;
 function parts(route: string) {
   const [path = "", query = ""] = route.replace(/^#\/?/, "").split("?");
   const params = new URLSearchParams(query);
-  const fixture = ["data", "lang", "dir", "density", "save", "help"].map((name) => params.get(name)).join("&");
+  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota"].map((name) => params.get(name)).join("&");
   return { view: path.split("/")[0] ?? "", query, params, fixture };
 }
 
@@ -181,7 +181,10 @@ async function show(): Promise<void> {
       }
       drawn();
     };
-    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data), ...settingsOf(params), onsettled };
+    // quota=<used> shows the sidebar's quota on a fixture (#439/D29): the app has no source for it yet.
+    const used = params.get("quota");
+    const quota = used === null ? null : { service: "claude", used: Number(used) };
+    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data), ...settingsOf(params), quota, onsettled };
     mounted.push(mount(App, { target: root, props }));
     if (view === "brief" && data === "loading") {
       await tick();
