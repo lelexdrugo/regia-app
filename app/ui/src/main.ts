@@ -10,7 +10,7 @@ import { getAppInfo, getBrief } from "./lib/ipc";
 
 async function start(): Promise<void> {
   const info = await getAppInfo();
-  const strings = catalog(info.language);
+  const strings = catalog(info.language, info.product_name);
   document.documentElement.lang = strings.language;
   document.title = strings.message("app-title");
   const target = document.getElementById("root");

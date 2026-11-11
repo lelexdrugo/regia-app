@@ -1,0 +1,31 @@
+### The console: the controller, its steps and the quota.
+
+console-title = Console
+console-sub-on = Controller acceso. Ultimo passo alle { $when }, prossimo controllo alle { $next }. Agenti al lavoro: { $running }.
+console-sub-off = Controller fermo: nessun passo parte finché non lo accendi. Gli agenti già partiti finiscono.
+console-project = Apri il Project
+console-start = Accendi il controller
+console-stop = Ferma il controller
+console-steps = Passi di oggi
+console-steps-empty = Nessun passo oggi.
+console-col-when = Quando
+console-col-project = Progetto
+console-col-outcome = Esito
+console-col-what = Che cosa
+outcome-dispatched = lanciato
+outcome-gate = decisione
+outcome-idle = in attesa
+outcome-failed = interrotto
+console-workers = Agenti al lavoro
+console-workers-empty = Nessun agente al lavoro.
+console-watch = Guarda
+console-budget = Quota
+console-budget-five = Finestra di 5 ore
+console-budget-week = Settimana
+console-budget-reset = riparte { $when }
+console-policy = Sopra il { $pct } % della finestra di 5 ore nessun avvio automatico.
+console-locks = Lock
+console-locks-empty = Nessun passo aperto.
+console-locks-until = fino alle { $when }
+console-log = Registro
+console-log-empty = Registro vuoto.
