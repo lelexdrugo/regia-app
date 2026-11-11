@@ -78,11 +78,11 @@ jobs:
         run: cargo build --workspace --locked
       - name: Only regia-exec starts a process (V12)
         run: cargo clippy --workspace --all-targets --locked -- -D clippy::disallowed-methods
-      - name: Test, with the brief's conformance, regia-exec's checks and the app's (V01-V05, V09, V10, V27, V28)
+      - name: Test, with the brief's conformance, regia-exec's checks and the app's (V01-V05, V08-V10, V27, V28)
         run: cargo test --workspace --locked
       - name: Build the app for the smoke test
         run: cargo build -p regia-app --features smoke --locked
-      - name: The app shows the CLI's brief, in each language, and passes its engine checks (Linux)
+      - name: The app shows the CLI's brief, in each language, and passes its engine checks, V07 included (Linux)
         if: runner.os == 'Linux'
         run: xvfb-run -a ./target/debug/app-smoke
       - name: The app shows the CLI's brief, in each language, and passes its engine checks
@@ -98,6 +98,16 @@ jobs:
               console.log(r.language, r.user_agent);
               for (const c of r.checks ?? []) console.log(c.ok ? "  ok  " : "  FAIL", c.name, "|", c.detail);' "$report"
           done
+      # Last, and even after a failure above: they need only the frontend's dependencies. The runner's Chrome
+      # is Chrome stable, which Ubuntu's AppArmor profile lets keep its sandbox.
+      - name: The frontend's proofs in the runner's Chrome, under the app's CSP (contrast, catalog, limits, V07)
+        if: runner.os == 'Linux' && !cancelled()
+        working-directory: app/ui
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          google-chrome --version
+          npm run prove
 
   macos:
     name: macos-15 (app-smoke)
