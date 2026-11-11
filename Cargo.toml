@@ -36,6 +36,9 @@ thiserror = "2"
 toml = "1"
 ts-rs = "12"
 unic-langid = "0.9"
+# The usage probes' two GETs (threat model §3.12): the system's TLS, so its licences are already
+# allowed, and the system's roots.
+ureq = { version = "3.5", default-features = false, features = ["native-tls-no-default"] }
 
 [profile.dev]
 debug = "line-tables-only"

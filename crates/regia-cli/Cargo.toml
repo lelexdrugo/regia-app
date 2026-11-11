@@ -19,4 +19,5 @@ regia-facade.workspace = true
 regia-i18n.workspace = true
 regia-identity.workspace = true
 regia-runtime.workspace = true
+regia-store.workspace = true
 serde_json.workspace = true
