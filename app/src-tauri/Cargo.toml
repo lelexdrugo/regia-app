@@ -7,8 +7,9 @@ rust-version.workspace = true
 publish.workspace = true
 
 [features]
-# Test only: the webview reports what it rendered and the app exits. Never in a release build.
-smoke = []
+# Test only: the webview reports what it rendered and the app exits, after rendering the core's hostile
+# corpus (threat model V07). Never in a release build.
+smoke = ["regia-core/corpus"]
 
 [build-dependencies]
 tauri-build.workspace = true
@@ -22,9 +23,11 @@ serde.workspace = true
 serde_json.workspace = true
 tauri.workspace = true
 
-# Tests only: ts-rs writes the TypeScript of the IPC types (src/ipc.rs), and Tauri's mock runtime runs the
-# webview's calls through this build's ACL (V10). Neither reaches a release build.
+# Tests only: ts-rs writes the TypeScript of the IPC types (src/ipc.rs), the core's corpus becomes the
+# frontend proof's fixture, and Tauri's mock runtime runs the webview's calls through this build's ACL
+# (V10). None of them reaches a release build.
 [dev-dependencies]
+regia-core = { workspace = true, features = ["corpus", "ts"] }
 tauri = { workspace = true, features = ["test"] }
 toml.workspace = true
 ts-rs.workspace = true

@@ -157,8 +157,12 @@ fn v01_one_capability_covers_the_window_and_it_stays_minimal() {
     assert_eq!(capability_problems(&main, &admitted_commands()), Vec::<String>::new(), "capabilities/main.json");
 
     let smoke = read_json(&directory.join("smoke/smoke.json"));
-    assert_eq!(capability_problems(&smoke, &["smoke_report"]), Vec::<String>::new(), "capabilities/smoke/smoke.json");
-    assert_eq!(strings(&smoke["permissions"]), ["allow-smoke-report", "core:event:allow-listen", "core:event:allow-unlisten"]);
+    let smoke_commands = ["smoke_report", "smoke_corpus"];
+    assert_eq!(capability_problems(&smoke, &smoke_commands), Vec::<String>::new(), "capabilities/smoke/smoke.json");
+    assert_eq!(
+        strings(&smoke["permissions"]),
+        ["allow-smoke-report", "allow-smoke-corpus", "core:event:allow-listen", "core:event:allow-unlisten"]
+    );
 }
 
 #[test]

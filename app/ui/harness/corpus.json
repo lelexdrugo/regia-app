@@ -1,0 +1,776 @@
+[
+  {
+    "document": {
+      "blocks": [
+        {
+          "kind": "code",
+          "text": "<img src=x onerror=\"window.__pwned=1\">"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "<img src=x onerror=\"window.__pwned=1\">",
+    "name": "an image with onerror, as a block"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "kind": "code",
+          "text": "<script>window.__pwned=1</script>"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "<script>window.__pwned=1</script>",
+    "name": "a script block"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "A drawing: <svg onload=\"window.__pwned=1\"><circle r=\"1\"/></svg> done"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "A drawing: <svg onload=\"window.__pwned=1\"><circle r=\"1\"/></svg> done",
+    "name": "svg with onload, inline"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Look <iframe srcdoc=\"<script>parent.__pwned=1</script>\"></iframe> here"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "Look <iframe srcdoc=\"<script>parent.__pwned=1</script>\"></iframe> here",
+    "name": "an iframe with srcdoc"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "<a href=\"javascript:x\" title='\"><img src=x onerror=window.__pwned=1>'>a</a>"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "<a href=\"javascript:x\" title='\"><img src=x onerror=window.__pwned=1>'>a</a>",
+    "name": "attributes with quotes inside quotes"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "kind": "code",
+          "text": "<form action=\"https://attacker.invalid/\"><button>Send</button></form>"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "<form action=\"https://attacker.invalid/\"><button>Send</button></form>",
+    "name": "a form block"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "kind": "code",
+          "text": "<style>body { display: none }</style>"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "<style>body { display: none }</style>",
+    "name": "a style block"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "kind": "code",
+          "text": "<meta http-equiv=\"refresh\" content=\"0;url=https://attacker.invalid/\">"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "<meta http-equiv=\"refresh\" content=\"0;url=https://attacker.invalid/\">",
+    "name": "a meta refresh"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "kind": "code",
+          "text": "<script>window.__pwned=1</script>\n"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "```html\n<script>window.__pwned=1</script>\n```",
+    "name": "html in a fenced code block"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Try "
+            },
+            {
+              "kind": "code",
+              "text": "<img src=x onerror=window.__pwned=1>"
+            },
+            {
+              "kind": "text",
+              "text": " now"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "Try `<img src=x onerror=window.__pwned=1>` now",
+    "name": "html in inline code"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "<script>window.__pwned=1</script> <img src=x onerror=window.__pwned=1>"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "&lt;script&gt;window.__pwned=1&lt;/script&gt; &#x3C;img src=x onerror=window.__pwned=1&#x3E;",
+    "name": "entities that decode to markup"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "head": [
+            [
+              {
+                "kind": "text",
+                "text": "a"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "b"
+              }
+            ]
+          ],
+          "kind": "table",
+          "rows": [
+            [
+              [
+                {
+                  "kind": "text",
+                  "text": "<img src=x onerror=window.__pwned=1>"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "ok"
+                }
+              ]
+            ]
+          ]
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "| a | b |\n|---|---|\n| <img src=x onerror=window.__pwned=1> | ok |",
+    "name": "html in a table cell"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "click"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "kind": "refused",
+                "reason": "scheme"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[click](javascript:window.__pwned=1)",
+    "name": "a javascript link"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "javascript:window.__pwned=1"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "kind": "refused",
+                "reason": "scheme"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "<javascript:window.__pwned=1>",
+    "name": "a javascript autolink"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "click"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "kind": "refused",
+                "reason": "scheme"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[click][1]\n\n[1]: javascript:window.__pwned=1",
+    "name": "a javascript reference link"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "open"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "kind": "refused",
+                "reason": "scheme"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[open](data:text/html;base64,PHNjcmlwdD53aW5kb3cuX19wd25lZD0xPC9zY3JpcHQ+)",
+    "name": "a data link"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "plain"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "kind": "refused",
+                "reason": "scheme"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[plain](http://example.invalid/)",
+    "name": "an http link"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "passwords"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "kind": "refused",
+                "reason": "scheme"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[passwords](file:///etc/passwd)",
+    "name": "a file link"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "settings"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "kind": "refused",
+                "reason": "scheme"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[settings](ms-settings:privacy)",
+    "name": "a scheme that starts a program"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "repo"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "kind": "refused",
+                "reason": "credentials"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[repo](https://user:secret@github.com/owner/repo)",
+    "name": "credentials in a link"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "x"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "confirm": true,
+                "host": "example.invalid",
+                "kind": "external",
+                "url": "https://example.invalid/"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[x](https://example.invalid/ 'onmouseover=window.__pwned=1')",
+    "name": "a link title that would be an attribute"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "github.com"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "confirm": true,
+                "host": "xn--gthub-n2e.com",
+                "kind": "external",
+                "url": "https://xn--gthub-n2e.com/login"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[github.com](https://gіthub.com/login)",
+    "name": "a homograph of github.com"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "the issue"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "confirm": false,
+                "host": "github.com",
+                "kind": "external",
+                "url": "https://github.com/owner/repo/issues/1"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "[the issue](https://github.com/owner/repo/issues/1)",
+    "name": "a github link"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "alt": "a tracking pixel",
+              "host": "attacker.invalid",
+              "kind": "image"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "![a tracking pixel](https://attacker.invalid/?d=1)",
+    "name": "an image from an outside host"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "alt": "inline",
+              "host": null,
+              "kind": "image"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "![inline](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9ImFsZXJ0KDEpIi8+)",
+    "name": "an image as a data url"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Title {#id .class onclick=x}"
+            }
+          ],
+          "kind": "heading",
+          "level": 1
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "# Title {#id .class onclick=x}",
+    "name": "heading attributes"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Approve ‹U+202E›evil‹U+202C› done, ‹U+2066›isolated‹U+2069›"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "Approve ‮evil‬ done, ⁦isolated⁩",
+    "name": "bidi controls"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "kind": "code",
+          "text": "if access_level != \"user‹U+202E› ‹U+2066›// Check if admin‹U+2069› ‹U+2066›\" {\n"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "```\nif access_level != \"user‮ ⁦// Check if admin⁩ ⁦\" {\n```",
+    "name": "bidi controls in code (Trojan Source)"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "red and a hyperlink"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "\u001b[31mred\u001b[0m and \u001b]8;;https://attacker.invalid/\u0007a hyperlink\u001b]8;;\u0007",
+    "name": "ANSI sequences"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "abcd"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "a\u0000b\bcd",
+    "name": "NUL and other controls"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "[ Approve ]"
+                }
+              ],
+              "kind": "strong"
+            },
+            {
+              "kind": "text",
+              "text": "   "
+            },
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "[ Discard ]"
+                }
+              ],
+              "kind": "strong"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "**[ Approve ]**   **[ Discard ]**",
+    "name": "an imitation of the app's buttons"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "blocks": [
+            {
+              "blocks": [
+                {
+                  "blocks": [
+                    {
+                      "blocks": [
+                        {
+                          "blocks": [
+                            {
+                              "blocks": [
+                                {
+                                  "blocks": [
+                                    {
+                                      "blocks": [
+                                        {
+                                          "blocks": [
+                                            {
+                                              "blocks": [
+                                                {
+                                                  "blocks": [
+                                                    {
+                                                      "blocks": [
+                                                        {
+                                                          "blocks": [
+                                                            {
+                                                              "blocks": [
+                                                                {
+                                                                  "blocks": [
+                                                                    {
+                                                                      "content": [
+                                                                        {
+                                                                          "kind": "text",
+                                                                          "text": "deep"
+                                                                        }
+                                                                      ],
+                                                                      "kind": "paragraph"
+                                                                    }
+                                                                  ],
+                                                                  "kind": "quote"
+                                                                }
+                                                              ],
+                                                              "kind": "quote"
+                                                            }
+                                                          ],
+                                                          "kind": "quote"
+                                                        }
+                                                      ],
+                                                      "kind": "quote"
+                                                    }
+                                                  ],
+                                                  "kind": "quote"
+                                                }
+                                              ],
+                                              "kind": "quote"
+                                            }
+                                          ],
+                                          "kind": "quote"
+                                        }
+                                      ],
+                                      "kind": "quote"
+                                    }
+                                  ],
+                                  "kind": "quote"
+                                }
+                              ],
+                              "kind": "quote"
+                            }
+                          ],
+                          "kind": "quote"
+                        }
+                      ],
+                      "kind": "quote"
+                    }
+                  ],
+                  "kind": "quote"
+                }
+              ],
+              "kind": "quote"
+            }
+          ],
+          "kind": "quote"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > deep",
+    "name": "quotes nested forty deep"
+  }
+]

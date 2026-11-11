@@ -8,7 +8,7 @@ use tauri_build::{AppManifest, Attributes};
 const COMMANDS: &[&str] = &["get_app_info", "get_brief"];
 
 /// Test only: compiled in with the `smoke` feature, never in a release build (see `main.rs`).
-const SMOKE_COMMANDS: &[&str] = &["smoke_report"];
+const SMOKE_COMMANDS: &[&str] = &["smoke_report", "smoke_corpus"];
 
 /// The frontend is built by Vite into `app/ui/dist`, and `tauri::generate_context!` embeds it.
 const FRONTEND: &str = "../ui/dist";

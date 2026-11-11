@@ -2,7 +2,7 @@
 //! JSON: every key is always present, with `null` for "none", so the TypeScript that `ts-rs` generates
 //! from them says exactly what arrives. Their names repeat the CLI contract's where one exists.
 
-use regia_core::{Brief, BriefTask};
+use regia_core::{Brief, BriefTask, normalize_title};
 use serde::Serialize;
 
 /// What the webview needs before it draws anything: the threat model's `get_app_info` (§3.4).
@@ -43,8 +43,12 @@ pub struct BriefView {
     pub graph: Option<GraphView>,
 }
 
+/// Titles are written by people and by agents: one line, capped, nothing hidden (threat model T19).
 fn tasks(section: &[BriefTask]) -> Vec<TaskView> {
-    section.iter().map(|entry| TaskView { number: entry.task.number, title: entry.task.title.clone() }).collect()
+    section
+        .iter()
+        .map(|entry| TaskView { number: entry.task.number, title: normalize_title(&entry.task.title).text })
+        .collect()
 }
 
 impl From<&Brief> for BriefView {
@@ -65,6 +69,8 @@ impl From<&Brief> for BriefView {
 mod tests {
     use std::path::PathBuf;
 
+    use regia_core::markdown::{Block, Document, Inline, corpus};
+    use regia_core::{LinkRefusal, LinkTarget, parse_document};
     use ts_rs::{Config, TS};
 
     use super::*;
@@ -77,11 +83,21 @@ mod tests {
     }
 
     /// One file, one declaration per type. Issue numbers fit a JavaScript number, and `serde_json` sends
-    /// them as numbers, so `u64` is `number` and not ts-rs's default `bigint`.
+    /// them as numbers, so `u64` is `number` and not ts-rs's default `bigint`. The markdown tree is the
+    /// core's own type (`regia-core`, feature `ts`): it was made for the view.
     fn bindings() -> String {
         let config = Config::new().with_large_int("number");
-        let declarations =
-            [AppInfo::decl(&config), BriefView::decl(&config), GraphView::decl(&config), TaskView::decl(&config)];
+        let declarations = [
+            AppInfo::decl(&config),
+            BriefView::decl(&config),
+            GraphView::decl(&config),
+            TaskView::decl(&config),
+            Document::decl(&config),
+            Block::decl(&config),
+            Inline::decl(&config),
+            LinkTarget::decl(&config),
+            LinkRefusal::decl(&config),
+        ];
         let mut out = HEADER.to_owned();
         for declaration in declarations {
             out.push_str("\nexport ");
@@ -101,6 +117,42 @@ mod tests {
     #[ignore = "writes app/ui/src/lib/bindings.ts"]
     fn write_bindings() {
         std::fs::write(bindings_path(), bindings()).unwrap();
+    }
+
+    fn harness_corpus_path() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../ui/harness/corpus.json")
+    }
+
+    /// The hostile corpus as the core parses it, for the frontend's DOM proof (threat model V07), with the
+    /// markdown it came from for the proof's deliberately unsafe renderer. The 1 MiB case stays out: the
+    /// app's smoke run renders it, from the core.
+    fn harness_corpus() -> String {
+        let cases: Vec<serde_json::Value> = corpus::cases()
+            .into_iter()
+            .filter(|case| case.repeat.is_none())
+            .map(|case| {
+                serde_json::json!({ "name": case.name, "markdown": case.markdown, "document": parse_document(&case.markdown) })
+            })
+            .collect();
+        serde_json::to_string_pretty(&cases).unwrap() + "\n"
+    }
+
+    #[test]
+    fn the_harness_has_the_corpus_of_this_build() {
+        let committed = std::fs::read_to_string(harness_corpus_path()).expect("app/ui/harness/corpus.json");
+        assert_eq!(committed.replace("\r\n", "\n"), harness_corpus(), "stale corpus: run the ignored test write_harness_corpus");
+    }
+
+    #[test]
+    #[ignore = "writes app/ui/harness/corpus.json"]
+    fn write_harness_corpus() {
+        std::fs::write(harness_corpus_path(), harness_corpus()).unwrap();
+    }
+
+    #[test]
+    fn a_title_reaches_the_webview_on_one_line_and_without_hidden_characters() {
+        let title = "Approve\u{202E} now\nand \u{1B}[31mthen";
+        assert_eq!(normalize_title(title).text, "Approve‹U+202E› now and then");
     }
 
     #[test]

@@ -42,6 +42,16 @@ struct Check {
     detail: String,
 }
 
+/// The threat model's hostile corpus (V07), parsed by the core as a view would get it: the webview renders
+/// every case with the real renderer and checks the DOM, on each engine, under the real CSP.
+#[tauri::command]
+pub fn smoke_corpus() -> Vec<Value> {
+    regia_core::markdown::corpus::cases()
+        .into_iter()
+        .map(|case| serde_json::json!({ "name": case.name, "document": regia_core::parse_document(&case.text()) }))
+        .collect()
+}
+
 /// Stores the report where `app-smoke` reads it, then exits: 0 if the webview ran its checks and every one
 /// passed, 1 otherwise, with the failures on stderr.
 #[tauri::command]
