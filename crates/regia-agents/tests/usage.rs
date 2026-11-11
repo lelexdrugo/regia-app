@@ -410,3 +410,30 @@ fn the_credentials_follow_the_variable_then_the_service_folder() {
     let wake = WakeOutcome::with_expiry(|| missing.claude_token_expiry(), WakeOutcome::fake);
     assert_eq!(wake.token_expiry_before, None);
 }
+
+/// Acceptance 4 of #463: after a reading with consent through the cache, no file of the app's
+/// configuration or state holds a canary, the database's bytes included.
+#[test]
+fn after_a_reading_no_file_of_the_app_holds_a_canary() {
+    let home = Home::new("no-canary-in-files");
+    let config = home.dir.join("config");
+    std::fs::create_dir_all(&config).unwrap();
+    std::fs::write(config.join("agents.toml"), "probes = \"granted\"\n").unwrap();
+    let settings = Settings::load(&config).unwrap();
+    let state = home.dir.join("state");
+    let store = regia_store::Store::at(&state).unwrap().with_clock(clock());
+    let endpoints = Recorded::new().codex(Err(TransportError::Status(401)));
+    let reader = probes(settings.probe_consent(), &home, &endpoints);
+    let reading = store.budget(0, false, || Ok::<_, std::convert::Infallible>(reader.read())).unwrap();
+    assert_eq!(reading.provider("claude").unwrap().status, UsageStatus::Ok);
+    let mut files = Vec::new();
+    for dir in [&config, &state] {
+        files.extend(std::fs::read_dir(dir).unwrap().map(|entry| entry.unwrap().path()));
+    }
+    assert!(files.iter().any(|file| file.ends_with(regia_store::database_name())), "{files:?}");
+    for file in files {
+        let bytes = std::fs::read(&file).unwrap();
+        let text = String::from_utf8_lossy(&bytes);
+        assert_no_canary(&text);
+    }
+}
