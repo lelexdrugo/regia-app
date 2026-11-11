@@ -126,19 +126,37 @@ function settle(): void {
   document.documentElement.dataset["settled"] = location.hash;
 }
 
+/** Each mount's number: a shell that is going away may still say it has drawn, and only the last one counts. */
+let mounts = 0;
+
+/** An address's view, its query and its fixture: what the harness mounts for it. */
+function parts(route: string) {
+  const [path = "", query = ""] = route.replace(/^#\/?/, "").split("?");
+  const params = new URLSearchParams(query);
+  const fixture = ["data", "lang", "dir", "density", "save", "help"].map((name) => params.get(name)).join("&");
+  return { view: path.split("/")[0] ?? "", query, params, fixture };
+}
+
 async function show(): Promise<void> {
   const route = location.hash;
-  const [path = "", query = ""] = route.replace(/^#\/?/, "").split("?");
-  const view = path.split("/")[0] ?? "";
-  const params = new URLSearchParams(query);
+  const { view, query, params, fixture } = parts(route);
   const data = params.get("data") ?? "demo";
   const language = params.get("lang") ?? "en";
   const shell = (SECTIONS as readonly string[]).includes(view);
-  const fixture = ["data", "lang", "dir", "density", "save"].map((name) => params.get(name)).join("&");
-  if (shell && shellOf === fixture) {
+  // The shell's own links and keys write a bare address: the fixture stays the mounted one.
+  if (shell && shellOf !== null && (query === "" || shellOf === fixture)) {
     return;
   }
 
+  // Only this mount, and only while the address is still of its fixture (or bare, after the shell's own move),
+  // may say it has drawn: a shell on its way out hears the next address too.
+  const mine = ++mounts;
+  const drawn = () => {
+    const now = parts(location.hash);
+    if (mine === mounts && (now.query === "" || now.fixture === fixture)) {
+      settle();
+    }
+  };
   delete document.documentElement.dataset["settled"];
   delete window.harnessChecks;
   await Promise.all(mounted.map((component) => unmount(component)));
@@ -153,11 +171,21 @@ async function show(): Promise<void> {
     shellOf = fixture;
     // In the pseudo-locale every language's catalog is wrapped, so the other one's name is a message too.
     const catalogFor = (other: string) => (language === "xx" ? pseudo(strings(other)) : strings(other));
-    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data), ...settingsOf(params), onsettled: settle };
+    // help=1 opens the help as ? does, once the screen is drawn, for the proofs that read it.
+    let helped = params.get("help") !== "1";
+    const onsettled = async () => {
+      if (!helped) {
+        helped = true;
+        dispatchEvent(new KeyboardEvent("keydown", { key: "?" }));
+        await tick();
+      }
+      drawn();
+    };
+    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data), ...settingsOf(params), onsettled };
     mounted.push(mount(App, { target: root, props }));
     if (view === "brief" && data === "loading") {
       await tick();
-      settle();
+      drawn();
     }
     return;
   }
@@ -182,9 +210,14 @@ async function show(): Promise<void> {
       break;
   }
   await tick();
-  settle();
+  drawn();
 }
 
-addEventListener("hashchange", () => void show());
+// One address at a time: a new one waits until the last is drawn, so two mounts never interleave.
+let showing: Promise<void> = Promise.resolve();
+const next = () => {
+  showing = showing.then(show, show);
+};
+addEventListener("hashchange", next);
 // Every face first, as the app has them once its shell is drawn: the V07 proof counts what loads while it renders.
-void loadFonts().then(show);
+showing = loadFonts().then(show);

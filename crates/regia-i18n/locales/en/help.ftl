@@ -39,3 +39,23 @@ keys-undo = Undo the last decision, while there's time
 keys-search = Find a moment
 keys-moments = Previous or next moment
 keys-help = This window
+
+## #475: the Esc key, the words #439/D31 found missing, and the difference between a Decision and a gate.
+
+keys-escape = Close this window, or leave a field
+words-decision-term = Decision
+words-decision = The state of a task that waits for your answer, in the tracker and in the brief. A gate is one kind of Decision: a choice that always comes to you, because it can't be undone or it goes outside, or it changes a contract. Any other question only you can settle comes here too.
+words-memo-term = Memo
+words-memo = What a decision waiting for you says: what it is about, the options, the recommendation, and what happens if you don't answer.
+words-chronicler-term = Chronicler
+words-chronicler = The agent that writes the moviola's moments every evening, from what happened during the day.
+words-idle-term = Idle
+words-idle = In the dailies, the projects where nothing has moved since last time.
+words-project-term = Project
+words-project = The GitHub board that holds the state of every task. "Open the Project" opens it in the browser.
+words-precheck-term = Precheck
+words-precheck = The controller's quick look at a project before it starts an orchestrator. "Nothing to do" means that none started.
+words-session-term = ctx_…
+words-session = The identifier of an agent's session, such as ctx_8f21c0a7: the one that holds a lock, or wrote a report.
+words-behalf-term = --on-behalf-of-owner
+words-behalf = The mark on the comment that carries your decision: it signs the comment as yours, and the controller takes it as your answer. The prototype spells it --per-conto-del-titolare.

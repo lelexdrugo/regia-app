@@ -39,3 +39,23 @@ keys-undo = Annulla l'ultima decisione, finché c'è il tempo
 keys-search = Trova un momento
 keys-moments = Momento precedente o successivo
 keys-help = Questa finestra
+
+## #475: the Esc key, the words #439/D31 found missing, and the difference between a Decision and a gate.
+
+keys-escape = Chiude questa finestra, o esce da un campo
+words-decision-term = Decisione
+words-decision = Lo stato di un task che aspetta la tua risposta, nel tracker e nel brief. Un gate è un tipo di Decisione: una scelta che passa sempre da te, perché non si può disfare, esce verso l'esterno o cambia un contratto. Qui arriva anche ogni altra domanda che solo tu puoi chiudere.
+words-memo-term = Memo
+words-memo = Che cosa dice una decisione che ti aspetta: di che si tratta, le opzioni, il consiglio e che cosa succede se non rispondi.
+words-chronicler-term = Cronista
+words-chronicler = L'agente che ogni sera scrive i momenti della moviola, da quello che è successo nella giornata.
+words-idle-term = Fermi
+words-idle = Nei giornalieri, i progetti in cui dall'ultima volta non si è mosso niente.
+words-project-term = Project
+words-project = La bacheca di GitHub che tiene lo stato di ogni task. «Apri il Project» la apre nel browser.
+words-precheck-term = Precheck
+words-precheck = Il controllo rapido con cui il controller guarda un progetto prima di far partire un orchestratore. «Niente da fare» vuol dire che non è partito nessuno.
+words-session-term = ctx_…
+words-session = L'identificativo della sessione di un agente, come ctx_8f21c0a7: quella che tiene un lock, o che ha scritto un report.
+words-behalf-term = --on-behalf-of-owner
+words-behalf = Il segno sul commento che porta la tua decisione: lo firma come tuo, e il controller lo prende come tua risposta. Nel prototipo si scrive --per-conto-del-titolare.

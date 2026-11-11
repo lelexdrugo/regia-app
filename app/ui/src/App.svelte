@@ -6,10 +6,11 @@
   import type { BriefView, LanguageTag, Settings as Saved, SettingsChange } from "./lib/bindings";
   import type { Catalog } from "./lib/i18n";
   import { draw, type Look, type Saving } from "./lib/look";
-  import { parse, type Route, same } from "./lib/route";
+  import { href, parse, type Route, same, type Section } from "./lib/route";
   import Brief from "./screens/Brief.svelte";
   import Later from "./screens/Later.svelte";
   import Settings from "./screens/Settings.svelte";
+  import Help from "./shell/Help.svelte";
   import Sidebar from "./shell/Sidebar.svelte";
 
   interface Props {
@@ -96,6 +97,56 @@
     }
   }
 
+  // The keyboard: g and a letter goes to a section within 1.2 s, ? opens the help (its Esc is the dialog's own).
+  // A letter acts only when no field holds the focus and no modifier is held; Esc leaves a field.
+  const GO: Record<string, Section> = { b: "brief", d: "daily", m: "moviola", c: "console", s: "settings" };
+  let going: ReturnType<typeof setTimeout> | null = null;
+  let help = $state(false);
+  let opener: HTMLElement | null = null;
+
+  function openHelp(): void {
+    if (!help) {
+      opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      help = true;
+    }
+  }
+
+  async function closeHelp(): Promise<void> {
+    help = false;
+    await tick();
+    opener?.focus();
+  }
+
+  function keydown(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.metaKey || event.altKey || help) {
+      return;
+    }
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    const typing = target?.matches("textarea, select, [contenteditable], input:not([type=radio], [type=checkbox])") ?? false;
+    if (typing) {
+      if (event.key === "Escape") {
+        target?.blur();
+      }
+      return;
+    }
+    if (going !== null) {
+      clearTimeout(going);
+      going = null;
+      const section = GO[event.key];
+      if (section) {
+        event.preventDefault();
+        location.hash = href(section);
+        return;
+      }
+    }
+    if (event.key === "g") {
+      going = setTimeout(() => (going = null), 1200);
+    } else if (event.key === "?") {
+      event.preventDefault();
+      openHelp();
+    }
+  }
+
   function skip(event: MouseEvent): void {
     // The address stays the section's: #main would read as an unknown section.
     event.preventDefault();
@@ -111,9 +162,19 @@
   });
 </script>
 
+<svelte:window onkeydown={keydown} />
+
 <div class="shell">
   <a class="skip" href="#main" onclick={skip}>{words.message("nav-skip")}</a>
-  <Sidebar strings={words} {catalogFor} {product} {saving} current={route.section} onlanguage={changeLanguage} />
+  <Sidebar
+    strings={words}
+    {catalogFor}
+    {product}
+    {saving}
+    current={route.section}
+    onlanguage={changeLanguage}
+    onhelp={openHelp}
+  />
   <main id="main" tabindex="-1" bind:this={main}>
     {#if route.section === "brief"}
       <Brief strings={words} {load} {...onsettled ? { onsettled } : {}} />
@@ -123,4 +184,7 @@
       <Later strings={words} title={LATER[route.section] ?? "nav-brief"} />
     {/if}
   </main>
+  {#if help}
+    <Help strings={words} onclose={closeHelp} />
+  {/if}
 </div>

@@ -6,6 +6,8 @@ export const VIEWS = [
   // The comfortable density is larger in every measure, and the setup may choose it (#483).
   "#/brief?data=worst&density=comfortable",
   "#/settings?data=demo&density=comfortable&dir=nero",
+  // The help, open over a screen: the keys and the words.
+  "#/settings?data=demo&help=1",
   ...["demo", "worst", "empty", "one", "huge"].map((data) => `#/document?data=${data}`),
   "#/corpus?data=hostile",
 ];

@@ -17,9 +17,10 @@
     /** What the last save said: a language that could not be saved is put back, and this says why. */
     saving: Saving;
     onlanguage: (language: LanguageTag) => void;
+    onhelp: () => void;
   }
 
-  let { strings, catalogFor, product, current, saving, onlanguage }: Props = $props();
+  let { strings, catalogFor, product, current, saving, onlanguage, onhelp }: Props = $props();
 
   const MAIN: { section: Section; label: string }[] = [
     { section: "brief", label: "nav-brief" },
@@ -58,6 +59,11 @@
       <span class="icon icon-settings" aria-hidden="true"></span>
       <span class="nav-label"><span class="nav-text">{strings.message("nav-settings")}</span></span>
     </a>
+    <button class="nav-item" type="button" aria-keyshortcuts="?" onclick={onhelp}>
+      <span class="icon icon-keys" aria-hidden="true"></span>
+      <span class="nav-label"><span class="nav-text">{strings.message("nav-help")}</span></span>
+      <kbd data-raw aria-hidden="true">?</kbd>
+    </button>
   </nav>
   <div class="side-foot">
     <!-- Full size, where #397/D20 looked for it and found it too small. -->

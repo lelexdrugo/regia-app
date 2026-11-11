@@ -68,6 +68,9 @@ export async function launch({ width, height, profiles }) {
     [
       "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--hide-scrollbars",
       "--disable-extensions", "--disable-background-networking", "--disable-component-update", "--disable-sync",
+      // The proofs move the harness more than 200 times in 10 s, and Chrome then ignores further changes of the
+      // address without a word (crbug.com/1038223): a view would never arrive.
+      "--disable-ipc-flooding-protection",
       ...flags, "--remote-debugging-port=0", `--user-data-dir=${profile}`, `--window-size=${width},${height}`, "about:blank",
     ],
     { stdio: ["ignore", "ignore", "pipe"] },
@@ -176,7 +179,10 @@ export async function launch({ width, height, profiles }) {
       } catch {
         // Already closed.
       }
+      // On Windows the profile stays locked until the process has really gone.
+      const exited = chrome.exitCode === null ? new Promise((resolve) => chrome.once("exit", resolve)) : Promise.resolve();
       chrome.kill();
+      await Promise.race([exited, sleep(10_000)]);
       await sleep(300);
       rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
     },

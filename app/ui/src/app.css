@@ -280,6 +280,10 @@ main {
   border-bottom-color: var(--accent);
 }
 
+.nav-item kbd {
+  flex: none;
+}
+
 .side-foot {
   display: flex;
   flex-direction: column;
@@ -342,6 +346,95 @@ h1 {
 
 .warning {
   color: var(--negative);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--control);
+  padding: 3px 10px;
+  background: none;
+  color: var(--text);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--t-hover) var(--ease-out),
+    transform var(--t-press) var(--ease-out);
+}
+
+.btn:hover {
+  background: var(--raised);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* The help: keys, then words. It floats, so it alone has a shadow. */
+.help {
+  max-width: min(640px, 92vw);
+  max-height: 84vh;
+  overflow: auto;
+  padding: var(--card-pad);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.help::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.help h2 {
+  margin: 0 0 10px;
+  font: 600 var(--fs-section) / 20px var(--font);
+}
+
+.help .spaced {
+  margin-top: 18px;
+}
+
+.keys {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.keys td {
+  padding: 3px 0;
+  border-top: 1px solid var(--rule);
+  vertical-align: top;
+}
+
+.keys-col {
+  padding-left: 12px;
+  text-align: right;
+}
+
+.words {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.words dt {
+  font-weight: 500;
+}
+
+.words dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+.help-foot {
+  margin-top: 14px;
+  text-align: right;
 }
 
 /* Settings: one row per setting, its name and what it does on the left, the choice on the right. */
@@ -411,9 +504,10 @@ h1 {
     padding-inline: 0;
   }
 
-  /* The language stays in the settings, where it fits. */
+  /* The language stays in the settings, where it fits; ? stays in the help. */
   .wordmark-text,
-  .side-foot {
+  .side-foot,
+  .nav-item kbd {
     display: none;
   }
 
