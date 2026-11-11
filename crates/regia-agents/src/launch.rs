@@ -9,7 +9,7 @@ use regia_exec::{Effort, ModelId};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use crate::ServiceId;
+use crate::{ServiceId, WakeOutcome};
 
 /// Where a launch runs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -17,8 +17,29 @@ use crate::ServiceId;
 pub enum SurfaceKind {
     /// A detached process with its log; the prompt on stdin.
     Cli,
+    /// Optional: a session in a workspace of Orca, which shows in its app.
+    Orca,
+    /// Orca when it can take the launch, otherwise `Cli`. A receipt names the one that ran.
+    Auto,
     /// Starts nothing: shadow runs and tests.
     Dry,
+}
+
+impl SurfaceKind {
+    pub const ALL: [SurfaceKind; 4] = [SurfaceKind::Cli, SurfaceKind::Orca, SurfaceKind::Auto, SurfaceKind::Dry];
+
+    pub fn id(self) -> &'static str {
+        match self {
+            SurfaceKind::Cli => "cli",
+            SurfaceKind::Orca => "orca",
+            SurfaceKind::Auto => "auto",
+            SurfaceKind::Dry => "dry",
+        }
+    }
+
+    pub fn parse(text: &str) -> Option<SurfaceKind> {
+        SurfaceKind::ALL.into_iter().find(|kind| kind.id() == text)
+    }
 }
 
 /// Nothing started: the caller may fall back to another surface or service.
@@ -177,6 +198,17 @@ pub struct Receipt {
     /// Only on `Dry`: the request it would have launched.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request: Option<Value>,
+    /// Only on `Orca`: its own id of the session, which stands in `session` when the agent's session
+    /// was not found; the workspace; how the session shows in the app; and the marker, the start of
+    /// what the agent got, by which its session is found again.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub orca_session: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub workspace: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub visible: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub marker: Option<String>,
 }
 
 impl Receipt {
@@ -196,6 +228,10 @@ impl Receipt {
             resume: None,
             warnings: Vec::new(),
             request: None,
+            orca_session: None,
+            workspace: None,
+            visible: None,
+            marker: None,
         }
     }
 }
@@ -211,6 +247,10 @@ pub trait LaunchSurface {
 
     /// Starts the launch and returns once it is running, or fails, saying whether before any effect.
     fn launch(&self, request: &LaunchRequest) -> Result<Receipt, LaunchError>;
+
+    /// The token wake-up of a round (#190), which follows the launches: real where they start
+    /// sessions, fake where nothing starts. It waits for the end, and a failure is in the outcome.
+    fn wake(&self) -> WakeOutcome;
 }
 
 /// Starts nothing. It keeps every request it is handed, for shadow runs and tests.
@@ -243,6 +283,10 @@ impl LaunchSurface for Dry {
         receipt.request = Some(value);
         Ok(receipt)
     }
+
+    fn wake(&self) -> WakeOutcome {
+        WakeOutcome::fake()
+    }
 }
 
 /// The fallback rule (ADR 0001 §6): the second surface runs only when the first failed before any
@@ -255,18 +299,10 @@ pub fn launch_with_fallback(
     match first.launch(request) {
         Err(LaunchError::BeforeEffect(failed)) => {
             let mut receipt = then.launch(request)?;
-            let first = serde_json::to_value(first.kind()).ok().and_then(|kind| kind.as_str().map(str::to_owned));
-            receipt.warnings.push(format!("{} unavailable, used {}: {failed}", first.unwrap_or_default(), receipt_kind(&receipt)));
+            receipt.warnings.push(format!("{} unavailable, used {}: {failed}", first.kind().id(), receipt.surface.id()));
             Ok(receipt)
         }
         other => other,
-    }
-}
-
-fn receipt_kind(receipt: &Receipt) -> &'static str {
-    match receipt.surface {
-        SurfaceKind::Cli => "cli",
-        SurfaceKind::Dry => "dry",
     }
 }
 
@@ -284,6 +320,10 @@ mod tests {
         fn launch(&self, _: &LaunchRequest) -> Result<Receipt, LaunchError> {
             *self.1.lock().unwrap() += 1;
             Err(self.0.clone())
+        }
+
+        fn wake(&self) -> WakeOutcome {
+            WakeOutcome::fake()
         }
     }
 

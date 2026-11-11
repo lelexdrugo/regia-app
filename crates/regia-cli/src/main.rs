@@ -5,8 +5,7 @@ use std::process::ExitCode;
 use clap::builder::PossibleValuesParser;
 use clap::{Parser, Subcommand};
 use regia_agents::{
-    Assignment, Diversity, Dry, Env, LaunchRequest, LaunchSurface, Policy, Receipt, Role, ServiceId, Settings,
-    SurfaceKind,
+    Assignment, Diversity, Env, LaunchRequest, Policy, Receipt, Role, ServiceId, Settings, SurfaceKind,
 };
 use regia_core::{Brief, BriefOptions, BriefTask};
 use regia_exec::{Effort, ExecError, ModelId, Program};
@@ -72,7 +71,7 @@ struct LaunchArgs {
     #[command(flatten)]
     prompt: PromptSource,
     /// Where it runs. Without it: the settings' surface, else `cli`.
-    #[arg(long, value_parser = PossibleValuesParser::new(["cli", "dry"]))]
+    #[arg(long, value_parser = PossibleValuesParser::new(SurfaceKind::ALL.map(SurfaceKind::id)))]
     surface: Option<String>,
     /// Without it: the principal.
     #[arg(long, value_parser = PossibleValuesParser::new(ServiceId::ALL.map(ServiceId::id)))]
@@ -142,10 +141,7 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
         }
         Commands::Launch(args) => {
             let (kind, request) = launch_request(&args, settings()?)?;
-            let launched = match kind {
-                SurfaceKind::Cli => regia_agents::Cli::new(Env::of_this_process()).launch(&request),
-                SurfaceKind::Dry => Dry::new().launch(&request),
-            };
+            let launched = regia_agents::surface(kind, Env::of_this_process()).launch(&request);
             let receipt: Receipt = launched.map_err(|error| error.to_string())?;
             print_json(&serde_json::to_value(&receipt).map_err(|error| error.to_string())?)?;
             Ok(ExitCode::SUCCESS)
@@ -231,9 +227,7 @@ fn launch_request(args: &LaunchArgs, settings: Settings) -> Result<(SurfaceKind,
         None => policy.principal(),
     };
     let kind = match args.surface.as_deref() {
-        Some("cli") => SurfaceKind::Cli,
-        Some("dry") => SurfaceKind::Dry,
-        Some(other) => return Err(format!("unknown surface `{other}`")),
+        Some(name) => SurfaceKind::parse(name).ok_or_else(|| format!("unknown surface `{name}`"))?,
         None => policy.settings().surface.unwrap_or(SurfaceKind::Cli),
     };
     let prompt = match (&args.prompt.prompt, &args.prompt.prompt_file) {
@@ -324,6 +318,8 @@ fn print_human(brief: &Brief, catalog: &Catalog) {
 
 #[cfg(test)]
 mod tests {
+    use regia_agents::{Dry, LaunchSurface};
+
     use super::*;
 
     const FOLDER: &str = env!("CARGO_MANIFEST_DIR");

@@ -254,6 +254,25 @@ pub mod claude {
             None => args,
         }
     }
+
+    /// The token wake-up of #190, `claude -p --model=haiku --effort=low --safe-mode --tools=
+    /// --system-prompt=Reply-with-one-word. --no-session-persistence --max-turns=1
+    /// --output-format=json`: the smallest session that signs in. No tool, and no hook, plugin, MCP
+    /// or `CLAUDE.md` (`--safe-mode`, which unlike `--bare` still reads the sign-in); nothing kept;
+    /// one turn and one JSON answer. The prompt goes on stdin, as every other. Every token is in the
+    /// alphabet a `.cmd` takes (threat model §3.6, rule 9): npm installs `claude.cmd`.
+    pub fn wake() -> Args {
+        Args::new()
+            .word("-p")
+            .word("--model=haiku")
+            .word("--effort=low")
+            .word("--safe-mode")
+            .word("--tools=")
+            .word("--system-prompt=Reply-with-one-word.")
+            .word("--no-session-persistence")
+            .word("--max-turns=1")
+            .word("--output-format=json")
+    }
 }
 
 /// `codex` as the Cli surface starts it (ADR 0001 §6): fixed flags, the prompt on stdin.
@@ -433,6 +452,32 @@ mod tests {
             ]
         );
         assert_eq!(tokens(&codex::exec(&folder, &last, None, None)).last().map(String::as_str), Some("-"));
+    }
+
+    /// The prototype's `SVEGLIA_ARGOMENTI` in the `--name=value` form, without the prompt, which goes
+    /// on stdin, and with a system prompt a `.cmd` can take.
+    #[test]
+    fn the_wake_up_is_the_smallest_session_in_the_alphabet_of_a_batch_file() {
+        let args = tokens(&claude::wake());
+        assert_eq!(
+            args,
+            [
+                "-p",
+                "--model=haiku",
+                "--effort=low",
+                "--safe-mode",
+                "--tools=",
+                "--system-prompt=Reply-with-one-word.",
+                "--no-session-persistence",
+                "--max-turns=1",
+                "--output-format=json"
+            ]
+        );
+        assert!(!args.iter().any(|arg| arg == "--bare"), "--bare does not read the sign-in: the wake-up would renew nothing");
+        for arg in &args {
+            let batch = arg.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | ':' | '/' | '=' | '-'));
+            assert!(batch, "{arg}");
+        }
     }
 
     #[test]
