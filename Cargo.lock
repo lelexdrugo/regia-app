@@ -2856,11 +2856,14 @@ dependencies = [
 name = "regia-cli"
 version = "0.0.1"
 dependencies = [
+ "chrono",
  "clap",
  "regia-agents",
  "regia-core",
  "regia-exec",
  "regia-facade",
+ "regia-git",
+ "regia-github",
  "regia-i18n",
  "regia-identity",
  "regia-runtime",

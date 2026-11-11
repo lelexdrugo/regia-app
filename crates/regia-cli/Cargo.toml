@@ -11,11 +11,14 @@ name = "regia"
 path = "src/main.rs"
 
 [dependencies]
+chrono.workspace = true
 clap.workspace = true
 regia-agents.workspace = true
 regia-core.workspace = true
 regia-exec.workspace = true
 regia-facade.workspace = true
+regia-git.workspace = true
+regia-github.workspace = true
 regia-i18n.workspace = true
 regia-identity.workspace = true
 regia-runtime.workspace = true

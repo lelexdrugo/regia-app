@@ -77,7 +77,7 @@ fn is_line_break(c: char) -> bool {
     matches!(c, '\n' | '\r' | '\u{b}' | '\u{c}' | '\u{1c}' | '\u{1d}' | '\u{1e}' | '\u{85}' | '\u{2028}' | '\u{2029}')
 }
 
-/// What happened to the dossier: the prototype's `esito`, with the contract's names.
+/// What happened to the dossier, with the contract's names (`dossier_outcome` of the facade table).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Outcome {
