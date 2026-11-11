@@ -31,7 +31,7 @@ fn same_place(a: &Path, b: &Path) -> bool {
     fs::canonicalize(a).expect("a") == fs::canonicalize(b).expect("b")
 }
 
-/// The prototype's `test_comando_minimo_e_esito_ok`: the fixed argv and the prompt on stdin, in the
+/// The first case of the prototype's `TestSvegliaClaude`: the fixed argv and the prompt on stdin, in the
 /// state folder, with claude's folder as the surface has it and nothing of the session that started
 /// the core; the answer gives ok, the exit and the cost. Nothing is kept, and no log is written.
 #[test]
