@@ -1,27 +1,51 @@
 <script lang="ts">
   // The app's shell: the skip link, the sidebar and the section the address names (lib/route.ts). The screens come
   // with their slices; the ones that are not here yet say so (Later.svelte).
-  import { onMount, tick } from "svelte";
+  import { onMount, tick, untrack } from "svelte";
 
-  import type { BriefView } from "./lib/bindings";
+  import type { BriefView, Settings as Saved, SettingsChange } from "./lib/bindings";
   import type { Catalog } from "./lib/i18n";
+  import { draw, type Look, type Saving } from "./lib/look";
   import { parse, type Route, same } from "./lib/route";
   import Brief from "./screens/Brief.svelte";
   import Later from "./screens/Later.svelte";
+  import Settings from "./screens/Settings.svelte";
   import Sidebar from "./shell/Sidebar.svelte";
 
   interface Props {
     strings: Catalog;
     product: string;
     load: () => Promise<BriefView>;
+    /** The settings as `get_settings` answered them, before the shell was drawn. */
+    settings: Saved;
+    /** Saves the fields given, and answers what is saved (`set_settings`). */
+    save: (change: SettingsChange) => Promise<Saved>;
     /** Called each time the screen the address names has drawn: the brief once its data or error is in the DOM. */
     onsettled?: () => void;
   }
 
-  let { strings, product, load, onsettled }: Props = $props();
+  let { strings, product, load, settings, save, onsettled }: Props = $props();
 
   let route: Route = $state(parse(location.hash));
   let main: HTMLElement | undefined = $state();
+  let look: Look = $state(untrack(() => ({ direction: settings.direction, density: settings.density })));
+  let saving: Saving = $state({ kind: "idle" });
+
+  /** Drawn at once, then saved; a save that fails puts the page back as it was, and says why. */
+  async function changeLook(change: Partial<Look>): Promise<void> {
+    const before = look;
+    look = { ...look, ...change };
+    draw(look);
+    try {
+      const saved = await save(change);
+      look = { direction: saved.direction, density: saved.density };
+      saving = { kind: "saved" };
+    } catch (error) {
+      look = before;
+      saving = { kind: "failed", reason: String(error) };
+    }
+    draw(look);
+  }
 
   const LATER: Record<string, string> = { daily: "nav-daily", moviola: "nav-moviola", console: "nav-console" };
 
@@ -67,7 +91,7 @@
     {#if route.section === "brief"}
       <Brief {strings} {load} {...onsettled ? { onsettled } : {}} />
     {:else if route.section === "settings"}
-      <Later {strings} title="nav-settings" />
+      <Settings {strings} {look} {saving} onlook={changeLook} />
     {:else}
       <Later {strings} title={LATER[route.section] ?? "nav-brief"} />
     {/if}

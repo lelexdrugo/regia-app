@@ -34,3 +34,17 @@ export type Inline = { "kind": "text", text: string, } | { "kind": "emphasis", c
 export type LinkTarget = { "kind": "external", url: string, host: string, confirm: boolean, } | { "kind": "refused", reason: LinkRefusal, };
 
 export type LinkRefusal = "invalid" | "scheme" | "credentials" | "too_long";
+
+export type Settings = { direction: Direction, density: Density, 
+/**
+ * The language chosen in the app, or `null` when none was: then the system's.
+ */
+language: LanguageTag | null, };
+
+export type SettingsChange = { direction?: Direction, density?: Density, language?: LanguageTag, };
+
+export type Direction = "montaggio" | "foglio" | "nero";
+
+export type Density = "compact" | "comfortable";
+
+export type LanguageTag = "en" | "it";

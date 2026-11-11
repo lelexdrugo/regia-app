@@ -62,3 +62,8 @@ settings-projects-wip = Worker in parallelo
 settings-about-version = Versione
 settings-about-network = Rete
 settings-about-network-help = L'app parla solo con GitHub e con i servizi che hai scelto.
+
+## The shell of #475: the three directions, and a save that did not happen.
+
+settings-look-help-three = La sala è scura e calda, ed è quella di serie; il foglio serve di giorno, con molta luce; il nero è nero puro, con tratti bianchi.
+settings-save-failed = Non salvato: { $reason }

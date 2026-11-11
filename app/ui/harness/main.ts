@@ -9,9 +9,10 @@ import "../src/app.css";
 import { mount, tick, unmount } from "svelte";
 
 import tauri from "../../src-tauri/tauri.conf.json";
-import type { BriefView, Document } from "../src/lib/bindings";
+import type { BriefView, Document, Settings, SettingsChange } from "../src/lib/bindings";
 import DocumentView from "../src/lib/content/Document.svelte";
 import { type Catalog, catalog } from "../src/lib/i18n";
+import { DENSITIES, DIRECTIONS, draw } from "../src/lib/look";
 import { SECTIONS } from "../src/lib/route";
 import { appRenderer, type Check, type CorpusCase, loadFonts, type Renderer, v07 } from "../src/lib/v07";
 import App from "../src/App.svelte";
@@ -25,7 +26,30 @@ declare global {
   interface Window {
     /** What the V07 view found, for prove/v07.js. */
     harnessChecks?: Check[];
+    /** Every change the shell asked to save, in order, for the proofs of the settings. */
+    harnessSaved?: SettingsChange[];
   }
+}
+
+/**
+ * The settings of the address (`dir`, `density`), as the app's index.html arrives drawn in them, and a save that
+ * keeps what it was asked. `save=fail` refuses every save, as a system without a configuration folder would.
+ */
+function settingsOf(params: URLSearchParams): { settings: Settings; save: (change: SettingsChange) => Promise<Settings> } {
+  const direction = DIRECTIONS.find((name) => name === params.get("dir")) ?? "montaggio";
+  const density = DENSITIES.find((name) => name === params.get("density")) ?? "compact";
+  let settings: Settings = { direction, density, language: null };
+  draw(settings);
+  window.harnessSaved = [];
+  const save = (change: SettingsChange) => {
+    window.harnessSaved?.push(change);
+    if (params.get("save") === "fail") {
+      return Promise.reject("this system has no configuration folder");
+    }
+    settings = { ...settings, ...change };
+    return Promise.resolve(settings);
+  };
+  return { settings, save };
 }
 
 interface Source {
@@ -110,7 +134,7 @@ async function show(): Promise<void> {
   const data = params.get("data") ?? "demo";
   const language = params.get("lang") ?? "en";
   const shell = (SECTIONS as readonly string[]).includes(view);
-  const fixture = `${data}&${language}`;
+  const fixture = ["data", "lang", "dir", "density", "save"].map((name) => params.get(name)).join("&");
   if (shell && shellOf === fixture) {
     return;
   }
@@ -127,7 +151,8 @@ async function show(): Promise<void> {
 
   if (shell) {
     shellOf = fixture;
-    mounted.push(mount(App, { target: root, props: { strings: catalogOf, product: tauri.productName, load: brief(data), onsettled: settle } }));
+    const props = { strings: catalogOf, product: tauri.productName, load: brief(data), ...settingsOf(params), onsettled: settle };
+    mounted.push(mount(App, { target: root, props }));
     if (view === "brief" && data === "loading") {
       await tick();
       settle();

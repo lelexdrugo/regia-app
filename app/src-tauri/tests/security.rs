@@ -293,7 +293,7 @@ fn v02_fails_when_one_list_drifts() {
     let build_without_brief = s.build.replacen(", \"get_brief\"", "", 1);
     assert_ne!(build_without_brief, s.build, "the alteration must change build.rs");
     let mut capability_with_extra = s.capability.clone();
-    capability_with_extra["permissions"].as_array_mut().unwrap().push(json!("allow-get-settings"));
+    capability_with_extra["permissions"].as_array_mut().unwrap().push(json!("allow-get-daily"));
     let mut smoke_with_extra = s.smoke.clone();
     smoke_with_extra["permissions"].as_array_mut().unwrap().push(json!("allow-get-brief"));
     let cases = [

@@ -331,6 +331,57 @@ h1 {
   color: var(--negative);
 }
 
+/* Settings: one row per setting, its name and what it does on the left, the choice on the right. */
+.settings {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: var(--pad);
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.setting:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.setting h2 {
+  margin: 0;
+  font: 500 var(--fs-body) / 18px var(--font);
+}
+
+.setting-label p {
+  margin-top: 2px;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px 18px;
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--control);
+  cursor: pointer;
+}
+
+.choice input {
+  margin: 0;
+}
+
+.saving {
+  min-height: var(--lh-body);
+}
+
 /* Under the minimum window, or at 200 % zoom: nothing is lost, the sidebar folds to its icons. */
 @media (max-width: 900px) {
   :root {
@@ -367,6 +418,11 @@ h1 {
 
   .nav-item.on .icon {
     color: var(--accent);
+  }
+
+  .setting {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
   }
 }
 

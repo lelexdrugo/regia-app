@@ -74,6 +74,7 @@ mod tests {
     use ts_rs::{Config, TS};
 
     use super::*;
+    use crate::settings::{Density, Direction, LanguageTag, Settings, SettingsChange};
 
     const HEADER: &str = "// Generated from app/src-tauri/src/ipc.rs by its tests: do not edit by hand.\n\
                           // After changing a type: cargo test -p regia-app -- --ignored write_bindings\n";
@@ -97,6 +98,11 @@ mod tests {
             Inline::decl(&config),
             LinkTarget::decl(&config),
             LinkRefusal::decl(&config),
+            Settings::decl(&config),
+            SettingsChange::decl(&config),
+            Direction::decl(&config),
+            Density::decl(&config),
+            LanguageTag::decl(&config),
         ];
         let mut out = HEADER.to_owned();
         for declaration in declarations {

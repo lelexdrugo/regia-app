@@ -4,6 +4,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
+import type { Settings } from "./bindings";
 import type { Catalog } from "./i18n";
 import { appRenderer, type Check, type CorpusCase, v07 } from "./v07";
 
@@ -29,6 +30,59 @@ addEventListener("unhandledrejection", (event) => record(`unhandled rejection: $
 document.addEventListener("securitypolicyviolation", (event) => {
   violations.push({ directive: event.effectiveDirective || event.violatedDirective, blocked: event.blockedURI });
 });
+
+/** The page as it arrived, read before any of the app's scripts ran: what its first paint shows. */
+const arrived = (() => {
+  const root = document.documentElement;
+  return {
+    direction: root.dataset["dir"] ?? "",
+    density: root.dataset["density"] ?? "",
+    language: root.lang,
+    // The body's colour as drawn: the minified stylesheet spells #000000 as #000.
+    ground: getComputedStyle(document.body).backgroundColor,
+  };
+})();
+
+/** The `--ground` of each direction in tokens.css, as a computed colour. */
+const GROUND: Record<string, string> = {
+  montaggio: "rgb(20, 18, 15)",
+  foglio: "rgb(243, 243, 241)",
+  nero: "rgb(0, 0, 0)",
+};
+
+/**
+ * The settings' restart (#475, Acceptance 1). With no direction saved, the run saves Nero and reloads, before
+ * anything else, so every probe runs once, on a page that arrived in Nero: settings.rs serves index.html drawn
+ * in the saved settings, after a restart as after a reload. What the first load arrived in rides in the address.
+ * A run that starts with Nero already saved is a restart, and goes on at once. True while the page reloads.
+ */
+export async function restartInNero(saved: Settings): Promise<boolean> {
+  if (saved.direction === "nero") {
+    return false;
+  }
+  await invoke<Settings>("set_settings", { settings: { direction: "nero" } });
+  location.hash = `#/brief?arrived=${arrived.direction}`;
+  location.reload();
+  return true;
+}
+
+function firstPaint(saved: Settings, language: string): Check[] {
+  const before = new URLSearchParams(location.hash.split("?")[1] ?? "").get("arrived");
+  return [
+    {
+      name: "first paint: the saved direction and density are on <html> before any script",
+      ok: arrived.direction === saved.direction && arrived.density === saved.density,
+      detail: `${arrived.direction} ${arrived.density}, saved ${saved.direction} ${saved.density}`,
+    },
+    { name: "first paint: the saved direction's ground", ok: arrived.ground === GROUND[saved.direction], detail: arrived.ground },
+    { name: "first paint: the language on <html>", ok: arrived.language === language, detail: arrived.language },
+    {
+      name: "first paint: with nothing saved, montaggio",
+      ok: before === null || before === "montaggio",
+      detail: before === null ? "started with nero saved: a restart" : `the first load arrived in ${before}`,
+    },
+  ];
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -234,9 +288,11 @@ async function events(): Promise<Check[]> {
 
 export async function runSmoke(strings: Catalog): Promise<void> {
   const report = snapshot(strings.language);
+  const saved = await invoke<Settings>("get_settings");
   // V07 first, while the page has no probe's element, violation or request in it.
   const cases = await invoke<CorpusCase[]>("smoke_corpus");
   const checks = await v07(cases, appRenderer(strings));
+  checks.push(...firstPaint(saved, strings.language));
   checks.push(...features());
   const { checks: cspChecks, expected } = await csp();
   checks.push(...cspChecks);

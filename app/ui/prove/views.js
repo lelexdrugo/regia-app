@@ -3,6 +3,9 @@
 export const VIEWS = [
   ...["demo", "worst", "empty", "one", "huge", "loading", "error"].map((data) => `#/brief?data=${data}`),
   ...["daily", "moviola", "console", "settings"].map((section) => `#/${section}?data=demo`),
+  // The comfortable density is larger in every measure, and the setup may choose it (#483).
+  "#/brief?data=worst&density=comfortable",
+  "#/settings?data=demo&density=comfortable&dir=nero",
   ...["demo", "worst", "empty", "one", "huge"].map((data) => `#/document?data=${data}`),
   "#/corpus?data=hostile",
 ];
