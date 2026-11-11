@@ -1,0 +1,16 @@
+[package]
+name = "regia-git"
+description = "The git port, through the user's git CLI (ADR 0001 §4): the dossier's commit and push of its named files, as the prototype's checkpoint does them."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+regia-exec.workspace = true
+serde.workspace = true
+toml.workspace = true
+
+[dev-dependencies]
+proptest = { version = "1", default-features = false, features = ["std"] }
+serde_json.workspace = true
