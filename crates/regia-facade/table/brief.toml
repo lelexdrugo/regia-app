@@ -44,14 +44,14 @@ numero = { to = "number" }
 valore = { to = "value" }
 
 [shapes.controller_warnings.fields]
-ultimo_giro = { to = "last_cycle" }
+ultimo_giro = { to = "last_round" }
 vecchio = { to = "stale" }
 budget = { to = "budget", shape = "controller_budget" }
 da_aprire = { to = "to_open", items = "controller_to_open" }
 da_riprendere = { to = "to_resume", items = "controller_to_resume" }
 
 [shapes.controller_budget.fields]
-giri = { to = "cycles" }
+giri = { to = "rounds" }
 da = { to = "since" }
 motivo = { to = "reason" }
 allarme = { to = "alarm" }

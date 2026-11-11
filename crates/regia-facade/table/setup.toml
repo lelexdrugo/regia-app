@@ -1,0 +1,129 @@
+# `setup` and `init`: the labels of the tracker, and a machine's plan and local configuration. `init`
+# hands its arguments to the prototype's `inizializza`; alone it is `init plan`. Names from the
+# conformance study, §8 (`conformita.md` of the dossier), not decided: they go to the gate of the names
+# with the rest (`docs/contract/commands.md`). In the group of the state and of the setup (F57).
+schema = 1
+
+# Prints a line of text, which passes as it is.
+[commands.setup]
+python = ["setup"]
+group = "state"
+
+[commands.init]
+python = ["init"]
+group = "state"
+output = "init_plan"
+
+[commands."init plan"]
+python = ["init", "piano"]
+group = "state"
+output = "init_plan"
+[commands."init plan".args]
+"--owner" = "--owner"
+"--repo" = "--repo"
+"--project-title" = "--progetto-titolo"
+
+[commands."init derive"]
+python = ["init", "ricava"]
+group = "state"
+output = "init_derive"
+[commands."init derive".args]
+"--owner" = "--owner"
+"--repo" = "--repo"
+"--project-title" = "--progetto-titolo"
+"--destination" = "--destinazione"
+"--overwrite" = { to = "--sovrascrivi", flag = true }
+
+[commands."init apply"]
+python = ["init", "applica"]
+group = "state"
+output = "init_apply"
+[commands."init apply".args]
+"--owner" = "--owner"
+"--repo" = "--repo"
+"--project-title" = "--progetto-titolo"
+"--destination" = "--destinazione"
+"--overwrite" = { to = "--sovrascrivi", flag = true }
+"--dry-run" = { to = "--a-secco", flag = true }
+
+[enums.init_scope]
+ambiente = "environment"
+tracker = "tracker"
+locale = "local"
+manuale = "manual"
+
+[enums.init_outcome]
+presente = "present"
+mancante = "missing"
+diverso = "different"
+errore = "error"
+
+[enums.init_action]
+nessuna = "none"
+crea = "create"
+aggiorna = "update"
+manuale = "manual"
+installa = "install"
+
+# What happened to the local configuration.
+[enums.init_config_outcome]
+scritto = "written"
+da-scrivere = "would_write"
+uguale = "same"
+diversa = "different"
+non-pronto = "not_ready"
+dopo-le-scritture = "after_the_writes"
+
+# `chiamate_gh` holds the calls to `gh`, as command lines: data.
+[shapes.init_plan.fields]
+owner = { to = "owner" }
+repo = { to = "repo" }
+progetto_titolo = { to = "project_title" }
+pronto = { to = "ready" }
+voci = { to = "items", items = "init_item" }
+chiamate_gh = { to = "gh_calls" }
+
+# `esito` is a word here and `esito_codice` the exit code.
+[shapes.init_derive.fields]
+owner = { to = "owner" }
+repo = { to = "repo" }
+progetto_titolo = { to = "project_title" }
+esito = { to = "outcome", enum = "init_config_outcome" }
+esito_codice = { to = "exit_code" }
+destinazione = { to = "destination" }
+pronto = { to = "ready" }
+voci = { to = "items", items = "init_item" }
+chiamate_gh = { to = "gh_calls" }
+
+# `esito` is the exit code here, an integer: the prototype's inconsistency stays in the value, and the
+# key says what it holds.
+[shapes.init_apply.fields]
+owner = { to = "owner" }
+repo = { to = "repo" }
+progetto_titolo = { to = "project_title" }
+a_secco = { to = "dry_run" }
+scritture = { to = "writes", items = "init_write" }
+configurazione = { to = "config", shape = "init_config" }
+pronto = { to = "ready" }
+voci = { to = "items", items = "init_item" }
+chiamate_gh = { to = "gh_calls" }
+esito = { to = "exit_code" }
+errore = { to = "error" }
+
+# An item of the plan. `voce` names it, with a prefix for the labels, the skills and the manual steps
+# (`etichetta:…`, `skill:…`, `manuale:…`): data the facade does not translate. `dettaglio` is prose.
+[shapes.init_item.fields]
+voce = { to = "item" }
+ambito = { to = "scope", enum = "init_scope" }
+esito = { to = "outcome", enum = "init_outcome" }
+azione = { to = "action", enum = "init_action" }
+dettaglio = { to = "detail" }
+
+# A write `apply` made, or would make: the item and the `gh` command line.
+[shapes.init_write.fields]
+voce = { to = "item" }
+comando = { to = "command" }
+
+[shapes.init_config.fields]
+destinazione = { to = "destination" }
+esito = { to = "outcome", enum = "init_config_outcome" }
