@@ -2,7 +2,8 @@
 //! the two questions apart:
 //!
 //! - [`AgentService`] says **which agent**: detect it, its sign-in state and guide, describe a launch,
-//!   resume, classify the end, and scrub the child's environment.
+//!   resume, classify the end, and scrub the child's environment. Its usage is read by the
+//!   [`UsageProbes`], only with the user's consent ([`ProbeConsent`]), through a [`Transport`].
 //! - [`LaunchSurface`] says **where it runs**: `Cli` (a detached process with a log), [`Orca`]
 //!   (optional, a session in its app), [`Auto`] (Orca, else `Cli`) and [`Dry`] (starts nothing).
 //!   They meet at a neutral [`LaunchRequest`], never at an argv. Each also wakes the token of a round
@@ -20,19 +21,26 @@ use serde::{Deserialize, Serialize};
 
 mod cli;
 mod gates;
+mod https;
 mod launch;
 mod orca;
 mod policy;
+mod usage;
 mod wake;
 
 pub use cli::{Cli, WAKE_PROMPT, Waits};
 pub use gates::{Gate, GateError, Gates};
+pub use https::{Https, TIMEOUT};
 pub use launch::{
     Dry, Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback,
 };
 pub use orca::{Auto, Orca, OrcaWaits, PROMPT_IN_ARGV_MAX, surface};
 pub use policy::{Assignment, Diversity, Fallback, Policy, Role, Settings, SettingsError, Tier};
-pub use wake::{ProbeConsent, WakeAttempt, WakeOutcome, WakeUp};
+pub use usage::{
+    Bearer, CLAUDE_URL, CODEX_URL, MACOS_CLAUDE, PROBES_OFF, Platform, ProbeConsent, TOKEN_WARNING_S, Transport, TransportError,
+    UsageProbes,
+};
+pub use wake::{WakeAttempt, WakeOutcome, WakeUp};
 
 /// The agent services the product knows. Only these two: every other one needs code of its own,
 /// for its argv, its stream, its transcript and its usage (ADR 0001 §6).
@@ -252,6 +260,12 @@ impl AgentService {
     /// Where the user's skills for this service live.
     pub fn skills_dir(&self, env: &Env) -> Option<PathBuf> {
         self.home(env).map(|home| home.join(&self.file.skills))
+    }
+
+    /// Where the service keeps its sign-in: the credentials file in its folder. Only the usage probes
+    /// open it, and only with the user's consent.
+    pub fn credentials_file(&self, env: &Env) -> Option<PathBuf> {
+        self.home(env).map(|home| home.join(&self.file.credentials))
     }
 
     /// Signed in when the credentials file is there. Its contents are never read.
