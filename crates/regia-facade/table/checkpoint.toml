@@ -1,0 +1,36 @@
+# `checkpoint`: commits and pushes the named files of the dossier, with no lock. It exits with 1 only
+# when it could not even try, a project with no folder; a failed push is an outcome, with 0. Names
+# from the conformance study, §8 (`conformita.md` of the dossier), not decided: they go to the gate of
+# the names with the rest (`docs/contract/commands.md`). `step finish` reports the same outcome.
+schema = 1
+
+[commands.checkpoint]
+python = ["checkpoint"]
+group = "state"
+output = "checkpoint"
+[commands.checkpoint.args]
+"--project" = "--progetto"
+# Repeatable: one file per option, relative to the project's folder.
+"--file" = "--file"
+"--folder" = "--cartella"
+
+[enums.dossier_outcome]
+pushato = "pushed"
+commit_locale = "local_commit"
+niente = "nothing"
+nessun_remoto = "no_remote"
+non_disponibile = "unavailable"
+
+[shapes.checkpoint.fields]
+ok = { to = "ok" }
+progetto = { to = "project" }
+dossier = { to = "dossier", shape = "dossier_sync" }
+
+[shapes.dossier_sync.fields]
+esito = { to = "outcome", enum = "dossier_outcome" }
+cartella = { to = "folder" }
+branch = { to = "branch" }
+sha = { to = "sha" }
+file = { to = "files" }
+motivo = { to = "reason" }
+avanti = { to = "ahead" }

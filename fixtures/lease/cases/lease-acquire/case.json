@@ -1,0 +1,27 @@
+{
+  "_note": "Synthetic. No lease on #7: worker-a takes it for fifteen minutes.",
+  "args": [
+    "lease",
+    "acquire",
+    "7",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "900",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lease",
+    "prendi",
+    "7",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "900"
+  ]
+}

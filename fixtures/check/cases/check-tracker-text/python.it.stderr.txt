@@ -1,0 +1,3 @@
+  (approvato-mai-partito: la cronologia degli stati non si legge, si applicano due criteri su tre (età, report))
+  (progetto-campo: il campo «Progetto» non è in tracker.json, controllo saltato)
+  (alpha: cartella del dossier non trovata, controlli sul dossier saltati)

@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. No lock and no cursor: the step opens at the fixtures' instant, with the default ttl.",
+  "args": [
+    "step",
+    "start",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "passo",
+    "inizio",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "_note": "Synthetic. A session declares alpha #7 as a worker: one line of the local log, no network.",
+  "args": [
+    "declare",
+    "--project",
+    "alpha",
+    "--task",
+    "7",
+    "--role",
+    "worker",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "dichiara",
+    "--progetto",
+    "alpha",
+    "--task",
+    "7",
+    "--ruolo",
+    "worker"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "session-fixture-1"
+  }
+}

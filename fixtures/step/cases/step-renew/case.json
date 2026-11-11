@@ -1,0 +1,54 @@
+{
+  "_note": "Synthetic. worker-a extends the lock of its long step by the default ttl.",
+  "args": [
+    "step",
+    "renew",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "passo",
+    "rinnova",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": {
+        "progetto": "alpha",
+        "proprietario": "worker-a",
+        "preso": "2026-01-10T08:30:00.000+00:00",
+        "ttl_s": 1800,
+        "scade": "2026-01-10T09:00:30.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    },
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {
+          "v": 1,
+          "proprietario": "worker-a",
+          "sessione": null,
+          "t": "2026-01-10T08:30:00Z",
+          "commenti": [
+            43,
+            41,
+            43
+          ]
+        },
+        "aggiornato": "2026-01-10T08:30:00.000+00:00"
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": null,
+    "branch": null,
+    "cartella": null,
+    "esito": "non_disponibile",
+    "file": [],
+    "motivo": "cartella del progetto non letta: progetto 'alpha' sconosciuto",
+    "sha": null
+  },
+  "ok": false,
+  "progetto": "alpha"
+}

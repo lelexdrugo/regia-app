@@ -1,0 +1,38 @@
+{
+  "_note": "Synthetic. The lock of alpha is worker-b's and expired long ago: worker-a takes it in its place.",
+  "args": [
+    "lock",
+    "acquire",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "600",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lock",
+    "prendi",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "600"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": {
+        "progetto": "alpha",
+        "proprietario": "worker-b",
+        "preso": "2026-01-01T08:00:00.000+00:00",
+        "ttl_s": 600,
+        "scade": "2026-01-01T08:10:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    }
+  ]
+}

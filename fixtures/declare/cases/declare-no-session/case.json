@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. No session id in the environment: nothing to attribute the declaration to, exit 1.",
+  "args": [
+    "declare",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "exit": 1,
+  "python": [
+    "--json",
+    "dichiara",
+    "--progetto",
+    "alpha"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "_note": "Synthetic. worker-a's heartbeat on its lease of #7 extends it by the ttl it was taken with.",
+  "args": [
+    "lease",
+    "heartbeat",
+    "7",
+    "--holder",
+    "worker-a",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lease",
+    "battito",
+    "7",
+    "--proprietario",
+    "worker-a"
+  ],
+  "state": [
+    {
+      "kind": "lease",
+      "key": "7",
+      "doc": {
+        "task": 7,
+        "progetto": "alpha",
+        "proprietario": "worker-a",
+        "preso": "2026-01-10T08:50:00.000+00:00",
+        "battito": "2026-01-10T08:50:00.000+00:00",
+        "ttl_s": 900,
+        "scade": "2026-01-10T09:05:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    }
+  ]
+}

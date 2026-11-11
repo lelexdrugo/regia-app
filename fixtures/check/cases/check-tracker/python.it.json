@@ -1,0 +1,29 @@
+{
+  "avvisi": [
+    "approvato-mai-partito: la cronologia degli stati non si legge, si applicano due criteri su tre (età, report)",
+    "progetto-campo: il campo «Progetto» non è in tracker.json, controllo saltato",
+    "alpha: cartella del dossier non trovata, controlli sul dossier saltati"
+  ],
+  "per_controllo": {
+    "decisione-senza-flag": 1,
+    "in-corso-fermo": 1
+  },
+  "voci": [
+    {
+      "controllo": "decisione-senza-flag",
+      "dove": "#6 commento 9001",
+      "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+      "progetto": "alpha",
+      "testo": "Decisione: A, as advised.",
+      "url": "https://tracker.invalid/issues/6#issuecomment-9001"
+    },
+    {
+      "controllo": "in-corso-fermo",
+      "dove": "#5",
+      "perche": "In corso senza lease viva, issue ferma da 8 giorni (soglia 3)",
+      "progetto": "alpha",
+      "testo": "a task in progress with no live lease",
+      "url": "https://tracker.invalid/issues/5"
+    }
+  ]
+}

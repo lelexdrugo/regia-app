@@ -1,0 +1,37 @@
+{
+  "_note": "Synthetic. The state, a new journal file and the file named with --file are committed and pushed; a changed file nobody named stays out.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--file",
+    "docs/plan.md",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}",
+    "--file",
+    "docs/plan.md"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n",
+      "docs/plan.md": "Plan v1\n",
+      "notes.md": "Notes v1\n"
+    },
+    "changes": {
+      ".regia/stato.md": "# Alpha\n\nState after the step.\n",
+      ".regia/journal/2026-01-10.md": "A line of the journal.\n",
+      "docs/plan.md": "Plan v2\n",
+      "notes.md": "Notes v2, not named\n"
+    }
+  }
+}

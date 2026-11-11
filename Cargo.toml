@@ -34,6 +34,7 @@ tauri = { version = "2.12", features = ["custom-protocol"] }
 tauri-build = { version = "2.7", features = [] }
 thiserror = "2"
 toml = "1"
+ts-rs = "12"
 unic-langid = "0.9"
 
 [profile.dev]

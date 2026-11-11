@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "What the main window may call: the app's own commands, and nothing from any plugin.",
+  "description": "What the main window may call: the app's own commands, and nothing from Tauri's core or any plugin.",
   "windows": ["main"],
-  "permissions": ["allow-bootstrap", "allow-get-brief"]
+  "permissions": ["allow-get-app-info", "allow-get-brief"]
 }

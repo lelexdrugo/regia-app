@@ -1,0 +1,15 @@
+{
+  "dossier": {
+    "avanti": null,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "nessun_remoto",
+    "file": [
+      ".regia/stato.md"
+    ],
+    "motivo": "nessun remoto configurato",
+    "sha": "a9fe59bb54092e815c41dd8da7f56660023045ed"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

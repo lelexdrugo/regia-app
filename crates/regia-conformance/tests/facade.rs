@@ -1,8 +1,9 @@
 //! The facade's engine (#440). A command that is not ported runs on the prototype through the table,
 //! with its exit code, its JSON in English or its text as it is; without a prototype the CLI says so
 //! from the catalog. In CI a stand-in interpreter replays what the prototype printed for each case,
-//! after checking the argv the table built. The writes to the tracker are proven where the prototype
-//! is, by the last test, which runs the real binary on the real prototype and needs `REGIA_HOME`.
+//! after checking the argv the table built. The writes to the tracker and to a case's dossier are
+//! proven where the prototype is, by the last test, which runs the real binary on the real prototype at
+//! the fixtures' instant and needs `REGIA_HOME`.
 
 use std::ffi::OsString;
 use std::fs;
@@ -10,7 +11,8 @@ use std::path::{Path, PathBuf};
 
 use regia_conformance::{
     Case, CliRun, FAKE_PYTHON_WRONG_ARGV, Recorded, Replay, Writes, bin_dir, differences, json_diff, path_with_fake_gh,
-    replay_prototype, responses_var, run_case, translate_python, writes_log, writes_var,
+    prototype_at_fixture_now, replay_prototype, responses_var, run_case, run_case_on_dossier, translate_python, writes_log,
+    writes_var,
 };
 use regia_facade::Table;
 use regia_i18n::{Catalog, Language};
@@ -66,6 +68,63 @@ fn the_engine_cases_show_what_they_claim() {
     let maturity = Case::named("maturity-ready");
     assert!(matches!(maturity.recorded(), Recorded::Text(_)), "a command without JSON prints text");
     assert_eq!(maturity.writes().len(), 1, "one edit of the labels");
+}
+
+/// The cases of the state commands (#442) record what their notes say, at the fixtures' instant: a
+/// refusal is 3 and a step that cannot close is 1, a lock taken now expires `ttl` seconds later, a
+/// processed report that is missing is a warning with exit 0, and a checkpoint commits only what is
+/// named.
+#[test]
+fn the_state_cases_show_what_they_claim() {
+    let out = |name: &str| {
+        let case = Case::named(name);
+        let value = translate_python(&case.command_name(), &case.python_output()).unwrap();
+        (case, value)
+    };
+    for name in ["acquire-busy", "release-foreign", "lease-acquire-busy", "lease-heartbeat-absent", "step-start-busy", "step-renew-foreign", "step-finish-foreign"] {
+        let (case, value) = out(name);
+        assert_eq!((case.spec.exit, &value["ok"]), (3, &json!(false)), "{name} is a refusal");
+    }
+    assert_eq!(Case::named("step-start-busy-text").spec.exit, 3);
+    assert_eq!(Case::named("step-finish-no-step").spec.exit, 1);
+    let (_, busy) = out("step-start-busy");
+    assert_eq!((&busy["status"], &busy["current"]["holder"]), (&json!("busy"), &json!("worker-b")));
+    let (_, taken) = out("acquire-free");
+    assert_eq!((&taken["taken_at"], &taken["expires_in_s"]), (&json!("2026-01-10T09:00:00.000+00:00"), &json!(600)));
+    let (_, stolen) = out("acquire-stolen");
+    assert_eq!((&stolen["status"], &stolen["replaced"]), (&json!("stolen"), &json!("worker-b")));
+    let (finish, closed) = out("step-finish-no-push");
+    assert_eq!(closed["cursor"]["own"], json!({"comments": [41, 43], "reports": {"2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"}}));
+    assert!(finish.recorded_stderr().contains("2026-01-09-9-missing.md") && finish.spec.exit == 0, "a missing report warns");
+    let (pushed, checkpoint) = out("checkpoint-pushed");
+    assert_eq!(checkpoint["dossier"]["outcome"], "pushed");
+    assert_eq!(checkpoint["dossier"]["files"], json!([".regia/stato.md", "docs/plan.md", ".regia/journal/2026-01-10.md"]));
+    let after = pushed.dossier_after().unwrap();
+    assert_eq!(after["remote"][0], after["log"][0], "pushed to the upstream");
+    assert!(after["log"][0].as_str().unwrap().contains(checkpoint["dossier"]["sha"].as_str().unwrap()), "the commit it prints");
+    assert_eq!(after["status"], json!([" M notes.md"]), "a file nobody named stays out");
+    let (_, budget) = out("budget-cache");
+    assert_eq!((&budget["provider"]["claude"]["from_cache"], &budget["cache"]["attempt_age_s"]), (&json!(true), &json!(120)));
+}
+
+/// Every shape a recording reaches fails closed: a key the table does not know, added to the output
+/// of any case, at its top or in its first item, is an error and never passes in Italian.
+#[test]
+fn an_unknown_key_fails_closed_in_every_recorded_output() {
+    let mut checked = 0;
+    for case in facade_cases() {
+        let Recorded::Json(mut value) = case.recorded() else { continue };
+        let target = match &mut value {
+            Value::Array(items) => items.first_mut(),
+            other => Some(other),
+        };
+        let Some(Value::Object(object)) = target else { continue };
+        object.insert("chiave_nuova".to_owned(), json!(1));
+        let error = translate_python(&case.command_name(), &value).expect_err(&case.name);
+        assert!(error.to_string().contains("chiave_nuova"), "{}: {error}", case.name);
+        checked += 1;
+    }
+    assert!(checked >= 25, "only {checked} outputs checked");
 }
 
 /// Negative controls: an exit code, an output or an argv other than the case's is a difference, and
@@ -174,25 +233,33 @@ fn the_fake_gh_logs_writes_in_one_form_for_both_sides() {
     assert_eq!(lines[3], json!({"mutation": "closeIssue", "variables": {"i": "ISSUE_3", "r": "COMPLETED"}}));
 }
 
+/// The real binary on `case`, through the facade to the prototype of `dossier` on its case dossier,
+/// against the fake `gh`; `home` gives the folder the binary takes for the dossier.
+fn live(label: &str, case: &Case, home: impl FnOnce(&Path) -> PathBuf) -> CliRun {
+    run_case_on_dossier(label, case, |state| {
+        vec![
+            (prototype_env_var("HOME"), home(state).into_os_string()),
+            ("PATH".to_owned(), path_with_fake_gh()),
+            (responses_var(), case.responses_path().into_os_string()),
+            (writes_var(), writes_log(state).into_os_string()),
+        ]
+    })
+}
+
 /// The writes, where the prototype is. The real binary goes through the facade to the real prototype,
-/// against the fake `gh`, and must end with the recorded exit code and output and make exactly the
-/// recorded writes; a sequence of writes altered by hand must differ. Local only:
+/// against the fake `gh` and on each case's dossier, at the fixtures' instant as the recording was, and
+/// must end with the recorded exit code and output, make exactly the recorded writes and leave the
+/// dossier's repo as the recording left it. A sequence of writes altered by hand must differ, and so
+/// must a repo altered by hand and a run on the machine's clock. Local only:
 ///
 ///     REGIA_HOME=<dossier> cargo test -p regia-conformance --test facade -- --ignored
 #[test]
 #[ignore = "needs the prototype's dossier in REGIA_HOME"]
 fn the_prototype_through_the_binary_makes_the_recorded_writes() {
     let dossier = PathBuf::from(std::env::var_os(prototype_env_var("HOME")).expect("REGIA_HOME names the dossier"));
-    let mut writes = 0;
+    let (mut writes, mut repos) = (0, 0);
     for case in facade_cases() {
-        let run = run_case(&format!("live-{}", case.name), &case, |state| {
-            vec![
-                (prototype_env_var("HOME"), dossier.clone().into_os_string()),
-                ("PATH".to_owned(), path_with_fake_gh()),
-                (responses_var(), case.responses_path().into_os_string()),
-                (writes_var(), writes_log(state).into_os_string()),
-            ]
-        });
+        let run = live(&format!("live-{}", case.name), &case, |state| prototype_at_fixture_now(state, &dossier));
         let diff = differences(&case, &run, Writes::Compare);
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
         println!("{}: exit {:?}, {} writes, as recorded", case.name, run.exit, run.writes.len());
@@ -203,6 +270,19 @@ fn the_prototype_through_the_binary_makes_the_recorded_writes() {
             assert!(!json_diff(&Value::Array(run.writes.clone()), &Value::Array(altered)).is_empty(), "a swapped write went unnoticed");
             writes += run.writes.len();
         }
+        if let Some(mut altered) = case.dossier_after() {
+            altered["log"].as_array_mut().unwrap().insert(0, json!("0000000 a commit the run did not make"));
+            assert!(!json_diff(run.dossier_after.as_ref().unwrap(), &altered).is_empty(), "an altered repo went unnoticed");
+            repos += 1;
+        }
     }
-    assert!(writes > 0, "no case made a write");
+    assert!(writes > 0 && repos > 0, "no case made a write, or none worked on a repo");
+    // The fixtures' instant reaches the prototype through the shim alone: on the machine's clock the
+    // lock is taken at another time.
+    let case = Case::named("acquire-free");
+    let run = live("live-machine-clock", &case, |_| dossier.clone());
+    assert!(
+        differences(&case, &run, Writes::Compare).iter().any(|line| line.contains("taken_at")),
+        "a run on the machine's clock went unnoticed"
+    );
 }

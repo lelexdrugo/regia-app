@@ -1,0 +1,13 @@
+{
+  "log": [
+    "b0df40d6bf258ff7e77be1f6543e9ca418f0189b alpha: checkpoint 2026-01-10T09:00:00Z",
+    "8a63bc2dc7031ede2d8e6a8572108ba6782d6c35 fixture: the dossier before the run"
+  ],
+  "remote": [
+    "b0df40d6bf258ff7e77be1f6543e9ca418f0189b alpha: checkpoint 2026-01-10T09:00:00Z",
+    "8a63bc2dc7031ede2d8e6a8572108ba6782d6c35 fixture: the dossier before the run"
+  ],
+  "status": [
+    " M notes.md"
+  ]
+}

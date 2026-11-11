@@ -1,0 +1,87 @@
+# `step` (the prototype's `passo`): an orchestrator's step. `step start` takes the project's lock and
+# opens the step, `step renew` extends the lock of a long one, `step finish` writes the `events`
+# cursor, releases the lock, then runs the checks and commits and pushes the dossier. A lock that is
+# someone else's exits with 3; a lock that is yours with no step open is an error, with 1. Names from
+# the conformance study, §8 (`conformita.md` of the dossier), plus `--reports-processed` (#406), not
+# decided: they go to the gate of the names with the rest (`docs/contract/commands.md`).
+schema = 1
+
+[commands."step start"]
+python = ["passo", "inizio"]
+group = "state"
+output = "step_start"
+[commands."step start".args]
+"--project" = "--progetto"
+"--holder" = "--proprietario"
+"--ttl" = "--ttl"
+
+# Answers as `lock renew` does.
+[commands."step renew"]
+python = ["passo", "rinnova"]
+group = "state"
+output = "lock_outcome"
+[commands."step renew".args]
+"--project" = "--progetto"
+"--holder" = "--proprietario"
+"--ttl" = "--ttl"
+
+[commands."step finish"]
+python = ["passo", "fine"]
+group = "state"
+output = "step_finish"
+[commands."step finish".args]
+"--project" = "--progetto"
+"--holder" = "--proprietario"
+"--file" = "--file"
+"--folder" = "--cartella"
+"--no-push" = { to = "--no-push", flag = true }
+# Zero or more names of `.regia/report/`: the precheck does not count them as new (#406).
+"--reports-processed" = { to = "--report-elaborati", many = true }
+
+# The step that opened, or the refusal of the lock as `lock acquire` gives it.
+[shapes.step_start.fields]
+ok = { to = "ok" }
+progetto = { to = "project" }
+stato = { to = "status", enum = "lock_status" }
+motivo = { to = "reason" }
+attuale = { to = "current", shape = "lock_view" }
+proprietario = { to = "holder" }
+proprietario_generato = { to = "holder_generated" }
+t = { to = "t" }
+ripreso = { to = "resumed" }
+scade = { to = "expires_at" }
+scade_tra_s = { to = "expires_in_s" }
+cursore = { to = "cursor", shape = "events_cursor" }
+
+# The step that closed, or the refusal of the lock as `lock renew` gives it.
+[shapes.step_finish.fields]
+ok = { to = "ok" }
+progetto = { to = "project" }
+stato = { to = "status", enum = "lock_status" }
+motivo = { to = "reason" }
+attuale = { to = "current", shape = "lock_view" }
+proprietario = { to = "holder" }
+cursore = { to = "cursor", shape = "events_cursor" }
+lock = { to = "lock", enum = "lock_status" }
+controlli = { to = "checks", shape = "step_checks" }
+dossier = { to = "dossier", shape = "dossier_sync" }
+
+# The `events` cursor: where the precheck starts counting reports and comments as new. `t` is when the
+# step began to observe; `own` holds what the step wrote or processed itself.
+[shapes.events_cursor.fields]
+v = { to = "v" }
+t = { to = "t" }
+propri = { to = "own", shape = "events_own" }
+
+# The reports are an object with the file names as keys, which are data, and their dates as values.
+[shapes.events_own.fields]
+commenti = { to = "comments" }
+report = { to = "reports" }
+
+# The checks of `step finish`, or why they could not run: they never change the exit code.
+[shapes.step_checks.fields]
+totale = { to = "total" }
+per_controllo = { to = "per_check", shape = "check_counts" }
+voci = { to = "findings", items = "check_finding" }
+avvisi = { to = "warnings" }
+non_disponibile = { to = "unavailable" }

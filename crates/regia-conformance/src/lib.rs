@@ -4,8 +4,10 @@
 //! printed for it (`python.it.json`, or `python.it.txt` for a command that prints text), recorded
 //! locally because CI cannot read the private dossier. It also holds the exit code both sides must
 //! end with, the rows of the state database before the run, and the writes the prototype made to the
-//! tracker, in order (`calls.json`). Cases live in families, one folder of `fixtures/` per group of
-//! commands, so slices that add cases do not edit the same folder.
+//! tracker, in order (`calls.json`). A case can also name a dossier, a repo the run commits to, and
+//! hold what the repo looked like after (`dossier.json`). Every case is recorded and checked at one
+//! instant, [`FIXTURE_NOW`]. Cases live in families, one folder of `fixtures/` per group of commands,
+//! so slices that add cases do not edit the same folder.
 //!
 //! A case of a ported command runs the real `regia` binary against the same responses through a fake
 //! `gh`, passes the recorded Python output through the facade table, and diffs the two. A case of a
@@ -19,6 +21,7 @@
 //! copy of the fake named by `REGIA_GH`, which reads its fixture from a file beside it: the product
 //! does not pass the fixture's variables to `gh`, and should not.
 
+use std::collections::BTreeMap;
 use std::env;
 use std::ffi::OsString;
 use std::fs;
@@ -57,20 +60,25 @@ pub const FAKE_PYTHON_SIDECAR: &str = "replay.json";
 pub const FAKE_PYTHON_WRONG_ARGV: u8 = 99;
 
 /// The day every fixture is recorded and checked on, so due dates mean the same on both sides: the
-/// prototype gets it through `oracle/fixed_today.py`, the product through `REGIA_TODAY`.
+/// prototype gets it through `oracle/fixed_now.py`, the product through `REGIA_TODAY`.
 pub const FIXTURE_TODAY: &str = "2026-01-10";
+
+/// The instant every fixture is recorded and checked at, on [`FIXTURE_TODAY`], so a lock taken now
+/// expires at the same time on both sides: the prototype gets it through `oracle/fixed_now.py`, the
+/// product through `REGIA_NOW`. Local time is UTC on both.
+pub const FIXTURE_NOW: &str = "2026-01-10T09:00:00Z";
 
 /// What the prototype reads to sign and attribute a session (`CLAUDE_CODE_SESSION_ID` and the others
 /// the allow-list of the Python passes), and the role of `REGIA_RUOLO`: a fixture run sees none of the
-/// machine's.
-const SESSION_VARIABLES: [&str; 3] = ["CLAUDE_CODE_SESSION_ID", "ORCA_AGENT_SESSION_ID", "CODEX_THREAD_ID"];
+/// machine's, unless its case names one in `env`.
+pub const SESSION_VARIABLES: [&str; 3] = ["CLAUDE_CODE_SESSION_ID", "ORCA_AGENT_SESSION_ID", "CODEX_THREAD_ID"];
 
 /// Folders of `fixtures/` whose cases drive something other than the CLI: the controller's oracle.
 const NOT_CLI: [&str; 1] = ["controller"];
 
-/// The prototype's driver that runs it on [`FIXTURE_TODAY`].
-pub fn fixed_today_driver() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("oracle").join("fixed_today.py")
+/// The prototype's driver that runs it at [`FIXTURE_NOW`].
+pub fn fixed_now_driver() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("oracle").join("fixed_now.py")
 }
 
 pub fn workspace_root() -> PathBuf {
@@ -118,6 +126,168 @@ pub struct CaseSpec {
     /// Rows of the state database before the run.
     #[serde(default)]
     pub state: Vec<StateRow>,
+    /// Session variables the run sees, on both sides: only those of [`SESSION_VARIABLES`].
+    #[serde(default)]
+    pub env: BTreeMap<String, String>,
+    /// The project's dossier before the run, which the arguments name as [`DOSSIER_PLACEHOLDER`].
+    #[serde(default)]
+    pub dossier: Option<DossierSpec>,
+}
+
+/// A case's dossier: a folder of files, by default a git repo whose `files` are committed and pushed to
+/// a bare remote, its upstream, and whose `changes` are written after, not committed.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DossierSpec {
+    #[serde(default = "yes")]
+    pub git: bool,
+    #[serde(default = "yes")]
+    pub remote: bool,
+    #[serde(default)]
+    pub files: BTreeMap<String, String>,
+    #[serde(default)]
+    pub changes: BTreeMap<String, String>,
+}
+
+fn yes() -> bool {
+    true
+}
+
+/// Where a case's arguments, the prototype's argv and what it printed name the dossier's folder,
+/// which differs from run to run and from machine to machine. The one normalization of output besides
+/// line breaks, declared: a recorded file never holds a path of the machine.
+pub const DOSSIER_PLACEHOLDER: &str = "{dossier}";
+
+/// When a case's dossier was committed, a day before [`FIXTURE_NOW`], in seconds since the epoch: its
+/// commit has the same id on every run.
+const DOSSIER_COMMIT_EPOCH: u64 = 1_767_949_200;
+
+/// The modification time of the files of a case's dossier, an hour before [`FIXTURE_NOW`]: the
+/// prototype stores a report's in the `events` cursor.
+const DOSSIER_FILE_EPOCH: u64 = 1_768_032_000;
+
+/// The modification time of its changes, half an hour later: with the time of the commit, a change of
+/// the same size would look unchanged to `git status`.
+const DOSSIER_CHANGE_EPOCH: u64 = 1_768_033_800;
+
+/// The folder of the dossier of a case run in `state`.
+pub fn dossier_dir(state: &Path) -> PathBuf {
+    state.join("project-dossier")
+}
+
+fn remote_dir(state: &Path) -> PathBuf {
+    state.join("dossier-remote.git")
+}
+
+fn git(dir: &Path, args: &[&str]) -> String {
+    let pin = regia_exec::Pin::resolve(Program::Git).expect("git");
+    let args: Vec<String> = args.iter().map(|arg| (*arg).to_owned()).collect();
+    let date = format!("@{DOSSIER_COMMIT_EPOCH} +0000");
+    let output = regia_exec::harness::program(&pin, &args, dir)
+        .env("GIT_AUTHOR_DATE", &date)
+        .env("GIT_COMMITTER_DATE", &date)
+        .run()
+        .expect("git runs");
+    assert!(output.status.success(), "git {args:?}: {}", String::from_utf8_lossy(&output.stderr));
+    String::from_utf8_lossy(&output.stdout).into_owned()
+}
+
+fn write_files(dir: &Path, files: &BTreeMap<String, String>, epoch: u64) {
+    let time = std::time::UNIX_EPOCH + std::time::Duration::from_secs(epoch);
+    for (name, text) in files {
+        let path = dir.join(name);
+        fs::create_dir_all(path.parent().expect("a file's folder")).expect("the file's folder");
+        fs::write(&path, text).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+        let file = fs::File::options().write(true).open(&path).expect("the file, to date it");
+        file.set_modified(time).expect("the file's modification time");
+    }
+}
+
+/// The dossier of `spec` in `state`: its files, and with `git` a repo with the harness's own identity
+/// and no signing, hooks or line-break conversion of the machine, its upstream a bare repo beside it.
+pub fn prepare_dossier(state: &Path, spec: &DossierSpec) -> PathBuf {
+    let dir = dossier_dir(state);
+    fs::create_dir_all(&dir).expect("the dossier");
+    write_files(&dir, &spec.files, DOSSIER_FILE_EPOCH);
+    if spec.git {
+        git(&dir, &["init", "-q", "-b", "main"]);
+        for (key, value) in [
+            ("user.name", "Fixture"),
+            ("user.email", "fixture@example.invalid"),
+            ("commit.gpgsign", "false"),
+            ("core.autocrlf", "false"),
+            ("core.hooksPath", ".git/no-hooks"),
+        ] {
+            git(&dir, &["config", key, value]);
+        }
+        git(&dir, &["add", "--all"]);
+        git(&dir, &["commit", "-q", "-m", "fixture: the dossier before the run"]);
+        if spec.remote {
+            let remote = remote_dir(state).display().to_string();
+            git(state, &["init", "-q", "--bare", "-b", "main", &remote]);
+            git(&dir, &["remote", "add", "origin", &remote]);
+            git(&dir, &["push", "-q", "-u", "origin", "main"]);
+        }
+    }
+    write_files(&dir, &spec.changes, DOSSIER_CHANGE_EPOCH);
+    dir
+}
+
+/// The dossier's repo after a run: the commits of `main` and of its remote, newest first, and what is
+/// left uncommitted. `None` for a dossier that is not a repo.
+pub fn dossier_after(state: &Path, spec: &DossierSpec) -> Option<Value> {
+    let lines = |dir: &Path, args: &[&str]| -> Vec<String> { git(dir, args).lines().map(str::to_owned).collect() };
+    spec.git.then(|| {
+        let dir = dossier_dir(state);
+        json!({
+            "log": lines(&dir, &["log", "--format=%H %s", "main"]),
+            "remote": spec.remote.then(|| lines(&remote_dir(state), &["log", "--format=%H %s", "main"])),
+            "status": lines(&dir, &["status", "--porcelain=v1", "--untracked-files=all"]),
+        })
+    })
+}
+
+/// `args` with the dossier's folder in place of [`DOSSIER_PLACEHOLDER`].
+pub fn place_args(args: &[String], dossier: &Path) -> Vec<String> {
+    args.iter().map(|arg| arg.replace(DOSSIER_PLACEHOLDER, &dossier.display().to_string())).collect()
+}
+
+/// `text` with the placeholder in place of the dossier's folder.
+pub fn unplace_text(text: &str, dossier: &Path) -> String {
+    text.replace(&dossier.display().to_string(), DOSSIER_PLACEHOLDER)
+}
+
+/// Every string of `value` with the placeholder in place of the dossier's folder.
+pub fn unplace_json(value: &Value, dossier: &Path) -> Value {
+    match value {
+        Value::String(text) => Value::String(unplace_text(text, dossier)),
+        Value::Array(items) => Value::Array(items.iter().map(|item| unplace_json(item, dossier)).collect()),
+        Value::Object(object) => {
+            Value::Object(object.iter().map(|(key, inner)| (key.clone(), unplace_json(inner, dossier))).collect())
+        }
+        other => other.clone(),
+    }
+}
+
+/// Every string of `value` with the dossier's folder in place of the placeholder.
+fn place_json(value: &Value, dossier: &Path) -> Value {
+    let folder = dossier.display().to_string();
+    match value {
+        Value::String(text) => Value::String(text.replace(DOSSIER_PLACEHOLDER, &folder)),
+        Value::Array(items) => Value::Array(items.iter().map(|item| place_json(item, dossier)).collect()),
+        Value::Object(object) => Value::Object(object.iter().map(|(key, inner)| (key.clone(), place_json(inner, dossier))).collect()),
+        other => other.clone(),
+    }
+}
+
+impl CaseSpec {
+    /// The variables of `env`, checked: a case never passes anything of the machine's but a session id.
+    pub fn session_env(&self) -> Vec<(String, String)> {
+        for name in self.env.keys() {
+            assert!(SESSION_VARIABLES.contains(&name.as_str()), "case variable {name} is not a session variable");
+        }
+        self.env.iter().map(|(name, value)| (name.clone(), value.clone())).collect()
+    }
 }
 
 /// A row of the documents table, as the prototype and `regia-store` write it: the document is data.
@@ -215,6 +385,12 @@ impl Case {
     pub fn writes(&self) -> Vec<Value> {
         let path = self.dir.join("calls.json");
         if path.is_file() { read_json(&path) } else { Vec::new() }
+    }
+
+    /// The dossier's repo after the prototype's run, from `dossier.json`; `None` without a repo.
+    pub fn dossier_after(&self) -> Option<Value> {
+        let path = self.dir.join("dossier.json");
+        path.is_file().then(|| read_json(&path))
     }
 
     /// The command the case runs, by the facade table's longest name.
@@ -315,15 +491,18 @@ pub fn writes_of_run(state: &Path) -> Vec<Value> {
     text.lines().map(|line| serde_json::from_str(line).expect("a JSON line of the writes log")).collect()
 }
 
-/// What every run against a fixture needs, on either side: its state folder, the fixed day, and no
-/// engine, dossier or session of the machine. The Codex credentials point at a file that does not
-/// exist: the prototype's brief reads them for a warning, and the machine's own must not leak in.
+/// What every run against a fixture needs, on either side: its state folder, the fixed day and
+/// instant, and no engine, dossier or session of the machine. The credentials of Claude and Codex
+/// point at files that do not exist: the prototype's brief reads Codex's for a warning, its budget
+/// reads both and would ask the providers with them, and the machine's own must not leak in.
 fn fixture_env(launch: Launch, state: &Path) -> Launch {
     let launch = SESSION_VARIABLES.iter().fold(launch, |launch, name| launch.without(name));
     launch
         .env(&prototype_env_var("RUNTIME"), state)
         .env(&prototype_env_var("CODEX_AUTH"), state.join("no-codex-auth.json"))
+        .env(&prototype_env_var("CLAUDE_CREDENTIALS"), state.join("no-claude-credentials.json"))
         .env(&env_var("TODAY"), FIXTURE_TODAY)
+        .env(&env_var("NOW"), FIXTURE_NOW)
         .without(&env_var("ENGINE"))
         .without(&prototype_env_var("HOME"))
         .without(&prototype_env_var("RUOLO"))
@@ -387,6 +566,10 @@ pub struct CliRun {
     pub stderr: String,
     /// The writes the fake `gh` saw, in order.
     pub writes: Vec<Value>,
+    /// The folder of the case's dossier, if it has one: its arguments named it.
+    pub dossier: Option<PathBuf>,
+    /// The dossier's repo after the run, when the run had a repo to work on.
+    pub dossier_after: Option<Value>,
 }
 
 /// What the stand-in interpreter replays.
@@ -396,6 +579,9 @@ pub struct Replay {
     pub stdout: String,
     pub stderr: String,
     pub exit: u8,
+    /// The stdout is JSON, with the dossier's placeholder inside its strings.
+    #[serde(default)]
+    pub json: bool,
 }
 
 impl Replay {
@@ -403,18 +589,37 @@ impl Replay {
     /// the script, and the argv the case expects.
     pub fn of(case: &Case) -> Replay {
         let python = case.spec.python.clone().unwrap_or_else(|| panic!("case {} does not go through the facade", case.name));
-        let stdout = match case.recorded() {
-            Recorded::Json(value) => format!("{}\n", serde_json::to_string_pretty(&value).expect("JSON")),
-            Recorded::Text(text) => text,
+        let (stdout, json) = match case.recorded() {
+            Recorded::Json(value) => (format!("{}\n", serde_json::to_string_pretty(&value).expect("JSON")), true),
+            Recorded::Text(text) => (text, false),
         };
         let argv = regia_exec::python::FLAGS.iter().map(|flag| (*flag).to_owned()).chain([SCRIPT.to_owned()]).chain(python).collect();
-        Replay { argv, stdout, stderr: case.recorded_stderr(), exit: case.spec.exit }
+        Replay { argv, stdout, stderr: case.recorded_stderr(), exit: case.spec.exit, json }
+    }
+
+    /// The replay of a run whose dossier is `dossier`: its folder where the recording has the placeholder.
+    fn placed(&self, dossier: &Path) -> Replay {
+        let folder = dossier.display().to_string();
+        let stdout = if self.json {
+            let value: Value = serde_json::from_str(&self.stdout).expect("the replayed JSON");
+            format!("{}\n", serde_json::to_string_pretty(&place_json(&value, dossier)).expect("JSON"))
+        } else {
+            self.stdout.replace(DOSSIER_PLACEHOLDER, &folder)
+        };
+        Replay {
+            argv: place_args(&self.argv, dossier),
+            stdout,
+            stderr: self.stderr.replace(DOSSIER_PLACEHOLDER, &folder),
+            ..self.clone()
+        }
     }
 }
 
 /// A dossier with only the prototype's entry point in it, and a copy of the stand-in interpreter that
-/// replays `replay`. Returns the variables that point the binary at them.
+/// replays `replay`, with the folder of the run's own case dossier in place of the placeholder.
+/// Returns the variables that point the binary at them.
 pub fn replay_prototype(state: &Path, replay: &Replay) -> Vec<(String, PathBuf)> {
+    let replay = &replay.placed(&dossier_dir(state));
     let dossier = state.join("dossier");
     let script = dossier.join(SCRIPT);
     fs::create_dir_all(script.parent().expect("the script's folder")).expect("the dossier");
@@ -429,8 +634,46 @@ pub fn replay_prototype(state: &Path, replay: &Replay) -> Vec<(String, PathBuf)>
     vec![(prototype_env_var("HOME"), dossier), (env_var("PYTHON"), copy)]
 }
 
+/// A dossier whose entry point is the real prototype of `dossier` at [`FIXTURE_NOW`], for the binary to
+/// start through the facade as it starts the prototype: the clock is the one place the two runs could
+/// differ, and the facade passes no driver. Its `tools/regia.py` points `REGIA_HOME` back at `dossier`
+/// and hands its arguments to `oracle/fixed_now.py`. Returns the folder to name in `REGIA_HOME`.
+pub fn prototype_at_fixture_now(state: &Path, dossier: &Path) -> PathBuf {
+    let shim = state.join("dossier-at-fixture-now");
+    let script = shim.join(SCRIPT);
+    fs::create_dir_all(script.parent().expect("the script's folder")).expect("the shim dossier");
+    // JSON string literals are Python string literals too, backslashes of Windows paths included.
+    let literal = |path: &Path| serde_json::to_string(&path.display().to_string()).expect("JSON");
+    let text = format!(
+        "# Written by the conformance harness: the prototype of the dossier at the fixtures' instant.\n\
+         import os, runpy, sys\n\
+         os.environ[{home}] = {dossier}\n\
+         sys.argv = [{driver}, {script}, {now}, *sys.argv[1:]]\n\
+         runpy.run_path({driver}, run_name=\"__main__\")\n",
+        home = serde_json::to_string(&prototype_env_var("HOME")).expect("JSON"),
+        dossier = literal(dossier),
+        driver = literal(&fixed_now_driver()),
+        script = literal(&dossier.join(SCRIPT)),
+        now = serde_json::to_string(FIXTURE_NOW).expect("JSON"),
+    );
+    fs::write(&script, text).expect("the shim's entry point");
+    shim
+}
+
 /// The real binary on `case`, with the fake `gh` and the case's state, plus the variables in `extra`.
+/// Its arguments name the folder of the case's dossier, which stays empty: a run on the stand-in
+/// interpreter never reads it.
 pub fn run_case(label: &str, case: &Case, extra: impl FnOnce(&Path) -> Vec<(String, OsString)>) -> CliRun {
+    run_case_in(label, case, false, extra)
+}
+
+/// [`run_case`] on the case's dossier, built as the recording built it, for a run that reaches the
+/// prototype; the run carries the dossier's repo after it.
+pub fn run_case_on_dossier(label: &str, case: &Case, extra: impl FnOnce(&Path) -> Vec<(String, OsString)>) -> CliRun {
+    run_case_in(label, case, true, extra)
+}
+
+fn run_case_in(label: &str, case: &Case, build: bool, extra: impl FnOnce(&Path) -> Vec<(String, OsString)>) -> CliRun {
     let state = prepare_case_state(label, case);
     let responses = if case.responses_path().is_file() {
         case.responses_path()
@@ -439,17 +682,25 @@ pub fn run_case(label: &str, case: &Case, extra: impl FnOnce(&Path) -> Vec<(Stri
         fs::write(&empty, "{}").expect("empty responses");
         empty
     };
-    let launch = regia_exec::harness::launch(&regia_binary(), &case.spec.args, &state);
+    let dossier = case.spec.dossier.as_ref().map(|spec| if build { prepare_dossier(&state, spec) } else { dossier_dir(&state) });
+    let args = dossier.as_ref().map_or_else(|| case.spec.args.clone(), |dossier| place_args(&case.spec.args, dossier));
+    let launch = regia_exec::harness::launch(&regia_binary(), &args, &state);
     let (mut launch, _) = fixture_for_rust(launch, &responses, &state);
+    for (name, value) in case.spec.session_env() {
+        launch = launch.env(&name, value);
+    }
     for (name, value) in extra(&state) {
         launch = launch.env(&name, value);
     }
     let output = launch.run().expect("run regia");
+    let dossier_after = case.spec.dossier.as_ref().filter(|_| build).and_then(|spec| dossier_after(&state, spec));
     CliRun {
         exit: output.status.code(),
         stdout: output.stdout,
         stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
         writes: writes_of_run(&state),
+        dossier,
+        dossier_after,
     }
 }
 
@@ -468,32 +719,41 @@ pub fn lf(text: &str) -> String {
 }
 
 /// Every way `run` differs from what the prototype did for `case`: exit code, stdout through the
-/// table or as text, stderr, and with [`Writes::Compare`] the writes in order. Empty when they agree.
+/// table or as text, stderr, and with [`Writes::Compare`] the writes in order and the dossier's repo
+/// after the run. The run's dossier reads as the placeholder, as in the recording. Empty when they
+/// agree.
 pub fn differences(case: &Case, run: &CliRun, writes: Writes) -> Vec<String> {
     let mut out = Vec::new();
     if run.exit != Some(i32::from(case.spec.exit)) {
         out.push(format!("exit: rust {:?}, python {}; stderr: {}", run.exit, case.spec.exit, run.stderr.trim()));
     }
+    let text = |text: &str| run.dossier.as_ref().map_or_else(|| text.to_owned(), |dossier| unplace_text(text, dossier));
     match case.recorded() {
         Recorded::Json(python) => match (serde_json::from_slice::<Value>(&run.stdout), translate_python(&case.command_name(), &python)) {
-            (Ok(rust), Ok(python)) => out.extend(json_diff(&rust, &python).into_iter().map(|line| format!("stdout {line}"))),
+            (Ok(rust), Ok(python)) => {
+                let rust = run.dossier.as_ref().map_or_else(|| rust.clone(), |dossier| unplace_json(&rust, dossier));
+                out.extend(json_diff(&rust, &python).into_iter().map(|line| format!("stdout {line}")));
+            }
             (Err(error), _) => out.push(format!("stdout: rust printed no JSON ({error}): {}", String::from_utf8_lossy(&run.stdout))),
             (_, Err(error)) => out.push(format!("stdout: the table does not cover the prototype's output: {error}")),
         },
         Recorded::Text(python) => {
-            let rust = lf(&String::from_utf8_lossy(&run.stdout));
+            let rust = text(&lf(&String::from_utf8_lossy(&run.stdout)));
             if rust != python {
                 out.push(format!("stdout: rust {rust:?}, python {python:?}"));
             }
         }
     }
     let stderr = case.recorded_stderr();
-    if case.spec.python.is_some() && lf(&run.stderr) != stderr {
+    if case.spec.python.is_some() && text(&lf(&run.stderr)) != stderr {
         out.push(format!("stderr: rust {:?}, python {stderr:?}", run.stderr));
     }
     if writes == Writes::Compare {
         let diff = json_diff(&Value::Array(run.writes.clone()), &Value::Array(case.writes()));
         out.extend(diff.into_iter().map(|line| format!("writes {line}")));
+        let after = |value: Option<Value>| value.unwrap_or(Value::Null);
+        let diff = json_diff(&after(run.dossier_after.clone()), &after(case.dossier_after()));
+        out.extend(diff.into_iter().map(|line| format!("dossier {line}")));
     }
     out
 }

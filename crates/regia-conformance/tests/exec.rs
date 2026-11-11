@@ -187,11 +187,14 @@ proptest! {
     }
 }
 
+/// Built or installed, not written here: the frontend's dependencies and its bundle too.
+const GENERATED: [&str; 4] = ["target", "gen", "node_modules", "dist"];
+
 fn rust_sources(dir: &Path, out: &mut Vec<PathBuf>) {
     for entry in fs::read_dir(dir).expect("folder") {
         let path = entry.expect("entry").path();
         if path.is_dir() {
-            if path.file_name().is_some_and(|name| name != "target" && name != "gen") {
+            if path.file_name().is_some_and(|name| !GENERATED.iter().any(|skip| name == *skip)) {
                 rust_sources(&path, out);
             }
         } else if path.extension().is_some_and(|extension| extension == "rs") {
@@ -419,7 +422,7 @@ fn all_files(dir: &Path, out: &mut Vec<PathBuf>) {
     for entry in entries {
         let path = entry.expect("entry").path();
         if path.is_dir() {
-            if path.file_name().is_some_and(|name| name != "target" && name != "gen") {
+            if path.file_name().is_some_and(|name| !GENERATED.iter().any(|skip| name == *skip)) {
                 all_files(&path, out);
             }
         } else {

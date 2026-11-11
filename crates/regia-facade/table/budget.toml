@@ -1,0 +1,64 @@
+# `budget`: what is left of Claude's and Codex's windows, read only; an unknown value exits with 0.
+# With `--cache` it asks the providers at most once per interval and keeps the last valid value. Names
+# from the conformance study, §8 (`conformita.md` of the dossier), not decided: they go to the gate of
+# the names with the rest (`docs/contract/commands.md`). The providers (`claude`, `codex`) and the
+# windows (`5h`, `7d`) are keys that are data; the reasons are the prototype's sentences.
+schema = 1
+
+[commands.budget]
+python = ["budget"]
+group = "state"
+output = "budget"
+[commands.budget.args]
+"--cache" = { to = "--cache", flag = true }
+"--min-interval" = "--min-intervallo"
+
+[enums.budget_status]
+ok = "ok"
+sconosciuto = "unknown"
+
+[enums.token_status]
+valido = "valid"
+in_scadenza = "expiring"
+scaduto = "expired"
+sconosciuto = "unknown"
+rifiutato = "refused"
+
+[shapes.budget.fields]
+generato = { to = "generated" }
+provider = { to = "provider", values = "provider_budget" }
+cache = { to = "cache", shape = "budget_cache" }
+
+[shapes.provider_budget.fields]
+provider = { to = "provider" }
+stato = { to = "status", enum = "budget_status" }
+piano = { to = "plan" }
+finestre = { to = "windows", values = "budget_window" }
+motivo = { to = "reason" }
+token = { to = "token", shape = "provider_token" }
+eta_s = { to = "age_s" }
+da_cache = { to = "from_cache" }
+aggiornamento_fallito = { to = "update_failed" }
+
+[shapes.budget_window.fields]
+stato = { to = "status", enum = "budget_status" }
+usato_pct = { to = "used_pct" }
+residuo_pct = { to = "remaining_pct" }
+reset = { to = "reset" }
+reset_tra_s = { to = "reset_in_s" }
+aperta = { to = "open" }
+motivo = { to = "reason" }
+
+# Codex's token, from its expiry alone: never the token itself.
+[shapes.provider_token.fields]
+stato = { to = "status", enum = "token_status" }
+scade = { to = "expires_at" }
+scade_tra_s = { to = "expires_in_s" }
+motivo = { to = "reason" }
+codice_http = { to = "http_status" }
+
+[shapes.budget_cache.fields]
+da_cache = { to = "from_cache" }
+min_intervallo_s = { to = "min_interval_s" }
+eta_tentativo_s = { to = "attempt_age_s" }
+nota = { to = "note" }

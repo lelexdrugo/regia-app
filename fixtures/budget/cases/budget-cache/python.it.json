@@ -1,0 +1,43 @@
+{
+  "cache": {
+    "da_cache": true,
+    "eta_tentativo_s": 120,
+    "min_intervallo_s": 300
+  },
+  "generato": "2026-01-10T08:58:00+00:00",
+  "provider": {
+    "claude": {
+      "da_cache": true,
+      "eta_s": 120,
+      "finestre": {
+        "5h": {
+          "reset": "2026-01-10T13:40+00:00",
+          "reset_tra_s": 16800,
+          "residuo_pct": 85.0,
+          "stato": "ok",
+          "usato_pct": 15.0
+        },
+        "7d": {
+          "aperta": false,
+          "reset": null,
+          "reset_tra_s": null,
+          "residuo_pct": 59.0,
+          "stato": "ok",
+          "usato_pct": 41.0
+        }
+      },
+      "piano": "max",
+      "provider": "claude",
+      "stato": "ok"
+    },
+    "codex": {
+      "da_cache": true,
+      "eta_s": null,
+      "finestre": {},
+      "motivo": "token Codex assente",
+      "piano": null,
+      "provider": "codex",
+      "stato": "sconosciuto"
+    }
+  }
+}

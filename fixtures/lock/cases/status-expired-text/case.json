@@ -1,0 +1,28 @@
+{
+  "_note": "Synthetic. An expired lock, in text: whose it was.",
+  "args": [
+    "lock",
+    "status",
+    "alpha"
+  ],
+  "python": [
+    "lock",
+    "stato",
+    "alpha"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": {
+        "progetto": "alpha",
+        "proprietario": "worker-b",
+        "preso": "2026-01-01T08:00:00.000+00:00",
+        "ttl_s": 600,
+        "scade": "2026-01-01T08:10:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "_note": "Synthetic. The lock is worker-a's but no step is open: an error, exit 1, and the lock stays.",
+  "args": [
+    "step",
+    "finish",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--no-push",
+    "--json"
+  ],
+  "exit": 1,
+  "python": [
+    "--json",
+    "passo",
+    "fine",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--no-push"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": {
+        "progetto": "alpha",
+        "proprietario": "worker-a",
+        "preso": "2026-01-10T08:30:00.000+00:00",
+        "ttl_s": 1800,
+        "scade": "2026-01-10T09:00:30.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    }
+  ]
+}

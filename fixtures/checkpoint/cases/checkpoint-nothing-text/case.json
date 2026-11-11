@@ -1,0 +1,23 @@
+{
+  "_note": "Synthetic. Nothing named has changed: nothing to commit, in text.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}"
+  ],
+  "python": [
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    }
+  }
+}
