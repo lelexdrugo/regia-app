@@ -24,7 +24,7 @@ async function start(): Promise<void> {
       load: getBrief,
       onsettled: () => {
         if (info.smoke) {
-          void runSmoke(strings.language);
+          void runSmoke(strings);
         }
       },
     },

@@ -43,12 +43,15 @@ struct Check {
 }
 
 /// The threat model's hostile corpus (V07), parsed by the core as a view would get it: the webview renders
-/// every case with the real renderer and checks the DOM, on each engine, under the real CSP.
+/// every case with the real renderer and checks the DOM, on each engine, under the real CSP. `shows` is the
+/// text the DOM must show as text (`app/ui/src/lib/v07.ts`).
 #[tauri::command]
 pub fn smoke_corpus() -> Vec<Value> {
     regia_core::markdown::corpus::cases()
         .into_iter()
-        .map(|case| serde_json::json!({ "name": case.name, "document": regia_core::parse_document(&case.text()) }))
+        .map(|case| {
+            serde_json::json!({ "name": case.name, "document": regia_core::parse_document(&case.text()), "shows": case.shows })
+        })
         .collect()
 }
 

@@ -1,14 +1,11 @@
 // Test only. In a build with the `smoke` feature the app reports what the webview rendered, then what it
 // could and could not do on this engine, and exits (app/src-tauri/src/smoke.rs judges the checks). In a
-// release build `smoke_report` does not exist, and nothing here runs.
+// release build `smoke_report` and `smoke_corpus` do not exist, and nothing here runs.
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
-interface Check {
-  name: string;
-  ok: boolean;
-  detail: string;
-}
+import type { Catalog } from "./i18n";
+import { appRenderer, type Check, type CorpusCase, v07 } from "./v07";
 
 interface Violation {
   directive: string;
@@ -108,7 +105,7 @@ async function csp(): Promise<{ checks: Check[]; expected: Expected[] }> {
 
   let evalRan = true;
   try {
-    (0, eval)("1");
+    (0, eval)("1"); // V08: the CSP probe, which the policy must refuse
   } catch {
     evalRan = false;
   }
@@ -235,9 +232,12 @@ async function events(): Promise<Check[]> {
   return [{ name: "events: listen and unlisten with the two event permissions", ok: received > 0, detail }];
 }
 
-export async function runSmoke(language: string): Promise<void> {
-  const report = snapshot(language);
-  const checks = features();
+export async function runSmoke(strings: Catalog): Promise<void> {
+  const report = snapshot(strings.language);
+  // V07 first, while the page has no probe's element, violation or request in it.
+  const cases = await invoke<CorpusCase[]>("smoke_corpus");
+  const checks = await v07(cases, appRenderer(strings));
+  checks.push(...features());
   const { checks: cspChecks, expected } = await csp();
   checks.push(...cspChecks);
   checks.push(...(await navigation()));
