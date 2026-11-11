@@ -67,3 +67,4 @@ settings-about-network-help = L'app parla solo con GitHub e con i servizi che ha
 
 settings-look-help-three = La sala è scura e calda, ed è quella di serie; il foglio serve di giorno, con molta luce; il nero è nero puro, con tratti bianchi.
 settings-save-failed = Non salvato: { $reason }
+settings-language-help-app = Vale subito per l'app, senza ricaricare. La riga di comando segue ancora la lingua del sistema.

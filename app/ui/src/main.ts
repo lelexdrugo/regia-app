@@ -30,6 +30,7 @@ async function start(): Promise<void> {
     target,
     props: {
       strings,
+      catalogFor: (language) => catalog(language, info.product_name),
       product: info.product_name,
       load: getBrief,
       settings,

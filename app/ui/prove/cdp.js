@@ -7,6 +7,19 @@ import { join } from "node:path";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// The named keys page.press knows: their code, key code and text, as Chrome's own keyboard sends them.
+const KEYS = {
+  Tab: ["Tab", 9, ""],
+  Enter: ["Enter", 13, "\r"],
+  Escape: ["Escape", 27, ""],
+  " ": ["Space", 32, " "],
+  ArrowLeft: ["ArrowLeft", 37, ""],
+  ArrowUp: ["ArrowUp", 38, ""],
+  ArrowRight: ["ArrowRight", 39, ""],
+  ArrowDown: ["ArrowDown", 40, ""],
+  "?": ["Slash", 191, "?"],
+};
+
 /** CHROME_PATH, or the first Chrome, Chromium or Edge where a runner or a desktop keeps one. */
 export function findChrome() {
   const candidates = [
@@ -131,6 +144,18 @@ export async function launch({ width, height, profiles }) {
     },
     async goto(url) {
       await send("Page.navigate", { url });
+    },
+    /**
+     * A key pressed and released as a keyboard would send it, with the focus where it is: one character
+     * (`g`, `?`) or a key's name (`Tab`, `Enter`, `Escape`, `ArrowDown`, ` `). `modifiers` is CDP's mask:
+     * 1 Alt, 2 Ctrl, 4 Meta, 8 Shift.
+     */
+    async press(key, modifiers = 0) {
+      const [code, keyCode, text] = KEYS[key] ?? [`Key${key.toUpperCase()}`, key.toUpperCase().charCodeAt(0), key];
+      const shift = key === "?" ? 8 : 0;
+      const common = { key, code, windowsVirtualKeyCode: keyCode, modifiers: modifiers | shift };
+      await send("Input.dispatchKeyEvent", { ...common, type: text ? "keyDown" : "rawKeyDown", ...(text ? { text } : {}) });
+      await send("Input.dispatchKeyEvent", { ...common, type: "keyUp" });
     },
     /** Polls until `expression` is true. A page that is still loading only delays it. */
     async waitFor(expression, ms = 15_000) {

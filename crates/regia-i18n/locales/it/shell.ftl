@@ -22,3 +22,7 @@ lang-en = Inglese
 ## The shell of #475: what a section says before its screen comes.
 
 shell-later = Questa schermata non c'è ancora in questa versione: arriva con una delle prossime.
+
+## Each language by its own name, in the choice of the language.
+
+language-self = Italiano

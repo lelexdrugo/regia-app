@@ -310,6 +310,15 @@ mod tests {
     }
 
     #[test]
+    fn the_saved_language_is_spoken_unless_the_variable_asks_for_one() {
+        let saved = Settings { language: Some(LanguageTag::It), ..Default::default() };
+        let asked = std::env::var(regia_identity::env_var("LANG")).is_ok_and(|value| !value.is_empty());
+        let expected = if asked { Language::detect() } else { Language::It };
+        assert_eq!(saved.speaks(), expected);
+        assert_eq!(Settings::default().speaks(), Language::detect(), "nothing saved: the variable, then the system");
+    }
+
+    #[test]
     fn the_change_refuses_a_field_it_does_not_know() {
         let known: SettingsChange = serde_json::from_str(r#"{"direction":"foglio"}"#).unwrap();
         assert_eq!(known.direction, Some(Direction::Foglio));

@@ -151,7 +151,9 @@ async function show(): Promise<void> {
 
   if (shell) {
     shellOf = fixture;
-    const props = { strings: catalogOf, product: tauri.productName, load: brief(data), ...settingsOf(params), onsettled: settle };
+    // In the pseudo-locale every language's catalog is wrapped, so the other one's name is a message too.
+    const catalogFor = (other: string) => (language === "xx" ? pseudo(strings(other)) : strings(other));
+    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data), ...settingsOf(params), onsettled: settle };
     mounted.push(mount(App, { target: root, props }));
     if (view === "brief" && data === "loading") {
       await tick();

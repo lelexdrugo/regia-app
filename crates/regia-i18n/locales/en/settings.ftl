@@ -67,3 +67,4 @@ settings-about-network-help = The app only talks to GitHub and the services you 
 
 settings-look-help-three = The room is dark and warm, and it's the default; the sheet is for daytime, with a lot of light; black is pure black, with white strokes.
 settings-save-failed = Not saved: { $reason }
+settings-language-help-app = It applies to the app at once, without reloading. The command line still follows the system's language.

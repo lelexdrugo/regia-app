@@ -1,19 +1,22 @@
 <script lang="ts">
   // The settings this version has, in their general area: how the app looks and how dense it is. Each choice is
   // a group of radio buttons, so the arrow keys move within it, and each saves itself.
-  import type { Density, Direction } from "../lib/bindings";
+  import type { Density, Direction, LanguageTag } from "../lib/bindings";
   import type { Catalog } from "../lib/i18n";
   import { DENSITIES, DIRECTIONS, type Look, type Saving } from "../lib/look";
+  import LanguageSwitch from "../shell/LanguageSwitch.svelte";
 
   interface Props {
     strings: Catalog;
+    catalogFor: (language: LanguageTag) => Catalog;
     look: Look;
     /** What the last save said. */
     saving: Saving;
     onlook: (change: Partial<Look>) => void;
+    onlanguage: (language: LanguageTag) => void;
   }
 
-  let { strings, look, saving, onlook }: Props = $props();
+  let { strings, catalogFor, look, saving, onlook, onlanguage }: Props = $props();
 
   const DIRECTION_NAMES: Record<Direction, string> = {
     montaggio: "dir-montaggio",
@@ -31,6 +34,13 @@
     <h1 tabindex="-1">{strings.message("settings-title", { area: strings.message("settings-area-general") })}</h1>
   </header>
   <div class="settings">
+    <section class="setting" aria-labelledby="setting-language">
+      <div class="setting-label">
+        <h2 id="setting-language">{strings.message("settings-language")}</h2>
+        <p class="note">{strings.message("settings-language-help-app")}</p>
+      </div>
+      <LanguageSwitch {strings} {catalogFor} name="language-settings" labelledby="setting-language" {onlanguage} />
+    </section>
     <section class="setting" aria-labelledby="setting-look">
       <div class="setting-label">
         <h2 id="setting-look">{strings.message("settings-look")}</h2>

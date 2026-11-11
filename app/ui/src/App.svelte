@@ -3,7 +3,7 @@
   // with their slices; the ones that are not here yet say so (Later.svelte).
   import { onMount, tick, untrack } from "svelte";
 
-  import type { BriefView, Settings as Saved, SettingsChange } from "./lib/bindings";
+  import type { BriefView, LanguageTag, Settings as Saved, SettingsChange } from "./lib/bindings";
   import type { Catalog } from "./lib/i18n";
   import { draw, type Look, type Saving } from "./lib/look";
   import { parse, type Route, same } from "./lib/route";
@@ -13,7 +13,10 @@
   import Sidebar from "./shell/Sidebar.svelte";
 
   interface Props {
+    /** The catalog the app opened in. */
     strings: Catalog;
+    /** Any language's catalog: the one chosen replaces `strings` without reloading. */
+    catalogFor: (language: LanguageTag) => Catalog;
     product: string;
     load: () => Promise<BriefView>;
     /** The settings as `get_settings` answered them, before the shell was drawn. */
@@ -24,12 +27,36 @@
     onsettled?: () => void;
   }
 
-  let { strings, product, load, settings, save, onsettled }: Props = $props();
+  let { strings, catalogFor, product, load, settings, save, onsettled }: Props = $props();
 
   let route: Route = $state(parse(location.hash));
   let main: HTMLElement | undefined = $state();
   let look: Look = $state(untrack(() => ({ direction: settings.direction, density: settings.density })));
   let saving: Saving = $state({ kind: "idle" });
+  // The catalog every screen reads: a new one redraws their text, and nothing else.
+  let words: Catalog = $state.raw(untrack(() => strings));
+
+  function speak(next: Catalog): void {
+    words = next;
+    document.documentElement.lang = next.language;
+    document.title = next.message("app-title");
+  }
+
+  /**
+   * Another language at once, in place: the same address, scroll and focus, since only text changes and focus
+   * follows navigation alone. Then saved; a save that fails puts the language back, and says why.
+   */
+  async function changeLanguage(language: LanguageTag): Promise<void> {
+    const before = words;
+    speak(catalogFor(language));
+    try {
+      await save({ language });
+      saving = { kind: "saved" };
+    } catch (error) {
+      speak(before);
+      saving = { kind: "failed", reason: String(error) };
+    }
+  }
 
   /** Drawn at once, then saved; a save that fails puts the page back as it was, and says why. */
   async function changeLook(change: Partial<Look>): Promise<void> {
@@ -85,15 +112,15 @@
 </script>
 
 <div class="shell">
-  <a class="skip" href="#main" onclick={skip}>{strings.message("nav-skip")}</a>
-  <Sidebar {strings} {product} current={route.section} />
+  <a class="skip" href="#main" onclick={skip}>{words.message("nav-skip")}</a>
+  <Sidebar strings={words} {catalogFor} {product} {saving} current={route.section} onlanguage={changeLanguage} />
   <main id="main" tabindex="-1" bind:this={main}>
     {#if route.section === "brief"}
-      <Brief {strings} {load} {...onsettled ? { onsettled } : {}} />
+      <Brief strings={words} {load} {...onsettled ? { onsettled } : {}} />
     {:else if route.section === "settings"}
-      <Settings {strings} {look} {saving} onlook={changeLook} />
+      <Settings strings={words} {catalogFor} {look} {saving} onlook={changeLook} onlanguage={changeLanguage} />
     {:else}
-      <Later {strings} title={LATER[route.section] ?? "nav-brief"} />
+      <Later strings={words} title={LATER[route.section] ?? "nav-brief"} />
     {/if}
   </main>
 </div>

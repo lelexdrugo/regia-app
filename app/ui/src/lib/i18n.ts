@@ -1,5 +1,7 @@
 import { FluentBundle, FluentResource, type FluentVariable } from "@fluent/bundle";
 
+import type { LanguageTag } from "./bindings";
+
 // Every catalog file of every language, read at build time from the crate the CLI renders from (ADR 0001
 // §10): the CSP's connect-src admits the IPC only, so a fetch of a .ftl file would be refused. A new area
 // is a new file in a language's folder, picked up here without a change.
@@ -22,6 +24,9 @@ export function languages(): string[] {
   const tags = Object.keys(files).map((path) => path.split("/").at(-2) ?? "");
   return [...new Set(tags)].filter((tag) => tag !== "").sort();
 }
+
+/** The languages a person can choose, in the order the choice shows them: the settings' `LanguageTag`. */
+export const LANGUAGES: readonly LanguageTag[] = ["it", "en"];
 
 export interface Catalog {
   readonly language: string;

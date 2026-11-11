@@ -280,6 +280,19 @@ main {
   border-bottom-color: var(--accent);
 }
 
+.side-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 6px;
+}
+
+.side-note {
+  margin: 0;
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+}
+
 /* Screens */
 .screen {
   flex: 1;
@@ -398,7 +411,9 @@ h1 {
     padding-inline: 0;
   }
 
-  .wordmark-text {
+  /* The language stays in the settings, where it fits. */
+  .wordmark-text,
+  .side-foot {
     display: none;
   }
 

@@ -2,17 +2,24 @@
   // The sidebar: the wordmark, the sections, then what is not a section. Labels and not a bar of icons, because a
   // colleague who opens the app once a week must read where each one goes (design system README); the icons are
   // CSS masks of files, so the sidebar holds no SVG and no markup from anyone.
+  import type { LanguageTag } from "../lib/bindings";
   import type { Catalog } from "../lib/i18n";
+  import type { Saving } from "../lib/look";
   import { href, type Section } from "../lib/route";
+  import LanguageSwitch from "./LanguageSwitch.svelte";
 
   interface Props {
     strings: Catalog;
+    catalogFor: (language: LanguageTag) => Catalog;
     /** The product's name, from `get_app_info`: the catalogs leave it out (#226). */
     product: string;
     current: Section;
+    /** What the last save said: a language that could not be saved is put back, and this says why. */
+    saving: Saving;
+    onlanguage: (language: LanguageTag) => void;
   }
 
-  let { strings, product, current }: Props = $props();
+  let { strings, catalogFor, product, current, saving, onlanguage }: Props = $props();
 
   const MAIN: { section: Section; label: string }[] = [
     { section: "brief", label: "nav-brief" },
@@ -52,4 +59,11 @@
       <span class="nav-label"><span class="nav-text">{strings.message("nav-settings")}</span></span>
     </a>
   </nav>
+  <div class="side-foot">
+    <!-- Full size, where #397/D20 looked for it and found it too small. -->
+    <LanguageSwitch {strings} {catalogFor} name="language-sidebar" {onlanguage} />
+    {#if saving.kind === "failed"}
+      <p class="warning side-note" role="alert">{strings.message("settings-save-failed", { reason: saving.reason })}</p>
+    {/if}
+  </div>
 </aside>
