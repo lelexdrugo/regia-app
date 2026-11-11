@@ -266,13 +266,9 @@ jobs:
           cp target/release/regia app/src-tauri/binaries/regia-x86_64-unknown-linux-gnu
           cd app/src-tauri
           npx --yes "$TAURI_CLI" build --ci --bundles deb,rpm,appimage --config tauri.release.conf.json -- --locked
-      - name: The packages, the CLI's archive, and the glibc the binaries need
+      - name: The packages and the CLI's archive
         run: |
           bundle=target/release/bundle
-          [ "$(dpkg-deb -c "$bundle"/deb/*.deb | grep -cE '\./usr/bin/regia(-app)?$')" -eq 2 ]
-          for binary in regia regia-app; do
-            echo "$binary needs $(objdump -T "target/release/$binary" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -n 1)"
-          done
           mkdir -p dist
           cp "$bundle"/deb/*.deb "$bundle"/rpm/*.rpm "$bundle"/appimage/*.AppImage dist/
           tar -czf "dist/regia-$VERSION-x86_64-unknown-linux-gnu.tar.gz" -C target/release regia
@@ -283,6 +279,14 @@ jobs:
           path: dist/
           retention-days: 1
           if-no-files-found: error
+      - name: The deb holds app and CLI in /usr/bin, and the glibc the binaries need
+        run: |
+          # Tauri writes the deb's entries without the leading ./ of dpkg-deb.
+          dpkg-deb -c dist/*.deb | grep -E ' (\./)?usr/bin/'
+          [ "$(dpkg-deb -c dist/*.deb | grep -cE ' (\./)?usr/bin/regia(-app)?$')" -eq 2 ]
+          for binary in regia regia-app; do
+            echo "$binary needs $(objdump -T "target/release/$binary" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -n 1)"
+          done
 
   linux-install:
     name: the deb on Ubuntu 22.04 and Debian 12, the rpm on Fedora 44
