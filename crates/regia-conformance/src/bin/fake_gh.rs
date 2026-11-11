@@ -1,6 +1,6 @@
 //! A stand-in for `gh`. It answers `gh api graphql` from a fixture and fails loudly on anything else:
-//! the issues, their blockers and sub-issues, and for the checks the recent comments and the closed
-//! issues.
+//! the issues, open or all of them, their blockers and sub-issues, one issue by its number, a node by
+//! its id, and for the checks the recent comments and the closed issues.
 //! The fixture is named by the environment (the prototype's runs) or by a file beside the fake (the
 //! product's, which do not pass those variables on). Without either it refuses to run, so it can
 //! never pass for the real tool by accident. It returns only what the query selects, and refuses a
@@ -163,10 +163,14 @@ fn answer(args: &[String]) -> Result<String, String> {
     }
     let mut number = None;
     let mut after = None;
+    let mut node = None;
     for (key, value) in variables {
         match key.as_str() {
             "n" => number = Some(value),
-            "after" => after = Some(value),
+            // `c` pages the comments of one issue, as `after` pages the lists.
+            "after" | "c" => after = Some(value),
+            // A node read by its id: an issue's items, or the Project's fields and items.
+            "id" | "p" => node = Some(value),
             // The window of the comments the checks read: the fixture holds the comments it answers.
             "since" => {}
             "o" | "r" => {
@@ -203,6 +207,12 @@ fn answer(args: &[String]) -> Result<String, String> {
         (format!("comments {index}"), responses["comment_pages"][index].clone())
     } else if query.contains("states:[CLOSED]") {
         (format!("closed {index}"), responses["closed_pages"][index].clone())
+    } else if query.contains("issues(first:") && !query.contains("states:") {
+        // The list with no `states`, closed issues too: only a fixture that holds those pages answers it.
+        if !query.contains(REQUIRED_ON_ISSUES[1]) {
+            return Err(format!("the issues query lost {}", REQUIRED_ON_ISSUES[1]));
+        }
+        (format!("issues-all {index}"), responses["all_pages"][index].clone())
     } else if query.contains("issues(first:") {
         for required in REQUIRED_ON_ISSUES {
             if !query.contains(required) {
@@ -210,6 +220,13 @@ fn answer(args: &[String]) -> Result<String, String> {
             }
         }
         (format!("issues {index}"), responses["issue_pages"][index].clone())
+    } else if query.contains("issue(number:$n)") {
+        // One issue by its number, null if the fixture has none: its id and state, its sub-issues' count,
+        // its comments.
+        let number = number.ok_or("issue query without n")?;
+        (format!("issue {number}"), json!({"repository": {"issue": responses["issues"][&number].clone()}}))
+    } else if let Some(id) = node {
+        (format!("node {id}"), json!({"node": responses["nodes"][&id].clone()}))
     } else {
         return Err("unknown query".to_owned());
     };

@@ -107,8 +107,12 @@ fn the_state_cases_show_what_they_claim() {
     assert_eq!((&budget["provider"]["claude"]["from_cache"], &budget["cache"]["attempt_age_s"]), (&json!(true), &json!(120)));
 }
 
+/// The commands whose entries are open: the registry of a project is a free block (ADR 0001 §11).
+const OPEN_OUTPUTS: [&str; 1] = ["projects"];
+
 /// Every shape a recording reaches fails closed: a key the table does not know, added to the output
-/// of any case, at its top or in its first item, is an error and never passes in Italian.
+/// of any case, at its top or in its first item, is an error and never passes in Italian, except in an
+/// open entry, where it passes as data with its name.
 #[test]
 fn an_unknown_key_fails_closed_in_every_recorded_output() {
     let mut checked = 0;
@@ -120,8 +124,14 @@ fn an_unknown_key_fails_closed_in_every_recorded_output() {
         };
         let Some(Value::Object(object)) = target else { continue };
         object.insert("chiave_nuova".to_owned(), json!(1));
-        let error = translate_python(&case.command_name(), &value).expect_err(&case.name);
-        assert!(error.to_string().contains("chiave_nuova"), "{}: {error}", case.name);
+        let command = case.command_name();
+        match translate_python(&command, &value) {
+            Ok(output) => {
+                assert!(OPEN_OUTPUTS.contains(&command.as_str()), "{}: an unknown key passed", case.name);
+                assert_eq!(output[0]["chiave_nuova"], 1, "{}: it passes as data", case.name);
+            }
+            Err(error) => assert!(error.to_string().contains("chiave_nuova"), "{}: {error}", case.name),
+        }
         checked += 1;
     }
     assert!(checked >= 25, "only {checked} outputs checked");

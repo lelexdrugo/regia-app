@@ -62,6 +62,9 @@ struct ScenarioIssue {
     blocked_by_total: Option<u64>,
     #[serde(default)]
     state_reason: Option<String>,
+    /// A closed issue is in the list of every state only, with this date of closing.
+    #[serde(default)]
+    closed_at: Option<String>,
     #[serde(default)]
     also_in_other_project: bool,
     #[serde(default)]
@@ -157,13 +160,13 @@ fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfig
     json!({
         "number": issue.number,
         "title": issue.title,
-        "state": "OPEN",
+        "state": state(issue),
         "stateReason": issue.state_reason,
         "body": issue.body.clone().unwrap_or_default(),
         "url": format!("{URL_PREFIX}issues/{}", issue.number),
         "updatedAt": "2026-01-02T03:04:05Z",
         "createdAt": "2026-01-01T00:00:00Z",
-        "closedAt": null,
+        "closedAt": issue.closed_at,
         "labels": {"nodes": labels},
         "parent": issue.parent.map(|number| json!({"number": number})),
         "subIssues": {
@@ -214,14 +217,15 @@ fn extra_pages(extra: &BTreeMap<String, Value>, connection: &str) -> Map<String,
     out
 }
 
-fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
-    let chunks: Vec<&[ScenarioIssue]> = if scenario.issues.is_empty() {
-        vec![&[]]
-    } else {
-        scenario.issues.chunks(scenario.page_size).collect()
-    };
+fn state(issue: &ScenarioIssue) -> &'static str {
+    if issue.closed_at.is_some() { "CLOSED" } else { "OPEN" }
+}
+
+/// The pages of the list of `issues`, `page_size` at a time.
+fn list_pages(issues: &[&ScenarioIssue], scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Vec<Value> {
+    let chunks: Vec<&[&ScenarioIssue]> = if issues.is_empty() { vec![&[]] } else { issues.chunks(scenario.page_size).collect() };
     let pages = chunks.len();
-    let issue_pages: Vec<Value> = chunks
+    chunks
         .iter()
         .enumerate()
         .map(|(i, chunk)| {
@@ -232,14 +236,52 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &Tracker
                 "nodes": nodes,
             }}})
         })
-        .collect();
+        .collect()
+}
+
+/// The node id the fixture gives an issue.
+fn issue_id(number: u64) -> String {
+    format!("ISSUE_{number}")
+}
+
+/// Each issue by its number, as one read of it answers: its id and state, the count of its sub-issues,
+/// its comments in one page.
+fn issues_by_number(scenario: &Scenario) -> Map<String, Value> {
+    scenario
+        .issues
+        .iter()
+        .map(|issue| {
+            let comments: Vec<Value> = issue
+                .comments
+                .iter()
+                .map(|comment| {
+                    let url = format!("{URL_PREFIX}issues/{}#issuecomment-{}", issue.number, comment.id);
+                    json!({"databaseId": comment.id, "createdAt": comment.created_at, "url": url, "body": comment.body})
+                })
+                .collect();
+            let entry = json!({
+                "id": issue_id(issue.number),
+                "state": state(issue),
+                "subIssues": {"totalCount": issue.sub_total.unwrap_or(issue.sub.len() as u64)},
+                "comments": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": comments},
+            });
+            (issue.number.to_string(), entry)
+        })
+        .collect()
+}
+
+fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
+    let all: Vec<&ScenarioIssue> = scenario.issues.iter().collect();
+    let open: Vec<&ScenarioIssue> = all.iter().copied().filter(|issue| issue.closed_at.is_none()).collect();
     json!({
         "expect": {"o": config.owner, "r": config.repo},
-        "issue_pages": issue_pages,
+        "issue_pages": list_pages(&open, scenario, config, binding),
+        "all_pages": list_pages(&all, scenario, config, binding),
+        "issues": issues_by_number(scenario),
         "blocker_pages": extra_pages(&scenario.extra_blockers, "blockedBy"),
         "sub_issue_pages": extra_pages(&scenario.extra_sub_issues, "subIssues"),
         "comment_pages": comment_pages(scenario),
-        // Every scenario issue is open.
+        // No scenario that runs the checks has a closed issue.
         "closed_pages": [{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}],
     })
 }
@@ -278,6 +320,7 @@ fn main() {
     let interpreter = prototype.interpreter().expect("a Python interpreter");
     let driver = fixed_now_driver().display().to_string();
     let script = prototype.script.display().to_string();
+    let owner_url = format!("https://github.com/{}/", config.owner);
 
     let mut families = BTreeSet::new();
     let cases: Vec<Case> = Case::all().into_iter().filter(|case| only.is_empty() || only.contains(&case.family)).collect();
@@ -322,8 +365,11 @@ fn main() {
         let writes = writes_of_run(&state);
         let text = String::from_utf8(output.stdout).expect("the prototype printed UTF-8");
         let recorded = [text.as_str(), stderr.as_str(), &serde_json::to_string(&writes).expect("JSON")].concat();
+        // The prototype builds the URL of an issue it creates, and of a repo, from the tracker's owner:
+        // those of the fixture's owner are synthetic too.
         let urls = recorded.matches("https://").count() + recorded.matches("http://").count();
-        assert_eq!(recorded.matches(URL_PREFIX).count(), urls, "{}: foreign URL", case.name);
+        let synthetic = recorded.matches(URL_PREFIX).count() + recorded.matches(&owner_url).count();
+        assert_eq!(synthetic, urls, "{}: foreign URL", case.name);
         // An error prints nothing on stdout, even with `--json`: the facade passes it as text, empty.
         let json = argv.first().is_some_and(|arg| arg == "--json") && table.has_output(&command) && !text.trim().is_empty();
         let parsed = json.then(|| serde_json::from_str::<Value>(&text).expect("the prototype printed JSON"));

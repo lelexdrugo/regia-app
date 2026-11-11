@@ -1,0 +1,67 @@
+{
+  "annidati": [],
+  "archi": [
+    [
+      3,
+      4
+    ]
+  ],
+  "archi_persi": 0,
+  "comando": "regia piano --radice 1 --mermaid",
+  "data": "2026-01-10",
+  "inbox_fuori": [],
+  "linea": [
+    3,
+    4
+  ],
+  "mermaid": "%% regia piano --radice 1 --mermaid · tracker al 2026-01-10\nflowchart LR\n  n3[\"#3 approved and ready, blocks 4<br/>Approvato · sblocca 0 (1 con Inbox e Proposte) · catena 2\"]\n  n4{{\"✋ #4 proposal blocked by 3<br/>Proposta\"}}\n  subgraph n5 [\"✋ #5 decision with its comments · Decisione\"]\n    n6[\"#6 child of 5, in progress<br/>In corso · sblocca 1 · catena 2\"]\n  end\n  n3 ==> n4\n  classDef aspetta fill:#fde68a,stroke:#b45309,color:#111\n  classDef incorso fill:#bfdbfe,stroke:#1d4ed8,color:#111\n  classDef abbozzo fill:#f3f4f6,stroke:#6b7280,color:#111\n  classDef pronto fill:#ffffff,stroke:#374151,color:#111\n  classDef inbox fill:#ffffff,stroke:#9ca3af,stroke-dasharray:4 3,color:#555\n  classDef esterno fill:#ffffff,stroke:#6b7280,stroke-dasharray:2 2,color:#555\n  classDef nota fill:#ffffff,stroke:#ffffff,color:#555\n  classDef linea stroke-width:3px\n  class n4 aspetta\n  class n6 incorso\n  class n3 pronto\n  class n3,n4 linea\n",
+  "nodi": [
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": false,
+      "number": 3,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "approved and ready, blocks 4"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 4,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Proposta",
+      "title": "proposal blocked by 3"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 5,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Decisione",
+      "title": "decision with its comments"
+    },
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": false,
+      "number": 6,
+      "parent": 5,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "stato": "In corso",
+      "title": "child of 5, in progress"
+    }
+  ],
+  "progetto": null,
+  "radice": 1,
+  "tagliati": []
+}

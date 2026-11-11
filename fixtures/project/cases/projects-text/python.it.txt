@@ -1,0 +1,2 @@
+alpha                #1    [alpha] objective of alpha  [In corso]  cartella=dossiers/alpha  repo=example/alpha-dossier  prodotti=2
+beta                 #2    [beta] objective of beta  [Approvato]  cartella=?  repo=—  prodotti=0

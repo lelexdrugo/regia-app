@@ -1,0 +1,17 @@
+{
+  "_note": "Synthetic. An issue the tracker does not have: an error, exit 1, nothing on stdout.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "show",
+    "99",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "show",
+    "99"
+  ],
+  "exit": 1
+}

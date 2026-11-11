@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. One node at most: the others are cut, as text.",
+  "scenario": "tracker",
+  "args": [
+    "plan",
+    "--project",
+    "alpha",
+    "--max-nodes",
+    "1"
+  ],
+  "python": [
+    "piano",
+    "--progetto",
+    "alpha",
+    "--max-nodi",
+    "1"
+  ]
+}

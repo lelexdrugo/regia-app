@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. A closed issue is found too: `task show` reads every state.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "show",
+    "7",
+    "--short",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "show",
+    "7",
+    "--breve"
+  ]
+}
