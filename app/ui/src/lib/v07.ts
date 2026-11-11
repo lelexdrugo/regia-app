@@ -41,7 +41,7 @@ const ELEMENTS = new Set([
 ]);
 
 /** Its classes. Svelte adds a scoping class of its own, `svelte-<hash>`. */
-const CLASSES = new Set(["document", "origin", "content", "truncated", "link", "host", "refused", "note", "image"]);
+const CLASSES = new Set(["document", "origin", "content", "truncated", "table", "link", "host", "refused", "note", "image"]);
 
 function attributeProblem(element: Element, attribute: Attr): string | null {
   const where = `<${element.tagName.toLowerCase()} ${attribute.name}>`;

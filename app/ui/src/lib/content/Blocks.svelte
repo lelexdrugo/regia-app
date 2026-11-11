@@ -47,24 +47,26 @@
       </ul>
     {/if}
   {:else if block.kind === "table"}
-    <table>
-      <thead>
-        <tr>
-          {#each block.head as cell, column (column)}
-            <th><Inlines content={cell} {strings} {onopenlink} /></th>
-          {/each}
-        </tr>
-      </thead>
-      <tbody>
-        {#each block.rows as row, line (line)}
+    <div class="table">
+      <table>
+        <thead>
           <tr>
-            {#each row as cell, column (column)}
-              <td><Inlines content={cell} {strings} {onopenlink} /></td>
+            {#each block.head as cell, column (column)}
+              <th><Inlines content={cell} {strings} {onopenlink} /></th>
             {/each}
           </tr>
-        {/each}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {#each block.rows as row, line (line)}
+            <tr>
+              {#each row as cell, column (column)}
+                <td><Inlines content={cell} {strings} {onopenlink} /></td>
+              {/each}
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
   {:else if block.kind === "rule"}
     <hr />
   {/if}
@@ -80,6 +82,19 @@
     margin: 0;
   }
 
+  /* Each level indents by its rule and a little padding, not by the browser's 40 px on both sides: sixteen
+     levels, the core's cap, still leave room for the text. */
+  blockquote {
+    margin: 0.5rem 0;
+    padding-inline-start: 0.75rem;
+    border-inline-start: 2px solid currentColor;
+  }
+
+  /* A wide table scrolls in its own box instead of squeezing its columns to a word per line. */
+  .table {
+    overflow-x: auto;
+  }
+
   table {
     border-collapse: collapse;
   }
@@ -89,5 +104,7 @@
     border: 1px solid currentColor;
     padding: 0.125rem 0.375rem;
     text-align: start;
+    overflow-wrap: normal;
+    min-width: 8em;
   }
 </style>

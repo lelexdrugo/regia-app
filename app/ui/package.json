@@ -9,7 +9,8 @@
   "scripts": {
     "build": "vite build",
     "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
-    "harness": "vite build --config vite.harness.config.ts"
+    "harness": "vite build --config vite.harness.config.ts",
+    "prove": "npm run harness && node prove/index.js"
   },
   "dependencies": {
     "@fluent/bundle": "0.19.1",
