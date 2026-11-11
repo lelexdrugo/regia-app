@@ -161,6 +161,11 @@ label]`), `written` (`scritti`), `unlabeled` (`senza_etichetta`), `unknown_label
 `done` and `discarded` close the issue, any other status reopens it, and after a close the status is written
 twice, three seconds apart, because the Project's workflows can rewrite it (`conformita.md` T10, T11).
 
+`task new`, `task parent` and `task move` count the parent's sub-issues before any write, and refuse a parent
+at GitHub's cap of 100 (#505). `task parent` gives a parent to a task that has none: it does nothing when the
+task is a child of that parent already (#512/V1), and it sends no `replaceParent`, so GitHub refuses a task
+that is the child of another issue. `task move` replaces the parent.
+
 **`task new`**: `task`, `parent`, `url`. **`task unblock`**: `number` (`numero`), `unblocked` (`sbloccati`),
 `not_blocking` (`non_bloccanti`, the numbers that did not block it: a warning, not an error), `comment` (the
 id of the signed comment with the reason, or null). **`task move`**: `task`, `from` (`da`), `to` (`a`),
