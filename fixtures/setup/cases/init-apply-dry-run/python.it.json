@@ -1,0 +1,123 @@
+{
+  "a_secco": true,
+  "chiamate_gh": [
+    "gh api -i user",
+    "gh api repos/example/tracker",
+    "gh api graphql -f query=query($o:String!,$after:String){repositoryOwner(login:$o){ ... on User{projectsV2(first:50,after:$after){pageIn… -f o=example",
+    "gh api repos/example/tracker/labels?per_page=100&page=1",
+    "gh api repos/example/tracker/labels?per_page=100&page=1"
+  ],
+  "configurazione": {
+    "destinazione": "{dossier}/tracker.json",
+    "esito": "dopo-le-scritture"
+  },
+  "esito": 0,
+  "owner": "example",
+  "progetto_titolo": "Fixture",
+  "pronto": false,
+  "repo": "tracker",
+  "scritture": [
+    {
+      "comando": "gh api -X POST repos/example/tracker/labels -f name=parcheggiato -f color=fbca04 -f description=Fuori dall'arretrato da scodare: il motivo sta in un commento",
+      "voce": "etichetta:parcheggiato"
+    },
+    {
+      "comando": "gh api -X POST repos/example/tracker/labels -f name=sessione -f color=d93f0b -f description=Il memo propone una sessione di approfondimento con il titolare",
+      "voce": "etichetta:sessione"
+    },
+    {
+      "comando": "gh api graphql -f query=mutation{updateProjectV2Field(input:{fieldId:\"FIELD_FIXTURE\",singleSelectOptions:[{id:\"opt-default-0\",name:\"Inbox\",color:GRAY,description:\"\"},{id:\"opt-default-1\",name:\"Proposta\",color:YELLOW,description:\"\"},{id:\"opt-default-2\",name:\"Approvato\",color:BLUE,description:\"\"},{name:\"In corso\",color:ORANGE,description:\"\"},{name:\"Decisione\",color:PURPLE,description:\"\"},{name:\"Fatto\",color:GREEN,description:\"\"},{name:\"Scartato\",color:RED,description:\"\"}]}){projectV2Field{... on ProjectV2SingleSelectField{id}}}}",
+      "voce": "status"
+    },
+    {
+      "comando": "gh api graphql -f query=mutation{createProjectV2Field(input:{projectId:\"PROJECT_FIXTURE\",dataType:SINGLE_SELECT,name:\"Progetto\",singleSelectOptions:[{name:\"alpha\",color:BLUE,description:\"\"}]}){projectV2Field{... on ProjectV2SingleSelectField{id}}}}",
+      "voce": "progetto"
+    }
+  ],
+  "voci": [
+    {
+      "ambito": "ambiente",
+      "azione": "nessuna",
+      "dettaglio": "autenticato come example, scope project, repo",
+      "esito": "presente",
+      "voce": "gh"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "nessuna",
+      "dettaglio": "example/tracker, privato",
+      "esito": "presente",
+      "voce": "repo"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "nessuna",
+      "dettaglio": "#1 PROJECT_FIXTURE https://tracker.invalid/projects/1",
+      "esito": "presente",
+      "voce": "project"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "aggiorna",
+      "dettaglio": "mancano o hanno un altro nome: Inbox, Proposta, Approvato, In corso, Decisione, Fatto, Scartato (trovate: Todo, In Progress, Done); opzioni in più, non toccate: Todo, In Progress, Done",
+      "esito": "diverso",
+      "voce": "status"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "crea",
+      "dettaglio": "il Project non ha il campo «Progetto»; si creerebbe con 1 opzioni: alpha",
+      "esito": "mancante",
+      "voce": "progetto"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "nessuna",
+      "dettaglio": "Issue Obiettivo di un progetto (contiene il registro)",
+      "esito": "presente",
+      "voce": "etichetta:tipo:obiettivo"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "nessuna",
+      "dettaglio": "Segnaposto: spec da scrivere",
+      "esito": "presente",
+      "voce": "etichetta:maturità:abbozzo"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "nessuna",
+      "dettaglio": "Spec completa: eseguibile se Approvato e sbloccato",
+      "esito": "presente",
+      "voce": "etichetta:maturità:pronto"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "crea",
+      "dettaglio": "Fuori dall'arretrato da scodare: il motivo sta in un commento (colore fbca04)",
+      "esito": "mancante",
+      "voce": "etichetta:parcheggiato"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "crea",
+      "dettaglio": "Il memo propone una sessione di approfondimento con il titolare (colore d93f0b)",
+      "esito": "mancante",
+      "voce": "etichetta:sessione"
+    },
+    {
+      "ambito": "locale",
+      "azione": "installa",
+      "dettaglio": "~/.claude/skills/regia: mancante, ~/.agents/skills/regia: mancante. Esegui `python tools/install_skills.py`.",
+      "esito": "mancante",
+      "voce": "skill:regia"
+    },
+    {
+      "ambito": "manuale",
+      "azione": "manuale",
+      "dettaglio": "Le viste del Project non si creano né si leggono via API (ADR 0013 §3): apri il Project su GitHub e crea a mano le viste che usi (per esempio una tabella raggruppata per Status e una bacheca).",
+      "esito": "mancante",
+      "voce": "manuale:viste-del-project"
+    }
+  ]
+}

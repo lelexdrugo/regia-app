@@ -512,10 +512,13 @@ pub fn writes_of_run(state: &Path) -> Vec<Value> {
 /// What every run against a fixture needs, on either side: its state folder, the fixed day and
 /// instant, and no engine, dossier or session of the machine. The credentials of Claude and Codex
 /// point at files that do not exist: the prototype's brief reads Codex's for a warning, its budget
-/// reads both and would ask the providers with them, and the machine's own must not leak in.
+/// reads both and would ask the providers with them, and the machine's own must not leak in. The home
+/// is the state folder too: `init` looks for the skills there, and git for its global configuration.
 fn fixture_env(launch: Launch, state: &Path) -> Launch {
     let launch = SESSION_VARIABLES.iter().fold(launch, |launch, name| launch.without(name));
     launch
+        .env("HOME", state)
+        .env("USERPROFILE", state)
         .env(&prototype_env_var("RUNTIME"), state)
         .env(&prototype_env_var("CODEX_AUTH"), state.join("no-codex-auth.json"))
         .env(&prototype_env_var("CLAUDE_CREDENTIALS"), state.join("no-claude-credentials.json"))

@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. `init` alone is the plan with the prototype's defaults, on a gh that is not signed in: the item gh is an error with the command to sign in, the tracker's items cannot be checked, the skill is missing from the home, which is the state folder. The plan was computed: exit 0.",
+  "args": [
+    "init",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "init"
+  ],
+  "gh": {
+    "rest": {
+      "GET user": {
+        "error": "To get started with GitHub CLI, please run:  gh auth login\nAlternatively, populate the GH_TOKEN environment variable with a GitHub API authentication token.\n",
+        "exit": 4
+      }
+    }
+  }
+}

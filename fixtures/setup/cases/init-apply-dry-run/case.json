@@ -1,0 +1,148 @@
+{
+  "_note": "Synthetic. A dry run of `init apply` on a tracker that lacks two labels, whose Status has the three options GitHub gives a new Project, and with no field «Progetto» while the repo has a project label: the four writes it would make, in order, with their gh command lines, the Status keeping the three ids for the first three statuses; nothing is written, and the configuration would come after the writes. Exit 0.",
+  "args": [
+    "init",
+    "apply",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--project-title",
+    "Fixture",
+    "--destination",
+    "{dossier}/tracker.json",
+    "--dry-run",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "init",
+    "applica",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--progetto-titolo",
+    "Fixture",
+    "--destinazione",
+    "{dossier}/tracker.json",
+    "--a-secco"
+  ],
+  "dossier": {
+    "git": false
+  },
+  "gh": {
+    "rest": {
+      "GET user": {
+        "headers": {
+          "X-Oauth-Scopes": "project, repo"
+        },
+        "body": {
+          "login": "example"
+        }
+      },
+      "GET repos/example/tracker": {
+        "body": {
+          "node_id": "R_FIXTURE",
+          "private": true,
+          "owner": {
+            "node_id": "U_FIXTURE"
+          }
+        }
+      },
+      "GET repos/example/tracker/labels?per_page=100&page=1": {
+        "body": [
+          {
+            "name": "tipo:obiettivo"
+          },
+          {
+            "name": "maturità:abbozzo"
+          },
+          {
+            "name": "maturità:pronto"
+          },
+          {
+            "name": "progetto:alpha"
+          }
+        ]
+      }
+    },
+    "owner": {
+      "repositoryOwner": {
+        "projectsV2": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": [
+            {
+              "number": 1,
+              "id": "PROJECT_FIXTURE",
+              "title": "Fixture",
+              "url": "https://tracker.invalid/projects/1",
+              "field": {
+                "__typename": "ProjectV2SingleSelectField",
+                "id": "FIELD_FIXTURE",
+                "name": "Status",
+                "options": [
+                  {
+                    "id": "opt-default-0",
+                    "name": "Todo",
+                    "color": "GRAY",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-default-1",
+                    "name": "In Progress",
+                    "color": "GRAY",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-default-2",
+                    "name": "Done",
+                    "color": "GRAY",
+                    "description": ""
+                  }
+                ]
+              },
+              "fields": {
+                "nodes": [
+                  {
+                    "__typename": "ProjectV2Field",
+                    "id": "FIELD_TITLE",
+                    "name": "Title"
+                  },
+                  {
+                    "__typename": "ProjectV2SingleSelectField",
+                    "id": "FIELD_FIXTURE",
+                    "name": "Status",
+                    "options": [
+                      {
+                        "id": "opt-default-0",
+                        "name": "Todo",
+                        "color": "GRAY",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-default-1",
+                        "name": "In Progress",
+                        "color": "GRAY",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-default-2",
+                        "name": "Done",
+                        "color": "GRAY",
+                        "description": ""
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
