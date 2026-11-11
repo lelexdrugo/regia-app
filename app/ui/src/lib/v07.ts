@@ -113,10 +113,18 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** Every face tokens.css declares, loaded now: a face is fetched the first time some text needs it. */
+export async function loadFonts(): Promise<void> {
+  const faces: Promise<unknown>[] = [];
+  document.fonts.forEach((face) => faces.push(face.load().catch(() => undefined)));
+  await Promise.all(faces);
+}
+
 /**
  * Renders every case at once, each in an element of its own, waits for what a hostile node would do later (an
  * image's error, a frame's load), then checks each case and the page. Nothing in this window calls the core: on
- * the engines that carry the IPC over fetch, a call would count as a resource.
+ * the engines that carry the IPC over fetch, a call would count as a resource. Nor does it fetch a font: a code
+ * span or a bold word would, the first time, so they are all loaded before.
  */
 export async function v07(cases: CorpusCase[], render: Renderer): Promise<Check[]> {
   const opened: string[] = [];
@@ -124,6 +132,7 @@ export async function v07(cases: CorpusCase[], render: Renderer): Promise<Check[
   const onViolation = (event: SecurityPolicyViolationEvent) => {
     violations.push(`${event.effectiveDirective || event.violatedDirective} ${event.blockedURI}`);
   };
+  await loadFonts();
   document.addEventListener("securitypolicyviolation", onViolation);
   performance.clearResourceTimings();
 

@@ -1,8 +1,71 @@
-/* The colour tokens of the design system's three directions, copied from the dossier's
-   docs/app/design-system/tokens.css without its type, space, fonts or colour scheme: those come with the app's
-   shell (#475), which imports this file. Until then nothing uses it, and prove/contrast.js measures every pair
-   the design uses, in each direction. The default direction is montaggio. */
+/* The design system's tokens, copied unchanged from the dossier's docs/app/design-system/tokens.css at 38c87dc
+   (lelexdrugo/regia, 2026-11-02): fonts/ holds the files its @font-face rules name, with their licences. Everything
+   below the line "copy:" is that file, byte for byte with LF line ends; prove/contrast.js checks its SHA-256, so a
+   change made here instead of in the dossier fails. To realign: copy the file again, then update the hash there.
+   copy: */
+/* Design tokens of the app: one source, read by the UX prototype and by the moodboard.
+   The default direction is "montaggio". The other two exist because they were tried and judged
+   against it (README.md in this folder): the prototype shows them with ?dir=foglio and ?dir=nero. */
+
+@font-face { font-family: "Schibsted Grotesk"; font-weight: 400; font-display: swap; src: url("fonts/schibsted-grotesk-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212, U+2215; }
+@font-face { font-family: "Schibsted Grotesk"; font-weight: 500; font-display: swap; src: url("fonts/schibsted-grotesk-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212, U+2215; }
+@font-face { font-family: "Schibsted Grotesk"; font-weight: 600; font-display: swap; src: url("fonts/schibsted-grotesk-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212, U+2215; }
+@font-face { font-family: "Schibsted Grotesk"; font-weight: 400; font-display: swap; src: url("fonts/schibsted-grotesk-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+1E00-1EFF, U+2020, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Schibsted Grotesk"; font-weight: 500; font-display: swap; src: url("fonts/schibsted-grotesk-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+1E00-1EFF, U+2020, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Schibsted Grotesk"; font-weight: 600; font-display: swap; src: url("fonts/schibsted-grotesk-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+1E00-1EFF, U+2020, U+20A0-20AB, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-display: swap; src: url("fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Newsreader"; font-weight: 500; font-display: swap; src: url("fonts/newsreader-latin-500-normal.woff2") format("woff2"); }
+
+:root {
+  /* Type. One grotesk for the work, one mono with one job (timecode, issue numbers, paths), one serif for the wordmark only. */
+  --font: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Menlo, monospace;
+  --font-mark: "Newsreader", Georgia, serif;
+  --fs-title: 22px;
+  --fs-section: 15px;
+  --fs-figure: 20px;
+  --fs-small: 12px;
+
+  /* Space on a 4px base; one gutter. */
+  --gap: 16px;
+  --pad: 24px;
+  --sidebar-width: 196px;
+
+  /* Tight radii, chosen once. */
+  --radius-card: 6px;
+  --radius-control: 4px;
+  --radius-chip: 3px;
+
+  /* Movement: feedback only. Nothing on screen performs an entrance. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-press: 90ms;
+  --t-hover: 120ms;
+  --t-ui: 160ms;
+}
+
+/* Density moves three settings together: row pitch, padding and type size. */
+:root, :root[data-density="compact"] {
+  --fs-body: 13px;
+  --lh-body: 18px;
+  --row: 30px;
+  --row-two: 52px;
+  --card-pad: 14px;
+  --control: 28px;
+}
+:root[data-density="comfortable"] {
+  --fs-body: 14px;
+  --lh-body: 21px;
+  --row: 40px;
+  --row-two: 64px;
+  --card-pad: 20px;
+  --control: 34px;
+}
+
+/* A: Sala di montaggio. The room of a table moviola: warm blacks, the tungsten lamp as the one hue,
+   the white of the grease pencil as the one filled action. */
 :root, :root[data-dir="montaggio"] {
+  color-scheme: dark;
   --ground: #14120f;
   --surface: #1b1815;
   --raised: #25211c;
@@ -28,7 +91,9 @@
   --node: #e8e1d5;
 }
 
+/* B: Foglio di edizione. The paper the continuity clerk writes on: a neutral sheet, ink, one dark amber. */
 :root[data-dir="foglio"] {
+  color-scheme: light;
   --ground: #f3f3f1;
   --surface: #ffffff;
   --raised: #f4f4f2;
@@ -54,7 +119,9 @@
   --node: #171613;
 }
 
+/* C: Nero. The direct reading of Flywheel: true black, white strokes, one cold hue for state. */
 :root[data-dir="nero"] {
+  color-scheme: dark;
   --ground: #000000;
   --surface: #101011;
   --raised: #1d1d1f;

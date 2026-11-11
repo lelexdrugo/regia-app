@@ -1,11 +1,26 @@
 // WCAG contrast of the colour tokens (src/tokens.css), in each of the design system's three directions, for
 // every pair the design uses: the UX prototype's prove-contrast, on the app's copy of the tokens. Text needs
 // 4.5:1; a mark that carries meaning but is not text needs 3:1 (WCAG 1.4.11). The negative control: the
-// faintest text of the default direction made fainter still must fall under the threshold.
+// faintest text of the default direction made fainter still must fall under the threshold. First, the copy is
+// the dossier's file, unchanged: a token edited here instead of in the design system fails, and so does one
+// character changed in memory.
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const DIRECTIONS = ["montaggio", "foglio", "nero"];
+
+// The dossier's docs/app/design-system/tokens.css at 38c87dc, with LF line ends (src/tokens.css says how to realign).
+const COPY_OF = "c2ce21a65986b919b5328b508a7eba28df8e2bd27a7663b02e384acb6032d764";
+
+/** The part of src/tokens.css below its header, which must be the dossier's file. */
+function copied(css) {
+  const marker = "   copy: */\n";
+  const at = css.indexOf(marker);
+  return at < 0 ? "" : css.slice(at + marker.length);
+}
+
+const sha256 = (text) => createHash("sha256").update(text, "utf8").digest("hex");
 
 // [foreground, background, need, use]
 const PAIRS = [
@@ -76,7 +91,11 @@ const under = (rows) => rows.flatMap((row) => row.ratios.filter((value) => !(val
 export const contrast = {
   browser: false,
   async run({ ui }) {
-    const css = readFileSync(join(ui, "src/tokens.css"), "utf8");
+    const css = readFileSync(join(ui, "src/tokens.css"), "utf8").replaceAll("\r\n", "\n");
+    const aligned = sha256(copied(css)) === COPY_OF;
+    const drifted = sha256(copied(css).replace("--faint: #a59c8e", "--faint: #a59c8f")) !== COPY_OF;
+    console.log(`src/tokens.css is the dossier's tokens.css at 38c87dc: ${aligned ? "yes" : `NO (${sha256(copied(css))})`}`);
+    console.log(`negative control, one digit changed in the copy: ${drifted ? "caught" : "NOT CAUGHT"}`);
     const tokens = Object.fromEntries(DIRECTIONS.map((direction) => [direction, tokensOf(css, direction)]));
     const rows = measure(tokens);
     console.log(`${"pair".padEnd(34)} need ${DIRECTIONS.map((direction) => direction.padEnd(10)).join("")}use`);
@@ -91,6 +110,6 @@ export const contrast = {
     altered.montaggio.faint = "#5b544a";
     const caught = under(measure(altered)).length;
     console.log(`negative control, montaggio's --faint at #5b544a: ${caught} under the threshold (${caught > 0 ? "caught" : "NOT CAUGHT"})`);
-    return failed === 0 && caught > 0;
+    return aligned && drifted && failed === 0 && caught > 0;
   },
 };

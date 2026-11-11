@@ -1,16 +1,20 @@
 // The harness's page: one view of the app on one fixture, chosen by the address, for the proofs of prove/
 // (README.md). #/<view>?data=<state>&lang=<it|en|xx>. Once the view is drawn, <html data-settled> holds the
-// address, and the proofs wait for it. Test only: none of this is in the app's bundle.
+// address, and the proofs wait for it. The app's sections are the whole shell on that fixture: moving between
+// them with the same fixture leaves the shell mounted, as the app does, and the shell says when it has drawn.
+// Test only: none of this is in the app's bundle.
+import "../src/tokens.css";
 import "../src/app.css";
 
 import { mount, tick, unmount } from "svelte";
 
 import tauri from "../../src-tauri/tauri.conf.json";
-import App from "../src/App.svelte";
 import type { BriefView, Document } from "../src/lib/bindings";
 import DocumentView from "../src/lib/content/Document.svelte";
 import { type Catalog, catalog } from "../src/lib/i18n";
-import { appRenderer, type Check, type CorpusCase, type Renderer, v07 } from "../src/lib/v07";
+import { SECTIONS } from "../src/lib/route";
+import { appRenderer, type Check, type CorpusCase, loadFonts, type Renderer, v07 } from "../src/lib/v07";
+import App from "../src/App.svelte";
 import briefs from "./brief.json";
 import Control from "./Control.svelte";
 import corpusFile from "./corpus.json";
@@ -86,37 +90,51 @@ const unsafe: Renderer = (target, test) => {
 
 const root = document.getElementById("root") as HTMLElement;
 let mounted: ReturnType<typeof mount>[] = [];
+/** The fixture the mounted shell was given, while one is mounted. */
+let shellOf: string | null = null;
 
 function strings(language: string): Catalog {
   return language === "xx" ? pseudo(catalog("en", tauri.productName)) : catalog(language, tauri.productName);
 }
 
+/** The address the shell has drawn, read when it says so: after its own navigation, the address is a new one. */
+function settle(): void {
+  document.documentElement.dataset["settled"] = location.hash;
+}
+
 async function show(): Promise<void> {
   const route = location.hash;
-  const [view = "", query = ""] = route.replace(/^#\/?/, "").split("?");
+  const [path = "", query = ""] = route.replace(/^#\/?/, "").split("?");
+  const view = path.split("/")[0] ?? "";
   const params = new URLSearchParams(query);
   const data = params.get("data") ?? "demo";
-  const catalogOf = strings(params.get("lang") ?? "en");
-  const settle = () => {
-    document.documentElement.dataset["settled"] = route;
-  };
+  const language = params.get("lang") ?? "en";
+  const shell = (SECTIONS as readonly string[]).includes(view);
+  const fixture = `${data}&${language}`;
+  if (shell && shellOf === fixture) {
+    return;
+  }
 
   delete document.documentElement.dataset["settled"];
   delete window.harnessChecks;
   await Promise.all(mounted.map((component) => unmount(component)));
   mounted = [];
+  shellOf = null;
   root.replaceChildren();
+  const catalogOf = strings(language);
   document.documentElement.lang = catalogOf.language;
   const onopenlink = () => {};
 
+  if (shell) {
+    shellOf = fixture;
+    mounted.push(mount(App, { target: root, props: { strings: catalogOf, product: tauri.productName, load: brief(data), onsettled: settle } }));
+    if (view === "brief" && data === "loading") {
+      await tick();
+      settle();
+    }
+    return;
+  }
   switch (view) {
-    case "brief":
-      mounted.push(mount(App, { target: root, props: { strings: catalogOf, load: brief(data), onsettled: settle } }));
-      if (data === "loading") {
-        await tick();
-        settle();
-      }
-      return;
     case "document":
       mounted.push(
         mount(DocumentView, { target: root, props: { document: documentOf(data), origin: "agent", strings: catalogOf, onopenlink } }),
@@ -141,4 +159,5 @@ async function show(): Promise<void> {
 }
 
 addEventListener("hashchange", () => void show());
-void show();
+// Every face first, as the app has them once its shell is drawn: the V07 proof counts what loads while it renders.
+void loadFonts().then(show);

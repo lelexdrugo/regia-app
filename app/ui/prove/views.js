@@ -2,6 +2,7 @@
 // proofs render. A new view adds its routes here.
 export const VIEWS = [
   ...["demo", "worst", "empty", "one", "huge", "loading", "error"].map((data) => `#/brief?data=${data}`),
+  ...["daily", "moviola", "console", "settings"].map((section) => `#/${section}?data=demo`),
   ...["demo", "worst", "empty", "one", "huge"].map((data) => `#/document?data=${data}`),
   "#/corpus?data=hostile",
 ];

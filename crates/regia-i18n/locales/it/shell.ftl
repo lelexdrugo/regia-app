@@ -18,3 +18,7 @@ nav-quota-title = Quota usata dal servizio principale nella finestra di 5 ore
 usage-used = { $pct } % usato
 lang-it = Italiano
 lang-en = Inglese
+
+## The shell of #475: what a section says before its screen comes.
+
+shell-later = Questa schermata non c'è ancora in questa versione: arriva con una delle prossime.

@@ -1,86 +1,75 @@
 <script lang="ts">
-  // Text from the tracker reaches the DOM only through Svelte's text interpolation, never as markup:
-  // titles are written by people and by agents, and are untrusted (threat model §3.7). They sit in elements
-  // marked data-raw, so the catalog proof can tell them from the catalog's strings (app/ui/prove).
+  // The app's shell: the skip link, the sidebar and the section the address names (lib/route.ts). The screens come
+  // with their slices; the ones that are not here yet say so (Later.svelte).
   import { onMount, tick } from "svelte";
 
-  import type { BriefView, TaskView } from "./lib/bindings";
+  import type { BriefView } from "./lib/bindings";
   import type { Catalog } from "./lib/i18n";
+  import { parse, type Route, same } from "./lib/route";
+  import Brief from "./screens/Brief.svelte";
+  import Later from "./screens/Later.svelte";
+  import Sidebar from "./shell/Sidebar.svelte";
 
   interface Props {
     strings: Catalog;
+    product: string;
     load: () => Promise<BriefView>;
-    /** Called once the brief, or its error, is in the DOM. */
+    /** Called each time the screen the address names has drawn: the brief once its data or error is in the DOM. */
     onsettled?: () => void;
   }
 
-  let { strings, load, onsettled }: Props = $props();
+  let { strings, product, load, onsettled }: Props = $props();
 
-  type State = { kind: "loading" } | { kind: "ready"; brief: BriefView } | { kind: "failed"; reason: string };
-  let view: State = $state({ kind: "loading" });
+  let route: Route = $state(parse(location.hash));
+  let main: HTMLElement | undefined = $state();
 
-  type SectionKey = "waiting_on_owner" | "ready" | "in_progress";
-  const sections: { key: SectionKey; heading: string }[] = [
-    { key: "waiting_on_owner", heading: "brief-waiting" },
-    { key: "ready", heading: "brief-ready" },
-    { key: "in_progress", heading: "brief-in-progress" },
-  ];
+  const LATER: Record<string, string> = { daily: "nav-daily", moviola: "nav-moviola", console: "nav-console" };
 
-  function numbers(list: number[]): string {
-    return list.map((number) => `#${number}`).join(", ");
+  function heading(): HTMLElement | null {
+    return main?.querySelector<HTMLElement>("h1") ?? null;
   }
 
-  function warnings(brief: BriefView): string[] {
-    if (!brief.graph) {
-      return [];
+  async function follow(): Promise<void> {
+    const next = parse(location.hash);
+    if (same(next, route)) {
+      await tick();
+      onsettled?.();
+      return;
     }
-    const out = brief.graph.cycles.map((cycle) => strings.message("brief-cycle", { reason: numbers(cycle) }));
-    if (brief.graph.truncated.length > 0) {
-      out.push(strings.message("brief-truncated", { reason: numbers(brief.graph.truncated) }));
-    }
-    return out;
-  }
-
-  function section(brief: BriefView, key: SectionKey): TaskView[] {
-    return brief[key];
-  }
-
-  onMount(async () => {
-    try {
-      view = { kind: "ready", brief: await load() };
-    } catch (error) {
-      view = { kind: "failed", reason: String(error) };
-    }
+    route = next;
     await tick();
-    onsettled?.();
+    // Focus follows navigation, and only navigation: the keyboard and a screen reader land on the new screen.
+    heading()?.focus({ preventScroll: true });
+    if (route.section !== "brief") {
+      onsettled?.();
+    }
+  }
+
+  function skip(event: MouseEvent): void {
+    // The address stays the section's: #main would read as an unknown section.
+    event.preventDefault();
+    heading()?.focus();
+  }
+
+  onMount(() => {
+    addEventListener("hashchange", follow);
+    if (route.section !== "brief") {
+      void tick().then(() => onsettled?.());
+    }
+    return () => removeEventListener("hashchange", follow);
   });
 </script>
 
-<h1>{strings.message("app-title")}</h1>
-{#if view.kind === "loading"}
-  <p>{strings.message("brief-loading")}</p>
-{:else if view.kind === "failed"}
-  <p role="alert">{strings.message("brief-error", { reason: view.reason })}</p>
-{:else}
-  <p class="note">{strings.message("brief-partial")}</p>
-  {#each warnings(view.brief) as warning, index (index)}
-    <p class="warning">{warning}</p>
-  {/each}
-  {#each sections as { key, heading } (key)}
-    <section>
-      <h2>{strings.message(heading)}</h2>
-      {#if section(view.brief, key).length === 0}
-        <p class="note">{strings.message("brief-nothing")}</p>
-      {:else}
-        <ul>
-          {#each section(view.brief, key) as task (task.number)}
-            <li data-section={key} data-number={task.number}>
-              <span class="number">#{task.number}</span>
-              <span data-raw>{task.title}</span>
-            </li>
-          {/each}
-        </ul>
-      {/if}
-    </section>
-  {/each}
-{/if}
+<div class="shell">
+  <a class="skip" href="#main" onclick={skip}>{strings.message("nav-skip")}</a>
+  <Sidebar {strings} {product} current={route.section} />
+  <main id="main" tabindex="-1" bind:this={main}>
+    {#if route.section === "brief"}
+      <Brief {strings} {load} {...onsettled ? { onsettled } : {}} />
+    {:else if route.section === "settings"}
+      <Later {strings} title="nav-settings" />
+    {:else}
+      <Later {strings} title={LATER[route.section] ?? "nav-brief"} />
+    {/if}
+  </main>
+</div>
