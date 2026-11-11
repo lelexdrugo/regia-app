@@ -15,7 +15,7 @@ map as a whole. The proposals start from the conformance study of the dossier (`
 | Section | Commands | Slice |
 |---|---|---|
 | [Conventions](#conventions), [Exit codes](#exit-codes), [Variables](#variables) | all | #442 (F7), with what #440 (F5) set |
-| Tracker commands | `brief`, `projects`, `project *`, `task *`, `plan`, `comment`, `setup`, `init` | #441 (F6) |
+| [Tracker commands](#tracker-commands) | `brief`, `projects`, `project *`, `task *`, `plan`, `comment`, `setup`, `init` | #441 (F6) |
 | [State, dossier and budget](#state-dossier-and-budget) | `lock *`, `lease *`, `step *`, `checkpoint`, `declare`, `check`, `budget` | #442 (F7) |
 | [Names with no Python equivalent](#names-with-no-python-equivalent) | `controller run`, `moviola export`, `agents show`, `launch` | #442 (F7), with the names of #460 (F19) |
 
@@ -61,6 +61,210 @@ in Python past v0.1, uses 3 for *nothing to do*. The facade passes every exit co
 | `REGIA_HOME`, `REGIA_RUNTIME`, `REGIA_PYTHON`, `REGIA_CLAUDE_CREDENTIALS`, `REGIA_CODEX_AUTH` | the prototype's, unchanged | prototype |
 
 The prefix follows the product's name (ADR 0017 §6); the prototype's own variables keep `REGIA_`.
+
+## Tracker commands
+
+The commands that read and write the tracker through `gh`, and the two that prepare it, `setup` and `init`.
+By routing group: the reads `projects`, `task show`, `task list` and `plan` pass at #500 (F55); the writes
+`task new`, `task status`, `task maturity`, `task block`, `task unblock`, `task parent`, `task move`,
+`comment` and `project mirror` at #501 (F56); `brief`, `setup`, `project new`, `project set` and `init` are in
+the group `state`, at #502 (F57). `projects` sits in F55 and in F57 in the plan; the table puts it in the
+reads (#440/V9).
+
+- **Statuses** are canonical ids, as values and as arguments: `inbox`, `proposal`, `approved`, `in_progress`,
+  `decision`, `done`, `discarded`, and `unset` as the key that counts the tasks with none. The labels of the
+  owner's Project stay in its catalogs. **Maturity**: `draft`, `ready`.
+- **A value that starts with a dash** is written `--name=value` (`--body=- a list item`), the one form in
+  which the prototype's parser takes it (#440/V10). Without `=` such a value is refused.
+- **Text output.** `setup`, `task status`, `task maturity`, `task block` and `task parent` print a line the
+  skill does not read: it reads the exit code (checked by #440 against `skills/regia/`). The other commands
+  print text without `--json` too, which passes as it is.
+
+### The issue, as every command gives it
+
+`task list`, `task show`, `brief` and the nodes of `plan` share the keys of the issue (`conformita.md` §3.1):
+`number`, `title`, `state` and `state_reason` (GitHub's), `status`, `project` (`progetto`, from the label),
+`project_field` (`campo_progetto`, the value of the Project's field «Progetto», #338), `maturity`, `objective`
+(`obiettivo`, a boolean: whether it is an Objective), `labels`, `parent`, `sub_issues` (`sub`, pairs `[number,
+GitHub state]`), `blocked_by` (`bloccato_da`, pairs), `blocked_by_total`, `url`, `updated_at`, `created_at`,
+`closed_at`. `task list` and `brief` add the graph's measures: `unblocks` (`sblocca`, approved tasks
+downstream), `unblocks_total` (`sblocca_totale`, every task with a status downstream), `chain` (`catena`, the
+longest chain downstream, itself included), `cycle` (`ciclo`). `brief` adds the due date, `due` (`entro`), with
+`due_soon` (`entro_vicino`) or `overdue` (`entro_scaduto`). `task show` adds `body` and, with `--comments`,
+`comments`.
+
+### `brief`
+
+| Command | Prototype | Arguments | Exit |
+|---|---|---|---|
+| `brief` | `brief` | `--project` | 0; 1 an error of the tracker |
+
+**Output**: `waiting_on_owner` (`aspetta_me`), `ready` (`pronti`), `in_progress` (`in_corso`), `by_project`
+(`per_progetto`, keyed by project id and then by status: both are data), and only when they are not empty
+`session` (`sessione`, the items labelled `sessione`), `graph` (`grafo`: `cycles`, `truncated`,
+`children_waiting`), `due_ignored` (`entro_ignorati`: `number`, `value`), `controller`, `dossier`,
+`outside_tracker` (`fuori_dal_tracker`). **`controller`**: `last_round` (`ultimo_giro`), `stale` (`vecchio`),
+`budget` (`rounds`, `since`, `reason`, `alarm`), `to_open` (`da_aprire`: `name`, `day`, `outcome`, `folder`,
+`prompt`, `reason`, `attempts`), `to_resume` (`da_riprendere`: `project`, `session`, `resumes`, `how`,
+`orca_command`, `reason`, `folder`, `origin`, `adapter`, `agent`, `orca_session`, `transcript`). **`dossier`**:
+`project`, `folder`, `problem`, `branch`, `ahead`, `detail`; **problems** `folder_missing`, `not_a_repo`,
+`no_remote`, `no_upstream`, `detached_head`, `git_failed`, `not_pushed`. **`outside_tracker`**: keyed by
+project, `total`, `items`, `more`; an item as a finding of [`check`](#check).
+
+### `projects`
+
+| Command | Prototype | Arguments | Exit |
+|---|---|---|---|
+| `projects` | `progetti` | | 0; 1 |
+
+**Output**: a list, one entry per Objective: `id`, `objective` (`obiettivo`, the number of the Objective
+issue), `title` (`titolo`), `status`, and the keys of the registry that `project new` writes, `folder`
+(`cartella`), `playbook`, `priority` (`priorita`), `wip`, `auto_defaults` (`default_automatici`), `repo`,
+`products` (`prodotti`, a list). `priority` and `wip` are the registry's strings. **The entry is open**
+(ADR 0001 §11): any other key of the block `<!-- regia:progetto -->`, written by hand, passes as data, with its
+name as it is; two keys that land on one name are an error.
+
+### `project`
+
+| Command | Prototype | Arguments | Exit |
+|---|---|---|---|
+| `project new` | `progetto new` | `--id`, `--title` (`--titolo`), `--folder` (`--cartella`), `--playbook`, `--objective` (`--obiettivo`), `--definition-of-done` (`--fatto`), `--mandate` (`--mandato`), `--priority`, `--wip`, `--auto-defaults` (`--default-automatici`, `no` or hours), `--color` (`--colore`), `--repo`, `--products` | 0; 1 |
+| `project set` | `progetto set` | `--project`, `--repo`, `--products`, `--wip`, `--priority`, `--dry-run` | 0; 1 |
+| `project mirror` | `progetto riempi` | `--dry-run`, `--pause` (`--pausa`, seconds between two writes) | 0; 1 when an item could not be written, in JSON too |
+
+`--products` takes repos separated by commas, or `none`, which the table translates to the prototype's
+`nessuno`: any other value passes as it is.
+
+**`project new`**: `project` (`progetto`), `objective`, `scaffold` (the files written in `.regia/`), and with
+`--repo` `repo`, `git` (`init` or `existing`: whether the folder was a repo already), `first_push`
+(`primo_push`, a sentence). **`project set`**: `project`, `objective`, `repo`, `products`, `wip` and `priority`
+(integers, or null), `written` (`scritto`), `comment` (`commento`, the id of the comment that records the
+levers, or null). **`project mirror`**: `dry_run`, `items` (how many issues the Project has), `options_added`
+(`opzioni_aggiunte`), `already_right` (`gia_giusti`), `to_write` (`da_scrivere`, triples `[number, field,
+label]`), `written` (`scritti`), `unlabeled` (`senza_etichetta`), `unknown_label` (`etichetta_ignota`, pairs
+`[number, label]`), `failed` (`falliti`, pairs `[number, reason]`).
+
+### `task`
+
+| Command | Prototype | Arguments | Exit |
+|---|---|---|---|
+| `task new` | `task new` | `--project`, `--title`, `--body` (`--corpo`), `--body-file`, `--parent` (`--padre`), `--blocked-by` (`--bloccato-da`, numbers separated by commas), `--maturity` (default `draft`), `--status` (default `inbox`) | 0; 1 |
+| `task status <n> <status>` | `task stato` | `--comment` (`--commento`), `--on-behalf-of-owner` (`--per-conto-del-titolare`), `--role` (`worker`, `chat`) | 0; 1 |
+| `task maturity <n> <maturity>` | `task maturita` | | 0; 1 |
+| `task block <n>` | `task blocca` | `--by` (`--da`, the blockers) | 0; 1 |
+| `task unblock <n>` | `task sblocca` | `--by`, `--reason` (`--motivo`), `--on-behalf-of-owner`, `--role` | 0; 1 |
+| `task parent <n> <parent>` | `task padre` | | 0; 1 |
+| `task move <n>` | `task sposta` | `--project`, `--parent` (default: the project's Objective) | 0; 1 |
+| `task show <n>` | `task show` | `--short` (`--breve`), `--comments` (`--commenti`), `--since` (`--dal`, an instant; alone it implies `--comments`) | 0; 1 |
+| `task list` | `task list` | `--project`, `--status` (a list: `approved,in_progress`), `--ready` (`--pronti`), `--waiting-on-owner` (`--aspetta-me`), `--objectives` (`--obiettivi`), `--include-closed` (`--anche-chiusi`), `--order graph` (`--ordine grafo`) | 0; 1 |
+
+`done` and `discarded` close the issue, any other status reopens it, and after a close the status is written
+twice, three seconds apart, because the Project's workflows can rewrite it (`conformita.md` T10, T11).
+
+**`task new`**: `task`, `parent`, `url`. **`task unblock`**: `number` (`numero`), `unblocked` (`sbloccati`),
+`not_blocking` (`non_bloccanti`, the numbers that did not block it: a warning, not an error), `comment` (the
+id of the signed comment with the reason, or null). **`task move`**: `task`, `from` (`da`), `to` (`a`),
+`parent`. **`task list`**: a list of issues without `body`. **`task show`**: the issue with `body`, and
+`comments`, oldest first: `id`, `created_at` (`creato`), `role` (`firma`), `url`, `body`, `shortened`
+(`accorciato`: a worker's body is its first line). `role` is the role the comment's signature carries, and
+`titolare` for a comment with none: data, as the markers already published are (`conformita.md` M2, §8.4).
+
+### `plan`
+
+| Command | Prototype | Arguments | Exit |
+|---|---|---|---|
+| `plan` | `piano` | `--project` or `--root` (`--radice`), one of the two; `--mermaid`; `--max-nodes` (`--max-nodi`, default 25) | 0; 1 |
+
+**Output**: `command` (`comando`), `date` (`data`), `root` (`radice`), `project`, `nodes` (`nodi`: `number`,
+`title`, `status`, `project`, `parent`, `unblocks`, `chain`, `cycle`, `external` (`esterno`, one step outside
+the perimeter)), `edges` (`archi`, pairs `[blocker, blocked]`), `nested` (`annidati`, edges between a parent and
+its child, in the note), `main_line` (`linea`), `inbox_hidden` (`inbox_fuori`), `truncated` (`tagliati`),
+`edges_lost` (`archi_persi`), `mermaid` (the diagram, or null). `command` is the prototype's command line, and
+`mermaid` quotes it: data, in the prototype's words, until the plan is ported.
+
+### `comment`
+
+| Command | Prototype | Arguments | Exit |
+|---|---|---|---|
+| `comment <n>` | `commento` | `--body`, `--body-file`, `--on-behalf-of-owner`, `--role` | 0; 1 |
+
+**Output**: `number`, `id` (the comment's id, the `databaseId` the step records; null when the URL `gh`
+printed does not end with it), `url`. The comment is signed: a blank line, a visible line, and the marker
+`<!-- regia:autore ruolo=<role> sessione=<id> -->` as its last line, in the prototype's words (`conformita.md`
+M1). The role is `titolare` with `--on-behalf-of-owner`, then `orchestratore` when this session holds the open
+step of the issue's project, then `--role`, then `chat` (M3).
+
+### `setup` and `init`
+
+| Command | Prototype | Arguments | Exit |
+|---|---|---|---|
+| `setup` | `setup` | | 0; 1 |
+| `init`, `init plan` | `init`, `init piano` | `--owner` (GitHub's owner of the tracker, default the user of `gh`), `--repo`, `--project-title` (`--progetto-titolo`) | 0; 1 the plan could not be computed |
+| `init derive` | `init ricava` | the same, `--destination` (`--destinazione`), `--overwrite` (`--sovrascrivi`) | 0; 1; 3 a different file at the destination; 4 the tracker is not ready |
+| `init apply` | `init applica` | the same, `--dry-run` (`--a-secco`) | 0; 1; 3; 4; 5 a write failed |
+
+`init` alone is `init plan` and takes no option. The prototype's `init` exits with 2 on a wrong argument
+(argparse of `inizializza`); through the facade a wrong argument is refused before, with 1.
+
+**`init plan`**: `owner`, `repo`, `project_title`, `ready` (`pronto`: every item of the environment and of the
+tracker is present), `items` (`voci`), `gh_calls` (`chiamate_gh`, the calls made, as command lines). **An
+item**: `item` (`voce`), `scope` (`ambito`: `environment`, `tracker`, `local`, `manual`), `outcome` (`esito`:
+`present`, `missing`, `different`, `error`), `action` (`azione`: `none`, `create`, `update`, `manual`,
+`install`), `detail` (`dettaglio`, prose). **`init derive`** adds `outcome` (`written`, `would_write`, `same`,
+`different`, `not_ready`), `exit_code` (`esito_codice`) and `destination`. **`init apply`**: `owner`, `repo`,
+`project_title`, `dry_run` (`a_secco`), `writes` (`scritture`: `item`, `command`), `config` (`configurazione`:
+`destination`, `outcome`, also `after_the_writes`), `ready`, `items`, `gh_calls`, `exit_code` (`esito`, an
+integer), and `error` after a failed write.
+
+### The ⚠ names of the tracker commands
+
+The names of `conformita.md` §8.1–§8.3 marked ⚠ for these commands, and the five names of `brief` where §8.3
+and ADR 0001 §11 differ. The proposal is what the table holds.
+
+| Prototype | Proposed | Left out | Why |
+|---|---|---|---|
+| `aspetta_me` | `waiting_on_owner` | `awaiting_owner` (§8.3) | the name of ADR 0001 §11, already in the native brief, the app and their tests; the two say the same |
+| `per_progetto` | `by_project` | `per_project` (§8.3) | ADR 0001 §11 and the native brief; `by` reads as a grouping, `per` as a rate |
+| `sessione` (brief) | `session` | `needs_session` (§8.3) | ADR 0001 §11 and the native brief. `needs_session` is clearer, and `session` is a session id in `declare`: the strongest case for a change at the gate |
+| `obiettivo` (issue) | `objective` | `is_objective` (§8.3) | ADR 0001 §11 and the native brief; in `projects` the same word is the number of the Objective, which the shape keeps apart |
+| `ultimo_giro` | `last_round` | `last_cycle` (the table before), `last_tick` | a round of the controller, as `controller run --rounds`; `cycles` already means the graph's cycles in the same brief |
+| `giri` (controller budget) | `rounds` | `cycles` (the table before) | the same word as `last_round` and `--rounds` |
+| `da_aprire`, `da_riprendere` | `to_open`, `to_resume` | `pending_launches`, `stopped_sessions` | what the controller would open and resume, in its own words |
+| `task maturita` | `task maturity` | `task readiness` (§8.1) | `maturity` is the name the issue, the labels' prefix and the values `draft`, `ready` already share |
+| `abbozzo` | `draft` | `stub` | the spec is a draft to complete, not a placeholder |
+| `--obiettivo` | `--objective` | `--goal` | the English of `tipo:obiettivo`, as the key |
+| `--fatto` | `--definition-of-done` | `--done` | the full name of the section it fills; `--done` reads as a flag |
+| `--mandato` | `--mandate` | `--scope` | the mandate is a term of the regia; `scope` would mix it with `init`'s `scope` |
+| `--default-automatici`, `default_automatici` | `--auto-defaults`, `auto_defaults` | `--auto-choices` | the defaults taken alone after a time |
+| `--prodotti`, `nessuno` | `--products`, `none` | `--product-repos` | the repos of the products; `none` translates, so a repo called `none` is never written by mistake |
+| `progetto riempi` | `project mirror` | `project fill`, `project sync`, `project backfill` | the field is the mirror of the label (the prototype's `rispecchia_progetto`); `fill` says nothing of what, `sync` reads two-way, `backfill` is the budget policy's `riempimento` |
+| `--pausa` | `--pause` | `--delay` | seconds between two writes |
+| `gia_giusti`, `senza_etichetta`, `etichetta_ignota` | `already_right`, `unlabeled`, `unknown_label` | `ok`, `no_label`, `foreign_label` | `ok` is a key of other outcomes; `unknown` because the label names no project of the registry |
+| `--da` (`task block`, `task unblock`) | `--by` | `--blockers` | `task block 12 --by 3` reads as a sentence |
+| `non_bloccanti` | `not_blocking` | `skipped` | the numbers that did not block the task |
+| `--per-conto-del-titolare` | `--on-behalf-of-owner` | `--on-behalf-of-user` (§8.2) | "owner" is the owner of the regia everywhere in the product (`waiting_on_owner`); GitHub's owner appears only in `init --owner`, where it is the account of the tracker |
+| `--aspetta-me` | `--waiting-on-owner` | `--awaiting-me` (§8.2) | the same words as the brief's `waiting_on_owner`; the agents that read it are not "me" |
+| `--dal` (`task show`) | `--since` | `--from` | a lower bound with no end; `moviola export --from` opens a range with `--to` |
+| `firma` | `role` | `signature`, `signed_by` | the role the signature carries, the same word `--role` writes |
+| `accorciato` | `shortened` | `truncated` | `truncated` is a list of the graph and of the plan |
+| `linea` | `main_line` | `critical_path` | the longest drawn path, not the critical path of a schedule |
+| `inbox_fuori` | `inbox_hidden` | `inbox_without_edges` | the Inbox tasks left out of the drawing; the note says why |
+| `annidati` | `nested` | `hidden_edges` | edges between a parent and a child it contains |
+| `comando` (`plan`) | `command`, value as it is | translating the command line | the value is a line of the prototype's CLI, quoted in `mermaid` too: translating it needs a parser of the CLI in the facade; the native plan writes the English one |
+| `voce` (`init`) | `item`, values as they are | an enum of the items | the items carry prefixes and names of labels and skills (`etichetta:maturità:pronto`, `skill:regia`): data the table cannot translate. The native `init` (#456, #458) names them: `gh`, `repo`, `project`, `status`, `project_field` for `progetto`, `label:`, `skill:`, `manual:` |
+| `ambito`, `esito`, `azione` (`init`) | `scope`, `outcome`, `action` | `area`, `status`, `step` | `status` is the tracker's; `outcome` as the dossier's |
+| `esito` (`init apply`), `esito_codice` | `exit_code` | `outcome`, `outcome_code` | in `apply` the key holds the exit code, an integer: the value stays as the prototype gives it (ADR 0001 §11), and the name says what it is |
+| `da-scrivere`, `dopo-le-scritture` | `would_write`, `after_the_writes` | `to_write`, `pending` | a dry run's outcome, and a configuration that comes after the tracker's writes |
+| `--a-secco` | `--dry-run` | `--simulate` | the name `project set` already has |
+| `init ricava` | `init derive` | `init read`, `init config` | it derives the configuration from the tracker that exists |
+
+### Limits of the tracker section
+
+- **Free values in Italian.** Tracker labels (`maturità:pronto`, `progetto:<id>`), the prototype's sentences
+  (`detail`, `first_push`, `reason`), `plan.command` and `mermaid`, `init`'s item names and gh calls, and the
+  roles of signatures pass as they are: data, not contract (`conformita.md` §8.4).
+- **`project new --repo`** creates a private repo and pushes the scaffold when the folder was not a repo
+  (`first_push`): a case of it runs only on a folder that is a repo already, so nothing reaches a remote.
 
 ## State, dossier and budget
 
