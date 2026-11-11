@@ -12,6 +12,10 @@ name: release
 on:
   push:
     tags: ["v*"]
+    # Temporary, and matching no path: GitHub dispatches only a workflow it has seen on a push, and this
+    # file is not on main yet. It goes before the branch is integrated.
+    branches: [lelexdrugo/regia-494-installer]
+    paths: [".github/no-such-path"]
   workflow_dispatch:
 
 concurrency:
