@@ -10,7 +10,10 @@
       "truncated": false
     },
     "markdown": "<img src=x onerror=\"window.__pwned=1\">",
-    "name": "an image with onerror, as a block"
+    "name": "an image with onerror, as a block",
+    "shows": [
+      "<img src=x onerror=\"window.__pwned=1\">"
+    ]
   },
   {
     "document": {
@@ -23,7 +26,10 @@
       "truncated": false
     },
     "markdown": "<script>window.__pwned=1</script>",
-    "name": "a script block"
+    "name": "a script block",
+    "shows": [
+      "<script>window.__pwned=1</script>"
+    ]
   },
   {
     "document": {
@@ -41,7 +47,10 @@
       "truncated": false
     },
     "markdown": "A drawing: <svg onload=\"window.__pwned=1\"><circle r=\"1\"/></svg> done",
-    "name": "svg with onload, inline"
+    "name": "svg with onload, inline",
+    "shows": [
+      "<svg onload=\"window.__pwned=1\"><circle r=\"1\"/></svg>"
+    ]
   },
   {
     "document": {
@@ -59,7 +68,10 @@
       "truncated": false
     },
     "markdown": "Look <iframe srcdoc=\"<script>parent.__pwned=1</script>\"></iframe> here",
-    "name": "an iframe with srcdoc"
+    "name": "an iframe with srcdoc",
+    "shows": [
+      "<iframe srcdoc=\"<script>parent.__pwned=1</script>\"></iframe>"
+    ]
   },
   {
     "document": {
@@ -77,7 +89,10 @@
       "truncated": false
     },
     "markdown": "<a href=\"javascript:x\" title='\"><img src=x onerror=window.__pwned=1>'>a</a>",
-    "name": "attributes with quotes inside quotes"
+    "name": "attributes with quotes inside quotes",
+    "shows": [
+      "<a href=\"javascript:x\" title='\"><img src=x onerror=window.__pwned=1>'>a</a>"
+    ]
   },
   {
     "document": {
@@ -90,7 +105,10 @@
       "truncated": false
     },
     "markdown": "<form action=\"https://attacker.invalid/\"><button>Send</button></form>",
-    "name": "a form block"
+    "name": "a form block",
+    "shows": [
+      "<form action=\"https://attacker.invalid/\"><button>Send</button></form>"
+    ]
   },
   {
     "document": {
@@ -103,7 +121,10 @@
       "truncated": false
     },
     "markdown": "<style>body { display: none }</style>",
-    "name": "a style block"
+    "name": "a style block",
+    "shows": [
+      "<style>body { display: none }</style>"
+    ]
   },
   {
     "document": {
@@ -116,7 +137,10 @@
       "truncated": false
     },
     "markdown": "<meta http-equiv=\"refresh\" content=\"0;url=https://attacker.invalid/\">",
-    "name": "a meta refresh"
+    "name": "a meta refresh",
+    "shows": [
+      "<meta http-equiv=\"refresh\" content=\"0;url=https://attacker.invalid/\">"
+    ]
   },
   {
     "document": {
@@ -129,7 +153,10 @@
       "truncated": false
     },
     "markdown": "```html\n<script>window.__pwned=1</script>\n```",
-    "name": "html in a fenced code block"
+    "name": "html in a fenced code block",
+    "shows": [
+      "<script>window.__pwned=1</script>"
+    ]
   },
   {
     "document": {
@@ -155,7 +182,10 @@
       "truncated": false
     },
     "markdown": "Try `<img src=x onerror=window.__pwned=1>` now",
-    "name": "html in inline code"
+    "name": "html in inline code",
+    "shows": [
+      "<img src=x onerror=window.__pwned=1>"
+    ]
   },
   {
     "document": {
@@ -173,7 +203,11 @@
       "truncated": false
     },
     "markdown": "&lt;script&gt;window.__pwned=1&lt;/script&gt; &#x3C;img src=x onerror=window.__pwned=1&#x3E;",
-    "name": "entities that decode to markup"
+    "name": "entities that decode to markup",
+    "shows": [
+      "<script>window.__pwned=1</script>",
+      "<img src=x onerror=window.__pwned=1>"
+    ]
   },
   {
     "document": {
@@ -215,7 +249,10 @@
       "truncated": false
     },
     "markdown": "| a | b |\n|---|---|\n| <img src=x onerror=window.__pwned=1> | ok |",
-    "name": "html in a table cell"
+    "name": "html in a table cell",
+    "shows": [
+      "<img src=x onerror=window.__pwned=1>"
+    ]
   },
   {
     "document": {
@@ -242,7 +279,10 @@
       "truncated": false
     },
     "markdown": "[click](javascript:window.__pwned=1)",
-    "name": "a javascript link"
+    "name": "a javascript link",
+    "shows": [
+      "click"
+    ]
   },
   {
     "document": {
@@ -269,7 +309,10 @@
       "truncated": false
     },
     "markdown": "<javascript:window.__pwned=1>",
-    "name": "a javascript autolink"
+    "name": "a javascript autolink",
+    "shows": [
+      "javascript:window.__pwned=1"
+    ]
   },
   {
     "document": {
@@ -296,7 +339,10 @@
       "truncated": false
     },
     "markdown": "[click][1]\n\n[1]: javascript:window.__pwned=1",
-    "name": "a javascript reference link"
+    "name": "a javascript reference link",
+    "shows": [
+      "click"
+    ]
   },
   {
     "document": {
@@ -323,7 +369,8 @@
       "truncated": false
     },
     "markdown": "[open](data:text/html;base64,PHNjcmlwdD53aW5kb3cuX19wd25lZD0xPC9zY3JpcHQ+)",
-    "name": "a data link"
+    "name": "a data link",
+    "shows": []
   },
   {
     "document": {
@@ -350,7 +397,8 @@
       "truncated": false
     },
     "markdown": "[plain](http://example.invalid/)",
-    "name": "an http link"
+    "name": "an http link",
+    "shows": []
   },
   {
     "document": {
@@ -377,7 +425,8 @@
       "truncated": false
     },
     "markdown": "[passwords](file:///etc/passwd)",
-    "name": "a file link"
+    "name": "a file link",
+    "shows": []
   },
   {
     "document": {
@@ -404,7 +453,8 @@
       "truncated": false
     },
     "markdown": "[settings](ms-settings:privacy)",
-    "name": "a scheme that starts a program"
+    "name": "a scheme that starts a program",
+    "shows": []
   },
   {
     "document": {
@@ -431,7 +481,8 @@
       "truncated": false
     },
     "markdown": "[repo](https://user:secret@github.com/owner/repo)",
-    "name": "credentials in a link"
+    "name": "credentials in a link",
+    "shows": []
   },
   {
     "document": {
@@ -460,7 +511,8 @@
       "truncated": false
     },
     "markdown": "[x](https://example.invalid/ 'onmouseover=window.__pwned=1')",
-    "name": "a link title that would be an attribute"
+    "name": "a link title that would be an attribute",
+    "shows": []
   },
   {
     "document": {
@@ -489,7 +541,10 @@
       "truncated": false
     },
     "markdown": "[github.com](https://gіthub.com/login)",
-    "name": "a homograph of github.com"
+    "name": "a homograph of github.com",
+    "shows": [
+      "github.com"
+    ]
   },
   {
     "document": {
@@ -518,7 +573,8 @@
       "truncated": false
     },
     "markdown": "[the issue](https://github.com/owner/repo/issues/1)",
-    "name": "a github link"
+    "name": "a github link",
+    "shows": []
   },
   {
     "document": {
@@ -537,7 +593,10 @@
       "truncated": false
     },
     "markdown": "![a tracking pixel](https://attacker.invalid/?d=1)",
-    "name": "an image from an outside host"
+    "name": "an image from an outside host",
+    "shows": [
+      "a tracking pixel"
+    ]
   },
   {
     "document": {
@@ -556,7 +615,10 @@
       "truncated": false
     },
     "markdown": "![inline](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9ImFsZXJ0KDEpIi8+)",
-    "name": "an image as a data url"
+    "name": "an image as a data url",
+    "shows": [
+      "inline"
+    ]
   },
   {
     "document": {
@@ -575,7 +637,10 @@
       "truncated": false
     },
     "markdown": "# Title {#id .class onclick=x}",
-    "name": "heading attributes"
+    "name": "heading attributes",
+    "shows": [
+      "{#id .class onclick=x}"
+    ]
   },
   {
     "document": {
@@ -593,7 +658,11 @@
       "truncated": false
     },
     "markdown": "Approve ‮evil‬ done, ⁦isolated⁩",
-    "name": "bidi controls"
+    "name": "bidi controls",
+    "shows": [
+      "‹U+202E›evil‹U+202C›",
+      "‹U+2066›isolated‹U+2069›"
+    ]
   },
   {
     "document": {
@@ -606,7 +675,10 @@
       "truncated": false
     },
     "markdown": "```\nif access_level != \"user‮ ⁦// Check if admin⁩ ⁦\" {\n```",
-    "name": "bidi controls in code (Trojan Source)"
+    "name": "bidi controls in code (Trojan Source)",
+    "shows": [
+      "‹U+202E›"
+    ]
   },
   {
     "document": {
@@ -624,7 +696,10 @@
       "truncated": false
     },
     "markdown": "\u001b[31mred\u001b[0m and \u001b]8;;https://attacker.invalid/\u0007a hyperlink\u001b]8;;\u0007",
-    "name": "ANSI sequences"
+    "name": "ANSI sequences",
+    "shows": [
+      "red and a hyperlink"
+    ]
   },
   {
     "document": {
@@ -642,7 +717,10 @@
       "truncated": false
     },
     "markdown": "a\u0000b\bcd",
-    "name": "NUL and other controls"
+    "name": "NUL and other controls",
+    "shows": [
+      "abcd"
+    ]
   },
   {
     "document": {
@@ -678,7 +756,11 @@
       "truncated": false
     },
     "markdown": "**[ Approve ]**   **[ Discard ]**",
-    "name": "an imitation of the app's buttons"
+    "name": "an imitation of the app's buttons",
+    "shows": [
+      "[ Approve ]",
+      "[ Discard ]"
+    ]
   },
   {
     "document": {
@@ -771,6 +853,9 @@
       "truncated": false
     },
     "markdown": "> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > deep",
-    "name": "quotes nested forty deep"
+    "name": "quotes nested forty deep",
+    "shows": [
+      "deep"
+    ]
   }
 ]

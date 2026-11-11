@@ -1,0 +1,774 @@
+[
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Round 2: the harness and its proofs"
+            }
+          ],
+          "kind": "heading",
+          "level": 1
+        },
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "The harness renders the app's views on fixtures, under the app's CSP, and "
+            },
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "four proofs"
+                }
+              ],
+              "kind": "strong"
+            },
+            {
+              "kind": "text",
+              "text": " read what it drew."
+            }
+          ],
+          "kind": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "What changed"
+            }
+          ],
+          "kind": "heading",
+          "level": 2
+        },
+        {
+          "items": [
+            [
+              {
+                "content": [
+                  {
+                    "kind": "text",
+                    "text": "The V07 probe of "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "app-smoke"
+                  },
+                  {
+                    "kind": "text",
+                    "text": ", on each engine"
+                  }
+                ],
+                "kind": "paragraph"
+              }
+            ],
+            [
+              {
+                "content": [
+                  {
+                    "kind": "text",
+                    "text": "V08 in every "
+                  },
+                  {
+                    "kind": "code",
+                    "text": "cargo test"
+                  }
+                ],
+                "kind": "paragraph"
+              }
+            ],
+            [
+              {
+                "content": [
+                  {
+                    "kind": "text",
+                    "text": "A pseudo-locale, so that a string written in the code "
+                  },
+                  {
+                    "content": [
+                      {
+                        "kind": "text",
+                        "text": "shows"
+                      }
+                    ],
+                    "kind": "emphasis"
+                  }
+                ],
+                "kind": "paragraph"
+              }
+            ]
+          ],
+          "kind": "list",
+          "ordered": false
+        },
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Checks"
+            }
+          ],
+          "kind": "heading",
+          "level": 2
+        },
+        {
+          "head": [
+            [
+              {
+                "kind": "text",
+                "text": "Proof"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "Cases"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "Result"
+              }
+            ]
+          ],
+          "kind": "table",
+          "rows": [
+            [
+              [
+                {
+                  "kind": "text",
+                  "text": "contrast"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "30 pairs in 3 directions"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "none under the threshold"
+                }
+              ]
+            ],
+            [
+              [
+                {
+                  "kind": "text",
+                  "text": "catalog"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "every view and state"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "no string outside it"
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "kind": "code",
+          "text": "npm run prove\n"
+        },
+        {
+          "blocks": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "The proofs run in Chrome; "
+                },
+                {
+                  "kind": "code",
+                  "text": "app-smoke"
+                },
+                {
+                  "kind": "text",
+                  "text": " runs the V07 check again on each engine."
+                }
+              ],
+              "kind": "paragraph"
+            }
+          ],
+          "kind": "quote"
+        },
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "See "
+            },
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "the run"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "confirm": false,
+                "host": "github.com",
+                "kind": "external",
+                "url": "https://github.com/owner/repo/actions/runs/1"
+              }
+            },
+            {
+              "kind": "text",
+              "text": ", "
+            },
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "the notes"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "confirm": true,
+                "host": "example.invalid",
+                "kind": "external",
+                "url": "https://example.invalid/notes"
+              }
+            },
+            {
+              "kind": "text",
+              "text": " and "
+            },
+            {
+              "alt": "a chart",
+              "host": "example.invalid",
+              "kind": "image"
+            },
+            {
+              "kind": "text",
+              "text": "."
+            }
+          ],
+          "kind": "paragraph"
+        },
+        {
+          "kind": "rule"
+        },
+        {
+          "items": [
+            [
+              {
+                "content": [
+                  {
+                    "kind": "text",
+                    "text": "Build the harness"
+                  }
+                ],
+                "kind": "paragraph"
+              }
+            ],
+            [
+              {
+                "content": [
+                  {
+                    "kind": "text",
+                    "text": "Run the proofs"
+                  }
+                ],
+                "kind": "paragraph"
+              }
+            ]
+          ],
+          "kind": "list",
+          "ordered": true
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "# Round 2: the harness and its proofs\n\nThe harness renders the app's views on fixtures, under the app's CSP, and **four proofs** read what it drew.\n\n## What changed\n\n- The V07 probe of `app-smoke`, on each engine\n- V08 in every `cargo test`\n- A pseudo-locale, so that a string written in the code *shows*\n\n## Checks\n\n| Proof | Cases | Result |\n|---|---|---|\n| contrast | 30 pairs in 3 directions | none under the threshold |\n| catalog | every view and state | no string outside it |\n\n```sh\nnpm run prove\n```\n\n> The proofs run in Chrome; `app-smoke` runs the V07 check again on each engine.\n\nSee [the run](https://github.com/owner/repo/actions/runs/1), [the notes](https://example.invalid/notes) and ![a chart](https://example.invalid/chart.png).\n\n---\n\n1. Build the harness\n2. Run the proofs\n",
+    "name": "demo"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "A heading that goes on and on, the way a report sometimes titles itself when its author has too much to say about one small thing in one line"
+            }
+          ],
+          "kind": "heading",
+          "level": 1
+        },
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Averyveryverylongwordwithoutanyplacetobreakitthatsomeonepastedfromalogfileoracommitmessageandthatnoonewillreadbutthewindowmuststillholditsomehowwithoutpushingthepageoutofitsframeorhidingthebuttonsnexttoit"
+            }
+          ],
+          "kind": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Inline code: "
+            },
+            {
+              "kind": "code",
+              "text": "an-inline-code-span-that-is-far-too-long-to-fit-on-one-line-of-the-window-and-has-no-spaces-at-all-anywhere-in-it"
+            }
+          ],
+          "kind": "paragraph"
+        },
+        {
+          "kind": "code",
+          "text": "an_unbroken_line_of_code_or_log_output_that_runs_well_past_the_right_edge_of_any_window_because_a_tool_printed_it_that_way=0123456789012345678901234567890123456789\n"
+        },
+        {
+          "head": [
+            [
+              {
+                "kind": "text",
+                "text": "first column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "second column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "third column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "fourth column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "fifth column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "sixth column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "seventh column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "eighth column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "ninth column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "tenth column"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "eleventh"
+              }
+            ],
+            [
+              {
+                "kind": "text",
+                "text": "twelfth"
+              }
+            ]
+          ],
+          "kind": "table",
+          "rows": [
+            [
+              [
+                {
+                  "kind": "text",
+                  "text": "a cell with several words in it"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "another cell with words"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "3"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "4"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "5"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "6"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "7"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "8"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "9"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "10"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "11"
+                }
+              ],
+              [
+                {
+                  "kind": "text",
+                  "text": "12"
+                }
+              ]
+            ]
+          ]
+        },
+        {
+          "blocks": [
+            {
+              "blocks": [
+                {
+                  "blocks": [
+                    {
+                      "blocks": [
+                        {
+                          "blocks": [
+                            {
+                              "blocks": [
+                                {
+                                  "blocks": [
+                                    {
+                                      "blocks": [
+                                        {
+                                          "blocks": [
+                                            {
+                                              "blocks": [
+                                                {
+                                                  "blocks": [
+                                                    {
+                                                      "blocks": [
+                                                        {
+                                                          "blocks": [
+                                                            {
+                                                              "blocks": [
+                                                                {
+                                                                  "blocks": [
+                                                                    {
+                                                                      "content": [
+                                                                        {
+                                                                          "kind": "text",
+                                                                          "text": "A quote twenty deep, which the core cuts at sixteen"
+                                                                        }
+                                                                      ],
+                                                                      "kind": "paragraph"
+                                                                    }
+                                                                  ],
+                                                                  "kind": "quote"
+                                                                }
+                                                              ],
+                                                              "kind": "quote"
+                                                            }
+                                                          ],
+                                                          "kind": "quote"
+                                                        }
+                                                      ],
+                                                      "kind": "quote"
+                                                    }
+                                                  ],
+                                                  "kind": "quote"
+                                                }
+                                              ],
+                                              "kind": "quote"
+                                            }
+                                          ],
+                                          "kind": "quote"
+                                        }
+                                      ],
+                                      "kind": "quote"
+                                    }
+                                  ],
+                                  "kind": "quote"
+                                }
+                              ],
+                              "kind": "quote"
+                            }
+                          ],
+                          "kind": "quote"
+                        }
+                      ],
+                      "kind": "quote"
+                    }
+                  ],
+                  "kind": "quote"
+                }
+              ],
+              "kind": "quote"
+            }
+          ],
+          "kind": "quote"
+        },
+        {
+          "items": [
+            [
+              {
+                "content": [
+                  {
+                    "kind": "text",
+                    "text": "one"
+                  }
+                ],
+                "kind": "paragraph"
+              },
+              {
+                "items": [
+                  [
+                    {
+                      "content": [
+                        {
+                          "kind": "text",
+                          "text": "two"
+                        }
+                      ],
+                      "kind": "paragraph"
+                    },
+                    {
+                      "items": [
+                        [
+                          {
+                            "content": [
+                              {
+                                "kind": "text",
+                                "text": "three"
+                              }
+                            ],
+                            "kind": "paragraph"
+                          },
+                          {
+                            "items": [
+                              [
+                                {
+                                  "content": [
+                                    {
+                                      "kind": "text",
+                                      "text": "four"
+                                    }
+                                  ],
+                                  "kind": "paragraph"
+                                },
+                                {
+                                  "items": [
+                                    [
+                                      {
+                                        "content": [
+                                          {
+                                            "kind": "text",
+                                            "text": "five"
+                                          }
+                                        ],
+                                        "kind": "paragraph"
+                                      },
+                                      {
+                                        "items": [
+                                          [
+                                            {
+                                              "content": [
+                                                {
+                                                  "kind": "text",
+                                                  "text": "six"
+                                                }
+                                              ],
+                                              "kind": "paragraph"
+                                            },
+                                            {
+                                              "items": [
+                                                [
+                                                  {
+                                                    "content": [
+                                                      {
+                                                        "kind": "text",
+                                                        "text": "seven"
+                                                      }
+                                                    ],
+                                                    "kind": "paragraph"
+                                                  },
+                                                  {
+                                                    "items": [
+                                                      [
+                                                        {
+                                                          "content": [
+                                                            {
+                                                              "kind": "text",
+                                                              "text": "eight"
+                                                            }
+                                                          ],
+                                                          "kind": "paragraph"
+                                                        }
+                                                      ]
+                                                    ],
+                                                    "kind": "list",
+                                                    "ordered": false
+                                                  }
+                                                ]
+                                              ],
+                                              "kind": "list",
+                                              "ordered": false
+                                            }
+                                          ]
+                                        ],
+                                        "kind": "list",
+                                        "ordered": false
+                                      }
+                                    ]
+                                  ],
+                                  "kind": "list",
+                                  "ordered": false
+                                }
+                              ]
+                            ],
+                            "kind": "list",
+                            "ordered": false
+                          }
+                        ]
+                      ],
+                      "kind": "list",
+                      "ordered": false
+                    }
+                  ]
+                ],
+                "kind": "list",
+                "ordered": false
+              }
+            ]
+          ],
+          "kind": "list",
+          "ordered": false
+        },
+        {
+          "content": [
+            {
+              "content": [
+                {
+                  "kind": "text",
+                  "text": "a link whose text is long enough to wrap over several lines in a narrow window, as a pasted title would be"
+                }
+              ],
+              "kind": "link",
+              "target": {
+                "confirm": false,
+                "host": "github.com",
+                "kind": "external",
+                "url": "https://github.com/owner/repo/issues/99999"
+              }
+            }
+          ],
+          "kind": "paragraph"
+        },
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "Mixed scripts: 東京の会議は午後三時に始まります — مرحبا بالعالم — שלום עולם — 👩🏽‍💻🧑‍🤝‍🧑🏳️‍🌈 — ‹U+202E›reversed‹U+202C›"
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "# A heading that goes on and on, the way a report sometimes titles itself when its author has too much to say about one small thing in one line\n\nAveryveryverylongwordwithoutanyplacetobreakitthatsomeonepastedfromalogfileoracommitmessageandthatnoonewillreadbutthewindowmuststillholditsomehowwithoutpushingthepageoutofitsframeorhidingthebuttonsnexttoit\n\nInline code: `an-inline-code-span-that-is-far-too-long-to-fit-on-one-line-of-the-window-and-has-no-spaces-at-all-anywhere-in-it`\n\n```text\nan_unbroken_line_of_code_or_log_output_that_runs_well_past_the_right_edge_of_any_window_because_a_tool_printed_it_that_way=0123456789012345678901234567890123456789\n```\n\n| first column | second column | third column | fourth column | fifth column | sixth column | seventh column | eighth column | ninth column | tenth column | eleventh | twelfth |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n| a cell with several words in it | another cell with words | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |\n\n> > > > > > > > > > > > > > > > > > > > A quote twenty deep, which the core cuts at sixteen\n\n- one\n  - two\n    - three\n      - four\n        - five\n          - six\n            - seven\n              - eight\n\n[a link whose text is long enough to wrap over several lines in a narrow window, as a pasted title would be](https://github.com/owner/repo/issues/99999)\n\nMixed scripts: 東京の会議は午後三時に始まります — مرحبا بالعالم — שלום עולם — 👩🏽‍💻🧑‍🤝‍🧑🏳️‍🌈 — ‮reversed‬\n",
+    "name": "worst"
+  },
+  {
+    "document": {
+      "blocks": [
+        {
+          "content": [
+            {
+              "kind": "text",
+              "text": "One line, from an agent."
+            }
+          ],
+          "kind": "paragraph"
+        }
+      ],
+      "truncated": false
+    },
+    "markdown": "One line, from an agent.\n",
+    "name": "one"
+  },
+  {
+    "document": {
+      "blocks": [],
+      "truncated": false
+    },
+    "markdown": "",
+    "name": "empty"
+  }
+]

@@ -119,34 +119,54 @@ mod tests {
         std::fs::write(bindings_path(), bindings()).unwrap();
     }
 
-    fn harness_corpus_path() -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../ui/harness/corpus.json")
+    fn harness_path(name: &str) -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../ui/harness").join(name)
+    }
+
+    fn read_harness(name: &str) -> String {
+        std::fs::read_to_string(harness_path(name)).expect("a file of app/ui/harness").replace("\r\n", "\n")
     }
 
     /// The hostile corpus as the core parses it, for the frontend's DOM proof (threat model V07), with the
-    /// markdown it came from for the proof's deliberately unsafe renderer. The 1 MiB case stays out: the
-    /// app's smoke run renders it, from the core.
+    /// markdown it came from for the proof's deliberately unsafe renderer, and the text the DOM must show. The
+    /// 1 MiB case stays out: the app's smoke run renders it, from the core.
     fn harness_corpus() -> String {
         let cases: Vec<serde_json::Value> = corpus::cases()
             .into_iter()
             .filter(|case| case.repeat.is_none())
             .map(|case| {
-                serde_json::json!({ "name": case.name, "markdown": case.markdown, "document": parse_document(&case.markdown) })
+                let document = parse_document(&case.markdown);
+                serde_json::json!({ "name": case.name, "markdown": case.markdown, "document": document, "shows": case.shows })
             })
             .collect();
         serde_json::to_string_pretty(&cases).unwrap() + "\n"
     }
 
-    #[test]
-    fn the_harness_has_the_corpus_of_this_build() {
-        let committed = std::fs::read_to_string(harness_corpus_path()).expect("app/ui/harness/corpus.json");
-        assert_eq!(committed.replace("\r\n", "\n"), harness_corpus(), "stale corpus: run the ignored test write_harness_corpus");
+    /// The documents the views' proofs render (`harness/documents.json`): their markdown is written by hand,
+    /// their tree is the core's, so a proof sees what a view would get.
+    fn harness_documents(committed: &str) -> String {
+        let mut documents: Vec<serde_json::Value> = serde_json::from_str(committed).expect("harness/documents.json");
+        for document in &mut documents {
+            let markdown = document["markdown"].as_str().expect("each document has its markdown").to_owned();
+            document["document"] = serde_json::to_value(parse_document(&markdown)).unwrap();
+        }
+        serde_json::to_string_pretty(&documents).unwrap() + "\n"
     }
 
     #[test]
-    #[ignore = "writes app/ui/harness/corpus.json"]
-    fn write_harness_corpus() {
-        std::fs::write(harness_corpus_path(), harness_corpus()).unwrap();
+    fn the_harness_has_the_trees_of_this_build() {
+        let stale = "stale harness: run the ignored test write_harness";
+        assert_eq!(read_harness("corpus.json"), harness_corpus(), "{stale}");
+        let documents = read_harness("documents.json");
+        assert_eq!(documents, harness_documents(&documents), "{stale}");
+    }
+
+    #[test]
+    #[ignore = "writes app/ui/harness/corpus.json and documents.json"]
+    fn write_harness() {
+        std::fs::write(harness_path("corpus.json"), harness_corpus()).unwrap();
+        let documents = harness_documents(&read_harness("documents.json"));
+        std::fs::write(harness_path("documents.json"), documents).unwrap();
     }
 
     #[test]
