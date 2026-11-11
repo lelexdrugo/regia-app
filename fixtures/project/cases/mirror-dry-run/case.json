@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. A dry run on a field «Progetto» that has alpha and an old option, not beta: beta is the option it would add; of the seven issues of the Project, the closed one too, two are right, three it would write (no value, the old option, a closed one of beta), one has no project label and one the label of a project the registry does not have. Nothing is written, not even the option.",
+  "scenario": "field-without-beta",
+  "args": [
+    "project",
+    "mirror",
+    "--dry-run",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "riempi",
+    "--dry-run"
+  ]
+}

@@ -1,0 +1,80 @@
+[
+  {
+    "argv": [
+      "repo",
+      "create",
+      "example/gamma-dossier",
+      "--private",
+      "--description",
+      "[regia] a new project"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "repo",
+      "edit",
+      "example/gamma-dossier",
+      "--add-topic",
+      "regia"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "label",
+      "create",
+      "progetto:gamma",
+      "--repo",
+      "example/tracker",
+      "--color",
+      "5319e7",
+      "--description",
+      "a new project",
+      "--force"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "issue",
+      "create",
+      "--repo",
+      "example/tracker",
+      "--title",
+      "[gamma] a new project",
+      "--body-file",
+      "-",
+      "--label",
+      "progetto:gamma",
+      "--label",
+      "tipo:obiettivo"
+    ],
+    "stdin": "<!-- regia:progetto\nid: gamma\ncartella: {dossier}\nplaybook: generico\npriorita: 3\nwip: 2\ndefault_automatici: no\nrepo: example/gamma-dossier\nprodotti: nessuno\n-->\n\n## Obiettivo\n\nAn objective.\n\n## Definizione di fatto\n\nDone when it is done.\n\n## Mandato\n\nDa definire alla prima proposta.\n"
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_9",
+      "o": "opt-c3",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "arguments": "input:{fieldId:\"FIELD_PROJECT_FIXTURE\",singleSelectOptions:[{id:\"opt-project-alpha\",name:\"alpha\",color:BLUE,description:\"\"},{id:\"opt-project-beta\",name:\"beta\",color:GREEN,description:\"\"},{name:\"gamma\",color:ORANGE,description:\"\"}]}",
+    "mutation": "updateProjectV2Field",
+    "variables": {}
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_PROJECT_FIXTURE",
+      "i": "ITEM_9",
+      "o": "opt-project-gamma",
+      "p": "PROJECT_FIXTURE"
+    }
+  }
+]

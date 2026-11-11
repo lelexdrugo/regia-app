@@ -1,0 +1,42 @@
+{
+  "da_scrivere": [
+    [
+      2,
+      null,
+      "beta"
+    ],
+    [
+      4,
+      null,
+      "alpha"
+    ],
+    [
+      5,
+      null,
+      "alpha"
+    ],
+    [
+      6,
+      null,
+      "alpha"
+    ],
+    [
+      7,
+      null,
+      "alpha"
+    ],
+    [
+      8,
+      null,
+      "beta"
+    ]
+  ],
+  "dry_run": false,
+  "etichetta_ignota": [],
+  "falliti": [],
+  "gia_giusti": 2,
+  "items": 8,
+  "opzioni_aggiunte": [],
+  "scritti": 6,
+  "senza_etichetta": []
+}

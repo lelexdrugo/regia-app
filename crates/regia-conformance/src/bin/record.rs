@@ -33,6 +33,10 @@ const PROJECT_FIELD_ID: &str = "FIELD_PROJECT_FIXTURE";
 struct Scenario {
     project_id: String,
     page_size: usize,
+    /// The options of the Project's field that mirrors the project label; without them the Project has
+    /// no such field.
+    #[serde(default)]
+    project_field_options: Option<Vec<String>>,
     issues: Vec<ScenarioIssue>,
     #[serde(default)]
     extra_blockers: BTreeMap<String, Value>,
@@ -276,9 +280,10 @@ fn views(scenario: &Scenario) -> Map<String, Value> {
     scenario.issues.iter().map(|issue| (issue.number.to_string(), view(issue))).collect()
 }
 
-/// Each issue's node by its id, with its item in the Project when it has a status there.
-fn nodes(scenario: &Scenario) -> Map<String, Value> {
-    scenario
+/// Each issue's node by its id, with its item in the Project when it has a status there, and the
+/// Project's node.
+fn nodes(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Map<String, Value> {
+    let mut out: Map<String, Value> = scenario
         .issues
         .iter()
         .map(|issue| {
@@ -289,7 +294,53 @@ fn nodes(scenario: &Scenario) -> Map<String, Value> {
                 .collect();
             (issue_id(issue.number), json!({"projectItems": {"nodes": items}}))
         })
-        .collect()
+        .collect();
+    out.insert(scenario.project_id.clone(), project_node(scenario, config, binding));
+    out
+}
+
+/// The colors the prototype gives the options of the project field, in turn.
+const OPTION_COLORS: [&str; 8] = ["BLUE", "GREEN", "ORANGE", "PURPLE", "PINK", "RED", "YELLOW", "GRAY"];
+
+/// The Project's node: its fields, a text one, the status and the project field if the scenario has one,
+/// and its items, one per issue with a status, closed ones too, each with its project value by name.
+fn project_node(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
+    let project_field = binding.project_field_name();
+    let option = |id: &str, name: &str, color: &str| json!({"id": id, "name": name, "color": color, "description": ""});
+    let statuses: Vec<Value> = config.status_options.iter().map(|(name, id)| option(id, name, "GRAY")).collect();
+    let mut fields = vec![
+        json!({"__typename": "ProjectV2Field", "id": "FIELD_TITLE", "name": "Title"}),
+        json!({"__typename": "ProjectV2SingleSelectField", "id": config.status_field_id, "name": STATUS_FIELD_NAME, "options": statuses}),
+    ];
+    if let Some(options) = &scenario.project_field_options {
+        let options: Vec<Value> = options
+            .iter()
+            .enumerate()
+            .map(|(i, name)| option(&format!("opt-project-{name}"), name, OPTION_COLORS[i % OPTION_COLORS.len()]))
+            .collect();
+        fields.push(json!({"__typename": "ProjectV2SingleSelectField", "id": PROJECT_FIELD_ID, "name": project_field, "options": options}));
+    }
+    let items: Vec<Value> = scenario
+        .issues
+        .iter()
+        .filter(|issue| issue.status.is_some())
+        .map(|issue| {
+            let labels: Vec<Value> = issue.labels.iter().map(|name| json!({"name": name})).collect();
+            let mut by_name = Map::new();
+            if let Some(value) = &issue.project_field {
+                by_name.insert(project_field.to_owned(), json!({"name": value, "optionId": format!("opt-project-{value}")}));
+            }
+            json!({
+                "id": format!("ITEM_{}", issue.number),
+                "content": {"__typename": "Issue", "number": issue.number, "labels": {"nodes": labels}},
+                "fieldValueByName": by_name,
+            })
+        })
+        .collect();
+    json!({
+        "fields": {"nodes": fields},
+        "items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": items},
+    })
 }
 
 /// The answers to the writes: each mutation the prototype makes, with the ids it reads back.
@@ -336,7 +387,7 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &Tracker
         "all_pages": list_pages(&all, scenario, config, binding),
         "issues": issues_by_number(scenario),
         "views": views(scenario),
-        "nodes": nodes(scenario),
+        "nodes": nodes(scenario, config, binding),
         "mutations": mutations(),
         "blocker_pages": extra_pages(&scenario.extra_blockers, "blockedBy"),
         "sub_issue_pages": extra_pages(&scenario.extra_sub_issues, "subIssues"),
@@ -414,7 +465,11 @@ fn main() {
         // Proof that the fake answered and no real data came through.
         let calls = fs::read_to_string(&log).unwrap_or_default();
         assert!(case.spec.scenario.is_none() || !calls.is_empty(), "{}: the fake gh was not called", case.name);
-        let writes = writes_of_run(&state);
+        // A write can name the dossier's folder too: the registry of a project new is one.
+        let writes: Vec<Value> = match &folder {
+            Some(folder) => writes_of_run(&state).iter().map(|write| unplace_json(write, folder)).collect(),
+            None => writes_of_run(&state),
+        };
         let text = String::from_utf8(output.stdout).expect("the prototype printed UTF-8");
         let recorded = [text.as_str(), stderr.as_str(), &serde_json::to_string(&writes).expect("JSON")].concat();
         // The prototype builds the URL of an issue it creates, and of a repo, from the tracker's owner:

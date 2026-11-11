@@ -12,7 +12,8 @@
 //!
 //! A write to the tracker, a GraphQL mutation or a `gh` subcommand that changes something, is
 //! appended to the writes log as one JSON line, in a form both sides produce for the same call: a
-//! mutation by its name and its variables as text, a subcommand by its argv with `--name=value`
+//! mutation by its name, its variables as text and its arguments as the query writes them, without
+//! blanks, so a value written in the query counts too; a subcommand by its argv with `--name=value`
 //! split and `-R` spelled `--repo`, and the body it read on stdin. It answers a mutation from the
 //! fixture's `mutations` and a subcommand from its `cli`, by the subcommand's two words.
 
@@ -21,7 +22,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use regia_conformance::{FAKE_GH_SIDECAR, log_var, mutation_name, project_query, read_json, responses_var, writes_var};
+use regia_conformance::{FAKE_GH_SIDECAR, log_var, mutation_call, project_query, read_json, responses_var, writes_var};
 use serde_json::{Map, Value, json};
 
 const REQUIRED_ON_ISSUES: [&str; 2] = ["states:[OPEN]", "orderBy:{field:CREATED_AT,direction:ASC}"];
@@ -157,10 +158,12 @@ fn answer(args: &[String]) -> Result<String, String> {
     let mut variables = variables(&args[2..])?;
     let at = variables.iter().position(|(key, _)| key == "query").ok_or("the request has no query")?;
     let query = variables.remove(at).1;
-    // A mutation's variables are its own, `r` included: all of them are logged, none is checked.
-    if let Some(name) = mutation_name(&query) {
+    // A mutation's variables are its own, `r` included: all of them are logged, none is checked, and so
+    // are the arguments as the query writes them.
+    if let Some((name, arguments)) = mutation_call(&query) {
         let variables: Map<String, Value> = variables.into_iter().map(|(key, value)| (key, Value::String(value))).collect();
-        append(fixture.writes.as_ref(), &json!({"mutation": name, "variables": variables}).to_string())?;
+        let line = json!({"mutation": name, "variables": variables, "arguments": arguments});
+        append(fixture.writes.as_ref(), &line.to_string())?;
         append(fixture.log.as_ref(), &format!("mutation {name}"))?;
         let data = responses["mutations"].get(&name).ok_or_else(|| format!("no fixture answer for mutation {name}"))?;
         let projected = project_query(&query, data)?;

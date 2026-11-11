@@ -1,5 +1,6 @@
 [
   {
+    "arguments": "input:{issueId:$p,subIssueId:$c}",
     "mutation": "addSubIssue",
     "variables": {
       "c": "ISSUE_2",

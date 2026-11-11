@@ -1,5 +1,6 @@
 [
   {
+    "arguments": "input:{issueId:$i,stateReason:$r}",
     "mutation": "closeIssue",
     "variables": {
       "i": "ISSUE_3",
@@ -7,6 +8,7 @@
     }
   },
   {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
     "mutation": "updateProjectV2ItemFieldValue",
     "variables": {
       "f": "FIELD_FIXTURE",
@@ -16,6 +18,7 @@
     }
   },
   {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
     "mutation": "updateProjectV2ItemFieldValue",
     "variables": {
       "f": "FIELD_FIXTURE",

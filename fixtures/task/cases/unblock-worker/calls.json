@@ -1,5 +1,6 @@
 [
   {
+    "arguments": "input:{issueId:$i,blockingIssueId:$b}",
     "mutation": "removeBlockedBy",
     "variables": {
       "b": "ISSUE_3",

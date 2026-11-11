@@ -240,7 +240,8 @@ fn the_fake_gh_logs_writes_in_one_form_for_both_sides() {
     assert_eq!(lines[0], lines[1], "`--name=value` and `-R` log as `--name value` and `--repo`");
     assert_eq!(lines[2]["stdin"], "a body");
     assert_eq!(lines[3], lines[4], "the two forms of a mutation log the same");
-    assert_eq!(lines[3], json!({"mutation": "closeIssue", "variables": {"i": "ISSUE_3", "r": "COMPLETED"}}));
+    let arguments = "input:{issueId:$i,stateReason:$r}";
+    assert_eq!(lines[3], json!({"mutation": "closeIssue", "variables": {"i": "ISSUE_3", "r": "COMPLETED"}, "arguments": arguments}));
 }
 
 /// The real binary on `case`, through the facade to the prototype of `dossier` on its case dossier,
@@ -275,17 +276,13 @@ fn the_prototype_through_the_binary_makes_the_recorded_writes() {
         println!("{}: exit {:?}, {} writes, as recorded", case.name, run.exit, run.writes.len());
         if !case.writes().is_empty() {
             let mut altered = case.writes();
-            // A subcommand with two of its arguments swapped, or a mutation with a variable changed.
+            // A subcommand with two of its arguments swapped, or a mutation with its arguments changed.
             match altered[0]["argv"].as_array_mut() {
                 Some(argv) => {
                     let len = argv.len();
                     argv.swap(len - 3, len - 1);
                 }
-                None => {
-                    let variables = altered[0]["variables"].as_object_mut().expect("a mutation's variables");
-                    let value = variables.values_mut().next().expect("a variable");
-                    *value = json!("ALTERED");
-                }
+                None => altered[0]["arguments"] = json!("ALTERED"),
             }
             assert!(!json_diff(&Value::Array(run.writes.clone()), &Value::Array(altered)).is_empty(), "an altered write went unnoticed");
             writes += run.writes.len();

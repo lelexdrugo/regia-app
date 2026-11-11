@@ -14,6 +14,7 @@
     "stdin": null
   },
   {
+    "arguments": "input:{issueId:$p,subIssueId:$c,replaceParent:true}",
     "mutation": "addSubIssue",
     "variables": {
       "c": "ISSUE_4",

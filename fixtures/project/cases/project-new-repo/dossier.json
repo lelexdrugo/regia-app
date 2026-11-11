@@ -1,0 +1,13 @@
+{
+  "log": [
+    "3fed086f4a00eaee77d86bd9a9f090bdb57c8894 fixture: the dossier before the run"
+  ],
+  "origin": "https://github.com/example/gamma-dossier.git",
+  "remote": null,
+  "status": [
+    "?? .regia/LEGGIMI.md",
+    "?? .regia/decisioni.md",
+    "?? .regia/mappa.md",
+    "?? .regia/stato.md"
+  ]
+}
