@@ -13,6 +13,12 @@ pub(crate) struct Format {
     pub lock: LockKeys,
     pub monotonic: MonotonicKeys,
     pub view: View,
+    pub budget: BudgetKeys,
+    pub usage: UsageKeys,
+    pub usage_window: WindowKeys,
+    pub usage_token: TokenKeys,
+    pub usage_statuses: UsageStatuses,
+    pub token_statuses: TokenStatuses,
 }
 
 #[derive(Debug, Deserialize)]
@@ -28,6 +34,8 @@ pub(crate) struct Table {
 #[derive(Debug, Deserialize)]
 pub(crate) struct Kinds {
     pub lock: String,
+    pub cache: String,
+    pub probe: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -53,6 +61,63 @@ pub(crate) struct MonotonicKeys {
 #[derive(Debug, Deserialize)]
 pub(crate) struct View {
     pub hidden: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct BudgetKeys {
+    pub key: String,
+    pub providers: String,
+    pub valid: String,
+    pub valid_at: String,
+    pub last: String,
+    pub attempted_at: String,
+    pub claim_token: String,
+    pub claim_expires_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct UsageKeys {
+    pub provider: String,
+    pub status: String,
+    pub plan: String,
+    pub windows: String,
+    pub reason: String,
+    pub token: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct WindowKeys {
+    pub status: String,
+    pub used_pct: String,
+    pub remaining_pct: String,
+    pub reset: String,
+    pub reset_in_s: String,
+    pub open: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct TokenKeys {
+    pub status: String,
+    pub expires_at: String,
+    pub expires_in_s: String,
+    pub reason: String,
+    pub http_status: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct UsageStatuses {
+    pub ok: String,
+    pub unknown: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct TokenStatuses {
+    pub valid: String,
+    pub expiring: String,
+    pub expired: String,
+    pub unknown: String,
+    pub refused: String,
 }
 
 /// The statements of the prototype, word for word, on the names of the format.
