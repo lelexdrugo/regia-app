@@ -174,4 +174,15 @@ mod tests {
         let (address, _requests) = server(vec![]);
         assert_eq!(Https::new().get(&address, &Bearer(CANARY.to_owned()), &[]), Err(TransportError::Unreachable));
     }
+
+    /// A real handshake on the system's TLS and roots: one GET to GitHub, with a bearer that is no
+    /// token. Any status proves both; neither probe's endpoint is asked. By hand, with the network:
+    /// `cargo test -p regia-agents --lib https -- --ignored`.
+    #[test]
+    #[ignore = "needs the network"]
+    fn the_system_tls_shakes_hands_with_github() {
+        let answer = Https::new().get("https://api.github.com/", &Bearer(CANARY.to_owned()), &[]).map(|body| body.len());
+        eprintln!("GitHub answered {answer:?}");
+        assert!(matches!(answer, Ok(_) | Err(TransportError::Status(_))), "{answer:?}");
+    }
 }
