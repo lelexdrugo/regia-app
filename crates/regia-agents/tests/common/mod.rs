@@ -1,6 +1,7 @@
 //! What the tests of the surfaces share: a scratch folder under `target/` with the fake agent copied
 //! as `claude`, `codex` and `orca`, a work folder, a state folder, and the surfaces pinned to the
-//! fakes, so that no test can reach a real agent or a real Orca.
+//! fakes, so that no test can reach a real agent or a real Orca. A surface without a pin, such as
+//! the Orca surface for its wake-up, gets an empty search ([`Trial::nowhere`]) in the tests.
 
 #![allow(dead_code)]
 
@@ -11,7 +12,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use regia_agents::{Cli, Env, LaunchError, LaunchRequest, LaunchSurface, Orca, OrcaWaits, Receipt, ServiceId, Waits};
-use regia_exec::{Pin, Program};
+use regia_exec::{Pin, Program, Search};
 use regia_identity::prototype_env_var;
 use serde_json::Value;
 
@@ -126,13 +127,25 @@ impl Trial {
         Pin::at(program, &self.bin.join(exe(name))).expect("the fake")
     }
 
+    /// A search of an empty folder: a program without a pin is not found, never this machine's.
+    pub fn nowhere(&self) -> Search {
+        let empty = self.dir.join("empty");
+        fs::create_dir_all(&empty).expect("an empty folder");
+        Search::from_parts(Some(empty.as_os_str()), Vec::new(), &[])
+    }
+
     /// The surface over `env`, pinned to the fakes, with the prototype test's short waits.
     pub fn cli_over(&self, env: Env) -> Cli {
         Cli::new(env)
             .with_state(self.state.clone())
             .with_pin(ServiceId::Claude, self.pin(Program::Claude, "claude"))
             .with_pin(ServiceId::Codex, self.pin(Program::Codex, "codex"))
-            .with_waits(Waits { session: Duration::from_secs(20), transcript: Duration::from_secs(4), tick: Duration::from_millis(50) })
+            .with_waits(Waits {
+                session: Duration::from_secs(20),
+                transcript: Duration::from_secs(4),
+                wake: Duration::from_secs(20),
+                tick: Duration::from_millis(50),
+            })
     }
 
     pub fn cli(&self) -> Cli {

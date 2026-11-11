@@ -5,7 +5,8 @@
 //!   resume, classify the end, and scrub the child's environment.
 //! - [`LaunchSurface`] says **where it runs**: `Cli` (a detached process with a log), [`Orca`]
 //!   (optional, a session in its app), [`Auto`] (Orca, else `Cli`) and [`Dry`] (starts nothing).
-//!   They meet at a neutral [`LaunchRequest`], never at an argv.
+//!   They meet at a neutral [`LaunchRequest`], never at an argv. Each also wakes the token of a round
+//!   ([`LaunchSurface::wake`]): for real where its launches start sessions, and fake on `Dry`.
 //!
 //! Which service, tier, model and effort a role gets comes from three layers ([`Policy`]): the
 //! product's defaults, each service's file, and the user's settings.
@@ -24,7 +25,7 @@ mod orca;
 mod policy;
 mod wake;
 
-pub use cli::{Cli, Waits};
+pub use cli::{Cli, WAKE_PROMPT, Waits};
 pub use gates::{Gate, GateError, Gates};
 pub use launch::{
     Dry, Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback,

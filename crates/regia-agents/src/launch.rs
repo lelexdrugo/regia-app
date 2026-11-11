@@ -9,7 +9,7 @@ use regia_exec::{Effort, ModelId};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
-use crate::ServiceId;
+use crate::{ServiceId, WakeOutcome};
 
 /// Where a launch runs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -247,6 +247,10 @@ pub trait LaunchSurface {
 
     /// Starts the launch and returns once it is running, or fails, saying whether before any effect.
     fn launch(&self, request: &LaunchRequest) -> Result<Receipt, LaunchError>;
+
+    /// The token wake-up of a round (#190), which follows the launches: real where they start
+    /// sessions, fake where nothing starts. It waits for the end, and a failure is in the outcome.
+    fn wake(&self) -> WakeOutcome;
 }
 
 /// Starts nothing. It keeps every request it is handed, for shadow runs and tests.
@@ -278,6 +282,10 @@ impl LaunchSurface for Dry {
         let mut receipt = Receipt::new(SurfaceKind::Dry, request);
         receipt.request = Some(value);
         Ok(receipt)
+    }
+
+    fn wake(&self) -> WakeOutcome {
+        WakeOutcome::fake()
     }
 }
 
@@ -312,6 +320,10 @@ mod tests {
         fn launch(&self, _: &LaunchRequest) -> Result<Receipt, LaunchError> {
             *self.1.lock().unwrap() += 1;
             Err(self.0.clone())
+        }
+
+        fn wake(&self) -> WakeOutcome {
+            WakeOutcome::fake()
         }
     }
 

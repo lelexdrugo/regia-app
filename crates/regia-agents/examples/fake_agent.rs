@@ -9,6 +9,10 @@
 //! - `dies`: print an error and exit with 2 before any session;
 //! - `slow`: sleep 8 s once the session is open, then write `<name>.done` next to itself.
 //!
+//! Asked for `--no-session-persistence`, as the token wake-up asks, the fake `claude` answers with
+//! one `result` line after a note and keeps nothing: no file in its folder, which it does not need.
+//! There `slow` sleeps 8 s before the answer, and `expired` answers as a sign-in that expired.
+//!
 //! Copied as `orca`, it answers `status`, `worktree show` and `agent launch` in JSON, as Orca does.
 //! Orca's app, not its CLI, starts the agent, with an environment of its own: the fake writes the
 //! agent's session file under the folders named in the files `claude-home` and `codex-home` next to
@@ -53,6 +57,9 @@ fn main() -> ExitCode {
         say(&format!("Error: fake {name} cannot start"));
         return ExitCode::from(2);
     }
+    if name == "claude" && std::env::args().any(|arg| arg == "--no-session-persistence") {
+        return wake(&mode);
+    }
     let Some(home) = std::env::var_os(folder_variable).filter(|value| !value.is_empty()).map(PathBuf::from) else {
         eprintln!("the fake {name} needs {folder_variable}: it does not write in a real home");
         return ExitCode::from(65);
@@ -74,6 +81,20 @@ fn main() -> ExitCode {
         std::thread::sleep(Duration::from_secs(8));
     }
     fs::write(dir.join(format!("{name}.done")), "x").expect("the end mark");
+    ExitCode::SUCCESS
+}
+
+/// The answer of `claude -p --output-format=json` to the token wake-up: the `result` object last.
+fn wake(mode: &str) -> ExitCode {
+    if mode == "slow" {
+        std::thread::sleep(Duration::from_secs(8));
+    }
+    say("fake claude: nothing is kept");
+    if mode == "expired" {
+        say(&serde_json::json!({"type": "result", "is_error": true, "result": "OAuth token has expired"}).to_string());
+        return ExitCode::from(1);
+    }
+    say(&serde_json::json!({"type": "result", "is_error": false, "result": "ok", "total_cost_usd": 0.00015}).to_string());
     ExitCode::SUCCESS
 }
 

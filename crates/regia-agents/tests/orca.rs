@@ -222,6 +222,21 @@ fn a_failed_orca_launch_does_not_fall_back_to_cli() {
     assert!(!trial.started("claude"), "the Cli surface did not run");
 }
 
+/// The wake-up never goes through Orca: the Orca surface wakes with claude's own session, as `Cli`
+/// does, on the same search, and `Auto` with its `Cli`. Neither is fake. Orca's surface searches an
+/// empty folder here, because without a pin it would find this machine's claude.
+#[test]
+fn orca_and_auto_wake_through_claude_and_not_through_orca() {
+    let trial = Trial::new("orca-wake");
+    let outcome = missing_orca(&trial).wake();
+    assert!(!outcome.ok && !outcome.fake, "{outcome:?}");
+    assert!(outcome.error.as_deref().is_some_and(|error| error.contains("claude not found")), "{outcome:?}");
+    let outcome = Auto::new(missing_orca(&trial), trial.cli()).wake();
+    assert!(outcome.ok && !outcome.fake, "{outcome:?}");
+    assert!(common::args(&trial.record("claude", 0)).contains(&"--no-session-persistence".to_owned()));
+    assert!(trial.orca_calls().is_empty(), "Orca was not asked");
+}
+
 /// Everything about Orca stays in this crate and in the builders of regia-exec: no other product
 /// source names it. Outside the scan, on purpose: regia-agents (the adapter); regia-exec (its closed
 /// list of programs and their argv, threat model §3.6, rule 1); regia-conformance (the harness names

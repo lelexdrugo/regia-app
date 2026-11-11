@@ -27,7 +27,7 @@ use serde_json::{Value, json};
 
 use crate::cli::{Files, steps_folder};
 use crate::launch::{Dry, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback};
-use crate::{AgentService, Cli, Env, ServiceId, children};
+use crate::{AgentService, Cli, Env, ServiceId, WakeOutcome, children};
 
 /// Past this many characters the prompt goes in a file: the prototype's limit, well under what a
 /// command line holds.
@@ -306,6 +306,20 @@ impl LaunchSurface for Orca {
         receipt.marker = Some(marker);
         Ok(receipt)
     }
+
+    /// Never through Orca: the wake-up is claude's own, as on `Cli`, over the same environment, state
+    /// folder and search.
+    fn wake(&self) -> WakeOutcome {
+        let cli = Cli::new(self.env.clone());
+        let cli = match &self.state {
+            Some(state) => cli.with_state(state.clone()),
+            None => cli,
+        };
+        match &self.search {
+            Some(search) => cli.with_search(search.clone()).wake(),
+            None => cli.wake(),
+        }
+    }
 }
 
 /// What Orca gets as the prompt: the prompt itself when it is short and a valid argument, otherwise
@@ -417,6 +431,10 @@ impl LaunchSurface for Auto {
 
     fn launch(&self, request: &LaunchRequest) -> Result<Receipt, LaunchError> {
         launch_with_fallback(&self.orca, &self.cli, request)
+    }
+
+    fn wake(&self) -> WakeOutcome {
+        self.cli.wake()
     }
 }
 

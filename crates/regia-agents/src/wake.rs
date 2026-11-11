@@ -176,18 +176,18 @@ mod tests {
     fn with_the_budget_unknown_one_wake_up_and_no_other_within_the_hour() {
         let wakes = Cell::new(0);
         let mut wake_up = WakeUp::new(ProbeConsent::Granted);
-        let mut wake = || {
+        let wake = || {
             wakes.set(wakes.get() + 1);
             renewed()
         };
-        let attempt = wake_up.round(true, at(0), &mut wake).cloned().expect("a wake-up");
+        let attempt = wake_up.round(true, at(0), wake).cloned().expect("a wake-up");
         assert!(attempt.outcome.ok && attempt.outcome.token_renewed);
         assert_eq!(attempt.at, at(0));
         for minutes in [15, 30, 45] {
-            assert!(wake_up.round(true, at(minutes), &mut wake).is_none(), "{minutes} minutes later");
+            assert!(wake_up.round(true, at(minutes), wake).is_none(), "{minutes} minutes later");
         }
         assert_eq!(wakes.get(), 1);
-        assert!(wake_up.round(true, at(60), &mut wake).is_some(), "an hour after the first: once more");
+        assert!(wake_up.round(true, at(60), wake).is_some(), "an hour after the first: once more");
         assert_eq!(wakes.get(), 2);
     }
 
@@ -229,14 +229,14 @@ mod tests {
     fn a_failed_wake_up_does_not_stop_the_round_and_counts_as_an_attempt() {
         let wakes = Cell::new(0);
         let mut wake_up = WakeUp::new(ProbeConsent::Granted);
-        let mut wake = || {
+        let wake = || {
             wakes.set(wakes.get() + 1);
             WakeOutcome::failed("boom")
         };
-        let attempt = wake_up.round(true, at(0), &mut wake).cloned().expect("an attempt");
+        let attempt = wake_up.round(true, at(0), wake).cloned().expect("an attempt");
         assert!(!attempt.outcome.ok);
         assert_eq!(attempt.outcome.error.as_deref(), Some("boom"));
-        assert!(wake_up.round(true, at(15), &mut wake).is_none());
+        assert!(wake_up.round(true, at(15), wake).is_none());
         assert_eq!(wakes.get(), 1);
     }
 
