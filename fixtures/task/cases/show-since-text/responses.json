@@ -1379,5 +1379,233 @@
       }
     }
   },
-  "sub_issue_pages": {}
+  "mutations": {
+    "addBlockedBy": {
+      "addBlockedBy": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "addProjectV2ItemById": {
+      "addProjectV2ItemById": {
+        "item": {
+          "id": "ITEM_ADDED"
+        }
+      }
+    },
+    "addSubIssue": {
+      "addSubIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "closeIssue": {
+      "closeIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "removeBlockedBy": {
+      "removeBlockedBy": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "reopenIssue": {
+      "reopenIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "updateProjectV2ItemFieldValue": {
+      "updateProjectV2ItemFieldValue": {
+        "projectV2Item": {
+          "id": "ITEM_WRITTEN"
+        }
+      }
+    }
+  },
+  "nodes": {
+    "ISSUE_1": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_1",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_2": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_2",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_3": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_3",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_4": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_4",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_5": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_5",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_6": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_6",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_7": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_7",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_8": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_8",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "sub_issue_pages": {},
+  "views": {
+    "1": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "tipo:obiettivo"
+        }
+      ]
+    },
+    "2": {
+      "labels": [
+        {
+          "name": "progetto:beta"
+        },
+        {
+          "name": "tipo:obiettivo"
+        }
+      ]
+    },
+    "3": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "4": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:abbozzo"
+        }
+      ]
+    },
+    "5": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "6": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "7": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "8": {
+      "labels": [
+        {
+          "name": "progetto:beta"
+        }
+      ]
+    }
+  }
 }
