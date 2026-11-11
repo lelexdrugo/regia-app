@@ -1,0 +1,32 @@
+{
+  "_note": "Synthetic. #5 at GitHub's cap of 100 sub-issues (#505): an error before any write, exit 1, no issue created, nothing on stdout.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "new",
+    "--project",
+    "alpha",
+    "--title",
+    "one too many",
+    "--parent",
+    "5",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "new",
+    "--progetto",
+    "alpha",
+    "--titolo",
+    "one too many",
+    "--padre",
+    "5"
+  ],
+  "exit": 1,
+  "gh": {
+    "issues": {
+      "5": {"id": "ISSUE_5", "state": "OPEN", "subIssues": {"totalCount": 100}}
+    }
+  }
+}

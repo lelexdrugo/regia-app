@@ -1,0 +1,191 @@
+[
+  {
+    "bloccato_da": [],
+    "bloccato_da_totale": 0,
+    "campo_progetto": null,
+    "catena": 2,
+    "ciclo": false,
+    "closedAt": null,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "labels": [
+      "progetto:alpha",
+      "maturità:pronto"
+    ],
+    "maturita": "pronto",
+    "number": 6,
+    "obiettivo": false,
+    "parent": 5,
+    "progetto": "alpha",
+    "sblocca": 1,
+    "sblocca_totale": 1,
+    "state": "OPEN",
+    "stateReason": null,
+    "stato": "In corso",
+    "sub": [],
+    "title": "child of 5, in progress",
+    "updatedAt": "2026-01-02T03:04:05Z",
+    "url": "https://tracker.invalid/issues/6"
+  },
+  {
+    "bloccato_da": [],
+    "bloccato_da_totale": 0,
+    "campo_progetto": "alpha",
+    "catena": 2,
+    "ciclo": false,
+    "closedAt": null,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "labels": [
+      "progetto:alpha",
+      "maturità:pronto"
+    ],
+    "maturita": "pronto",
+    "number": 3,
+    "obiettivo": false,
+    "parent": 1,
+    "progetto": "alpha",
+    "sblocca": 0,
+    "sblocca_totale": 1,
+    "state": "OPEN",
+    "stateReason": null,
+    "stato": "Approvato",
+    "sub": [],
+    "title": "approved and ready, blocks 4",
+    "updatedAt": "2026-01-02T03:04:05Z",
+    "url": "https://tracker.invalid/issues/3"
+  },
+  {
+    "bloccato_da": [
+      [
+        3,
+        "OPEN"
+      ]
+    ],
+    "bloccato_da_totale": 1,
+    "campo_progetto": null,
+    "catena": 1,
+    "ciclo": false,
+    "closedAt": null,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "labels": [
+      "progetto:alpha",
+      "maturità:abbozzo"
+    ],
+    "maturita": "abbozzo",
+    "number": 4,
+    "obiettivo": false,
+    "parent": 1,
+    "progetto": "alpha",
+    "sblocca": 0,
+    "sblocca_totale": 0,
+    "state": "OPEN",
+    "stateReason": null,
+    "stato": "Proposta",
+    "sub": [],
+    "title": "proposal blocked by 3",
+    "updatedAt": "2026-01-02T03:04:05Z",
+    "url": "https://tracker.invalid/issues/4"
+  },
+  {
+    "bloccato_da": [],
+    "bloccato_da_totale": 0,
+    "campo_progetto": null,
+    "catena": 1,
+    "ciclo": false,
+    "closedAt": null,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "labels": [
+      "progetto:alpha",
+      "maturità:pronto"
+    ],
+    "maturita": "pronto",
+    "number": 5,
+    "obiettivo": false,
+    "parent": 1,
+    "progetto": "alpha",
+    "sblocca": 0,
+    "sblocca_totale": 0,
+    "state": "OPEN",
+    "stateReason": null,
+    "stato": "Decisione",
+    "sub": [
+      [
+        6,
+        "OPEN"
+      ]
+    ],
+    "title": "decision with its comments",
+    "updatedAt": "2026-01-02T03:04:05Z",
+    "url": "https://tracker.invalid/issues/5"
+  },
+  {
+    "bloccato_da": [],
+    "bloccato_da_totale": 0,
+    "campo_progetto": "alpha",
+    "catena": null,
+    "ciclo": false,
+    "closedAt": null,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "labels": [
+      "progetto:alpha",
+      "tipo:obiettivo"
+    ],
+    "maturita": null,
+    "number": 1,
+    "obiettivo": true,
+    "parent": null,
+    "progetto": "alpha",
+    "sblocca": null,
+    "sblocca_totale": null,
+    "state": "OPEN",
+    "stateReason": null,
+    "stato": "In corso",
+    "sub": [
+      [
+        3,
+        "OPEN"
+      ],
+      [
+        4,
+        "OPEN"
+      ],
+      [
+        5,
+        "OPEN"
+      ],
+      [
+        7,
+        "CLOSED"
+      ]
+    ],
+    "title": "[alpha] objective of alpha",
+    "updatedAt": "2026-01-02T03:04:05Z",
+    "url": "https://tracker.invalid/issues/1"
+  },
+  {
+    "bloccato_da": [],
+    "bloccato_da_totale": 0,
+    "campo_progetto": null,
+    "catena": null,
+    "ciclo": false,
+    "closedAt": "2026-01-05T09:00:00Z",
+    "createdAt": "2026-01-01T00:00:00Z",
+    "labels": [
+      "progetto:alpha",
+      "maturità:pronto"
+    ],
+    "maturita": "pronto",
+    "number": 7,
+    "obiettivo": false,
+    "parent": 1,
+    "progetto": "alpha",
+    "sblocca": null,
+    "sblocca_totale": null,
+    "state": "CLOSED",
+    "stateReason": "COMPLETED",
+    "stato": "Fatto",
+    "sub": [],
+    "title": "done and closed",
+    "updatedAt": "2026-01-02T03:04:05Z",
+    "url": "https://tracker.invalid/issues/7"
+  }
+]

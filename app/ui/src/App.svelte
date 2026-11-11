@@ -1,6 +1,7 @@
 <script lang="ts">
   // Text from the tracker reaches the DOM only through Svelte's text interpolation, never as markup:
-  // titles are written by people and by agents, and are untrusted (threat model §3.7).
+  // titles are written by people and by agents, and are untrusted (threat model §3.7). They sit in elements
+  // marked data-raw, so the catalog proof can tell them from the catalog's strings (app/ui/prove).
   import { onMount, tick } from "svelte";
 
   import type { BriefView, TaskView } from "./lib/bindings";
@@ -75,7 +76,7 @@
           {#each section(view.brief, key) as task (task.number)}
             <li data-section={key} data-number={task.number}>
               <span class="number">#{task.number}</span>
-              {task.title}
+              <span data-raw>{task.title}</span>
             </li>
           {/each}
         </ul>

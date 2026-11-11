@@ -1,0 +1,41 @@
+# `plan` (the prototype's `piano`): the graph of the open tasks of a project or under a root, read only.
+# Names from the conformance study, §8 (`conformita.md` of the dossier), not decided: they go to the gate
+# of the names with the rest (`docs/contract/commands.md`). A read (F55).
+schema = 1
+
+[commands.plan]
+python = ["piano"]
+group = "reads"
+output = "plan"
+[commands.plan.args]
+"--project" = "--progetto"
+"--root" = "--radice"
+"--mermaid" = { to = "--mermaid", flag = true }
+"--max-nodes" = "--max-nodi"
+
+# `comando` is the prototype's command line and `mermaid` its diagram, which quotes it: data, in the
+# prototype's words. Edges are `[blocker, blocked]` pairs.
+[shapes.plan.fields]
+comando = { to = "command" }
+data = { to = "date" }
+radice = { to = "root" }
+progetto = { to = "project" }
+nodi = { to = "nodes", items = "plan_node" }
+archi = { to = "edges" }
+annidati = { to = "nested" }
+linea = { to = "main_line" }
+inbox_fuori = { to = "inbox_hidden" }
+tagliati = { to = "truncated" }
+archi_persi = { to = "edges_lost" }
+mermaid = { to = "mermaid" }
+
+[shapes.plan_node.fields]
+number = { to = "number" }
+title = { to = "title" }
+stato = { to = "status", enum = "status" }
+progetto = { to = "project" }
+parent = { to = "parent" }
+sblocca = { to = "unblocks" }
+catena = { to = "chain" }
+ciclo = { to = "cycle" }
+esterno = { to = "external" }

@@ -29,11 +29,13 @@ export interface Catalog {
   message(id: string, args?: Record<string, FluentVariable>): string;
 }
 
-export function catalog(requested: string): Catalog {
+/** `product` is the product's name from `get_app_info`: the catalogs leave it out (#226). */
+export function catalog(requested: string, product: string): Catalog {
   const language = languages().includes(requested) ? requested : FALLBACK;
   // No bidi isolation marks: the Rust catalog leaves them out too, and both render the same text.
   const bundle = new FluentBundle(language, { useIsolating: false });
-  for (const source of sources(language)) {
+  // The term the Rust catalog defines from the same name (regia-i18n's product_term).
+  for (const source of [`-product = ${product}\n`, ...sources(language)]) {
     const errors = bundle.addResource(new FluentResource(source));
     if (errors.length > 0) {
       throw new Error(`catalog ${language}: ${errors.map(String).join("; ")}`);

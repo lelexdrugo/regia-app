@@ -1,0 +1,12 @@
+{
+  "_note": "Synthetic. The two Objectives: alpha's registry has every key `progetto new` writes, plus one written by hand that passes as data; beta's has only its id.",
+  "scenario": "tracker",
+  "args": [
+    "projects",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetti"
+  ]
+}

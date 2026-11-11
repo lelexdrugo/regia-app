@@ -1,0 +1,67 @@
+{
+  "annidati": [],
+  "archi": [
+    [
+      3,
+      4
+    ]
+  ],
+  "archi_persi": 0,
+  "comando": "regia piano --progetto alpha",
+  "data": "2026-01-10",
+  "inbox_fuori": [],
+  "linea": [
+    3,
+    4
+  ],
+  "mermaid": null,
+  "nodi": [
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": false,
+      "number": 3,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "approved and ready, blocks 4"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 4,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Proposta",
+      "title": "proposal blocked by 3"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 5,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Decisione",
+      "title": "decision with its comments"
+    },
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": false,
+      "number": 6,
+      "parent": 5,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "stato": "In corso",
+      "title": "child of 5, in progress"
+    }
+  ],
+  "progetto": "alpha",
+  "radice": null,
+  "tagliati": []
+}

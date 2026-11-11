@@ -27,6 +27,8 @@ pub enum FacadeError {
     UnknownArgument { command: String, argument: String },
     #[error("argument `{argument}` of command `{command}` needs a value")]
     MissingValue { command: String, argument: String },
+    #[error("argument `{argument}` of command `{command}` takes no value")]
+    FlagWithValue { command: String, argument: String },
     #[error("command `{command}` takes no further argument, and got `{argument}`")]
     UnexpectedArgument { command: String, argument: String },
     #[error("command `{0}` has no JSON output in the facade table")]
@@ -125,6 +127,12 @@ struct ArgSpec {
     /// Its value translates through this enum, from English to the prototype's.
     #[serde(rename = "enum")]
     enum_name: Option<String>,
+    /// Its value is a list separated by commas, and each item translates through the enum.
+    #[serde(default)]
+    list: bool,
+    /// Its value translates through this enum when it is one of its words, and passes as it is
+    /// otherwise: a free value with a word of its own, such as `none`.
+    keywords: Option<String>,
 }
 
 impl Arg {
@@ -147,6 +155,17 @@ impl Arg {
         match self {
             Arg::Rename(_) => None,
             Arg::Spec(spec) => spec.enum_name.as_deref(),
+        }
+    }
+
+    fn list(&self) -> bool {
+        matches!(self, Arg::Spec(ArgSpec { list: true, .. }))
+    }
+
+    fn keywords(&self) -> Option<&str> {
+        match self {
+            Arg::Rename(_) => None,
+            Arg::Spec(spec) => spec.keywords.as_deref(),
         }
     }
 }
@@ -271,11 +290,15 @@ impl Table {
                 return problem(file, format!("command `{name}` names an output shape that does not exist, or no prototype command"));
             }
             for (argument, spec) in &command.args {
-                if !argument.starts_with("--") || !spec.to().starts_with("--") || !has_enum(&spec.enum_name().map(str::to_owned)) {
+                let enums = has_enum(&spec.enum_name().map(str::to_owned)) && has_enum(&spec.keywords().map(str::to_owned));
+                if !argument.starts_with("--") || argument.contains('=') || !spec.to().starts_with("--") || !enums {
                     return problem(file, format!("argument `{argument}` of `{name}` is not an option, or names an unknown enum"));
                 }
                 if spec.flag() && spec.many() {
                     return problem(file, format!("argument `{argument}` of `{name}` cannot be a flag and take many values"));
+                }
+                if (spec.list() && spec.enum_name().is_none()) || (spec.keywords().is_some() && spec.enum_name().is_some()) {
+                    return problem(file, format!("argument `{argument}` of `{name}` has a list without an enum, or two enums"));
                 }
             }
             if !command.positionals.iter().all(|positional| has_enum(&positional.enum_name)) {
@@ -359,7 +382,8 @@ impl Table {
     /// prototype's parser wants it. An option that takes `many` values takes those that follow, as the
     /// prototype's `nargs="*"` does: repeating it there would keep only the last list. An option or a
     /// positional argument the table does not know is an error, and so is a value that starts with a
-    /// dash.
+    /// dash, unless it is written `--name=value`: that form passes joined, the one form in which the
+    /// prototype's parser takes such a value, and gives an option exactly one value.
     pub fn python_argv(&self, command: &str, args: &[String]) -> Result<Vec<String>, FacadeError> {
         let entry = self.command(command)?;
         let error = |argument: &str| (command.to_owned(), argument.to_owned());
@@ -371,21 +395,34 @@ impl Table {
             if arg == "--json" {
                 json = true;
             } else if arg.starts_with("--") {
-                let spec = entry.args.get(arg).ok_or_else(|| {
-                    let (command, argument) = error(arg);
+                let (name, joined) = match arg.split_once('=') {
+                    Some((name, value)) => (name, Some(value)),
+                    None => (arg.as_str(), None),
+                };
+                let spec = entry.args.get(name).ok_or_else(|| {
+                    let (command, argument) = error(name);
                     FacadeError::UnknownArgument { command, argument }
                 })?;
+                let path = format!("{command} {name}");
+                if let Some(value) = joined {
+                    if spec.flag() {
+                        let (command, argument) = error(name);
+                        return Err(FacadeError::FlagWithValue { command, argument });
+                    }
+                    rest.push(format!("{}={}", spec.to(), self.option_value(spec, value, &path)?));
+                    continue;
+                }
                 rest.push(spec.to().to_owned());
                 if spec.many() {
                     while let Some(value) = args.next_if(|value| !value.starts_with('-')) {
-                        rest.push(self.argument_value(spec.enum_name(), value, &format!("{command} {arg}"))?);
+                        rest.push(self.option_value(spec, value, &path)?);
                     }
                 } else if !spec.flag() {
                     let value = args.next().filter(|value| !value.starts_with('-')).ok_or_else(|| {
-                        let (command, argument) = error(arg);
+                        let (command, argument) = error(name);
                         FacadeError::MissingValue { command, argument }
                     })?;
-                    rest.push(self.argument_value(spec.enum_name(), value, &format!("{command} {arg}"))?);
+                    rest.push(self.option_value(spec, value, &path)?);
                 }
             } else {
                 let Some(positional) = positionals.next().filter(|_| !arg.starts_with('-')) else {
@@ -397,6 +434,20 @@ impl Table {
         }
         let json = json.then(|| "--json".to_owned());
         Ok(json.into_iter().chain(entry.python.iter().cloned()).chain(rest).collect())
+    }
+
+    /// The value of an option: through its enum, item by item for a list, or as it is unless it is one
+    /// of the words of its keywords.
+    fn option_value(&self, spec: &Arg, value: &str, path: &str) -> Result<String, FacadeError> {
+        if let Some(name) = spec.keywords() {
+            return Ok(self.reverse[name].get(value).cloned().unwrap_or_else(|| value.to_owned()));
+        }
+        if spec.list() {
+            let items: Result<Vec<String>, FacadeError> =
+                value.split(',').map(|item| self.argument_value(spec.enum_name(), item.trim(), path)).collect();
+            return Ok(items?.join(","));
+        }
+        self.argument_value(spec.enum_name(), value, path)
     }
 
     fn argument_value(&self, enum_name: Option<&str>, value: &str, path: &str) -> Result<String, FacadeError> {
@@ -646,6 +697,96 @@ mod tests {
         let both = "schema = 1\n[commands.x]\npython = [\"x\"]\ngroup = \"reads\"\n[commands.x.args]\n\"--y\" = { to = \"--y\", flag = true, many = true }\n";
         let files = [FILES.to_vec(), vec![("x.toml", both)]].concat();
         assert!(Table::from_files(files).unwrap_err().problem.contains("many values"));
+    }
+
+    /// `--name=value` carries a value that starts with a dash, joined, as the prototype's parser takes
+    /// it; the value still goes through its enum, and a flag takes none (#440/V10).
+    #[test]
+    fn a_joined_value_passes_joined_and_may_start_with_a_dash() {
+        let table = Table::embedded();
+        let body = strings(&["12", "--body=- a list item", "--json"]);
+        assert_eq!(table.python_argv("comment", &body).unwrap(), ["--json", "commento", "12", "--corpo=- a list item"]);
+        let status = strings(&["--project=alpha", "--title", "t", "--status=approved"]);
+        assert_eq!(
+            table.python_argv("task new", &status).unwrap(),
+            ["task", "new", "--progetto=alpha", "--titolo", "t", "--stato=Approvato"]
+        );
+        let empty = strings(&["12", "--body="]);
+        assert_eq!(table.python_argv("comment", &empty).unwrap(), ["commento", "12", "--corpo="]);
+        let flag = table.python_argv("comment", &strings(&["12", "--on-behalf-of-owner=yes"]));
+        assert!(matches!(flag, Err(FacadeError::FlagWithValue { .. })));
+        assert!(matches!(table.python_argv("comment", &strings(&["12", "--body", "-x"])), Err(FacadeError::MissingValue { .. })));
+        let refused = table.python_argv("task new", &strings(&["--status=pronto"]));
+        assert!(matches!(refused, Err(FacadeError::UnknownEnumValue { .. })));
+        let reports = strings(&["--project", "alpha", "--reports-processed=-odd.md"]);
+        assert_eq!(table.python_argv("step finish", &reports).unwrap(), ["passo", "fine", "--progetto", "alpha", "--report-elaborati=-odd.md"]);
+    }
+
+    /// A list of statuses translates item by item, and a keyword translates only when it is one.
+    #[test]
+    fn lists_and_keywords_translate_their_items() {
+        let table = Table::embedded();
+        let list = strings(&["--status", "approved, in_progress", "--project", "alpha"]);
+        assert_eq!(table.python_argv("task list", &list).unwrap(), ["task", "list", "--stato", "Approvato,In corso", "--progetto", "alpha"]);
+        assert!(table.python_argv("task list", &strings(&["--status", "approved,Fatto"])).is_err());
+        let none = strings(&["--project", "alpha", "--products", "none"]);
+        assert_eq!(table.python_argv("project set", &none).unwrap(), ["progetto", "set", "--progetto", "alpha", "--prodotti", "nessuno"]);
+        let repos = strings(&["--project", "alpha", "--products", "o/a,o/b"]);
+        assert_eq!(table.python_argv("project set", &repos).unwrap()[5], "o/a,o/b");
+        let both = "schema = 1\n[commands.x]\npython = [\"x\"]\ngroup = \"reads\"\n[commands.x.args]\n\"--y\" = { to = \"--y\", list = true }\n";
+        assert!(Table::from_files([FILES.to_vec(), vec![("x.toml", both)]].concat()).unwrap_err().problem.contains("list"));
+    }
+
+    /// Each command of the tracker reaches the prototype's argv: the subcommands, their options, their
+    /// positional values and their flags.
+    #[test]
+    fn the_tracker_commands_build_the_prototype_argv() {
+        let table = Table::embedded();
+        let cases: &[(&str, &[&str], &[&str])] = &[
+            ("projects", &["--json"], &["--json", "progetti"]),
+            ("setup", &[], &["setup"]),
+            ("task status", &["12", "done", "--comment", "c", "--on-behalf-of-owner"], &["task", "stato", "12", "Fatto", "--commento", "c", "--per-conto-del-titolare"]),
+            ("task block", &["12", "--by", "3,#4"], &["task", "blocca", "12", "--da", "3,#4"]),
+            ("task unblock", &["12", "--by", "3", "--reason", "r", "--role", "worker", "--json"], &["--json", "task", "sblocca", "12", "--da", "3", "--motivo", "r", "--ruolo", "worker"]),
+            ("task parent", &["12", "3"], &["task", "padre", "12", "3"]),
+            ("task move", &["12", "--project", "beta", "--parent", "7"], &["task", "sposta", "12", "--progetto", "beta", "--padre", "7"]),
+            ("task show", &["12", "--comments", "--since", "2026-01-09T00:00:00Z", "--short"], &["task", "show", "12", "--commenti", "--dal", "2026-01-09T00:00:00Z", "--breve"]),
+            ("task list", &["--ready", "--waiting-on-owner", "--objectives", "--include-closed", "--order", "graph"], &["task", "list", "--pronti", "--aspetta-me", "--obiettivi", "--anche-chiusi", "--ordine", "grafo"]),
+            ("plan", &["--root", "1", "--mermaid", "--max-nodes", "5"], &["piano", "--radice", "1", "--mermaid", "--max-nodi", "5"]),
+            ("project new", &["--id", "x", "--title", "t", "--objective", "o", "--definition-of-done", "d", "--mandate", "m", "--auto-defaults", "no", "--color", "aaaaaa", "--folder", "f"], &["progetto", "new", "--id", "x", "--titolo", "t", "--obiettivo", "o", "--fatto", "d", "--mandato", "m", "--default-automatici", "no", "--colore", "aaaaaa", "--cartella", "f"]),
+            ("project mirror", &["--dry-run", "--pause", "0"], &["progetto", "riempi", "--dry-run", "--pausa", "0"]),
+            ("init", &["--json"], &["--json", "init"]),
+            ("init plan", &["--owner", "o", "--project-title", "P"], &["init", "piano", "--owner", "o", "--progetto-titolo", "P"]),
+            ("init derive", &["--destination", "d", "--overwrite"], &["init", "ricava", "--destinazione", "d", "--sovrascrivi"]),
+            ("init apply", &["--dry-run", "--json"], &["--json", "init", "applica", "--a-secco"]),
+        ];
+        for (command, args, python) in cases {
+            assert_eq!(table.python_argv(command, &strings(args)).unwrap(), *python, "{command}");
+        }
+        let (command, _) = table.split_command(&strings(&["init", "apply", "--dry-run"])).unwrap();
+        assert_eq!(command, "init apply");
+        assert!(table.python_argv("init", &strings(&["--owner", "o"])).is_err(), "options belong to `init plan`");
+    }
+
+    /// Every shape of the table that lists its keys refuses one it does not list, and an open shape lets
+    /// it through as data: each shape has its negative control, whether or not a case reaches it.
+    #[test]
+    fn every_shape_fails_closed_on_an_unknown_key() {
+        let table = Table::embedded();
+        let unknown = json!({"chiave_nuova": 1});
+        for (name, shape) in &table.shapes {
+            let item = shape.items_of.as_ref().map(|item| &table.shapes[item]);
+            let value = if item.is_some() { json!([unknown]) } else { unknown.clone() };
+            let output = table.translate_shape(name, &value, "$");
+            if shape.open || item.is_some_and(|item| item.open) {
+                assert_eq!(output.unwrap(), value, "{name} is open");
+            } else if shape.key_enum.is_some() {
+                assert!(matches!(output, Err(FacadeError::UnknownEnumValue { .. })), "{name}: {output:?}");
+            } else {
+                assert!(matches!(output, Err(FacadeError::UnknownKey { .. })), "{name}: {output:?}");
+            }
+        }
+        assert!(table.shapes.len() >= 50, "only {} shapes", table.shapes.len());
     }
 
     #[test]

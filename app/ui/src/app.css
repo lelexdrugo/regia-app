@@ -24,6 +24,11 @@ ul {
   padding-left: 1rem;
 }
 
+/* A title can be one unbroken word of 200 characters. */
+li {
+  overflow-wrap: anywhere;
+}
+
 .note {
   opacity: 0.75;
 }

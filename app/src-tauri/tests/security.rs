@@ -1,7 +1,7 @@
 //! The threat model's checks on the app's own files (dossier, `docs/app/architettura/modello-minacce.md`, §6):
-//! V01 the capabilities, V02 the three lists of commands, V05 `tauri.conf.json`, V27 no devtools in a release
-//! build, V28 no listener on the webview's events. Each check returns the problems it finds, so that every
-//! test can also show its check failing on an altered copy.
+//! V01 the capabilities, V02 the three lists of commands, V05 `tauri.conf.json`, V08 no markup from strings in
+//! the frontend, V27 no devtools in a release build, V28 no listener on the webview's events. Each check returns
+//! the problems it finds, so that every test can also show its check failing on an altered copy.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -157,8 +157,12 @@ fn v01_one_capability_covers_the_window_and_it_stays_minimal() {
     assert_eq!(capability_problems(&main, &admitted_commands()), Vec::<String>::new(), "capabilities/main.json");
 
     let smoke = read_json(&directory.join("smoke/smoke.json"));
-    assert_eq!(capability_problems(&smoke, &["smoke_report"]), Vec::<String>::new(), "capabilities/smoke/smoke.json");
-    assert_eq!(strings(&smoke["permissions"]), ["allow-smoke-report", "core:event:allow-listen", "core:event:allow-unlisten"]);
+    let smoke_commands = ["smoke_report", "smoke_corpus"];
+    assert_eq!(capability_problems(&smoke, &smoke_commands), Vec::<String>::new(), "capabilities/smoke/smoke.json");
+    assert_eq!(
+        strings(&smoke["permissions"]),
+        ["allow-smoke-report", "allow-smoke-corpus", "core:event:allow-listen", "core:event:allow-unlisten"]
+    );
 }
 
 #[test]
@@ -410,6 +414,141 @@ fn v05_fails_on_each_alteration_of_the_configuration() {
         alter(&mut altered);
         assert!(!config_problems(&altered).is_empty(), "V05 misses {name}");
     }
+}
+
+// V08 ----------------------------------------------------------------------------------------------------
+
+/// What turns a string into markup in the webview (§3.7, point 2), as the frontend's sources spell it: the
+/// threat model's list, and the newer APIs and Svelte's tag that do the same.
+const MARKUP_SINKS: [&str; 11] = [
+    "innerHTML",
+    "outerHTML",
+    "insertAdjacentHTML",
+    "document.write",
+    "DOMParser",
+    "createContextualFragment",
+    "setHTMLUnsafe",
+    "parseHTMLUnsafe",
+    "srcdoc",
+    "insertHTML",
+    "{@html",
+];
+
+/// `name` as a whole word, followed after spaces by one of `next`: `eval(` and `(0, eval)`, not `evaluate(`
+/// nor a mention in a string such as `"csp: eval"`.
+fn names_before(line: &str, name: &str, next: &[char]) -> bool {
+    line.match_indices(name).any(|(at, _)| {
+        let before = line[..at].chars().next_back();
+        let after = line[at + name.len()..].trim_start().chars().next();
+        !before.is_some_and(|c| c.is_alphanumeric() || c == '_' || c == '$') && after.is_some_and(|c| next.contains(&c))
+    })
+}
+
+/// A timer given code as a string, which it evaluates: `setTimeout("…", 10)`.
+fn timer_with_a_string(line: &str, timer: &str) -> bool {
+    line.match_indices(timer).any(|(at, _)| {
+        let rest = line[at + timer.len()..].trim_start();
+        rest.strip_prefix('(').is_some_and(|args| args.trim_start().starts_with(['"', '\'', '`']))
+    })
+}
+
+/// A use is allowed only with its reason on the same line.
+fn has_a_reason(line: &str) -> bool {
+    line.split_once("V08:").is_some_and(|(_, reason)| reason.trim().len() >= 3)
+}
+
+fn markup_problems(file: &str, source: &str) -> Vec<String> {
+    let mut problems = Vec::new();
+    for (number, line) in source.lines().enumerate() {
+        if has_a_reason(line) {
+            continue;
+        }
+        let mut found: Vec<&str> = MARKUP_SINKS.iter().copied().filter(|sink| line.contains(sink)).collect();
+        if names_before(line, "eval", &['(', ')']) {
+            found.push("eval");
+        }
+        if names_before(line, "Function", &['(']) {
+            found.push("Function");
+        }
+        found.extend(["setTimeout", "setInterval"].into_iter().filter(|timer| timer_with_a_string(line, timer)));
+        problems.extend(found.into_iter().map(|sink| format!("{file}:{}: {sink} without `V08: <reason>`", number + 1)));
+    }
+    problems
+}
+
+fn ui_dir() -> PathBuf {
+    app_dir().join("../ui")
+}
+
+/// What the app's webview loads: `index.html` and everything under `src/`. The harness and the proofs are
+/// another bundle, which never ships (app/ui/README.md).
+fn frontend_sources() -> Vec<PathBuf> {
+    fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
+        for entry in fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                walk(&path, out);
+            } else if path.extension().is_some_and(|ext| ["ts", "js", "mjs", "svelte", "html"].iter().any(|e| ext == *e)) {
+                out.push(path);
+            }
+        }
+    }
+    let mut files = vec![ui_dir().join("index.html")];
+    walk(&ui_dir().join("src"), &mut files);
+    files
+}
+
+#[test]
+fn v08_no_markup_from_a_string_in_the_frontend() {
+    let files = frontend_sources();
+    assert!(files.iter().any(|path| path.ends_with("App.svelte")), "the frontend's sources are read");
+    let problems: Vec<String> = files
+        .iter()
+        .flat_map(|path| {
+            markup_problems(&path.strip_prefix(ui_dir()).unwrap().display().to_string().replace('\\', "/"), &read(path))
+        })
+        .collect();
+    assert_eq!(problems, Vec::<String>::new());
+}
+
+#[test]
+fn v08_fails_on_each_sink_and_on_a_use_without_its_reason() {
+    let app = read(&ui_dir().join("src/App.svelte"));
+    let sinks = [
+        "    node.innerHTML = title;",
+        "    node.outerHTML = title;",
+        "    node.insertAdjacentHTML(\"beforeend\", title);",
+        "    document.write(title);",
+        "    new DOMParser().parseFromString(title, \"text/html\");",
+        "    range.createContextualFragment(title);",
+        "    node.setHTMLUnsafe(title);",
+        "    Document.parseHTMLUnsafe(title);",
+        "    frame.srcdoc = title;",
+        "    document.execCommand(\"insertHTML\", false, title);",
+        "<p>{@html title}</p>",
+        "    eval(title);",
+        "    (0, eval)(title);",
+        "    window.eval(title);",
+        "    new Function(title)();",
+        "    setTimeout(\"run()\", 10);",
+        "    window.setInterval( `run()`, 10);",
+    ];
+    for sink in sinks {
+        assert!(!markup_problems("App.svelte", &format!("{app}\n{sink}\n")).is_empty(), "V08 misses {sink}");
+        let explained = format!("{app}\n{sink} // V08: the reason\n");
+        assert_eq!(markup_problems("App.svelte", &explained), Vec::<String>::new(), "V08 refuses {sink} with its reason");
+    }
+    // Not sinks: a call that shares a prefix, a mention in a string, a name that starts the same, a timer
+    // given a function.
+    let harmless = format!(
+        "{app}\n  page.evaluate(x);\n  checks.push({{ name: \"csp: eval\" }});\n  const evalRan = true;\n  setTimeout(resolve, ms);\n"
+    );
+    assert_eq!(markup_problems("App.svelte", &harmless), Vec::<String>::new());
+    // The one use there is, smoke.ts's probe of the CSP, fails without its reason.
+    let smoke = read(&ui_dir().join("src/lib/smoke.ts"));
+    let bare = smoke.replace(" // V08: the CSP probe, which the policy must refuse", "");
+    assert_ne!(bare, smoke, "smoke.ts gives its reason on the line");
+    assert!(!markup_problems("smoke.ts", &bare).is_empty(), "V08 misses smoke.ts's eval without its reason");
 }
 
 // V27 ----------------------------------------------------------------------------------------------------

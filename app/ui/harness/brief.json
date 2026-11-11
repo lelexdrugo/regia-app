@@ -1,0 +1,51 @@
+{
+  "demo": {
+    "waiting_on_owner": [
+      { "number": 101, "title": "Choose the default colour direction of the welcome screen" },
+      { "number": 102, "title": "Publish the test build to the private channel" },
+      { "number": 103, "title": "Proposal: a weekly summary of what the agents changed" },
+      { "number": 104, "title": "Review the fixture for the empty state" }
+    ],
+    "ready": [
+      { "number": 111, "title": "Sort the ready list by the chain it unblocks" },
+      { "number": 112, "title": "Write the importer's error messages" },
+      { "number": 113, "title": "Add the keyboard shortcut for the next task" }
+    ],
+    "in_progress": [
+      { "number": 121, "title": "Draw the timeline of the last week" },
+      { "number": 122, "title": "Read the settings file once at start" }
+    ],
+    "graph": { "cycles": [[131, 132]], "truncated": [140] }
+  },
+  "worst": {
+    "waiting_on_owner": [
+      { "number": 1, "title": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…" },
+      { "number": 2147483647, "title": "Rename_every_variable_of_the_importer_module_so_that_each_name_says_what_its_value_holds_and_nothing_else_including_the_names_the_tests_use_to_build_their_fixtures_and_those_only_scripts_read" },
+      { "number": 3, "title": "<img src=x onerror=\"window.__pwned=1\"> Review the import <script>window.__pwned=1</script>" },
+      { "number": 4, "title": "Approve ‹U+202E›evil‹U+202C› now, ‹U+2066›isolated‹U+2069›" },
+      { "number": 5, "title": "مراجعة نموذج التهديدات قبل الإصدار التجريبي الأول" },
+      { "number": 6, "title": "既定の配色を選び、空の状態の画面を最初の起動で確かめる" },
+      { "number": 7, "title": "👩🏽‍💻 Ship the 🏳️‍🌈 build to the 🧑‍🤝‍🧑 testers" },
+      { "number": 8, "title": "" },
+      { "number": 9, "title": "x" }
+    ],
+    "ready": [
+      { "number": 99999, "title": "https://example.invalid/a/very/long/address/that/someone/pasted/into/the/title/of/a/task/instead/of/a/sentence/describing/the/work?with=parameters&and=more&parameters=still" }
+    ],
+    "in_progress": [
+      { "number": 10, "title": "שלום עולם: לבדוק את הכיוון של הטקסט בשורה אחת" }
+    ],
+    "graph": {
+      "cycles": [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], [2147483647, 99999]],
+      "truncated": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80]
+    }
+  },
+  "empty": { "waiting_on_owner": [], "ready": [], "in_progress": [], "graph": null },
+  "one": {
+    "waiting_on_owner": [{ "number": 101, "title": "Choose the default colour direction of the welcome screen" }],
+    "ready": [],
+    "in_progress": [],
+    "graph": null
+  },
+  "error": "gh exited with 1: HTTP 502: the server did not answer in time (https://api.github.example.invalid/graphql), after three tries over forty seconds; the brief shows what it read last"
+}

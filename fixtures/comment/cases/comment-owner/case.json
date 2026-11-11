@@ -1,0 +1,28 @@
+{
+  "_note": "Synthetic. On behalf of the owner: the visible line of the owner via chat, role titolare.",
+  "scenario": "tracker",
+  "args": [
+    "comment",
+    "5",
+    "--body",
+    "Decisione: B.",
+    "--on-behalf-of-owner",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "commento",
+    "5",
+    "--corpo",
+    "Decisione: B.",
+    "--per-conto-del-titolare"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "gh": {
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9202\n"
+    }
+  }
+}

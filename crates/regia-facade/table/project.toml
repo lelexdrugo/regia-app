@@ -1,0 +1,114 @@
+# `projects` and `project`: the registry of the projects, one Objective issue each, with its block
+# `<!-- regia:progetto … -->`. Names from the conformance study, §8 (`conformita.md` of the dossier), plus
+# `project mirror` (#338), not decided: they go to the gate of the names with the rest
+# (`docs/contract/commands.md`). `projects` is a read (F55, #440/V9), `project mirror` a write (F56),
+# `project new` and `project set` are in the group of the state and of the setup (F57).
+schema = 1
+
+[commands.projects]
+python = ["progetti"]
+group = "reads"
+output = "projects"
+
+[commands."project new"]
+python = ["progetto", "new"]
+group = "state"
+output = "project_new"
+[commands."project new".args]
+"--id" = "--id"
+"--title" = "--titolo"
+"--folder" = "--cartella"
+"--playbook" = "--playbook"
+"--objective" = "--obiettivo"
+"--definition-of-done" = "--fatto"
+"--mandate" = "--mandato"
+"--priority" = "--priorita"
+"--wip" = "--wip"
+# `no`, or the hours after which a reversible choice is taken alone.
+"--auto-defaults" = "--default-automatici"
+"--color" = "--colore"
+"--repo" = "--repo"
+"--products" = { to = "--prodotti", keywords = "no_products" }
+
+[commands."project set"]
+python = ["progetto", "set"]
+group = "state"
+output = "project_set"
+[commands."project set".args]
+"--project" = "--progetto"
+"--repo" = "--repo"
+"--products" = { to = "--prodotti", keywords = "no_products" }
+"--wip" = "--wip"
+"--priority" = "--priorita"
+"--dry-run" = { to = "--dry-run", flag = true }
+
+# Mirrors the label `progetto:<id>` of every issue in the Project's field «Progetto», closed ones too.
+# Exits with 1 when an item could not be written, in JSON too.
+[commands."project mirror"]
+python = ["progetto", "riempi"]
+group = "writes"
+output = "project_mirror"
+[commands."project mirror".args]
+"--dry-run" = { to = "--dry-run", flag = true }
+# Seconds between two writes.
+"--pause" = "--pausa"
+
+# The list of products: repos separated by commas, or this word for none.
+[enums.no_products]
+nessuno = "none"
+
+# A project as the registry gives it. The keys `progetto new` writes translate; any other key of the
+# block passes as data, as it was written by hand. `priorita` and `wip` are the block's strings.
+[shapes.projects]
+items_of = "project_entry"
+
+[shapes.project_entry]
+open = true
+[shapes.project_entry.fields]
+id = { to = "id" }
+obiettivo = { to = "objective" }
+titolo = { to = "title" }
+stato = { to = "status", enum = "status" }
+cartella = { to = "folder" }
+playbook = { to = "playbook" }
+priorita = { to = "priority" }
+wip = { to = "wip" }
+default_automatici = { to = "auto_defaults" }
+repo = { to = "repo" }
+prodotti = { to = "products" }
+
+# Whether the dossier's folder was a repo already, when `--repo` links it.
+[enums.dossier_link]
+init = "init"
+esistente = "existing"
+
+[shapes.project_new.fields]
+progetto = { to = "project" }
+obiettivo = { to = "objective" }
+scaffold = { to = "scaffold" }
+repo = { to = "repo" }
+git = { to = "git", enum = "dossier_link" }
+primo_push = { to = "first_push" }
+
+# `wip` and `priorita` are integers here, or null.
+[shapes.project_set.fields]
+progetto = { to = "project" }
+obiettivo = { to = "objective" }
+repo = { to = "repo" }
+prodotti = { to = "products" }
+wip = { to = "wip" }
+priorita = { to = "priority" }
+scritto = { to = "written" }
+commento = { to = "comment" }
+
+# The pairs and triples are lists: `[number, label]`, `[number, field, label]`, `[number, reason]`.
+[shapes.project_mirror.fields]
+dry_run = { to = "dry_run" }
+items = { to = "items" }
+opzioni_aggiunte = { to = "options_added" }
+gia_giusti = { to = "already_right" }
+da_scrivere = { to = "to_write" }
+scritti = { to = "written" }
+senza_etichetta = { to = "unlabeled" }
+etichetta_ignota = { to = "unknown_label" }
+falliti = { to = "failed" }

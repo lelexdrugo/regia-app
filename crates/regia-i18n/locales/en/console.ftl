@@ -1,0 +1,31 @@
+### The console: the controller, its steps and the quota.
+
+console-title = Console
+console-sub-on = Controller on. Last step at { $when }, next check at { $next }. Agents at work: { $running }.
+console-sub-off = Controller stopped: no step starts until you turn it on. Agents already started finish.
+console-project = Open the Project
+console-start = Turn the controller on
+console-stop = Stop the controller
+console-steps = Today's steps
+console-steps-empty = No steps today.
+console-col-when = When
+console-col-project = Project
+console-col-outcome = Outcome
+console-col-what = What
+outcome-dispatched = dispatched
+outcome-gate = decision
+outcome-idle = waiting
+outcome-failed = stopped
+console-workers = Agents at work
+console-workers-empty = No agent at work.
+console-watch = Watch
+console-budget = Quota
+console-budget-five = 5-hour window
+console-budget-week = Week
+console-budget-reset = resets { $when }
+console-policy = Above { $pct } % of the 5-hour window, nothing starts automatically.
+console-locks = Locks
+console-locks-empty = No step open.
+console-locks-until = until { $when }
+console-log = Log
+console-log-empty = Empty log.

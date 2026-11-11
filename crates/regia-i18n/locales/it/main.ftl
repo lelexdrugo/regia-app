@@ -1,15 +1,5 @@
-app-title = Sala di regia
-brief-waiting = Aspetta te (proposta, decisione)
-brief-session = Serve una sessione con te
-brief-ready = Pronti da eseguire
-brief-in-progress = In corso
-brief-by-project = Per progetto
-brief-nothing = (niente)
-brief-loading = Sto leggendo il brief…
-brief-error = Non riesco a leggere il brief: { $reason }
-brief-partial = Non ancora portati: gli avvisi del controller, dei dossier e di ciò che è fuori dal tracker non si vedono.
-brief-cycle = Dipendenze in ciclo, senza ordine del grafo: { $reason }
-brief-truncated = Dipendenze lette solo in parte: { $reason }
+### The CLI's own messages: the facade and the agent services.
+
 facade-not-ported = `{ $command }` non è ancora portato in questa versione, e su questa macchina non c'è il prototipo che lo esegue.
 facade-no-prototype = `{ $command }` è stato mandato al prototipo, ma su questa macchina il prototipo non c'è.
 facade-no-python = `{ $command }` gira sul prototipo, e non ho trovato un interprete Python per avviarlo.

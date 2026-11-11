@@ -1,6 +1,6 @@
 //! A stand-in for `gh`. It answers `gh api graphql` from a fixture and fails loudly on anything else:
-//! the issues, their blockers and sub-issues, and for the checks the recent comments and the closed
-//! issues.
+//! the issues, open or all of them, their blockers and sub-issues, one issue by its number, a node by
+//! its id, and for the checks the recent comments and the closed issues.
 //! The fixture is named by the environment (the prototype's runs) or by a file beside the fake (the
 //! product's, which do not pass those variables on). Without either it refuses to run, so it can
 //! never pass for the real tool by accident. It returns only what the query selects, and refuses a
@@ -12,16 +12,22 @@
 //!
 //! A write to the tracker, a GraphQL mutation or a `gh` subcommand that changes something, is
 //! appended to the writes log as one JSON line, in a form both sides produce for the same call: a
-//! mutation by its name and its variables as text, a subcommand by its argv with `--name=value`
+//! mutation by its name, its variables as text and its arguments as the query writes them, without
+//! blanks, so a value written in the query counts too; a subcommand by its argv with `--name=value`
 //! split and `-R` spelled `--repo`, and the body it read on stdin. It answers a mutation from the
 //! fixture's `mutations` and a subcommand from its `cli`, by the subcommand's two words.
+//!
+//! For `init` it answers the REST calls of `gh api <path>` from the fixture's `rest`, by method and
+//! path, and the Projects of an owner from its `owner`. A method other than GET is a write, logged by
+//! its argv. An answer of the fixture can be a failure, which it prints as `gh` would, with its exit
+//! code.
 
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use regia_conformance::{FAKE_GH_SIDECAR, log_var, mutation_name, project_query, read_json, responses_var, writes_var};
+use regia_conformance::{FAKE_GH_SIDECAR, log_var, mutation_call, project_query, read_json, responses_var, writes_var};
 use serde_json::{Map, Value, json};
 
 const REQUIRED_ON_ISSUES: [&str; 2] = ["states:[OPEN]", "orderBy:{field:CREATED_AT,direction:ASC}"];
@@ -37,12 +43,22 @@ struct Fixture {
     writes: Option<PathBuf>,
 }
 
+/// What the fake answers: stdout, or a failure the fixture gives, its stderr and exit code.
+enum Reply {
+    Out(String),
+    Fail(String, u8),
+}
+
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match answer(&args) {
-        Ok(text) => {
+        Ok(Reply::Out(text)) => {
             print!("{text}");
             ExitCode::SUCCESS
+        }
+        Ok(Reply::Fail(text, code)) => {
+            eprint!("{text}");
+            ExitCode::from(code)
         }
         Err(message) => {
             eprintln!("fake gh: {message}");
@@ -136,6 +152,11 @@ fn subcommand(args: &[String], responses: &Value, fixture: &Fixture) -> Result<S
         append(fixture.writes.as_ref(), &json!({"argv": argv, "stdin": stdin}).to_string())?;
     }
     append(fixture.log.as_ref(), &words)?;
+    if words == "issue view" {
+        // `gh issue view <n> --json labels`: the labels of that issue, as `gh` prints them.
+        let view = &responses["views"][args.get(2).map_or("", String::as_str)];
+        return if view.is_null() { Err(format!("no fixture view of {:?}", args.get(2))) } else { Ok(view.to_string()) };
+    }
     match &responses["cli"][&words] {
         Value::String(text) => Ok(text.clone()),
         Value::Null if write => Ok(String::new()),
@@ -143,30 +164,39 @@ fn subcommand(args: &[String], responses: &Value, fixture: &Fixture) -> Result<S
     }
 }
 
-fn answer(args: &[String]) -> Result<String, String> {
+fn answer(args: &[String]) -> Result<Reply, String> {
     let fixture = fixture()?;
     let responses: Value = read_json(&fixture.responses);
+    if args.first().is_some_and(|word| word == "api") && args.get(1).is_none_or(|word| word != "graphql") {
+        return rest(args, &responses, &fixture);
+    }
     if args.get(..2) != Some(&["api".to_owned(), "graphql".to_owned()]) {
-        return subcommand(args, &responses, &fixture);
+        return subcommand(args, &responses, &fixture).map(Reply::Out);
     }
     let mut variables = variables(&args[2..])?;
     let at = variables.iter().position(|(key, _)| key == "query").ok_or("the request has no query")?;
     let query = variables.remove(at).1;
-    // A mutation's variables are its own, `r` included: all of them are logged, none is checked.
-    if let Some(name) = mutation_name(&query) {
+    // A mutation's variables are its own, `r` included: all of them are logged, none is checked, and so
+    // are the arguments as the query writes them.
+    if let Some((name, arguments)) = mutation_call(&query) {
         let variables: Map<String, Value> = variables.into_iter().map(|(key, value)| (key, Value::String(value))).collect();
-        append(fixture.writes.as_ref(), &json!({"mutation": name, "variables": variables}).to_string())?;
+        let line = json!({"mutation": name, "variables": variables, "arguments": arguments});
+        append(fixture.writes.as_ref(), &line.to_string())?;
         append(fixture.log.as_ref(), &format!("mutation {name}"))?;
         let data = responses["mutations"].get(&name).ok_or_else(|| format!("no fixture answer for mutation {name}"))?;
         let projected = project_query(&query, data)?;
-        return serde_json::to_string(&json!({ "data": projected })).map_err(|error| error.to_string());
+        return serde_json::to_string(&json!({ "data": projected })).map(Reply::Out).map_err(|error| error.to_string());
     }
     let mut number = None;
     let mut after = None;
+    let mut node = None;
     for (key, value) in variables {
         match key.as_str() {
             "n" => number = Some(value),
-            "after" => after = Some(value),
+            // `c` pages the comments of one issue, as `after` pages the lists.
+            "after" | "c" => after = Some(value),
+            // A node read by its id: an issue's items, or the Project's fields and items.
+            "id" | "p" => node = Some(value),
             // The window of the comments the checks read: the fixture holds the comments it answers.
             "since" => {}
             "o" | "r" => {
@@ -203,6 +233,12 @@ fn answer(args: &[String]) -> Result<String, String> {
         (format!("comments {index}"), responses["comment_pages"][index].clone())
     } else if query.contains("states:[CLOSED]") {
         (format!("closed {index}"), responses["closed_pages"][index].clone())
+    } else if query.contains("issues(first:") && !query.contains("states:") {
+        // The list with no `states`, closed issues too: only a fixture that holds those pages answers it.
+        if !query.contains(REQUIRED_ON_ISSUES[1]) {
+            return Err(format!("the issues query lost {}", REQUIRED_ON_ISSUES[1]));
+        }
+        (format!("issues-all {index}"), responses["all_pages"][index].clone())
     } else if query.contains("issues(first:") {
         for required in REQUIRED_ON_ISSUES {
             if !query.contains(required) {
@@ -210,6 +246,16 @@ fn answer(args: &[String]) -> Result<String, String> {
             }
         }
         (format!("issues {index}"), responses["issue_pages"][index].clone())
+    } else if query.contains("issue(number:$n)") {
+        // One issue by its number, null if the fixture has none: its id and state, its sub-issues' count,
+        // its comments.
+        let number = number.ok_or("issue query without n")?;
+        (format!("issue {number}"), json!({"repository": {"issue": responses["issues"][&number].clone()}}))
+    } else if query.contains("repositoryOwner(login:$o)") {
+        // The owner's Projects, for `init`: one page, whatever the cursor.
+        ("owner".to_owned(), responses["owner"].clone())
+    } else if let Some(id) = node {
+        (format!("node {id}"), json!({"node": responses["nodes"][&id].clone()}))
     } else {
         return Err("unknown query".to_owned());
     };
@@ -218,5 +264,47 @@ fn answer(args: &[String]) -> Result<String, String> {
     }
     let projected = project_query(&query, &page)?;
     append(fixture.log.as_ref(), &kind)?;
-    serde_json::to_string(&json!({ "data": projected })).map_err(|error| error.to_string())
+    serde_json::to_string(&json!({ "data": projected })).map(Reply::Out).map_err(|error| error.to_string())
+}
+
+/// `gh api <path>`, REST: a read answered from the fixture's `rest` by method and path, with the status
+/// line and the headers before the body for `-i`. A method other than GET is a write, logged by its argv,
+/// and so is a call with fields and no method, which `gh` sends as a POST.
+fn rest(args: &[String], responses: &Value, fixture: &Fixture) -> Result<Reply, String> {
+    let (mut method, mut include, mut fields, mut path) = (None, false, false, None);
+    let mut words = args[1..].iter();
+    while let Some(word) = words.next() {
+        match word.as_str() {
+            "-i" | "--include" => include = true,
+            "-X" | "--method" => method = words.next().cloned(),
+            "-f" | "-F" | "--field" | "--raw-field" => fields = words.next().is_some(),
+            flag if flag.starts_with('-') => return Err(format!("unexpected flag {flag}")),
+            other => path = Some(other.to_owned()),
+        }
+    }
+    let path = path.ok_or("gh api without a path")?;
+    let method = method.unwrap_or_else(|| if fields { "POST" } else { "GET" }.to_owned()).to_uppercase();
+    let key = format!("{method} {path}");
+    if method != "GET" {
+        append(fixture.writes.as_ref(), &json!({"argv": normalized(args), "stdin": null}).to_string())?;
+    }
+    append(fixture.log.as_ref(), &format!("api {key}"))?;
+    let answer = &responses["rest"][&key];
+    if let Some(error) = answer["error"].as_str() {
+        let code = answer["exit"].as_u64().and_then(|code| u8::try_from(code).ok()).unwrap_or(1);
+        return Ok(Reply::Fail(error.to_owned(), code));
+    }
+    if answer.is_null() {
+        return Err(format!("no fixture answer for `gh api` {key}"));
+    }
+    let body = answer["body"].to_string();
+    if !include {
+        return Ok(Reply::Out(body));
+    }
+    let status = answer["status"].as_str().unwrap_or("HTTP/2.0 200 OK");
+    let headers: String = answer["headers"]
+        .as_object()
+        .map(|headers| headers.iter().map(|(name, value)| format!("{name}: {}\n", value.as_str().unwrap_or_default())).collect())
+        .unwrap_or_default();
+    Ok(Reply::Out(format!("{status}\n{headers}\n{body}")))
 }

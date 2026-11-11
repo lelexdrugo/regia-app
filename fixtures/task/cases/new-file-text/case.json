@@ -1,0 +1,45 @@
+{
+  "_note": "Synthetic. A task under #5, which has one sub-issue, with the defaults (inbox, draft) and its body read from a file of the dossier; the text passes as it is.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "new",
+    "--project",
+    "alpha",
+    "--title",
+    "a child of 5",
+    "--body-file",
+    "{dossier}/spec.md",
+    "--parent",
+    "5"
+  ],
+  "python": [
+    "task",
+    "new",
+    "--progetto",
+    "alpha",
+    "--titolo",
+    "a child of 5",
+    "--corpo-file",
+    "{dossier}/spec.md",
+    "--padre",
+    "5"
+  ],
+  "dossier": {
+    "git": false,
+    "files": {
+      "spec.md": "A spec, read from a file.\n\nSecond paragraph.\n"
+    }
+  },
+  "gh": {
+    "cli": {
+      "issue create": "https://tracker.invalid/issues/9\n"
+    },
+    "issues": {
+      "9": {"id": "ISSUE_9", "state": "OPEN", "subIssues": {"totalCount": 0}}
+    },
+    "nodes": {
+      "ISSUE_9": {"projectItems": {"nodes": []}}
+    }
+  }
+}

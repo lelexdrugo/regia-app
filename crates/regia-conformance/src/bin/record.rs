@@ -33,6 +33,10 @@ const PROJECT_FIELD_ID: &str = "FIELD_PROJECT_FIXTURE";
 struct Scenario {
     project_id: String,
     page_size: usize,
+    /// The options of the Project's field that mirrors the project label; without them the Project has
+    /// no such field.
+    #[serde(default)]
+    project_field_options: Option<Vec<String>>,
     issues: Vec<ScenarioIssue>,
     #[serde(default)]
     extra_blockers: BTreeMap<String, Value>,
@@ -62,6 +66,9 @@ struct ScenarioIssue {
     blocked_by_total: Option<u64>,
     #[serde(default)]
     state_reason: Option<String>,
+    /// A closed issue is in the list of every state only, with this date of closing.
+    #[serde(default)]
+    closed_at: Option<String>,
     #[serde(default)]
     also_in_other_project: bool,
     #[serde(default)]
@@ -157,13 +164,13 @@ fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfig
     json!({
         "number": issue.number,
         "title": issue.title,
-        "state": "OPEN",
+        "state": state(issue),
         "stateReason": issue.state_reason,
         "body": issue.body.clone().unwrap_or_default(),
         "url": format!("{URL_PREFIX}issues/{}", issue.number),
         "updatedAt": "2026-01-02T03:04:05Z",
         "createdAt": "2026-01-01T00:00:00Z",
-        "closedAt": null,
+        "closedAt": issue.closed_at,
         "labels": {"nodes": labels},
         "parent": issue.parent.map(|number| json!({"number": number})),
         "subIssues": {
@@ -214,14 +221,15 @@ fn extra_pages(extra: &BTreeMap<String, Value>, connection: &str) -> Map<String,
     out
 }
 
-fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
-    let chunks: Vec<&[ScenarioIssue]> = if scenario.issues.is_empty() {
-        vec![&[]]
-    } else {
-        scenario.issues.chunks(scenario.page_size).collect()
-    };
+fn state(issue: &ScenarioIssue) -> &'static str {
+    if issue.closed_at.is_some() { "CLOSED" } else { "OPEN" }
+}
+
+/// The pages of the list of `issues`, `page_size` at a time.
+fn list_pages(issues: &[&ScenarioIssue], scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Vec<Value> {
+    let chunks: Vec<&[&ScenarioIssue]> = if issues.is_empty() { vec![&[]] } else { issues.chunks(scenario.page_size).collect() };
     let pages = chunks.len();
-    let issue_pages: Vec<Value> = chunks
+    chunks
         .iter()
         .enumerate()
         .map(|(i, chunk)| {
@@ -232,14 +240,159 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &Tracker
                 "nodes": nodes,
             }}})
         })
+        .collect()
+}
+
+/// The node id the fixture gives an issue.
+fn issue_id(number: u64) -> String {
+    format!("ISSUE_{number}")
+}
+
+/// Each issue by its number, as one read of it answers: its id and state, the count of its sub-issues,
+/// its comments in one page.
+fn issues_by_number(scenario: &Scenario) -> Map<String, Value> {
+    scenario
+        .issues
+        .iter()
+        .map(|issue| {
+            let comments: Vec<Value> = issue
+                .comments
+                .iter()
+                .map(|comment| {
+                    let url = format!("{URL_PREFIX}issues/{}#issuecomment-{}", issue.number, comment.id);
+                    json!({"databaseId": comment.id, "createdAt": comment.created_at, "url": url, "body": comment.body})
+                })
+                .collect();
+            let entry = json!({
+                "id": issue_id(issue.number),
+                "state": state(issue),
+                "subIssues": {"totalCount": issue.sub_total.unwrap_or(issue.sub.len() as u64)},
+                "comments": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": comments},
+            });
+            (issue.number.to_string(), entry)
+        })
+        .collect()
+}
+
+/// What `gh issue view <n> --json labels` prints for each issue.
+fn views(scenario: &Scenario) -> Map<String, Value> {
+    let view = |issue: &ScenarioIssue| json!({"labels": issue.labels.iter().map(|name| json!({"name": name})).collect::<Vec<_>>()});
+    scenario.issues.iter().map(|issue| (issue.number.to_string(), view(issue))).collect()
+}
+
+/// Each issue's node by its id, with its item in the Project when it has a status there, and the
+/// Project's node.
+fn nodes(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Map<String, Value> {
+    let mut out: Map<String, Value> = scenario
+        .issues
+        .iter()
+        .map(|issue| {
+            let items: Vec<Value> = issue
+                .status
+                .iter()
+                .map(|_| json!({"id": format!("ITEM_{}", issue.number), "project": {"id": scenario.project_id}}))
+                .collect();
+            (issue_id(issue.number), json!({"projectItems": {"nodes": items}}))
+        })
+        .collect();
+    out.insert(scenario.project_id.clone(), project_node(scenario, config, binding));
+    out
+}
+
+/// The colors the prototype gives the options of the project field, in turn.
+const OPTION_COLORS: [&str; 8] = ["BLUE", "GREEN", "ORANGE", "PURPLE", "PINK", "RED", "YELLOW", "GRAY"];
+
+/// The Project's node: its fields, a text one, the status and the project field if the scenario has one,
+/// and its items, one per issue with a status, closed ones too, each with its project value by name.
+fn project_node(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
+    let project_field = binding.project_field_name();
+    let option = |id: &str, name: &str, color: &str| json!({"id": id, "name": name, "color": color, "description": ""});
+    let statuses: Vec<Value> = config.status_options.iter().map(|(name, id)| option(id, name, "GRAY")).collect();
+    let mut fields = vec![
+        json!({"__typename": "ProjectV2Field", "id": "FIELD_TITLE", "name": "Title"}),
+        json!({"__typename": "ProjectV2SingleSelectField", "id": config.status_field_id, "name": STATUS_FIELD_NAME, "options": statuses}),
+    ];
+    if let Some(options) = &scenario.project_field_options {
+        let options: Vec<Value> = options
+            .iter()
+            .enumerate()
+            .map(|(i, name)| option(&format!("opt-project-{name}"), name, OPTION_COLORS[i % OPTION_COLORS.len()]))
+            .collect();
+        fields.push(json!({"__typename": "ProjectV2SingleSelectField", "id": PROJECT_FIELD_ID, "name": project_field, "options": options}));
+    }
+    let items: Vec<Value> = scenario
+        .issues
+        .iter()
+        .filter(|issue| issue.status.is_some())
+        .map(|issue| {
+            let labels: Vec<Value> = issue.labels.iter().map(|name| json!({"name": name})).collect();
+            let mut by_name = Map::new();
+            if let Some(value) = &issue.project_field {
+                by_name.insert(project_field.to_owned(), json!({"name": value, "optionId": format!("opt-project-{value}")}));
+            }
+            json!({
+                "id": format!("ITEM_{}", issue.number),
+                "content": {"__typename": "Issue", "number": issue.number, "labels": {"nodes": labels}},
+                "fieldValueByName": by_name,
+            })
+        })
         .collect();
     json!({
+        "fields": {"nodes": fields},
+        "items": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": items},
+    })
+}
+
+/// The answers to the writes: each mutation the prototype makes, with the ids it reads back.
+fn mutations() -> Value {
+    let issue = json!({"issue": {"id": "ISSUE_WRITTEN"}});
+    json!({
+        "closeIssue": {"closeIssue": issue},
+        "reopenIssue": {"reopenIssue": issue},
+        "addSubIssue": {"addSubIssue": issue},
+        "addBlockedBy": {"addBlockedBy": issue},
+        "removeBlockedBy": {"removeBlockedBy": issue},
+        "addProjectV2ItemById": {"addProjectV2ItemById": {"item": {"id": "ITEM_ADDED"}}},
+        "updateProjectV2ItemFieldValue": {"updateProjectV2ItemFieldValue": {"projectV2Item": {"id": "ITEM_WRITTEN"}}},
+    })
+}
+
+/// The responses of `case`: its scenario's, and the case's own answers over them, key by key.
+fn case_responses(case: &Case, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
+    let mut responses = match &case.spec.scenario {
+        Some(name) => {
+            let scenario: Scenario = read_json(&case.family_dir().join("scenarios").join(format!("{name}.json")));
+            assert_eq!(scenario.project_id, config.project_id, "scenario and tracker.json must agree");
+            responses_of(&scenario, config, binding)
+        }
+        None => json!({"expect": {"o": config.owner, "r": config.repo}}),
+    };
+    for (key, answers) in &case.spec.gh {
+        let object = responses.as_object_mut().expect("responses are an object");
+        let into = object.entry(key.clone()).or_insert_with(|| json!({}));
+        let (Some(into), Some(answers)) = (into.as_object_mut(), answers.as_object()) else {
+            panic!("{}: gh.{key} is not an object", case.name)
+        };
+        into.extend(answers.clone());
+    }
+    responses
+}
+
+fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
+    let all: Vec<&ScenarioIssue> = scenario.issues.iter().collect();
+    let open: Vec<&ScenarioIssue> = all.iter().copied().filter(|issue| issue.closed_at.is_none()).collect();
+    json!({
         "expect": {"o": config.owner, "r": config.repo},
-        "issue_pages": issue_pages,
+        "issue_pages": list_pages(&open, scenario, config, binding),
+        "all_pages": list_pages(&all, scenario, config, binding),
+        "issues": issues_by_number(scenario),
+        "views": views(scenario),
+        "nodes": nodes(scenario, config, binding),
+        "mutations": mutations(),
         "blocker_pages": extra_pages(&scenario.extra_blockers, "blockedBy"),
         "sub_issue_pages": extra_pages(&scenario.extra_sub_issues, "subIssues"),
         "comment_pages": comment_pages(scenario),
-        // Every scenario issue is open.
+        // No scenario that runs the checks has a closed issue.
         "closed_pages": [{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}],
     })
 }
@@ -278,21 +431,14 @@ fn main() {
     let interpreter = prototype.interpreter().expect("a Python interpreter");
     let driver = fixed_now_driver().display().to_string();
     let script = prototype.script.display().to_string();
+    let owner_url = format!("https://github.com/{}/", config.owner);
 
     let mut families = BTreeSet::new();
     let cases: Vec<Case> = Case::all().into_iter().filter(|case| only.is_empty() || only.contains(&case.family)).collect();
     let known: BTreeSet<&String> = cases.iter().map(|case| &case.family).collect();
     assert!(only.iter().all(|family| known.contains(family)), "--family names a family without cases: {only:?}");
     for case in cases {
-        let responses = match &case.spec.scenario {
-            Some(name) => {
-                let scenario: Scenario = read_json(&case.family_dir().join("scenarios").join(format!("{name}.json")));
-                assert_eq!(scenario.project_id, config.project_id, "scenario and tracker.json must agree");
-                responses_of(&scenario, &config, &binding)
-            }
-            None => json!({"expect": {"o": config.owner, "r": config.repo}}),
-        };
-        write_json(&case.responses_path(), &responses);
+        write_json(&case.responses_path(), &case_responses(&case, &config, &binding));
 
         let state = prepare_case_state(&format!("record-{}", case.name), &case);
         let log = state.join("gh.log");
@@ -319,11 +465,18 @@ fn main() {
         // Proof that the fake answered and no real data came through.
         let calls = fs::read_to_string(&log).unwrap_or_default();
         assert!(case.spec.scenario.is_none() || !calls.is_empty(), "{}: the fake gh was not called", case.name);
-        let writes = writes_of_run(&state);
+        // A write can name the dossier's folder too: the registry of a project new is one.
+        let writes: Vec<Value> = match &folder {
+            Some(folder) => writes_of_run(&state).iter().map(|write| unplace_json(write, folder)).collect(),
+            None => writes_of_run(&state),
+        };
         let text = String::from_utf8(output.stdout).expect("the prototype printed UTF-8");
         let recorded = [text.as_str(), stderr.as_str(), &serde_json::to_string(&writes).expect("JSON")].concat();
+        // The prototype builds the URL of an issue it creates, and of a repo, from the tracker's owner:
+        // those of the fixture's owner are synthetic too.
         let urls = recorded.matches("https://").count() + recorded.matches("http://").count();
-        assert_eq!(recorded.matches(URL_PREFIX).count(), urls, "{}: foreign URL", case.name);
+        let synthetic = recorded.matches(URL_PREFIX).count() + recorded.matches(&owner_url).count();
+        assert_eq!(synthetic, urls, "{}: foreign URL", case.name);
         // An error prints nothing on stdout, even with `--json`: the facade passes it as text, empty.
         let json = argv.first().is_some_and(|arg| arg == "--json") && table.has_output(&command) && !text.trim().is_empty();
         let parsed = json.then(|| serde_json::from_str::<Value>(&text).expect("the prototype printed JSON"));

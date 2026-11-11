@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. #1 is an objective, which does not move: an error, exit 1, no write, nothing on stdout.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "move",
+    "1",
+    "--project",
+    "beta"
+  ],
+  "python": [
+    "task",
+    "sposta",
+    "1",
+    "--progetto",
+    "beta"
+  ],
+  "exit": 1
+}

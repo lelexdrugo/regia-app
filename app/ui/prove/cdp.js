@@ -1,0 +1,163 @@
+// A minimal Chrome DevTools Protocol driver with no dependencies (Node 22 or later has WebSocket and fetch),
+// ported from the UX prototype's tools/cdp.mjs in the dossier. Test only: it drives the harness for the proofs.
+import { spawn } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** CHROME_PATH, or the first Chrome, Chromium or Edge where a runner or a desktop keeps one. */
+export function findChrome() {
+  const candidates = [
+    process.env.CHROME_PATH,
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    join(homedir(), "AppData/Local/ms-playwright/chromium-1223/chrome-win64/chrome.exe"),
+    // Last: a desktop Edge that is already open can take the launch over and exit at once.
+    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+  ].filter(Boolean);
+  const found = candidates.find((path) => existsSync(path));
+  if (!found) {
+    throw new Error("no Chrome, Chromium or Edge found: set CHROME_PATH");
+  }
+  return found;
+}
+
+/** The port Chrome writes once it listens. If it never does, its own stderr says why. */
+async function devtoolsPort(file, chrome, stderr) {
+  for (let waited = 0; waited < 30_000 && chrome.exitCode === null; waited += 50) {
+    const port = existsSync(file) ? readFileSync(file, "utf8").split("\n")[0].trim() : "";
+    if (port) {
+      return port;
+    }
+    await sleep(50);
+  }
+  chrome.kill();
+  throw new Error(`the browser did not start (exit code ${chrome.exitCode}): ${stderr().trim() || "nothing on stderr"}`);
+}
+
+/**
+ * A headless browser with one page. `profiles` holds its throwaway profile. `CHROME_FLAGS` adds flags, for a
+ * machine that needs one.
+ */
+export async function launch({ width, height, profiles }) {
+  const profile = join(profiles, `chrome-${process.pid}`);
+  rmSync(profile, { recursive: true, force: true });
+  mkdirSync(profile, { recursive: true });
+  const flags = (process.env.CHROME_FLAGS ?? "").split(" ").filter(Boolean);
+  const binary = findChrome();
+  const chrome = spawn(
+    binary,
+    [
+      "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--hide-scrollbars",
+      "--disable-extensions", "--disable-background-networking", "--disable-component-update", "--disable-sync",
+      ...flags, "--remote-debugging-port=0", `--user-data-dir=${profile}`, `--window-size=${width},${height}`, "about:blank",
+    ],
+    { stdio: ["ignore", "ignore", "pipe"] },
+  );
+  let stderr = "";
+  chrome.stderr.on("data", (chunk) => {
+    stderr = (stderr + chunk).slice(-4000);
+  });
+  const port = await devtoolsPort(join(profile, "DevToolsActivePort"), chrome, () => stderr);
+
+  let target;
+  for (let tries = 0; tries < 100 && !target; tries++) {
+    const list = await (await fetch(`http://127.0.0.1:${port}/json`)).json();
+    target = list.find((entry) => entry.type === "page");
+    if (!target) {
+      await sleep(50);
+    }
+  }
+  const socket = new WebSocket(target.webSocketDebuggerUrl);
+  await new Promise((resolve, reject) => {
+    socket.onopen = resolve;
+    socket.onerror = reject;
+  });
+
+  let sequence = 0;
+  const waiting = new Map();
+  const listeners = new Map();
+  const consoleErrors = [];
+  socket.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.id && waiting.has(message.id)) {
+      const { resolve, reject } = waiting.get(message.id);
+      waiting.delete(message.id);
+      if (message.error) {
+        reject(new Error(message.error.message));
+      } else {
+        resolve(message.result);
+      }
+      return;
+    }
+    if (message.method === "Runtime.exceptionThrown") {
+      const details = message.params.exceptionDetails;
+      consoleErrors.push(details.exception?.description ?? details.text);
+    } else if (message.method === "Runtime.consoleAPICalled" && ["error", "assert"].includes(message.params.type)) {
+      consoleErrors.push(message.params.args.map((arg) => arg.value ?? arg.description).join(" "));
+    }
+    for (const listener of listeners.get(message.method) ?? []) {
+      listener(message.params);
+    }
+  };
+  const send = (method, params = {}) =>
+    new Promise((resolve, reject) => {
+      const id = ++sequence;
+      waiting.set(id, { resolve, reject });
+      socket.send(JSON.stringify({ id, method, params }));
+    });
+
+  const page = {
+    browser: binary,
+    consoleErrors,
+    send,
+    on(method, listener) {
+      listeners.set(method, [...(listeners.get(method) ?? []), listener]);
+    },
+    async evaluate(expression) {
+      const out = await send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
+      if (out.exceptionDetails) {
+        throw new Error(out.exceptionDetails.exception?.description ?? out.exceptionDetails.text);
+      }
+      return out.result.value;
+    },
+    async resize(w, h) {
+      await send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 1, mobile: false });
+    },
+    async goto(url) {
+      await send("Page.navigate", { url });
+    },
+    /** Polls until `expression` is true. A page that is still loading only delays it. */
+    async waitFor(expression, ms = 15_000) {
+      for (let waited = 0; waited < ms; waited += 10) {
+        if (await page.evaluate(expression).catch(() => false)) {
+          return;
+        }
+        await sleep(10);
+      }
+      throw new Error(`timed out after ${ms} ms waiting for ${expression}`);
+    },
+    async version() {
+      return (await send("Browser.getVersion")).product;
+    },
+    async close() {
+      try {
+        socket.close();
+      } catch {
+        // Already closed.
+      }
+      chrome.kill();
+      await sleep(300);
+      rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+    },
+  };
+  await send("Page.enable");
+  await send("Runtime.enable");
+  await page.resize(width, height);
+  return page;
+}

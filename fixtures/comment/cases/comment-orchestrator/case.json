@@ -1,0 +1,42 @@
+{
+  "_note": "Synthetic. This session holds the open step of alpha, the issue's project: signed orchestratore, and the id goes to the step's cursor (M4), which the case does not compare.",
+  "scenario": "tracker",
+  "args": [
+    "comment",
+    "5",
+    "--body",
+    "A step's note.",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "commento",
+    "5",
+    "--corpo",
+    "A step's note."
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "gh": {
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9204\n"
+    }
+  },
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {
+          "v": 1,
+          "proprietario": "fixture-session",
+          "sessione": "fixture-session",
+          "t": "2026-01-10T08:30:00Z",
+          "commenti": []
+        },
+        "aggiornato": "2026-01-10T08:30:00Z"
+      }
+    }
+  ]
+}

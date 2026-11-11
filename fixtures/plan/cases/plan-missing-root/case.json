@@ -1,0 +1,17 @@
+{
+  "_note": "Synthetic. A root the tracker does not have: an error, exit 1.",
+  "scenario": "tracker",
+  "args": [
+    "plan",
+    "--root",
+    "99",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--radice",
+    "99"
+  ],
+  "exit": 1
+}

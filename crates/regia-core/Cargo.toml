@@ -6,11 +6,20 @@ edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
 
+[features]
+# Test data: the hostile corpus of the threat model's V07, for the app's smoke build and its tests.
+corpus = []
+# The TypeScript of the types the app's webview receives (the markdown tree), for the app's tests.
+ts = ["dep:ts-rs"]
+
 [dependencies]
 chrono.workspace = true
+pulldown-cmark.workspace = true
 regex.workspace = true
 regia-identity.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 toml.workspace = true
+ts-rs = { workspace = true, optional = true }
+url.workspace = true

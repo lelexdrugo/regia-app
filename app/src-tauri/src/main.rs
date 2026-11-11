@@ -51,7 +51,8 @@ fn open_main_window<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
 
 fn builder<R: Runtime>(builder: tauri::Builder<R>) -> tauri::Builder<R> {
     #[cfg(feature = "smoke")]
-    let builder = builder.invoke_handler(tauri::generate_handler![get_app_info, get_brief, smoke::smoke_report]);
+    let builder = builder
+        .invoke_handler(tauri::generate_handler![get_app_info, get_brief, smoke::smoke_report, smoke::smoke_corpus]);
     #[cfg(not(feature = "smoke"))]
     let builder = builder.invoke_handler(tauri::generate_handler![get_app_info, get_brief]);
     builder

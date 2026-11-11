@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. gh prints no URL: the comment exists, its id is null, and that is not an error (M5).",
+  "scenario": "tracker",
+  "args": [
+    "comment",
+    "5",
+    "--body",
+    "A note.",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "commento",
+    "5",
+    "--corpo",
+    "A note."
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  }
+}

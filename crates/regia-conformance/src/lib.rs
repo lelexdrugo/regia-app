@@ -132,6 +132,10 @@ pub struct CaseSpec {
     /// The project's dossier before the run, which the arguments name as [`DOSSIER_PLACEHOLDER`].
     #[serde(default)]
     pub dossier: Option<DossierSpec>,
+    /// Answers of the fake `gh` the scenario does not give, by key of its responses (`cli`,
+    /// `mutations`), merged over those `record` builds: the URL a comment gets, for one.
+    #[serde(default)]
+    pub gh: serde_json::Map<String, Value>,
 }
 
 /// A case's dossier: a folder of files, by default a git repo whose `files` are committed and pushed to
@@ -234,16 +238,21 @@ pub fn prepare_dossier(state: &Path, spec: &DossierSpec) -> PathBuf {
 }
 
 /// The dossier's repo after a run: the commits of `main` and of its remote, newest first, and what is
-/// left uncommitted. `None` for a dossier that is not a repo.
+/// left uncommitted; for a repo with no remote before the run, the `origin` the run gave it, if any.
+/// `None` for a dossier that is not a repo.
 pub fn dossier_after(state: &Path, spec: &DossierSpec) -> Option<Value> {
     let lines = |dir: &Path, args: &[&str]| -> Vec<String> { git(dir, args).lines().map(str::to_owned).collect() };
     spec.git.then(|| {
         let dir = dossier_dir(state);
-        json!({
+        let mut after = json!({
             "log": lines(&dir, &["log", "--format=%H %s", "main"]),
             "remote": spec.remote.then(|| lines(&remote_dir(state), &["log", "--format=%H %s", "main"])),
             "status": lines(&dir, &["status", "--porcelain=v1", "--untracked-files=all"]),
-        })
+        });
+        if !spec.remote && lines(&dir, &["remote"]).iter().any(|name| name == "origin") {
+            after["origin"] = json!(git(&dir, &["remote", "get-url", "origin"]).trim());
+        }
+        after
     })
 }
 
@@ -485,19 +494,31 @@ pub fn writes_log(state: &Path) -> PathBuf {
     state.join("gh-writes.jsonl")
 }
 
-/// The writes the fake `gh` saw in a run in `state`, in order.
+/// The writes the fake `gh` saw in a run in `state`, in order. The body a write read on stdin has its
+/// line breaks as LF, the declared normalization of [`lf`]: the prototype writes CRLF there on Windows.
 pub fn writes_of_run(state: &Path) -> Vec<Value> {
     let text = fs::read_to_string(writes_log(state)).unwrap_or_default();
-    text.lines().map(|line| serde_json::from_str(line).expect("a JSON line of the writes log")).collect()
+    text.lines()
+        .map(|line| {
+            let mut write: Value = serde_json::from_str(line).expect("a JSON line of the writes log");
+            if let Some(Value::String(body)) = write.get_mut("stdin") {
+                *body = lf(body);
+            }
+            write
+        })
+        .collect()
 }
 
 /// What every run against a fixture needs, on either side: its state folder, the fixed day and
 /// instant, and no engine, dossier or session of the machine. The credentials of Claude and Codex
 /// point at files that do not exist: the prototype's brief reads Codex's for a warning, its budget
-/// reads both and would ask the providers with them, and the machine's own must not leak in.
+/// reads both and would ask the providers with them, and the machine's own must not leak in. The home
+/// is the state folder too: `init` looks for the skills there, and git for its global configuration.
 fn fixture_env(launch: Launch, state: &Path) -> Launch {
     let launch = SESSION_VARIABLES.iter().fold(launch, |launch, name| launch.without(name));
     launch
+        .env("HOME", state)
+        .env("USERPROFILE", state)
         .env(&prototype_env_var("RUNTIME"), state)
         .env(&prototype_env_var("CODEX_AUTH"), state.join("no-codex-auth.json"))
         .env(&prototype_env_var("CLAUDE_CREDENTIALS"), state.join("no-claude-credentials.json"))
@@ -564,7 +585,7 @@ pub struct CliRun {
     pub exit: Option<i32>,
     pub stdout: Vec<u8>,
     pub stderr: String,
-    /// The writes the fake `gh` saw, in order.
+    /// The writes the fake `gh` saw, in order, with the placeholder in place of the dossier's folder.
     pub writes: Vec<Value>,
     /// The folder of the case's dossier, if it has one: its arguments named it.
     pub dossier: Option<PathBuf>,
@@ -694,11 +715,12 @@ fn run_case_in(label: &str, case: &Case, build: bool, extra: impl FnOnce(&Path) 
     }
     let output = launch.run().expect("run regia");
     let dossier_after = case.spec.dossier.as_ref().filter(|_| build).and_then(|spec| dossier_after(&state, spec));
+    let writes = writes_of_run(&state);
     CliRun {
         exit: output.status.code(),
         stdout: output.stdout,
         stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
-        writes: writes_of_run(&state),
+        writes: dossier.as_ref().map_or(writes.clone(), |dossier| writes.iter().map(|write| unplace_json(write, dossier)).collect()),
         dossier,
         dossier_after,
     }
@@ -773,9 +795,11 @@ pub fn take_not_ported(rust: &mut Value) -> Result<Vec<String>, String> {
     serde_json::from_value(marker).map_err(|error| error.to_string())
 }
 
-/// The first field of a mutation, which names it: `closeIssue` in `mutation($i:ID!){closeIssue(…){…}}`.
-/// `None` for a query.
-pub fn mutation_name(query: &str) -> Option<String> {
+/// The first field of a mutation, which names it, and the text of its arguments with no blank outside
+/// a string: `closeIssue` and `input:{issueId:$i,stateReason:$r}` in
+/// `mutation($i:ID!,$r:…){closeIssue(input:{issueId:$i, stateReason:$r}){…}}`. The arguments carry what
+/// the variables do not: a value written in the query, such as `replaceParent:true`. `None` for a query.
+pub fn mutation_call(query: &str) -> Option<(String, String)> {
     let text: Vec<char> = query.chars().collect();
     let mut at = 0;
     skip_blank(&text, &mut at);
@@ -793,7 +817,29 @@ pub fn mutation_name(query: &str) -> Option<String> {
     }
     at += 1;
     skip_blank(&text, &mut at);
-    Some(read_name(&text, &mut at)).filter(|name| !name.is_empty())
+    let name = Some(read_name(&text, &mut at)).filter(|name| !name.is_empty())?;
+    skip_blank(&text, &mut at);
+    let arguments = if text.get(at) == Some(&'(') { skip_arguments(&text, &mut at).ok()? } else { String::new() };
+    Some((name, compact(&arguments)))
+}
+
+/// `text` without the blanks outside its string literals: two queries that differ only in layout read the
+/// same. Commas stay, so no two tokens run together.
+fn compact(text: &str) -> String {
+    let mut out = String::new();
+    let (mut quoted, mut escaped) = (false, false);
+    for c in text.chars() {
+        if quoted {
+            out.push(c);
+            (escaped, quoted) = (!escaped && c == '\\', escaped || c != '"');
+        } else if c == '"' {
+            out.push(c);
+            quoted = true;
+        } else if !c.is_whitespace() {
+            out.push(c);
+        }
+    }
+    out
 }
 
 #[derive(Debug)]

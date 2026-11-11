@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. The field «Progetto» of the Project has the options alpha and old, left by a project that is gone, and not beta. Two objectives, alpha and beta; a task with the value of its label, one with the old option, one with no project label, one with the label of a project the registry does not have, one of beta closed with no value; one issue is not in the Project.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "project_field_options": ["alpha", "old"],
+  "issues": [
+    {"number": 1, "title": "[alpha] objective of alpha", "status": "In corso", "labels": ["progetto:alpha", "tipo:obiettivo"],
+     "project_field": "alpha", "body": "<!-- regia:progetto\nid: alpha\n-->\n"},
+    {"number": 2, "title": "[beta] objective of beta", "status": "Approvato", "labels": ["progetto:beta", "tipo:obiettivo"],
+     "body": "<!-- regia:progetto\nid: beta\n-->\n"},
+    {"number": 3, "title": "a task of alpha with its value", "status": "Approvato", "labels": ["progetto:alpha"], "parent": 1,
+     "project_field": "alpha"},
+    {"number": 4, "title": "a task of alpha with the old option", "status": "Inbox", "labels": ["progetto:alpha"], "parent": 1,
+     "project_field": "old"},
+    {"number": 5, "title": "a task with no project label", "status": "Inbox", "labels": []},
+    {"number": 6, "title": "a task of a project the registry does not have", "status": "Inbox", "labels": ["progetto:omega"]},
+    {"number": 7, "title": "a closed task of beta", "status": "Fatto", "labels": ["progetto:beta"], "parent": 2,
+     "state_reason": "COMPLETED", "closed_at": "2026-01-05T09:00:00Z"},
+    {"number": 8, "title": "not in the Project", "labels": ["progetto:alpha"], "parent": 1}
+  ]
+}

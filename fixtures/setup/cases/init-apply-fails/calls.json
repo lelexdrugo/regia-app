@@ -1,0 +1,17 @@
+[
+  {
+    "argv": [
+      "api",
+      "-X",
+      "POST",
+      "repos/example/tracker/labels",
+      "-f",
+      "name=parcheggiato",
+      "-f",
+      "color=fbca04",
+      "-f",
+      "description=Fuori dall'arretrato da scodare: il motivo sta in un commento"
+    ],
+    "stdin": null
+  }
+]

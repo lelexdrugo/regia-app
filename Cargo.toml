@@ -25,6 +25,7 @@ directories = "6.0"
 fluent-bundle = "0.16"
 fluent-syntax = "0.12"
 libc = "0.2"
+pulldown-cmark = { version = "0.13.5", default-features = false }
 regex = "1.13"
 rusqlite = { version = "0.41", default-features = false, features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
@@ -39,6 +40,7 @@ unic-langid = "0.9"
 # The usage probes' two GETs (threat model §3.12): the system's TLS, so its licences are already
 # allowed, and the system's roots.
 ureq = { version = "3.5", default-features = false, features = ["native-tls-no-default"] }
+url = "2.5"
 
 [profile.dev]
 debug = "line-tables-only"

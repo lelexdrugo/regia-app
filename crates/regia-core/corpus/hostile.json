@@ -1,0 +1,172 @@
+[
+  {
+    "name": "an image with onerror, as a block",
+    "markdown": "<img src=x onerror=\"window.__pwned=1\">",
+    "shows": ["<img src=x onerror=\"window.__pwned=1\">"]
+  },
+  {
+    "name": "a script block",
+    "markdown": "<script>window.__pwned=1</script>",
+    "shows": ["<script>window.__pwned=1</script>"]
+  },
+  {
+    "name": "svg with onload, inline",
+    "markdown": "A drawing: <svg onload=\"window.__pwned=1\"><circle r=\"1\"/></svg> done",
+    "shows": ["<svg onload=\"window.__pwned=1\"><circle r=\"1\"/></svg>"]
+  },
+  {
+    "name": "an iframe with srcdoc",
+    "markdown": "Look <iframe srcdoc=\"<script>parent.__pwned=1</script>\"></iframe> here",
+    "shows": ["<iframe srcdoc=\"<script>parent.__pwned=1</script>\"></iframe>"]
+  },
+  {
+    "name": "attributes with quotes inside quotes",
+    "markdown": "<a href=\"javascript:x\" title='\"><img src=x onerror=window.__pwned=1>'>a</a>",
+    "shows": ["<a href=\"javascript:x\" title='\"><img src=x onerror=window.__pwned=1>'>a</a>"]
+  },
+  {
+    "name": "a form block",
+    "markdown": "<form action=\"https://attacker.invalid/\"><button>Send</button></form>",
+    "shows": ["<form action=\"https://attacker.invalid/\"><button>Send</button></form>"]
+  },
+  {
+    "name": "a style block",
+    "markdown": "<style>body { display: none }</style>",
+    "shows": ["<style>body { display: none }</style>"]
+  },
+  {
+    "name": "a meta refresh",
+    "markdown": "<meta http-equiv=\"refresh\" content=\"0;url=https://attacker.invalid/\">",
+    "shows": ["<meta http-equiv=\"refresh\" content=\"0;url=https://attacker.invalid/\">"]
+  },
+  {
+    "name": "html in a fenced code block",
+    "markdown": "```html\n<script>window.__pwned=1</script>\n```",
+    "shows": ["<script>window.__pwned=1</script>"]
+  },
+  {
+    "name": "html in inline code",
+    "markdown": "Try `<img src=x onerror=window.__pwned=1>` now",
+    "shows": ["<img src=x onerror=window.__pwned=1>"]
+  },
+  {
+    "name": "entities that decode to markup",
+    "markdown": "&lt;script&gt;window.__pwned=1&lt;/script&gt; &#x3C;img src=x onerror=window.__pwned=1&#x3E;",
+    "shows": ["<script>window.__pwned=1</script>", "<img src=x onerror=window.__pwned=1>"]
+  },
+  {
+    "name": "html in a table cell",
+    "markdown": "| a | b |\n|---|---|\n| <img src=x onerror=window.__pwned=1> | ok |",
+    "shows": ["<img src=x onerror=window.__pwned=1>"]
+  },
+  {
+    "name": "a javascript link",
+    "markdown": "[click](javascript:window.__pwned=1)",
+    "shows": ["click"],
+    "links": ["refused:scheme"]
+  },
+  {
+    "name": "a javascript autolink",
+    "markdown": "<javascript:window.__pwned=1>",
+    "shows": ["javascript:window.__pwned=1"],
+    "links": ["refused:scheme"]
+  },
+  {
+    "name": "a javascript reference link",
+    "markdown": "[click][1]\n\n[1]: javascript:window.__pwned=1",
+    "shows": ["click"],
+    "links": ["refused:scheme"]
+  },
+  {
+    "name": "a data link",
+    "markdown": "[open](data:text/html;base64,PHNjcmlwdD53aW5kb3cuX19wd25lZD0xPC9zY3JpcHQ+)",
+    "links": ["refused:scheme"]
+  },
+  {
+    "name": "an http link",
+    "markdown": "[plain](http://example.invalid/)",
+    "links": ["refused:scheme"]
+  },
+  {
+    "name": "a file link",
+    "markdown": "[passwords](file:///etc/passwd)",
+    "links": ["refused:scheme"]
+  },
+  {
+    "name": "a scheme that starts a program",
+    "markdown": "[settings](ms-settings:privacy)",
+    "links": ["refused:scheme"]
+  },
+  {
+    "name": "credentials in a link",
+    "markdown": "[repo](https://user:secret@github.com/owner/repo)",
+    "links": ["refused:credentials"]
+  },
+  {
+    "name": "a link title that would be an attribute",
+    "markdown": "[x](https://example.invalid/ 'onmouseover=window.__pwned=1')",
+    "links": ["confirm"]
+  },
+  {
+    "name": "a homograph of github.com",
+    "markdown": "[github.com](https://gіthub.com/login)",
+    "shows": ["github.com"],
+    "links": ["confirm"]
+  },
+  {
+    "name": "a github link",
+    "markdown": "[the issue](https://github.com/owner/repo/issues/1)",
+    "links": ["external"]
+  },
+  {
+    "name": "an image from an outside host",
+    "markdown": "![a tracking pixel](https://attacker.invalid/?d=1)",
+    "shows": ["a tracking pixel"]
+  },
+  {
+    "name": "an image as a data url",
+    "markdown": "![inline](data:image/svg+xml;base64,PHN2ZyBvbmxvYWQ9ImFsZXJ0KDEpIi8+)",
+    "shows": ["inline"]
+  },
+  {
+    "name": "heading attributes",
+    "markdown": "# Title {#id .class onclick=x}",
+    "shows": ["{#id .class onclick=x}"]
+  },
+  {
+    "name": "bidi controls",
+    "markdown": "Approve ‮evil‬ done, ⁦isolated⁩",
+    "shows": ["‹U+202E›evil‹U+202C›", "‹U+2066›isolated‹U+2069›"]
+  },
+  {
+    "name": "bidi controls in code (Trojan Source)",
+    "markdown": "```\nif access_level != \"user‮ ⁦// Check if admin⁩ ⁦\" {\n```",
+    "shows": ["‹U+202E›"]
+  },
+  {
+    "name": "ANSI sequences",
+    "markdown": "\u001b[31mred\u001b[0m and \u001b]8;;https://attacker.invalid/\u0007a hyperlink\u001b]8;;\u0007",
+    "shows": ["red and a hyperlink"]
+  },
+  {
+    "name": "NUL and other controls",
+    "markdown": "a\u0000b\u0008c\u007fd",
+    "shows": ["abcd"]
+  },
+  {
+    "name": "an imitation of the app's buttons",
+    "markdown": "**[ Approve ]**   **[ Discard ]**",
+    "shows": ["[ Approve ]", "[ Discard ]"]
+  },
+  {
+    "name": "quotes nested forty deep",
+    "markdown": "> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > deep",
+    "shows": ["deep"]
+  },
+  {
+    "name": "1 MiB of text",
+    "markdown": "lorem ipsum dolor sit amet ",
+    "repeat": 38837,
+    "shows": ["lorem ipsum dolor sit amet"]
+  }
+]

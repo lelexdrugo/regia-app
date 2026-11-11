@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. Under the Objective of alpha, with the diagram: the root is not drawn, its edges go in the note.",
+  "scenario": "tracker",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--mermaid",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--radice",
+    "1",
+    "--mermaid"
+  ]
+}

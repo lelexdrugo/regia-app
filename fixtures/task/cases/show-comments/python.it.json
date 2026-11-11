@@ -1,0 +1,63 @@
+{
+  "bloccato_da": [],
+  "bloccato_da_totale": 0,
+  "body": "A spec.\n\n```yaml\nprogetto: alpha\n```\n",
+  "campo_progetto": null,
+  "closedAt": null,
+  "comments": [
+    {
+      "accorciato": false,
+      "body": "Written by hand on the site, with no signature.",
+      "creato": "2026-01-07T10:00:00Z",
+      "firma": "titolare",
+      "id": 9101,
+      "url": "https://tracker.invalid/issues/5#issuecomment-9101"
+    },
+    {
+      "accorciato": false,
+      "body": "A question for the owner.",
+      "creato": "2026-01-08T11:00:00Z",
+      "firma": "chat",
+      "id": 9102,
+      "url": "https://tracker.invalid/issues/5#issuecomment-9102"
+    },
+    {
+      "accorciato": true,
+      "body": "The report's summary, in one line.",
+      "creato": "2026-01-09T12:00:00Z",
+      "firma": "worker",
+      "id": 9103,
+      "url": "https://tracker.invalid/issues/5#issuecomment-9103"
+    },
+    {
+      "accorciato": false,
+      "body": "Decisione: A.",
+      "creato": "2026-01-09T13:00:00Z",
+      "firma": "titolare",
+      "id": 9104,
+      "url": "https://tracker.invalid/issues/5#issuecomment-9104"
+    }
+  ],
+  "createdAt": "2026-01-01T00:00:00Z",
+  "labels": [
+    "progetto:alpha",
+    "maturità:pronto"
+  ],
+  "maturita": "pronto",
+  "number": 5,
+  "obiettivo": false,
+  "parent": 1,
+  "progetto": "alpha",
+  "state": "OPEN",
+  "stateReason": null,
+  "stato": "Decisione",
+  "sub": [
+    [
+      6,
+      "OPEN"
+    ]
+  ],
+  "title": "decision with its comments",
+  "updatedAt": "2026-01-02T03:04:05Z",
+  "url": "https://tracker.invalid/issues/5"
+}

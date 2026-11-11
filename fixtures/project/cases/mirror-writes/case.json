@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. The field «Progetto» has an option for each project of the registry, so none is added; its ids go into the local tracker.json. Of the eight issues of the Project, the closed one too, two have the value of their label already and six get it, one updateProjectV2ItemFieldValue each, with no pause between them. JSON, exit 0.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "mirror",
+    "--pause",
+    "0",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "riempi",
+    "--pausa",
+    "0"
+  ]
+}

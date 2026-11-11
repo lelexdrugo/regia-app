@@ -1,0 +1,27 @@
+[
+  {
+    "cartella": "dossiers/alpha",
+    "colore_a_mano": "blu",
+    "default_automatici": "no",
+    "id": "alpha",
+    "obiettivo": 1,
+    "playbook": "generico",
+    "priorita": "2",
+    "prodotti": [
+      "example/alpha-app",
+      "example/alpha-lib"
+    ],
+    "repo": "example/alpha-dossier",
+    "stato": "In corso",
+    "titolo": "[alpha] objective of alpha",
+    "wip": "3"
+  },
+  {
+    "id": "beta",
+    "obiettivo": 2,
+    "prodotti": [],
+    "repo": null,
+    "stato": "Approvato",
+    "titolo": "[beta] objective of beta"
+  }
+]

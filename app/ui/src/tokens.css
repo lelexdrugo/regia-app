@@ -1,0 +1,81 @@
+/* The colour tokens of the design system's three directions, copied from the dossier's
+   docs/app/design-system/tokens.css without its type, space, fonts or colour scheme: those come with the app's
+   shell (#475), which imports this file. Until then nothing uses it, and prove/contrast.js measures every pair
+   the design uses, in each direction. The default direction is montaggio. */
+:root, :root[data-dir="montaggio"] {
+  --ground: #14120f;
+  --surface: #1b1815;
+  --raised: #25211c;
+  --active: #2d2822;
+  --border: #2f2a24;
+  --rule: #26221d;
+  --line-control: #766c5d;
+  --text: #efebe4;
+  --muted: #c0b7a9;
+  --faint: #a59c8e;
+  --accent: #e9a23b;
+  --accent-ink: #14120f;
+  --primary: #efebe4;
+  --primary-ink: #14120f;
+  --positive: #86d0a5;
+  --negative: #f08878;
+  --pill-accent-bg: #2e2414;   --pill-accent-ink: #edb052;
+  --pill-positive-bg: #1c2a21; --pill-positive-ink: #86d0a5;
+  --pill-negative-bg: #2f1c18; --pill-negative-ink: #f08878;
+  --pill-neutral-bg: #2a2620;  --pill-neutral-ink: #cfc7ba;
+  --lane: #362f27;
+  --lane-edge: #6b6256;
+  --node: #e8e1d5;
+}
+
+:root[data-dir="foglio"] {
+  --ground: #f3f3f1;
+  --surface: #ffffff;
+  --raised: #f4f4f2;
+  --active: #e8e8e5;
+  --border: #e2e2de;
+  --rule: #eeeeeb;
+  --line-control: #8a877f;
+  --text: #171613;
+  --muted: #55524b;
+  --faint: #66625a;
+  --accent: #8f5500;
+  --accent-ink: #ffffff;
+  --primary: #171613;
+  --primary-ink: #ffffff;
+  --positive: #1f6b45;
+  --negative: #b3261e;
+  --pill-accent-bg: #fdf0da;   --pill-accent-ink: #6f4200;
+  --pill-positive-bg: #dff5e7; --pill-positive-ink: #0e3f26;
+  --pill-negative-bg: #fde8e5; --pill-negative-ink: #861b15;
+  --pill-neutral-bg: #ecece9;  --pill-neutral-ink: #3d3b36;
+  --lane: #ecebe7;
+  --lane-edge: #8a877f;
+  --node: #171613;
+}
+
+:root[data-dir="nero"] {
+  --ground: #000000;
+  --surface: #101011;
+  --raised: #1d1d1f;
+  --active: #262628;
+  --border: #252527;
+  --rule: #1a1a1c;
+  --line-control: #6e6e73;
+  --text: #ffffff;
+  --muted: #b6b6b9;
+  --faint: #98989c;
+  --accent: #7fb0ff;
+  --accent-ink: #000000;
+  --primary: #ffffff;
+  --primary-ink: #000000;
+  --positive: #6fd19b;
+  --negative: #ff8a80;
+  --pill-accent-bg: #15233a;   --pill-accent-ink: #9cc3ff;
+  --pill-positive-bg: #14281d; --pill-positive-ink: #6fd19b;
+  --pill-negative-bg: #2e1715; --pill-negative-ink: #ff8a80;
+  --pill-neutral-bg: #1f1f21;  --pill-neutral-ink: #c9c9cc;
+  --lane: #1a1a1c;
+  --lane-edge: #66666b;
+  --node: #ffffff;
+}

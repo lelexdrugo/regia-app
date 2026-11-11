@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. The open tasks of alpha: the main line from 3 to 4, the child 6 inside 5, the closed 7 left out.",
+  "scenario": "tracker",
+  "args": [
+    "plan",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--progetto",
+    "alpha"
+  ]
+}

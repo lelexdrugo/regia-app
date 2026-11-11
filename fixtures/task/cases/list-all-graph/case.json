@@ -1,0 +1,26 @@
+{
+  "_note": "Synthetic. Every state, the Objectives included, in the order of the graph: the closed task and the Objectives go last.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "list",
+    "--project",
+    "alpha",
+    "--include-closed",
+    "--objectives",
+    "--order",
+    "graph",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "list",
+    "--progetto",
+    "alpha",
+    "--anche-chiusi",
+    "--obiettivi",
+    "--ordine",
+    "grafo"
+  ]
+}

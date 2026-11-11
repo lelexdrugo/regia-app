@@ -1,0 +1,118 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "owner": {
+    "repositoryOwner": {
+      "projectsV2": {
+        "nodes": [
+          {
+            "field": {
+              "__typename": "ProjectV2SingleSelectField",
+              "id": "FIELD_FIXTURE",
+              "name": "Status",
+              "options": [
+                {
+                  "color": "GRAY",
+                  "description": "",
+                  "id": "opt-default-0",
+                  "name": "Todo"
+                },
+                {
+                  "color": "GRAY",
+                  "description": "",
+                  "id": "opt-default-1",
+                  "name": "In Progress"
+                },
+                {
+                  "color": "GRAY",
+                  "description": "",
+                  "id": "opt-default-2",
+                  "name": "Done"
+                }
+              ]
+            },
+            "fields": {
+              "nodes": [
+                {
+                  "__typename": "ProjectV2Field",
+                  "id": "FIELD_TITLE",
+                  "name": "Title"
+                },
+                {
+                  "__typename": "ProjectV2SingleSelectField",
+                  "id": "FIELD_FIXTURE",
+                  "name": "Status",
+                  "options": [
+                    {
+                      "color": "GRAY",
+                      "description": "",
+                      "id": "opt-default-0",
+                      "name": "Todo"
+                    },
+                    {
+                      "color": "GRAY",
+                      "description": "",
+                      "id": "opt-default-1",
+                      "name": "In Progress"
+                    },
+                    {
+                      "color": "GRAY",
+                      "description": "",
+                      "id": "opt-default-2",
+                      "name": "Done"
+                    }
+                  ]
+                }
+              ]
+            },
+            "id": "PROJECT_FIXTURE",
+            "number": 1,
+            "title": "Fixture",
+            "url": "https://tracker.invalid/projects/1"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      }
+    }
+  },
+  "rest": {
+    "GET repos/example/tracker": {
+      "body": {
+        "node_id": "R_FIXTURE",
+        "owner": {
+          "node_id": "U_FIXTURE"
+        },
+        "private": true
+      }
+    },
+    "GET repos/example/tracker/labels?per_page=100&page=1": {
+      "body": [
+        {
+          "name": "tipo:obiettivo"
+        },
+        {
+          "name": "maturità:abbozzo"
+        },
+        {
+          "name": "maturità:pronto"
+        },
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "GET user": {
+      "body": {
+        "login": "example"
+      },
+      "headers": {
+        "X-Oauth-Scopes": "project, repo"
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "_note": "Synthetic. No role and no open step: signed chat, with the session's id in the marker (conformita.md M1, M3); the id comes from the URL gh prints (M5).",
+  "scenario": "tracker",
+  "args": [
+    "comment",
+    "5",
+    "--body",
+    "A note.",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "commento",
+    "5",
+    "--corpo",
+    "A note."
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "gh": {
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9201\n"
+    }
+  }
+}
