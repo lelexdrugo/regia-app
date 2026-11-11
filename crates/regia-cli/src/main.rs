@@ -5,7 +5,7 @@ use std::process::ExitCode;
 use clap::builder::PossibleValuesParser;
 use clap::{Parser, Subcommand};
 use regia_agents::{
-    Assignment, Diversity, Env, LaunchRequest, Policy, Receipt, Role, ServiceId, Settings, SurfaceKind,
+    Assignment, Diversity, Env, Https, LaunchRequest, Policy, ProbeConsent, Receipt, Role, ServiceId, Settings, SurfaceKind, UsageProbes,
 };
 use regia_core::{Brief, BriefOptions, BriefTask};
 use regia_exec::{Effort, ExecError, ModelId, Program};
@@ -13,6 +13,7 @@ use regia_facade::{Engine, FacadeError, Printed, PythonPrototype, Table};
 use regia_i18n::{Catalog, Language};
 use regia_identity::{BIN_NAME, config_dir, env_var};
 use regia_runtime::{dossier_dir, load_brief};
+use regia_store::{MIN_INTERVAL_S, Reading, Store};
 use serde_json::Value;
 
 #[derive(Parser)]
@@ -40,6 +41,9 @@ enum Commands {
     },
     /// Starts an agent's session on a step and returns once it is open, with its receipt in JSON.
     Launch(LaunchArgs),
+    /// What is left of Claude's and Codex's windows, read only, and only with the user's consent to the
+    /// usage probes. Exits 0, also when a value is unknown or the probes are off.
+    Budget(BudgetArgs),
     /// Commands not ported yet go to the prototype through the facade table.
     #[command(external_subcommand)]
     External(Vec<String>),
@@ -82,6 +86,19 @@ struct LaunchArgs {
     /// Without it: the service's own default.
     #[arg(long)]
     effort: Option<String>,
+}
+
+#[derive(clap::Args)]
+struct BudgetArgs {
+    /// Machine-readable output: this is the contract the agents use.
+    #[arg(long)]
+    json: bool,
+    /// Asks the providers at most once per interval, and keeps the last valid value.
+    #[arg(long)]
+    cache: bool,
+    /// Seconds between two real readings, with `--cache`.
+    #[arg(long, default_value_t = MIN_INTERVAL_S)]
+    min_interval: u64,
 }
 
 /// The prompt: one of the two, never both.
@@ -144,6 +161,28 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
             let launched = regia_agents::surface(kind, Env::of_this_process()).launch(&request);
             let receipt: Receipt = launched.map_err(|error| error.to_string())?;
             print_json(&serde_json::to_value(&receipt).map_err(|error| error.to_string())?)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Commands::Budget(args) => {
+            if let Some(prototype) = route(&table, "budget", true, catalog)? {
+                let mut argv = Vec::new();
+                if args.json {
+                    argv.push("--json".to_owned());
+                }
+                if args.cache {
+                    argv.extend(["--cache".to_owned(), "--min-interval".to_owned(), args.min_interval.to_string()]);
+                }
+                return passthrough(&table, &prototype, "budget", &argv, catalog);
+            }
+            let reading = budget(&args, &settings()?)?;
+            let value = serde_json::to_value(&reading).map_err(|error| error.to_string())?;
+            if args.json {
+                print_json(&value)?;
+            } else {
+                for line in flat(&value) {
+                    println!("{line}");
+                }
+            }
             Ok(ExitCode::SUCCESS)
         }
         Commands::External(argv) => {
@@ -244,6 +283,39 @@ fn launch_request(args: &LaunchArgs, settings: Settings) -> Result<(SurfaceKind,
         .effort(effort)
         .secret_env(secrets);
     Ok((kind, request))
+}
+
+/// `budget`, natively: the probes as the settings consent to them, from the cache with `--cache`. With
+/// the probes refused nothing is read, not even the cache, which holds what probes read.
+fn budget(args: &BudgetArgs, settings: &Settings) -> Result<Reading, String> {
+    let probes = UsageProbes::new(settings.probe_consent(), Env::of_this_process(), Https::new());
+    if !args.cache || probes.consent() == ProbeConsent::Refused {
+        return Ok(probes.read());
+    }
+    let store = Store::open().map_err(|error| error.to_string())?;
+    store.budget(args.min_interval, false, || Ok::<_, std::convert::Infallible>(probes.read())).map_err(|error| error.to_string())
+}
+
+/// A JSON value as `key: value` lines, one per leaf, the keys of the contract joined by dots: the text
+/// form of a command whose words would otherwise need a catalog.
+fn flat(value: &Value) -> Vec<String> {
+    fn walk(prefix: &str, value: &Value, out: &mut Vec<String>) {
+        match value {
+            Value::Object(fields) if !fields.is_empty() => {
+                for (key, value) in fields {
+                    let path = if prefix.is_empty() { key.clone() } else { format!("{prefix}.{key}") };
+                    walk(&path, value, out);
+                }
+            }
+            Value::Object(_) => out.push(format!("{prefix}: -")),
+            Value::Null => out.push(format!("{prefix}: -")),
+            Value::String(text) => out.push(format!("{prefix}: {text}")),
+            other => out.push(format!("{prefix}: {other}")),
+        }
+    }
+    let mut out = Vec::new();
+    walk("", value, &mut out);
+    out
 }
 
 /// The assignment as `key: value` lines, with the contract's keys, and the one sentence a reader
@@ -377,6 +449,40 @@ mod tests {
         let (kind, request) = launch_request(&launch_args(&["--project", "trial", "--folder", FOLDER, "--prompt", "p"]), codex).unwrap();
         assert_eq!((kind, request.service, request.secret_env.as_slice()), (SurfaceKind::Dry, ServiceId::Codex, &["OPENAI_API_KEY".to_owned()][..]));
         assert_eq!(launch_request(&launch_args(&["--project", "trial", "--folder", FOLDER, "--prompt", "p"]), Settings::default()).unwrap().0, SurfaceKind::Cli);
+    }
+
+    /// Acceptance 2 of #463, through the command: with no answer to the probes, or a refusal, both
+    /// providers read `probe_off`, also with `--cache`, which is then not read either.
+    #[test]
+    fn with_the_probes_refused_the_budget_is_probe_off() {
+        let args = |argv: &[&str]| match parse(&[&["budget"][..], argv].concat()).map(|cli| cli.command) {
+            Ok(Commands::Budget(args)) => args,
+            Ok(_) => panic!("not budget"),
+            Err(error) => panic!("{error}"),
+        };
+        for settings in [Settings::default(), Settings::parse("probes = \"refused\"\n").unwrap()] {
+            for argv in [&["--json"][..], &["--json", "--cache", "--min-interval", "60"]] {
+                let json = serde_json::to_value(budget(&args(argv), &settings).unwrap()).unwrap();
+                assert_eq!(json["provider"]["claude"]["status"], "probe_off", "{argv:?}");
+                assert_eq!(json["provider"]["codex"]["status"], "probe_off", "{argv:?}");
+                assert!(json.get("cache").is_none(), "the cache was not read: {json}");
+            }
+        }
+        assert_eq!(args(&[]).min_interval, 300);
+        assert!(parse(&["budget", "--min-interval", "soon"]).is_err());
+    }
+
+    /// `TestFinestraNonAperta.test_il_testo_di_regia_budget_dice_non_aperta`: the text form says the
+    /// window is not open, with the contract's keys.
+    #[test]
+    fn the_text_of_budget_says_a_window_is_not_open() {
+        let windows = vec![("5h".to_owned(), regia_store::Window::read(0.0, None)), ("7d".to_owned(), regia_store::Window::read(30.0, Some(("2099-01-01T00:00+00:00".to_owned(), 60))))];
+        let claude = regia_store::ProviderUsage::new("claude", Some("max".to_owned()), windows, None, None);
+        let reading = Reading { generated: None, providers: vec![("claude".to_owned(), claude)], cache: None };
+        let lines = flat(&serde_json::to_value(&reading).unwrap());
+        for line in ["provider.claude.windows.5h.open: false", "provider.claude.windows.5h.used_pct: 0.0", "provider.claude.windows.7d.used_pct: 30.0", "generated: -"] {
+            assert!(lines.iter().any(|candidate| candidate == line), "{line} not in {lines:?}");
+        }
     }
 
     /// The prototype's checks: each of these fails before a surface is even chosen.
