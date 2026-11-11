@@ -6,11 +6,13 @@
 //! The names inside the database stay the prototype's: they are data, read from
 //! `formats/store_v1.toml`. The API is typed and in English, and returns codes, not sentences.
 
+mod budget;
 mod clock;
 mod db;
 mod folder;
 mod lock;
 mod time;
+mod usage;
 mod v1;
 
 use std::fmt;
@@ -21,17 +23,20 @@ use std::time::Duration;
 
 use serde_json::{Number, Value};
 
+pub use budget::{BudgetError, MIN_INTERVAL_S, NO_VALUE, NOTE_OVERTAKEN, NOTE_RUNNING, PROBE_TTL_S, PROBE_WAIT, UPDATE_FAILED};
 pub use clock::{Clock, ManualClock, SystemClock};
 pub use db::{BUSY_WAIT, Row, SqliteError};
 pub use folder::{database_name, default_folder, is_within};
 pub use lock::{LockOutcome, LockState, LockStatus, LockView};
-pub use time::WallTime;
+pub use time::{Precision, WallTime};
+pub use usage::{CacheInfo, NO_DATA, ProviderUsage, Reading, Served, TokenState, TokenStatus, UsageStatus, Window, round_to_tenth};
 
 /// The state database of one folder, and the clock its expiries are read on.
 #[derive(Debug, Clone)]
 pub struct Store {
     db: db::Database,
     clock: Arc<dyn Clock>,
+    probe_wait: Duration,
 }
 
 impl Store {
@@ -54,7 +59,7 @@ impl Store {
         let folder = folder.into();
         folder::check(&folder)?;
         folder::create(&folder)?;
-        Ok(Self { db: db::Database::new(folder, BUSY_WAIT), clock: Arc::new(SystemClock) })
+        Ok(Self { db: db::Database::new(folder, BUSY_WAIT), clock: Arc::new(SystemClock), probe_wait: PROBE_WAIT })
     }
 
     /// Reads time from `clock` instead of the system.

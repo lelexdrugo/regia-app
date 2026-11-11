@@ -41,3 +41,57 @@ clock = "o"
 # Fields no view shows: the probe's fencing token and the monotonic stamp.
 [view]
 hidden = ["token", "_m"]
+
+# The budget cache (kind `cache`) and the claim of the probe that refreshes it (kind `probe`), one row
+# each at this key. For each provider the cache keeps the last valid reading, with when it was read,
+# and the last reading, valid or not. Its monotonic stamp has `written` and `clock`, no `expires`.
+[budget]
+key = "budget"
+providers = "provider"
+valid = "valido"
+valid_at = "valido_il"
+last = "ultimo"
+attempted_at = "ultimo_tentativo"
+# The claim: its fencing token, and its expiry on the wall clock.
+claim_token = "token"
+claim_expires_at = "scade"
+
+# A provider's reading, as the prototype's probes write it (`tools/usage.py`).
+[usage]
+provider = "provider"
+status = "stato"
+plan = "piano"
+windows = "finestre"
+reason = "motivo"
+token = "token"
+
+# A window of a reading.
+[usage_window]
+status = "stato"
+used_pct = "usato_pct"
+remaining_pct = "residuo_pct"
+reset = "reset"
+reset_in_s = "reset_tra_s"
+open = "aperta"
+reason = "motivo"
+
+# Codex's token, from its expiry alone: never the token itself.
+[usage_token]
+status = "stato"
+expires_at = "scade"
+expires_in_s = "scade_tra_s"
+reason = "motivo"
+http_status = "codice_http"
+
+# The values of a reading's and a window's status. There is no value for probes the user refused:
+# such a reading is never stored.
+[usage_statuses]
+ok = "ok"
+unknown = "sconosciuto"
+
+[token_statuses]
+valid = "valido"
+expiring = "in_scadenza"
+expired = "scaduto"
+unknown = "sconosciuto"
+refused = "rifiutato"

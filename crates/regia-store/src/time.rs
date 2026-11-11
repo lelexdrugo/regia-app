@@ -97,6 +97,76 @@ impl WallTime {
         let naive = civil_micros(year, month, day, &time)?;
         Some(Self(naive - time.offset_micros))
     }
+
+    /// The instant `secs` seconds after the epoch, rounded to the microsecond as Python's
+    /// `datetime.fromtimestamp` rounds it, or `None` outside the range of a `datetime`.
+    #[must_use]
+    pub fn from_unix_secs_f64(secs: f64) -> Option<Self> {
+        if !secs.is_finite() {
+            return None;
+        }
+        Self(0).checked_add_secs(secs)
+    }
+
+    /// Seconds since the epoch, as `datetime.timestamp()` gives them.
+    #[must_use]
+    pub fn unix_secs_f64(self) -> f64 {
+        self.0 as f64 / 1e6
+    }
+
+    /// `astimezone().isoformat(timespec=…)` at `offset_s` seconds east of UTC, as the prototype's
+    /// probes write a reset or an expiry: `2026-11-11T07:39+01:00` to the minute,
+    /// `2026-11-11T07:39:12+01:00` to the second. What is finer is cut, not rounded.
+    #[must_use]
+    pub fn to_local_iso(self, offset_s: i32, precision: Precision) -> String {
+        let local = Local::of(self, offset_s);
+        let time = match precision {
+            Precision::Minutes => format!("{:02}:{:02}", local.hour, local.minute),
+            Precision::Seconds => format!("{:02}:{:02}:{:02}", local.hour, local.minute, local.second),
+        };
+        format!("{:04}-{:02}-{:02}T{time}{}", local.year, local.month, local.day, offset_text(offset_s))
+    }
+
+    /// `astimezone().strftime("%d/%m %H:%M")`: the day and time a reason names, `11/11 15:37`.
+    #[must_use]
+    pub fn to_local_day_time(self, offset_s: i32) -> String {
+        let local = Local::of(self, offset_s);
+        format!("{:02}/{:02} {:02}:{:02}", local.day, local.month, local.hour, local.minute)
+    }
+}
+
+/// How finely [`WallTime::to_local_iso`] writes the time of day.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Precision {
+    Minutes,
+    Seconds,
+}
+
+/// The civil fields of an instant at an offset.
+struct Local {
+    year: i64,
+    month: i64,
+    day: i64,
+    hour: i64,
+    minute: i64,
+    second: i64,
+}
+
+impl Local {
+    fn of(time: WallTime, offset_s: i32) -> Self {
+        let seconds = time.0.div_euclid(MICROS_PER_SECOND) + i64::from(offset_s);
+        let (year, month, day) = civil_from_days(seconds.div_euclid(SECONDS_PER_DAY));
+        let of_day = seconds.rem_euclid(SECONDS_PER_DAY);
+        Self { year, month, day, hour: of_day / 3600, minute: of_day / 60 % 60, second: of_day % 60 }
+    }
+}
+
+/// Python's `_format_offset`: `+01:00`, and the seconds only when there are some.
+fn offset_text(offset_s: i32) -> String {
+    let sign = if offset_s < 0 { '-' } else { '+' };
+    let total = offset_s.unsigned_abs();
+    let (hours, minutes, seconds) = (total / 3600, total / 60 % 60, total % 60);
+    if seconds == 0 { format!("{sign}{hours:02}:{minutes:02}") } else { format!("{sign}{hours:02}:{minutes:02}:{seconds:02}") }
 }
 
 #[derive(Debug, Default)]
@@ -420,5 +490,22 @@ mod tests {
         assert_eq!(micros("2026-11-10T02:47:39z"), None);
         assert_eq!(micros("2026-11-10T24:00:00"), None);
         assert_eq!(micros(" 2026-11-10T02:47:39"), None);
+    }
+
+    /// As `datetime.fromtimestamp(t, tz).isoformat(timespec=…)`, recorded from Python 3.12.
+    #[test]
+    fn writes_local_times_as_the_probes_do() {
+        let reset = WallTime::from_unix_secs_f64(1_794_380_399.999_999_7).expect("in range");
+        assert_eq!(reset.unix_micros(), 1_794_380_400_000_000, "rounded to the microsecond, half to even");
+        assert_eq!(reset.to_local_iso(3600, Precision::Minutes), "2026-11-11T08:00+01:00");
+        let expiry = WallTime::from_unix_secs_f64(1_794_407_822.75).expect("in range");
+        assert_eq!(expiry.to_local_iso(3600, Precision::Seconds), "2026-11-11T15:37:02+01:00");
+        assert_eq!(expiry.to_local_iso(0, Precision::Seconds), "2026-11-11T14:37:02+00:00");
+        assert_eq!(expiry.to_local_iso(-5 * 3600 - 1800, Precision::Minutes), "2026-11-11T09:07-05:30");
+        assert_eq!(expiry.to_local_iso(3600 + 30, Precision::Minutes), "2026-11-11T15:37+01:00:30");
+        assert_eq!(expiry.to_local_day_time(3600), "11/11 15:37");
+        assert_eq!(WallTime::parse_iso(&expiry.to_local_iso(3600, Precision::Seconds)).map(WallTime::unix_micros), Some(1_794_407_822_000_000));
+        assert_eq!(WallTime::from_unix_secs_f64(f64::NAN), None);
+        assert_eq!(WallTime::from_unix_secs_f64(1e20), None);
     }
 }

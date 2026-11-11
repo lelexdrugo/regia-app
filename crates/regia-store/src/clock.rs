@@ -21,6 +21,18 @@ pub trait Clock: Send + Sync + fmt::Debug {
     fn monotonic(&self) -> f64;
     /// Names the monotonic clock in the documents this clock stamps.
     fn tag(&self) -> Cow<'static, str>;
+    /// Seconds east of UTC of the local time at `at`, which the budget's readings are written in, as
+    /// the prototype's `astimezone()` writes them.
+    fn local_offset_s(&self, at: WallTime) -> i32 {
+        system_offset_s(at)
+    }
+}
+
+/// The system's time zone at `at`.
+fn system_offset_s(at: WallTime) -> i32 {
+    use chrono::{Offset, TimeZone};
+    chrono::DateTime::from_timestamp_micros(at.unix_micros())
+        .map_or(0, |utc| chrono::Local.offset_from_utc_datetime(&utc.naive_utc()).fix().local_minus_utc())
 }
 
 /// The system's clocks.
@@ -46,7 +58,8 @@ impl Clock for SystemClock {
     }
 }
 
-/// A clock that moves only when told to: wall and monotonic time, and the tag, set by hand.
+/// A clock that moves only when told to: wall and monotonic time, the tag and the local offset, set by
+/// hand. Its local time is UTC until told otherwise, so no reading depends on the machine.
 ///
 /// Clones share the same time, so a test keeps one and gives the other to the store.
 #[derive(Debug, Clone)]
@@ -59,12 +72,13 @@ struct ManualState {
     wall: WallTime,
     monotonic: f64,
     tag: String,
+    offset_s: i32,
 }
 
 impl ManualClock {
     #[must_use]
     pub fn new(wall: WallTime, monotonic: f64, tag: impl Into<String>) -> Self {
-        let state = ManualState { wall, monotonic, tag: tag.into() };
+        let state = ManualState { wall, monotonic, tag: tag.into(), offset_s: 0 };
         Self { state: Arc::new(Mutex::new(state)) }
     }
 
@@ -105,6 +119,11 @@ impl ManualClock {
         let tag = tag.into();
         self.with(|state| state.tag = tag);
     }
+
+    /// The local time becomes `offset_s` seconds east of UTC.
+    pub fn set_local_offset_s(&self, offset_s: i32) {
+        self.with(|state| state.offset_s = offset_s);
+    }
 }
 
 impl Clock for ManualClock {
@@ -118,6 +137,10 @@ impl Clock for ManualClock {
 
     fn tag(&self) -> Cow<'static, str> {
         Cow::Owned(self.with(|state| state.tag.clone()))
+    }
+
+    fn local_offset_s(&self, _at: WallTime) -> i32 {
+        self.with(|state| state.offset_s)
     }
 }
 
@@ -191,5 +214,10 @@ mod tests {
         assert_eq!((shared.now().unix_micros(), shared.monotonic()), (-8_500_000, 101.5));
         clock.set_tag("other");
         assert_eq!(shared.tag(), "other");
+        assert_eq!(shared.local_offset_s(shared.now()), 0, "UTC until told otherwise");
+        clock.set_local_offset_s(3600);
+        assert_eq!(shared.local_offset_s(shared.now()), 3600);
+        let offset = SystemClock.local_offset_s(WallTime::now());
+        assert!(offset.abs() <= 14 * 3600, "{offset}");
     }
 }
