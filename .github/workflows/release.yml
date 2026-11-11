@@ -12,10 +12,9 @@ name: release
 on:
   push:
     tags: ["v*"]
-    # Temporary, and matching no path: GitHub dispatches only a workflow it has seen on a push, and this
-    # file is not on main yet. It goes before the branch is integrated.
+    # Temporary: GitHub dispatches only a workflow that has run, and this file is not on main yet. A push
+    # to this branch makes a run whose jobs are all skipped (`verify` below). It goes before integration.
     branches: [lelexdrugo/regia-494-installer]
-    paths: [".github/no-such-path"]
   workflow_dispatch:
 
 concurrency:
@@ -33,6 +32,8 @@ env:
 jobs:
   verify:
     name: version, and ci on the commit
+    # Temporary, with the branch trigger above: every other job needs this one, so a push skips them all.
+    if: github.event_name != 'push' || github.ref_type == 'tag'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
