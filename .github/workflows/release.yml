@@ -141,6 +141,8 @@ jobs:
           "by its path: $version"
           if ($version -ne "regia $env:VERSION") { throw "regia --version printed '$version'" }
           if (-not (Test-OnUserPath $dir)) { throw "the install folder is not on the user's PATH" }
+          $last = @(([string](Get-Item HKCU:\Environment).GetValue('Path', '', 'DoNotExpandEnvironmentNames')) -split ';' | Where-Object { $_ })[-1]
+          if ($last.TrimEnd('\') -ne $dir) { throw "the install folder is not the last entry of the user's PATH: '$last'" }
           # A new shell builds its PATH from the registry: the machine's, then the user's.
           $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
           $found = (Get-Command regia -CommandType Application | Select-Object -First 1).Source
