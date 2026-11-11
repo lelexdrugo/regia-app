@@ -4,6 +4,7 @@
 // with the focus on the language chosen, in the other language's words, and the choice was saved. Then back.
 // The negative control: the same change made the way an app without it would, a reload in the other language,
 // must lose the place.
+import { messages } from "./messages.js";
 import { find, focus, focused, named } from "./roles.js";
 import { open } from "./views.js";
 
@@ -44,22 +45,38 @@ function judge(before, after, chosen, words) {
   ];
 }
 
-async function observe(page, navigations) {
+/** A language's words the check reads on the page: the title, a link of the sidebar, a heading of the brief. */
+function wordsOf(ui, language) {
+  const catalog = messages(ui, language);
+  return { language, title: catalog["app-title"], link: catalog["nav-daily"], heading: catalog["brief-in-progress"] };
+}
+
+/** The node's name in whichever of `both` languages the page shows it. */
+async function either(page, role, both, key) {
+  for (const words of both) {
+    const node = await find(page, role, words[key]);
+    if (node) return node.name;
+  }
+  return undefined;
+}
+
+async function observe(page, navigations, both) {
   return {
     place: await page.evaluate(PLACE),
     navigations: navigations.length,
     focus: await focused(page),
-    link: (await find(page, "link", "Dailies"))?.name ?? (await find(page, "link", "Giornalieri"))?.name,
-    heading: (await find(page, "heading", "In progress"))?.name ?? (await find(page, "heading", "In corso"))?.name,
+    link: await either(page, "link", both, "link"),
+    heading: await either(page, "heading", both, "heading"),
   };
 }
 
-const ENGLISH = { language: "en", title: "Control room", link: "Dailies", heading: "In progress" };
-const ITALIAN = { language: "it", title: "Sala di regia", link: "Giornalieri", heading: "In corso" };
-
 export const language = {
   browser: true,
-  async run({ page, harness }) {
+  async run({ ui, page, harness }) {
+    const ENGLISH = wordsOf(ui, "en");
+    const ITALIAN = wordsOf(ui, "it");
+    const both = [ENGLISH, ITALIAN];
+    const self = { en: messages(ui, "en")["language-self"], it: messages(ui, "it")["language-self"] };
     const errors = page.consoleErrors.length;
     const navigations = [];
     page.on("Page.frameNavigated", (params) => navigations.push(params.frame.url));
@@ -71,8 +88,8 @@ export const language = {
 
     // Italian to English, then back, each with the arrow keys on the sidebar's group.
     const steps = [
-      { from: "Italiano", key: "ArrowDown", chosen: "English", words: ENGLISH, saved: { language: "en" } },
-      { from: "English", key: "ArrowUp", chosen: "Italiano", words: ITALIAN, saved: { language: "it" } },
+      { from: self.it, key: "ArrowDown", chosen: self.en, words: ENGLISH, saved: { language: "en" } },
+      { from: self.en, key: "ArrowUp", chosen: self.it, words: ITALIAN, saved: { language: "it" } },
     ];
     for (const step of steps) {
       const radio = await find(page, "radio", step.from);
@@ -81,11 +98,11 @@ export const language = {
         continue;
       }
       await focus(page, radio);
-      const before = await observe(page, navigations);
+      const before = await observe(page, navigations, both);
       navigations.length = 0;
       await page.press(step.key);
       await page.waitFor(`document.documentElement.lang === ${JSON.stringify(step.words.language)}`, 5_000).catch(() => {});
-      const after = await observe(page, navigations);
+      const after = await observe(page, navigations, both);
       for (const [name, ok] of judge(before, after, step.chosen, step.words)) results.push([`${step.from} → ${step.chosen}: ${name}`, ok]);
       const saved = JSON.parse(after.place.saved);
       results.push([`${step.from} → ${step.chosen}: saved`, JSON.stringify(saved.at(-1)) === JSON.stringify(step.saved)]);
@@ -93,12 +110,12 @@ export const language = {
     }
 
     // The control: the change as a reload in the other language.
-    const before = await observe(page, navigations);
+    const before = await observe(page, navigations, both);
     navigations.length = 0;
     await page.evaluate(`history.replaceState(null, "", location.href.replace("lang=it", "lang=en")); location.reload(); true`);
     await page.waitFor(`document.documentElement.dataset.settled === ${JSON.stringify(ROUTE.replace("lang=it", "lang=en"))}`);
-    const after = await observe(page, navigations);
-    const control = judge(before, after, "English", ENGLISH).filter(([, ok]) => !ok).map(([name]) => name);
+    const after = await observe(page, navigations, both);
+    const control = judge(before, after, self.en, ENGLISH).filter(([, ok]) => !ok).map(([name]) => name);
     const caught = ["the same page: the mark left on it is there", "no navigation and no load", "the same rows in view, where they were"].every((name) =>
       control.includes(name),
     );

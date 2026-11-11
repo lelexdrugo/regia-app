@@ -7,6 +7,7 @@
 // transition under prefers-reduced-motion; the sidebar's quota in words, used and left (#439/D29). The negative
 // control: the same checks on the harness's control page, which has none of it, must fail, and so must the
 // prototype's glossary against #439/D31's words and its "claude 6 %" against #439/D29.
+import { format, messages } from "./messages.js";
 import { all, find, focus, focused, named } from "./roles.js";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -19,16 +20,16 @@ const GO = [
   ["b", "#/brief", "Brief"],
 ];
 
-/** The words #439/D31 found missing from the help, with the two it asked to tell apart. */
-const D31 = {
-  en: ["Decision", "Gate", "Memo", "Chronicler", "Idle", "Project", "Precheck", "ctx_…", "--on-behalf-of-owner"],
-  it: ["Decisione", "Gate", "Memo", "Cronista", "Fermi", "Project", "Precheck", "ctx_…", "--on-behalf-of-owner"],
-};
+/** The words #439/D31 found missing from the help, with the two it asked to tell apart, by their catalog ids. */
+const D31 = ["decision", "gate", "memo", "chronicler", "idle", "project", "precheck", "session", "behalf"].map(
+  (word) => `words-${word}-term`,
+);
 
 /** The terms of the UX prototype's help, in English: what the help had before. */
 const PROTOTYPE = ["Gate", "Chain", "Unblocks", "Moviola", "Dailies", "Dossier", "Off the tracker", "Orchestrator", "Controller", "Worker", "Round", "Lock", "Fallback"];
 
-const missing = (terms, language) => D31[language].filter((word) => !terms.includes(word));
+/** The D31 words, as `catalog` spells them, that `terms` lacks. */
+const lacking = (catalog, terms) => D31.map((id) => catalog[id]).filter((word) => !terms.includes(word));
 
 const RING = `(() => {
   const element = document.activeElement;
@@ -62,7 +63,7 @@ async function go(page, letter, modifiers = 0) {
 async function help(page) {
   await page.press("?");
   await sleep(150);
-  const dialog = await find(page, "dialog", "Keyboard") ?? await find(page, "dialog", "Tastiera");
+  const dialog = (await all(page, "dialog"))[0];
   return {
     dialog,
     focus: await focused(page),
@@ -84,7 +85,9 @@ async function tabs(page, count) {
 
 export const keyboard = {
   browser: true,
-  async run({ page, harness }) {
+  async run({ ui, page, harness }) {
+    const catalogs = { en: messages(ui, "en"), it: messages(ui, "it") };
+    const missing = (terms, language) => lacking(catalogs[language], terms);
     const errors = page.consoleErrors.length;
     await page.send("Accessibility.enable");
     const results = [];
@@ -109,7 +112,8 @@ export const keyboard = {
     const opener = await find(page, "link", "Settings");
     await focus(page, opener);
     const opened = await help(page);
-    check("? opens the help, a modal dialog named Keyboard", opened.dialog?.modal === true, named(opened.dialog));
+    const titled = opened.dialog?.name === catalogs.en["keys-title"];
+    check("? opens the help, a modal dialog named Keyboard", opened.dialog?.modal === true && titled, named(opened.dialog));
     check("the focus is inside the help", opened.focus?.role === "button" && opened.focus.name === "Close", named(opened.focus));
     check("the help's words have their meanings", opened.terms.length > 0 && opened.terms.length === opened.definitions, `${opened.terms.length} terms, ${opened.definitions} definitions`);
     check("the help has #439/D31's words, in English", missing(opened.terms, "en").length === 0, JSON.stringify(missing(opened.terms, "en")));
@@ -119,8 +123,9 @@ export const keyboard = {
     check("Esc closes the help", !(await find(page, "dialog")), "");
     check("the focus is back where it was", back?.role === "link" && back.name === "Settings", named(back));
     await fresh(page, harness, "#/brief?data=demo&lang=it");
-    const italian = await help(page);
-    check("the help has #439/D31's words, in Italian", missing(italian.terms, "it").length === 0, JSON.stringify(missing(italian.terms, "it")));
+    const inItalian = await help(page);
+    const italianMissing = missing(inItalian.terms, "it");
+    check("the help has #439/D31's words, in Italian", italianMissing.length === 0, JSON.stringify(italianMissing));
     await page.press("Escape");
 
     // Tab from the top: the skip link first, then the sidebar in order, a ring on every stop.
@@ -161,7 +166,7 @@ export const keyboard = {
     check("prefers-reduced-motion: no transition", /^0s(, 0s)*$/.test(still) && !/^0s(, 0s)*$/.test(moving), `${moving} → ${still}`);
 
     // The sidebar's quota says what is used and what is left (#439/D29), in words and as a meter.
-    const says = (text, language) => (language === "en" ? /\b6 % used, 94 % left\b/ : /\b6 % usato, 94 % rimasto\b/).test(text);
+    const says = (text, language) => text.includes(format(catalogs[language]["nav-quota-used-left"], { used: 6, left: 94 }));
     for (const language of ["en", "it"]) {
       await fresh(page, harness, `#/brief?data=demo&quota=6&lang=${language}`);
       const meter = (await all(page, "meter"))[0];
