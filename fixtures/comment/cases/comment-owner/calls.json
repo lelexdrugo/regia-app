@@ -1,0 +1,14 @@
+[
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "5",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "Decisione: B.\n\n— il titolare, via chat\n<!-- regia:autore ruolo=titolare sessione=fixture-session -->"
+  }
+]

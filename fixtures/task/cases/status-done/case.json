@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. #3 done (conformita.md T10, T11): the issue closes as completed, then its status is written twice, three seconds apart; the text passes as it is.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "3",
+    "done"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "3",
+    "Fatto"
+  ]
+}

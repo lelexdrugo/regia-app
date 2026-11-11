@@ -1,0 +1,14 @@
+[
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "5",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "A step's note.\n\n— regia · orchestratore\n<!-- regia:autore ruolo=orchestratore sessione=fixture-session -->"
+  }
+]

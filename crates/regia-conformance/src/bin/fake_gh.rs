@@ -136,6 +136,11 @@ fn subcommand(args: &[String], responses: &Value, fixture: &Fixture) -> Result<S
         append(fixture.writes.as_ref(), &json!({"argv": argv, "stdin": stdin}).to_string())?;
     }
     append(fixture.log.as_ref(), &words)?;
+    if words == "issue view" {
+        // `gh issue view <n> --json labels`: the labels of that issue, as `gh` prints them.
+        let view = &responses["views"][args.get(2).map_or("", String::as_str)];
+        return if view.is_null() { Err(format!("no fixture view of {:?}", args.get(2))) } else { Ok(view.to_string()) };
+    }
     match &responses["cli"][&words] {
         Value::String(text) => Ok(text.clone()),
         Value::Null if write => Ok(String::new()),

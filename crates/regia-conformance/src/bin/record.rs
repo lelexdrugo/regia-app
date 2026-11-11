@@ -270,6 +270,63 @@ fn issues_by_number(scenario: &Scenario) -> Map<String, Value> {
         .collect()
 }
 
+/// What `gh issue view <n> --json labels` prints for each issue.
+fn views(scenario: &Scenario) -> Map<String, Value> {
+    let view = |issue: &ScenarioIssue| json!({"labels": issue.labels.iter().map(|name| json!({"name": name})).collect::<Vec<_>>()});
+    scenario.issues.iter().map(|issue| (issue.number.to_string(), view(issue))).collect()
+}
+
+/// Each issue's node by its id, with its item in the Project when it has a status there.
+fn nodes(scenario: &Scenario) -> Map<String, Value> {
+    scenario
+        .issues
+        .iter()
+        .map(|issue| {
+            let items: Vec<Value> = issue
+                .status
+                .iter()
+                .map(|_| json!({"id": format!("ITEM_{}", issue.number), "project": {"id": scenario.project_id}}))
+                .collect();
+            (issue_id(issue.number), json!({"projectItems": {"nodes": items}}))
+        })
+        .collect()
+}
+
+/// The answers to the writes: each mutation the prototype makes, with the ids it reads back.
+fn mutations() -> Value {
+    let issue = json!({"issue": {"id": "ISSUE_WRITTEN"}});
+    json!({
+        "closeIssue": {"closeIssue": issue},
+        "reopenIssue": {"reopenIssue": issue},
+        "addSubIssue": {"addSubIssue": issue},
+        "addBlockedBy": {"addBlockedBy": issue},
+        "removeBlockedBy": {"removeBlockedBy": issue},
+        "addProjectV2ItemById": {"addProjectV2ItemById": {"item": {"id": "ITEM_ADDED"}}},
+        "updateProjectV2ItemFieldValue": {"updateProjectV2ItemFieldValue": {"projectV2Item": {"id": "ITEM_WRITTEN"}}},
+    })
+}
+
+/// The responses of `case`: its scenario's, and the case's own answers over them, key by key.
+fn case_responses(case: &Case, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
+    let mut responses = match &case.spec.scenario {
+        Some(name) => {
+            let scenario: Scenario = read_json(&case.family_dir().join("scenarios").join(format!("{name}.json")));
+            assert_eq!(scenario.project_id, config.project_id, "scenario and tracker.json must agree");
+            responses_of(&scenario, config, binding)
+        }
+        None => json!({"expect": {"o": config.owner, "r": config.repo}}),
+    };
+    for (key, answers) in &case.spec.gh {
+        let object = responses.as_object_mut().expect("responses are an object");
+        let into = object.entry(key.clone()).or_insert_with(|| json!({}));
+        let (Some(into), Some(answers)) = (into.as_object_mut(), answers.as_object()) else {
+            panic!("{}: gh.{key} is not an object", case.name)
+        };
+        into.extend(answers.clone());
+    }
+    responses
+}
+
 fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &TrackerBinding) -> Value {
     let all: Vec<&ScenarioIssue> = scenario.issues.iter().collect();
     let open: Vec<&ScenarioIssue> = all.iter().copied().filter(|issue| issue.closed_at.is_none()).collect();
@@ -278,6 +335,9 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &Tracker
         "issue_pages": list_pages(&open, scenario, config, binding),
         "all_pages": list_pages(&all, scenario, config, binding),
         "issues": issues_by_number(scenario),
+        "views": views(scenario),
+        "nodes": nodes(scenario),
+        "mutations": mutations(),
         "blocker_pages": extra_pages(&scenario.extra_blockers, "blockedBy"),
         "sub_issue_pages": extra_pages(&scenario.extra_sub_issues, "subIssues"),
         "comment_pages": comment_pages(scenario),
@@ -327,15 +387,7 @@ fn main() {
     let known: BTreeSet<&String> = cases.iter().map(|case| &case.family).collect();
     assert!(only.iter().all(|family| known.contains(family)), "--family names a family without cases: {only:?}");
     for case in cases {
-        let responses = match &case.spec.scenario {
-            Some(name) => {
-                let scenario: Scenario = read_json(&case.family_dir().join("scenarios").join(format!("{name}.json")));
-                assert_eq!(scenario.project_id, config.project_id, "scenario and tracker.json must agree");
-                responses_of(&scenario, &config, &binding)
-            }
-            None => json!({"expect": {"o": config.owner, "r": config.repo}}),
-        };
-        write_json(&case.responses_path(), &responses);
+        write_json(&case.responses_path(), &case_responses(&case, &config, &binding));
 
         let state = prepare_case_state(&format!("record-{}", case.name), &case);
         let log = state.join("gh.log");

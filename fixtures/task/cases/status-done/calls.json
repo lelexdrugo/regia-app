@@ -1,0 +1,27 @@
+[
+  {
+    "mutation": "closeIssue",
+    "variables": {
+      "i": "ISSUE_3",
+      "r": "COMPLETED"
+    }
+  },
+  {
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_3",
+      "o": "opt-f6",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_3",
+      "o": "opt-f6",
+      "p": "PROJECT_FIXTURE"
+    }
+  }
+]

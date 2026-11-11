@@ -132,6 +132,10 @@ pub struct CaseSpec {
     /// The project's dossier before the run, which the arguments name as [`DOSSIER_PLACEHOLDER`].
     #[serde(default)]
     pub dossier: Option<DossierSpec>,
+    /// Answers of the fake `gh` the scenario does not give, by key of its responses (`cli`,
+    /// `mutations`), merged over those `record` builds: the URL a comment gets, for one.
+    #[serde(default)]
+    pub gh: serde_json::Map<String, Value>,
 }
 
 /// A case's dossier: a folder of files, by default a git repo whose `files` are committed and pushed to
@@ -485,10 +489,19 @@ pub fn writes_log(state: &Path) -> PathBuf {
     state.join("gh-writes.jsonl")
 }
 
-/// The writes the fake `gh` saw in a run in `state`, in order.
+/// The writes the fake `gh` saw in a run in `state`, in order. The body a write read on stdin has its
+/// line breaks as LF, the declared normalization of [`lf`]: the prototype writes CRLF there on Windows.
 pub fn writes_of_run(state: &Path) -> Vec<Value> {
     let text = fs::read_to_string(writes_log(state)).unwrap_or_default();
-    text.lines().map(|line| serde_json::from_str(line).expect("a JSON line of the writes log")).collect()
+    text.lines()
+        .map(|line| {
+            let mut write: Value = serde_json::from_str(line).expect("a JSON line of the writes log");
+            if let Some(Value::String(body)) = write.get_mut("stdin") {
+                *body = lf(body);
+            }
+            write
+        })
+        .collect()
 }
 
 /// What every run against a fixture needs, on either side: its state folder, the fixed day and

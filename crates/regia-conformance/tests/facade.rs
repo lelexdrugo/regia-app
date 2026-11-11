@@ -273,11 +273,21 @@ fn the_prototype_through_the_binary_makes_the_recorded_writes() {
         let diff = differences(&case, &run, Writes::Compare);
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
         println!("{}: exit {:?}, {} writes, as recorded", case.name, run.exit, run.writes.len());
-        if let Some(first) = case.writes().first() {
+        if !case.writes().is_empty() {
             let mut altered = case.writes();
-            let labels = first["argv"].as_array().unwrap().len();
-            altered[0]["argv"].as_array_mut().unwrap().swap(labels - 3, labels - 1);
-            assert!(!json_diff(&Value::Array(run.writes.clone()), &Value::Array(altered)).is_empty(), "a swapped write went unnoticed");
+            // A subcommand with two of its arguments swapped, or a mutation with a variable changed.
+            match altered[0]["argv"].as_array_mut() {
+                Some(argv) => {
+                    let len = argv.len();
+                    argv.swap(len - 3, len - 1);
+                }
+                None => {
+                    let variables = altered[0]["variables"].as_object_mut().expect("a mutation's variables");
+                    let value = variables.values_mut().next().expect("a variable");
+                    *value = json!("ALTERED");
+                }
+            }
+            assert!(!json_diff(&Value::Array(run.writes.clone()), &Value::Array(altered)).is_empty(), "an altered write went unnoticed");
             writes += run.writes.len();
         }
         if let Some(mut altered) = case.dossier_after() {
