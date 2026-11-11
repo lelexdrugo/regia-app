@@ -1,0 +1,1 @@
+errore: #5 ha già 100 sotto-issue, il tetto di GitHub (100): scegli un altro --padre; nessuna issue creata

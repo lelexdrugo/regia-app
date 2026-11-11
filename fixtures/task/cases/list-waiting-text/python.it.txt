@@ -1,0 +1,2 @@
+#4    [Proposta] proposal blocked by 3  (abbozzo; bloccato da #3; padre #1)
+#5    [Decisione] decision with its comments  (pronto; padre #1)

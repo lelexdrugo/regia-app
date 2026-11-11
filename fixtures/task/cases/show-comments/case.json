@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. #5 with its comments, oldest first: one unsigned (the owner's, written on the site), one signed chat, a worker's report shortened to its summary, one signed by the owner via chat.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "show",
+    "5",
+    "--comments",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "show",
+    "5",
+    "--commenti"
+  ]
+}

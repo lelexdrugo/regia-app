@@ -1,0 +1,66 @@
+{
+  "_note": "Synthetic. A project with a private repo for a dossier that is a repo already, with no remote: the repo is created with its topic, then the label and the objective #9 with the registry on stdin, `repo` completed with the tracker's owner and `prodotti: nessuno`. #9 is in the Project when it is read, as with the Project's auto-add: its status is written on its item. The field «Progetto» gets the option gamma, sent with the two it had, ids and colors kept: its argument is the text of the mutation, which has no variables; then #9 gets the value. The scaffold is written in the dossier, untracked; the folder is linked with `origin` and, being a repo already, no first push is made.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "gamma",
+    "--title",
+    "a new project",
+    "--folder",
+    "{dossier}",
+    "--objective",
+    "An objective.",
+    "--definition-of-done",
+    "Done when it is done.",
+    "--repo",
+    "gamma-dossier",
+    "--products",
+    "none",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "new",
+    "--id",
+    "gamma",
+    "--titolo",
+    "a new project",
+    "--cartella",
+    "{dossier}",
+    "--obiettivo",
+    "An objective.",
+    "--fatto",
+    "Done when it is done.",
+    "--repo",
+    "gamma-dossier",
+    "--prodotti",
+    "nessuno"
+  ],
+  "dossier": {
+    "remote": false,
+    "files": {
+      "notes.md": "Notes from before the project.\n"
+    }
+  },
+  "gh": {
+    "cli": {
+      "issue create": "https://tracker.invalid/issues/9\n"
+    },
+    "issues": {
+      "9": {"id": "ISSUE_9", "state": "OPEN", "subIssues": {"totalCount": 0}}
+    },
+    "nodes": {
+      "ISSUE_9": {"projectItems": {"nodes": [{"id": "ITEM_9", "project": {"id": "PROJECT_FIXTURE"}}]}}
+    },
+    "mutations": {
+      "updateProjectV2Field": {"updateProjectV2Field": {"projectV2Field": {"id": "FIELD_PROJECT_FIXTURE", "options": [
+        {"id": "opt-project-alpha", "name": "alpha", "color": "BLUE", "description": ""},
+        {"id": "opt-project-beta", "name": "beta", "color": "GREEN", "description": ""},
+        {"id": "opt-project-gamma", "name": "gamma", "color": "ORANGE", "description": ""}
+      ]}}}
+    }
+  }
+}

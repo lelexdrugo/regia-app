@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. `--since` alone implies `--comments`, from that instant on; the text passes as it is.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "show",
+    "5",
+    "--since",
+    "2026-01-09T00:00:00Z"
+  ],
+  "python": [
+    "task",
+    "show",
+    "5",
+    "--dal",
+    "2026-01-09T00:00:00Z"
+  ]
+}

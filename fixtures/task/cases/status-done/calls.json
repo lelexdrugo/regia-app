@@ -1,0 +1,30 @@
+[
+  {
+    "arguments": "input:{issueId:$i,stateReason:$r}",
+    "mutation": "closeIssue",
+    "variables": {
+      "i": "ISSUE_3",
+      "r": "COMPLETED"
+    }
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_3",
+      "o": "opt-f6",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_3",
+      "o": "opt-f6",
+      "p": "PROJECT_FIXTURE"
+    }
+  }
+]

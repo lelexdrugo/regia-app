@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. Two statuses as one list, each through the enum; the Objectives are left out.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "list",
+    "--status",
+    "approved,in_progress",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "list",
+    "--stato",
+    "Approvato,In corso"
+  ]
+}

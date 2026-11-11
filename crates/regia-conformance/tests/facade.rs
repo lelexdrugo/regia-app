@@ -107,8 +107,89 @@ fn the_state_cases_show_what_they_claim() {
     assert_eq!((&budget["provider"]["claude"]["from_cache"], &budget["cache"]["attempt_age_s"]), (&json!(true), &json!(120)));
 }
 
+/// The cases of the tracker's writes (#441) record what their notes say: the order and the form of the
+/// writes, the refusals that write nothing, and what a write carries in its arguments.
+#[test]
+fn the_tracker_cases_show_what_they_claim() {
+    let out = |name: &str| {
+        let case = Case::named(name);
+        let value = translate_python(&case.command_name(), &case.python_output()).unwrap();
+        (case, value)
+    };
+    let mutations = |case: &Case| -> Vec<String> {
+        case.writes().iter().map(|write| write["mutation"].as_str().unwrap_or("gh").to_owned()).collect()
+    };
+    for name in ["new-parent-full", "move-objective"] {
+        let case = Case::named(name);
+        assert_eq!((case.spec.exit, case.writes().len()), (1, 0), "{name} refuses before any write");
+    }
+    for name in ["unblock-none-text", "parent-already-text", "project-set-dry-text", "mirror-dry-run"] {
+        assert!(Case::named(name).writes().is_empty(), "{name} writes nothing");
+    }
+    let (new, created) = out("new-blocked");
+    assert_eq!((&created["task"], &created["parent"]), (&json!(9), &json!(1)));
+    let order = ["gh", "addProjectV2ItemById", "updateProjectV2ItemFieldValue", "addSubIssue", "addBlockedBy"];
+    assert_eq!(mutations(&new), order, "created, into the Project with its status, under #1, blocked by #3");
+    assert_eq!(new.writes()[0]["stdin"], "A body.");
+    assert_eq!(Case::named("new-file-text").writes()[0]["stdin"], "A spec, read from a file.\n\nSecond paragraph.\n");
+    let blocked: Vec<Value> = Case::named("block-two-text").writes().iter().map(|write| write["variables"]["b"].clone()).collect();
+    assert_eq!(blocked, [json!("ISSUE_6"), json!("ISSUE_8")]);
+
+    let (unblock, freed) = out("unblock-worker");
+    assert_eq!((&freed["unblocked"], &freed["not_blocking"], &freed["comment"]), (&json!([3]), &json!([6]), &json!(9301)));
+    let comments: Vec<Value> = unblock.writes().into_iter().filter(|write| write["argv"][1] == "comment").collect();
+    assert_eq!(comments.len(), 1, "one comment for the blockers removed");
+    let body = comments[0]["stdin"].as_str().unwrap();
+    assert!(body.starts_with("Sbloccato da #3: the gate passed") && body.ends_with("ruolo=worker sessione=fixture-worker -->"), "{body}");
+
+    let parent = |name: &str| Case::named(name).writes().last().unwrap()["arguments"].as_str().unwrap().to_owned();
+    assert!(parent("move-beta").contains("replaceParent:true"), "a move replaces the parent");
+    assert!(!parent("parent-orphan-text").contains("replaceParent"), "a task with no parent gets one");
+    let labels = Case::named("setup-labels").writes();
+    assert_eq!(labels.len(), 5);
+    assert!(labels.iter().all(|write| write["argv"][1] == "create" && write["argv"].as_array().unwrap().contains(&json!("--force"))));
+
+    let (levers, set) = out("project-set-levers");
+    assert_eq!((&set["wip"], &set["priority"], &set["written"], &set["comment"]), (&json!(4), &json!(1), &json!(true), &json!(9401)));
+    let writes = levers.writes();
+    assert!(writes[0]["stdin"].as_str().unwrap().contains("priorita: 1\nwip: 4\n"), "the keys rewritten in place");
+    assert!(writes[1]["stdin"].as_str().unwrap().starts_with("Leve: wip 3 → 4, priorita 2 → 1"));
+
+    let (project, made) = out("project-new-repo");
+    assert_eq!((&made["git"], &made["first_push"], &made["objective"]), (&json!("existing"), &Value::Null, &json!(9)));
+    assert_eq!(project.dossier_after().unwrap()["origin"], "https://github.com/example/gamma-dossier.git");
+    let order = ["gh", "gh", "gh", "gh", "updateProjectV2ItemFieldValue", "updateProjectV2Field", "updateProjectV2ItemFieldValue"];
+    assert_eq!(mutations(&project), order, "repo, topic, label, objective, status, option, value");
+    let writes = project.writes();
+    assert!(writes[3]["stdin"].as_str().unwrap().contains("cartella: {dossier}\n"), "the registry names the dossier");
+    assert!(writes[5]["arguments"].as_str().unwrap().contains("{id:\"opt-project-beta\",name:\"beta\",color:GREEN"), "kept");
+
+    let (mirror, mirrored) = out("mirror-writes");
+    assert_eq!((&mirrored["written"], &mirrored["already_right"], mirror.writes().len()), (&json!(6), &json!(2), 6));
+    let (_, dry) = out("mirror-dry-run");
+    assert_eq!((&dry["options_added"], &dry["unlabeled"], &dry["unknown_label"]), (&json!(["beta"]), &json!([5]), &json!([[6, "omega"]])));
+
+    let (_, signed_out) = out("init-unauthenticated");
+    assert_eq!((&signed_out["ready"], &signed_out["items"][0]["outcome"]), (&json!(false), &json!("error")), "gh is not signed in");
+    assert_eq!(out("init-plan-ready").1["ready"], true);
+    let (_, derived) = out("init-derive-written");
+    assert_eq!((&derived["outcome"], &derived["exit_code"]), (&json!("written"), &json!(0)));
+    let (dry_apply, would) = out("init-apply-dry-run");
+    let items: Vec<&Value> = would["writes"].as_array().unwrap().iter().map(|write| &write["item"]).collect();
+    assert_eq!(items, ["etichetta:parcheggiato", "etichetta:sessione", "status", "progetto"], "the order of the writes");
+    assert_eq!((&would["config"]["outcome"], dry_apply.writes().len()), (&json!("after_the_writes"), 0), "a dry run writes nothing");
+    let (failed, refused) = out("init-apply-fails");
+    assert_eq!((failed.spec.exit, failed.writes().len(), &refused["config"]), (5, 1, &Value::Null), "one write tried, no configuration");
+    let (complete, applied) = out("init-apply-complete");
+    assert_eq!((complete.writes().len(), &applied["config"]["outcome"]), (0, &json!("written")));
+}
+
+/// The commands whose entries are open: the registry of a project is a free block (ADR 0001 §11).
+const OPEN_OUTPUTS: [&str; 1] = ["projects"];
+
 /// Every shape a recording reaches fails closed: a key the table does not know, added to the output
-/// of any case, at its top or in its first item, is an error and never passes in Italian.
+/// of any case, at its top or in its first item, is an error and never passes in Italian, except in an
+/// open entry, where it passes as data with its name.
 #[test]
 fn an_unknown_key_fails_closed_in_every_recorded_output() {
     let mut checked = 0;
@@ -120,8 +201,14 @@ fn an_unknown_key_fails_closed_in_every_recorded_output() {
         };
         let Some(Value::Object(object)) = target else { continue };
         object.insert("chiave_nuova".to_owned(), json!(1));
-        let error = translate_python(&case.command_name(), &value).expect_err(&case.name);
-        assert!(error.to_string().contains("chiave_nuova"), "{}: {error}", case.name);
+        let command = case.command_name();
+        match translate_python(&command, &value) {
+            Ok(output) => {
+                assert!(OPEN_OUTPUTS.contains(&command.as_str()), "{}: an unknown key passed", case.name);
+                assert_eq!(output[0]["chiave_nuova"], 1, "{}: it passes as data", case.name);
+            }
+            Err(error) => assert!(error.to_string().contains("chiave_nuova"), "{}: {error}", case.name),
+        }
         checked += 1;
     }
     assert!(checked >= 25, "only {checked} outputs checked");
@@ -230,7 +317,8 @@ fn the_fake_gh_logs_writes_in_one_form_for_both_sides() {
     assert_eq!(lines[0], lines[1], "`--name=value` and `-R` log as `--name value` and `--repo`");
     assert_eq!(lines[2]["stdin"], "a body");
     assert_eq!(lines[3], lines[4], "the two forms of a mutation log the same");
-    assert_eq!(lines[3], json!({"mutation": "closeIssue", "variables": {"i": "ISSUE_3", "r": "COMPLETED"}}));
+    let arguments = "input:{issueId:$i,stateReason:$r}";
+    assert_eq!(lines[3], json!({"mutation": "closeIssue", "variables": {"i": "ISSUE_3", "r": "COMPLETED"}, "arguments": arguments}));
 }
 
 /// The real binary on `case`, through the facade to the prototype of `dossier` on its case dossier,
@@ -263,11 +351,17 @@ fn the_prototype_through_the_binary_makes_the_recorded_writes() {
         let diff = differences(&case, &run, Writes::Compare);
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
         println!("{}: exit {:?}, {} writes, as recorded", case.name, run.exit, run.writes.len());
-        if let Some(first) = case.writes().first() {
+        if !case.writes().is_empty() {
             let mut altered = case.writes();
-            let labels = first["argv"].as_array().unwrap().len();
-            altered[0]["argv"].as_array_mut().unwrap().swap(labels - 3, labels - 1);
-            assert!(!json_diff(&Value::Array(run.writes.clone()), &Value::Array(altered)).is_empty(), "a swapped write went unnoticed");
+            // A subcommand with two of its arguments swapped, or a mutation with its arguments changed.
+            match altered[0]["argv"].as_array_mut() {
+                Some(argv) => {
+                    let len = argv.len();
+                    argv.swap(len - 3, len - 1);
+                }
+                None => altered[0]["arguments"] = json!("ALTERED"),
+            }
+            assert!(!json_diff(&Value::Array(run.writes.clone()), &Value::Array(altered)).is_empty(), "an altered write went unnoticed");
             writes += run.writes.len();
         }
         if let Some(mut altered) = case.dossier_after() {

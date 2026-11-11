@@ -1,0 +1,24 @@
+{
+  "bloccato_da": [],
+  "bloccato_da_totale": 0,
+  "body": "",
+  "campo_progetto": null,
+  "closedAt": "2026-01-05T09:00:00Z",
+  "createdAt": "2026-01-01T00:00:00Z",
+  "labels": [
+    "progetto:alpha",
+    "maturità:pronto"
+  ],
+  "maturita": "pronto",
+  "number": 7,
+  "obiettivo": false,
+  "parent": 1,
+  "progetto": "alpha",
+  "state": "CLOSED",
+  "stateReason": "COMPLETED",
+  "stato": "Fatto",
+  "sub": [],
+  "title": "done and closed",
+  "updatedAt": "2026-01-02T03:04:05Z",
+  "url": "https://tracker.invalid/issues/7"
+}

@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. #6 is a sub-issue of #5 already: GitHub refuses the link twice, so nothing is done (#512/V1), with no write and no count of #5's sub-issues; the text passes as it is.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "parent",
+    "6",
+    "5"
+  ],
+  "python": [
+    "task",
+    "padre",
+    "6",
+    "5"
+  ]
+}

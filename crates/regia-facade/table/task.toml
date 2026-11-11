@@ -1,11 +1,152 @@
-# `task`: the tracker's tasks. Only `task maturity` for now, the text and mutation case of the
-# facade's engine; the other subcommands come with their slice. Name from the conformance study, §8
-# (`conformita.md` of the dossier), not decided: it goes to the gate of the names with the rest.
+# `task`: the tracker's tasks. Names from the conformance study, §8 (`conformita.md` of the dossier), not
+# decided: they go to the gate of the names with the rest (`docs/contract/commands.md`). The reads are in
+# the routing group `reads` (F55), the writes in `writes` (F56). The commands that print text print a
+# line the skill does not read: it reads the exit code.
 schema = 1
 
-# Prints a line of text, which passes as it is: the skill reads only the exit code.
+[commands."task new"]
+python = ["task", "new"]
+group = "writes"
+output = "task_new"
+[commands."task new".args]
+"--project" = "--progetto"
+"--title" = "--titolo"
+"--body" = "--corpo"
+"--body-file" = "--corpo-file"
+"--parent" = "--padre"
+# Numbers separated by commas, `#` allowed: they pass as they are.
+"--blocked-by" = "--bloccato-da"
+"--maturity" = { to = "--maturita", enum = "maturity" }
+"--status" = { to = "--stato", enum = "status" }
+
+# Done and discarded close the issue, any other status reopens it.
+[commands."task status"]
+python = ["task", "stato"]
+group = "writes"
+positionals = [{}, { enum = "status" }]
+[commands."task status".args]
+"--comment" = "--commento"
+"--on-behalf-of-owner" = { to = "--per-conto-del-titolare", flag = true }
+# `worker` or `chat`: the words of the signature, which stay as they are.
+"--role" = "--ruolo"
+
 [commands."task maturity"]
 python = ["task", "maturita"]
 group = "writes"
 # The issue number passes; the maturity translates.
 positionals = [{}, { enum = "maturity" }]
+
+[commands."task block"]
+python = ["task", "blocca"]
+group = "writes"
+positionals = [{}]
+[commands."task block".args]
+"--by" = "--da"
+
+[commands."task unblock"]
+python = ["task", "sblocca"]
+group = "writes"
+output = "task_unblock"
+positionals = [{}]
+[commands."task unblock".args]
+"--by" = "--da"
+"--reason" = "--motivo"
+"--on-behalf-of-owner" = { to = "--per-conto-del-titolare", flag = true }
+"--role" = "--ruolo"
+
+[commands."task parent"]
+python = ["task", "padre"]
+group = "writes"
+positionals = [{}, {}]
+
+[commands."task move"]
+python = ["task", "sposta"]
+group = "writes"
+output = "task_move"
+positionals = [{}]
+[commands."task move".args]
+"--project" = "--progetto"
+"--parent" = "--padre"
+
+[commands."task show"]
+python = ["task", "show"]
+group = "reads"
+output = "task_detail"
+positionals = [{}]
+[commands."task show".args]
+"--short" = { to = "--breve", flag = true }
+"--comments" = { to = "--commenti", flag = true }
+# An instant, ISO 8601; alone it implies `--comments`.
+"--since" = "--dal"
+
+[commands."task list"]
+python = ["task", "list"]
+group = "reads"
+output = "task_list"
+[commands."task list".args]
+"--project" = "--progetto"
+# Statuses separated by commas, each through the enum: `approved,in_progress`.
+"--status" = { to = "--stato", enum = "status", list = true }
+"--ready" = { to = "--pronti", flag = true }
+"--waiting-on-owner" = { to = "--aspetta-me", flag = true }
+"--objectives" = { to = "--obiettivi", flag = true }
+"--include-closed" = { to = "--anche-chiusi", flag = true }
+"--order" = { to = "--ordine", enum = "task_order" }
+
+[enums.task_order]
+grafo = "graph"
+
+[shapes.task_new.fields]
+task = { to = "task" }
+padre = { to = "parent" }
+url = { to = "url" }
+
+[shapes.task_unblock.fields]
+numero = { to = "number" }
+sbloccati = { to = "unblocked" }
+non_bloccanti = { to = "not_blocking" }
+commento = { to = "comment" }
+
+[shapes.task_move.fields]
+task = { to = "task" }
+da = { to = "from" }
+a = { to = "to" }
+padre = { to = "parent" }
+
+[shapes.task_list]
+items_of = "task"
+
+# `task show`: the issue as `task list` gives it, with its body and no graph measures, and with
+# `--comments` its comments.
+[shapes.task_detail.fields]
+number = { to = "number" }
+title = { to = "title" }
+state = { to = "state" }
+stateReason = { to = "state_reason" }
+stato = { to = "status", enum = "status" }
+progetto = { to = "project" }
+campo_progetto = { to = "project_field" }
+maturita = { to = "maturity", enum = "maturity" }
+obiettivo = { to = "objective" }
+labels = { to = "labels" }
+parent = { to = "parent" }
+sub = { to = "sub_issues" }
+bloccato_da = { to = "blocked_by" }
+bloccato_da_totale = { to = "blocked_by_total" }
+url = { to = "url" }
+updatedAt = { to = "updated_at" }
+createdAt = { to = "created_at" }
+closedAt = { to = "closed_at" }
+body = { to = "body" }
+comments = { to = "comments", items = "task_comment" }
+
+# A comment, oldest first. `firma` is the role of its signature as the comment carries it (`titolare`
+# for one with no signature): data, as the markers already published are. A worker's body is shortened
+# to its first line, since its report is in the dossier.
+[shapes.task_comment.fields]
+id = { to = "id" }
+creato = { to = "created_at" }
+firma = { to = "role" }
+url = { to = "url" }
+body = { to = "body" }
+accorciato = { to = "shortened" }

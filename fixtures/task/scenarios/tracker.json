@@ -1,0 +1,30 @@
+{
+  "_note": "Synthetic. Two projects: alpha, whose registry has every key `progetto new` writes and one written by hand, and beta, with a bare registry. Tasks of alpha: an approved and ready one that blocks a proposal, a decision with comments signed in three ways and one unsigned, a child of it in progress, and one done and closed, which only the reads of every state see. The blockers of #4 read one issue at a time are the one of its list, as `task unblock` reads them.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "extra_blockers": {"4": [[[3, "OPEN"]]]},
+  "issues": [
+    {"number": 1, "title": "[alpha] objective of alpha", "status": "In corso", "labels": ["progetto:alpha", "tipo:obiettivo"],
+     "sub": [[3, "OPEN"], [4, "OPEN"], [5, "OPEN"], [7, "CLOSED"]], "project_field": "alpha",
+     "body": "<!-- regia:progetto\nid: alpha\ncartella: dossiers/alpha\nplaybook: generico\npriorita: 2\nwip: 3\ndefault_automatici: no\nrepo: example/alpha-dossier\nprodotti: example/alpha-app, example/alpha-lib\ncolore_a_mano: blu\n-->\n\n## Obiettivo\n\nA synthetic objective.\n"},
+    {"number": 2, "title": "[beta] objective of beta", "status": "Approvato", "labels": ["progetto:beta", "tipo:obiettivo"],
+     "body": "<!-- regia:progetto\nid: beta\n-->\n"},
+    {"number": 3, "title": "approved and ready, blocks 4", "status": "Approvato", "labels": ["progetto:alpha", "maturità:pronto"],
+     "parent": 1, "project_field": "alpha"},
+    {"number": 4, "title": "proposal blocked by 3", "status": "Proposta", "labels": ["progetto:alpha", "maturità:abbozzo"],
+     "parent": 1, "blocked_by": [[3, "OPEN"]]},
+    {"number": 5, "title": "decision with its comments", "status": "Decisione", "labels": ["progetto:alpha", "maturità:pronto"],
+     "parent": 1, "sub": [[6, "OPEN"]],
+     "body": "A spec.\n\n```yaml\nprogetto: alpha\n```\n",
+     "comments": [
+       {"id": 9101, "created_at": "2026-01-07T10:00:00Z", "body": "Written by hand on the site, with no signature."},
+       {"id": 9102, "created_at": "2026-01-08T11:00:00Z", "body": "A question for the owner.\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=fixture-session -->"},
+       {"id": 9103, "created_at": "2026-01-09T12:00:00Z", "body": "---\ntipo: done\nriassunto: \"The report's summary, in one line.\"\n---\n\n# Report\n\nThe long body.\n\n— regia · worker\n<!-- regia:autore ruolo=worker sessione=fixture-worker -->"},
+       {"id": 9104, "created_at": "2026-01-09T13:00:00Z", "body": "Decisione: A.\n\n— il titolare, via chat\n<!-- regia:autore ruolo=titolare sessione=fixture-session -->"}
+     ]},
+    {"number": 6, "title": "child of 5, in progress", "status": "In corso", "labels": ["progetto:alpha", "maturità:pronto"], "parent": 5},
+    {"number": 7, "title": "done and closed", "status": "Fatto", "labels": ["progetto:alpha", "maturità:pronto"], "parent": 1,
+     "state_reason": "COMPLETED", "closed_at": "2026-01-05T09:00:00Z"},
+    {"number": 8, "title": "inbox of beta, no edges", "status": "Inbox", "labels": ["progetto:beta"], "parent": 2}
+  ]
+}

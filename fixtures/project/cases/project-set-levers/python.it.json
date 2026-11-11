@@ -1,0 +1,13 @@
+{
+  "commento": 9401,
+  "obiettivo": 1,
+  "priorita": 1,
+  "prodotti": [
+    "example/alpha-app",
+    "example/alpha-lib"
+  ],
+  "progetto": "alpha",
+  "repo": "example/alpha-dossier",
+  "scritto": true,
+  "wip": 4
+}

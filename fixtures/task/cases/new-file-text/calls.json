@@ -1,0 +1,45 @@
+[
+  {
+    "argv": [
+      "issue",
+      "create",
+      "--repo",
+      "example/tracker",
+      "--title",
+      "a child of 5",
+      "--body-file",
+      "-",
+      "--label",
+      "progetto:alpha",
+      "--label",
+      "maturità:abbozzo"
+    ],
+    "stdin": "A spec, read from a file.\n\nSecond paragraph.\n"
+  },
+  {
+    "arguments": "input:{projectId:$p,contentId:$c}",
+    "mutation": "addProjectV2ItemById",
+    "variables": {
+      "c": "ISSUE_9",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_ADDED",
+      "o": "opt-a1",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "arguments": "input:{issueId:$p,subIssueId:$c}",
+    "mutation": "addSubIssue",
+    "variables": {
+      "c": "ISSUE_9",
+      "p": "ISSUE_5"
+    }
+  }
+]

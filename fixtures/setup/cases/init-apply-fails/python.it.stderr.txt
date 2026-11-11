@@ -1,0 +1,5 @@
+errore: scrittura fallita (etichetta:parcheggiato): gh: Validation Failed (HTTP 422)
+ecco che cosa manca ancora (piano rilanciato):
+piano di init: example/tracker, Project «Fixture»
+  [mancante] etichetta:parcheggiato  (azione: crea)
+             Fuori dall'arretrato da scodare: il motivo sta in un commento (colore fbca04)

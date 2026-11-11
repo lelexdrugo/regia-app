@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. #4 blocked by #6 and #8 too, written `6,8`: one addBlockedBy each, in order; the text passes as it is.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "block",
+    "4",
+    "--by",
+    "6,8"
+  ],
+  "python": [
+    "task",
+    "blocca",
+    "4",
+    "--da",
+    "6,8"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic. What waits for the owner, as text.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "list",
+    "--waiting-on-owner"
+  ],
+  "python": [
+    "task",
+    "list",
+    "--aspetta-me"
+  ]
+}

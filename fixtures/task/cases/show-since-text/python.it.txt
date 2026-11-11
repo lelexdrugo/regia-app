@@ -1,0 +1,17 @@
+#5    [Decisione] decision with its comments  (pronto; padre #1)
+progetto: alpha  ·  issue: open  ·  https://tracker.invalid/issues/5
+sub-issue: #6 (open)
+
+A spec.
+
+```yaml
+progetto: alpha
+```
+
+── commenti dal 2026-01-09T00:00:00Z: 2 ──
+
+[2026-01-09 12:00Z · worker] https://tracker.invalid/issues/5#issuecomment-9103
+The report's summary, in one line.  (…)
+
+[2026-01-09 13:00Z · titolare] https://tracker.invalid/issues/5#issuecomment-9104
+Decisione: A.

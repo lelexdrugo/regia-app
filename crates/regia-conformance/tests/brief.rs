@@ -230,14 +230,19 @@ fn another_day_produces_a_diff_and_a_bad_day_is_an_error() {
 }
 
 /// The fixtures go wherever the repo goes: only synthetic hosts and names, in every file of every case
-/// of every family.
+/// of every family. Two exceptions, both the prototype's own words: the URLs it builds on GitHub from the
+/// fixture's owner (`task new`, the origin of `project new`), as `record` counts them, and the default
+/// name of the tracker's repo, which `init` alone prints.
 #[test]
 fn fixtures_are_synthetic() {
     for case in Case::all() {
         for entry in fs::read_dir(&case.dir).unwrap() {
             let path = entry.unwrap().path();
             let file = path.file_name().unwrap().to_string_lossy().into_owned();
-            let text = fs::read_to_string(&path).unwrap();
+            let mut text = fs::read_to_string(&path).unwrap().replace("https://github.com/example/", "");
+            if case.command_name() == "init" && file == "python.it.json" {
+                text = text.replace("\"repo\": \"regia-tasks\"", "");
+            }
             for forbidden in ["github.com", "lelexdrugo", "regia-tasks", "paper", "orca\\\\projects"] {
                 assert!(!text.contains(forbidden), "{}/{file} contains {forbidden}", case.name);
             }

@@ -1,0 +1,21 @@
+# `comment` (the prototype's `commento`): a comment on an issue, signed by role. Name from the
+# conformance study, §8 (`conformita.md` of the dossier), not decided: it goes to the gate of the names
+# with the rest (`docs/contract/commands.md`). A write (F56).
+schema = 1
+
+[commands.comment]
+python = ["commento"]
+group = "writes"
+output = "comment"
+positionals = [{}]
+[commands.comment.args]
+"--body" = "--corpo"
+"--body-file" = "--corpo-file"
+"--on-behalf-of-owner" = { to = "--per-conto-del-titolare", flag = true }
+"--role" = "--ruolo"
+
+# `id` is null when the URL `gh` printed does not end with the comment's id.
+[shapes.comment.fields]
+numero = { to = "number" }
+id = { to = "id" }
+url = { to = "url" }
