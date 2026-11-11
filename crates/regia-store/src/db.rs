@@ -216,10 +216,14 @@ fn is_transient(error: &rusqlite::Error) -> bool {
     matches!(code(error), Some(ErrorCode::CannotOpen | ErrorCode::SystemIoFailure))
 }
 
-/// A number in [0, 1) without a random-number crate: each `RandomState` has fresh keys.
-fn random_unit() -> f64 {
-    let bits = RandomState::new().hash_one(thread::current().id());
-    (bits >> 11) as f64 / (1_u64 << 53) as f64
+/// A number in [0, 1) without a random-number crate.
+pub(crate) fn random_unit() -> f64 {
+    (random_u64() >> 11) as f64 / (1_u64 << 53) as f64
+}
+
+/// 64 random bits without a random-number crate: each `RandomState` has fresh keys.
+pub(crate) fn random_u64() -> u64 {
+    RandomState::new().hash_one(thread::current().id())
 }
 
 /// A SQLite error, without exposing the driver in the public API.

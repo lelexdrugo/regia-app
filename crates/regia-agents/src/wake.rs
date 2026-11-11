@@ -4,20 +4,15 @@
 //! So a round that found the budget unknown, with work waiting, may start one minimal session, at
 //! most once an hour, also across restarts.
 //!
-//! Only with the user's consent to the usage probes: with the probes refused there is no budget to
-//! unlock, and the wake-up never starts, whatever the round says.
+//! Only with the user's consent to the usage probes, from the settings
+//! ([`crate::Settings::probe_consent`]): with the probes refused there is no budget to unlock, and
+//! the wake-up never starts, whatever the round says. The token's expiry around it is read by the
+//! probes too ([`crate::UsageProbes::wake`]), so a refusal reads nothing there either.
 
 use chrono::{DateTime, TimeDelta, Utc};
 use serde::{Deserialize, Serialize};
 
-/// The user's answer, at setup, to the usage probes (ADR 0001 §6). The consent model is #463's: until
-/// it lands, the caller passes the answer in.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ProbeConsent {
-    Granted,
-    Refused,
-}
+use crate::ProbeConsent;
 
 /// How a wake-up went. A failure is a value: the wake-up never stops a round.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -45,7 +40,8 @@ impl WakeOutcome {
     }
 
     /// `wake`, with the token's expiry read before and after it: renewed when the expiry changed. The
-    /// reader gives the expiry only, never the token; reading the credentials is the probes' (#463).
+    /// reader gives the expiry only, never the token: the product's is
+    /// [`crate::UsageProbes::claude_token_expiry`], which [`crate::UsageProbes::wake`] passes here.
     pub fn with_expiry(expiry: impl Fn() -> Option<String>, wake: impl FnOnce() -> WakeOutcome) -> WakeOutcome {
         let before = expiry();
         let mut outcome = wake();

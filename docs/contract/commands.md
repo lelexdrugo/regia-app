@@ -394,6 +394,16 @@ cache**: `from_cache`, `min_interval_s`, `attempt_age_s` (`eta_tentativo_s`), `n
 `unknown` (`sconosciuto`); of the token `valid`, `expiring` (`in_scadenza`), `expired`, `unknown`, `refused`
 (`rifiutato`).
 
+**Native, and only with consent (#463).** The binary answers `budget` itself where the routing says so
+(`REGIA_ENGINE=rust`, or no prototype), with the same keys. The probes run only if the user said yes at setup:
+`probes = "granted"` in `agents.toml`. Without an answer, or with `probes = "refused"`, every provider has the
+**new state `probe_off`**, with a `reason`, no `windows` and no `plan`; nothing is read, the cache neither, so
+`--cache` adds no `cache` key. Exit 0, as for `unknown`. `probe_off` and the `probes` key are proposals for #223,
+like the rest. Where the native output differs from the prototype's: the `reason` sentences are in English; the
+credentials follow `CLAUDE_CONFIG_DIR` and `CODEX_HOME` when `REGIA_CLAUDE_CREDENTIALS` and `REGIA_CODEX_AUTH`
+are not set; on macOS Claude reads `unknown` without reading its credentials; and the text form, without
+`--json`, prints the contract's keys as `key: value` lines.
+
 ## Names with no Python equivalent
 
 Commands the product adds, which `conformita.md` §8.1 does not name. They have no line in the facade table:

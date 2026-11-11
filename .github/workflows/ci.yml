@@ -115,7 +115,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     env:
-      # No debug info: this job only runs the app, and compiles and links faster without it.
+      # No debug info: this job only runs the app and one test, and compiles and links faster without it.
       CARGO_PROFILE_DEV_DEBUG: "0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -152,6 +152,39 @@ jobs:
               console.log(r.language, r.user_agent);
               for (const c of r.checks ?? []) console.log(c.ok ? "  ok  " : "  FAIL", c.name, "|", c.detail);' "$report"
           done
+      # The usage probes on macOS, where Claude's credentials are not looked for. Last, and even after a
+      # failure above: the test builds on its own, and the budget needs only `regia`.
+      - name: The usage probes' rules, on recorded answers
+        if: ${{ !cancelled() }}
+        run: cargo test -p regia-agents --test usage --locked
+      # A home with the consent and nothing else: no credentials to find, and a proxy on a closed port,
+      # so a probe that asked an endpoint would read unreachable and fail the check.
+      - name: With consent and no credentials the budget reads unknown for both providers, and exits 0
+        if: ${{ !cancelled() }}
+        shell: bash
+        env:
+          REGIA_ENGINE: rust
+          WANT_CLAUDE: "where Claude Code keeps its credentials on macOS is not proven: the probe does not read them"
+          WANT_CODEX: "Codex's credentials were not found"
+        run: |
+          home="$RUNNER_TEMP/budget-home"
+          mkdir -p "$home/Library/Application Support/regia"
+          printf 'probes = "granted"\n' > "$home/Library/Application Support/regia/agents.toml"
+          status=0
+          env -u REGIA_CLAUDE_CREDENTIALS -u REGIA_CODEX_AUTH -u CLAUDE_CONFIG_DIR -u CODEX_HOME -u NO_PROXY -u no_proxy \
+            HOME="$home" ALL_PROXY=http://127.0.0.1:9 \
+            ./target/debug/regia budget --json > "$RUNNER_TEMP/budget.json" || status=$?
+          cat "$RUNNER_TEMP/budget.json"
+          [ "$status" -eq 0 ] || { echo "regia budget exited with $status, not 0"; exit 1; }
+          node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+            let failed = 0;
+            for (const [name, reason] of [["claude", process.env.WANT_CLAUDE], ["codex", process.env.WANT_CODEX]]) {
+              const p = r.provider?.[name] ?? {};
+              const ok = p.status === "unknown" && p.reason === reason;
+              console.log(ok ? "  ok  " : "  FAIL", name, p.status, "|", p.reason);
+              failed += ok ? 0 : 1;
+            }
+            process.exit(failed ? 1 : 0);' "$RUNNER_TEMP/budget.json"
 
   supply-chain:
     name: cargo deny, cargo audit and npm audit

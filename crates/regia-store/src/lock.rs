@@ -343,7 +343,7 @@ impl Store {
                     Ok(Transition::Deleted)
                 }
                 Decision::Write(doc, written) => {
-                    let doc = self.stamped(doc, now);
+                    let doc = self.stamped(doc, now, &format().lock.expires_at);
                     db::upsert(conn, kind, key, &doc)?;
                     Ok(Transition::Wrote(doc, written))
                 }
@@ -382,11 +382,11 @@ impl Store {
     }
 
     /// The document with its monotonic stamp: when it was written and when it expires, on this clock.
-    fn stamped(&self, mut doc: Doc, now: WallTime) -> Doc {
-        let lock = &format().lock;
+    /// `expires_key` names its expiry on the wall clock: a lock's, or the claim of a probe.
+    pub(crate) fn stamped(&self, mut doc: Doc, now: WallTime, expires_key: &str) -> Doc {
         let keys = &format().monotonic;
         let monotonic = self.clock.monotonic();
-        let expires = doc.get(&lock.expires_at).and_then(parse_expiry).expect("a written lock has an expiry");
+        let expires = doc.get(expires_key).and_then(parse_instant).expect("a stamped document has an expiry");
         let mut stamp = Doc::new();
         stamp.insert(keys.written.clone(), number(monotonic));
         stamp.insert(keys.expires.clone(), number(monotonic + now.seconds_until(expires)));
@@ -395,9 +395,9 @@ impl Store {
         doc
     }
 
-    /// Seconds to the expiry, on this clock if it wrote the document, else on the wall clock; `None` if
-    /// the document has no readable expiry (L4, L5).
-    fn remaining(&self, doc: &Doc, now: WallTime) -> Option<f64> {
+    /// Seconds to the expiry, on this clock if it wrote the document, else on the wall clock at
+    /// `expires_key`; `None` if the document has no readable expiry (L4, L5).
+    pub(crate) fn remaining(&self, doc: &Doc, now: WallTime, expires_key: &str) -> Option<f64> {
         if doc.is_empty() {
             return None;
         }
@@ -415,16 +415,16 @@ impl Store {
                 return Some(expires - monotonic);
             }
         }
-        let expires = doc.get(&format().lock.expires_at).and_then(parse_expiry)?;
+        let expires = doc.get(expires_key).and_then(parse_instant)?;
         Some(now.seconds_until(expires))
     }
 
     fn is_expired(&self, doc: &Doc, now: WallTime) -> bool {
-        self.remaining(doc, now).is_none_or(|left| left <= 0.0)
+        self.remaining(doc, now, &format().lock.expires_at).is_none_or(|left| left <= 0.0)
     }
 
     fn view(&self, mut doc: Doc, now: WallTime) -> LockView {
-        let remaining = self.remaining(&doc, now);
+        let remaining = self.remaining(&doc, now, &format().lock.expires_at);
         for hidden in &format().view.hidden {
             doc.remove(hidden);
         }
@@ -446,7 +446,7 @@ fn expiry(now: WallTime, ttl: Ttl) -> Result<String, StoreError> {
 }
 
 /// `_parse(str(value))`: a string, or an integer, which Python turns into its digits first.
-fn parse_expiry(value: &Value) -> Option<WallTime> {
+pub(crate) fn parse_instant(value: &Value) -> Option<WallTime> {
     match value {
         Value::String(text) => WallTime::parse_iso(text),
         Value::Number(number) if number.is_i64() || number.is_u64() => WallTime::parse_iso(&number.to_string()),

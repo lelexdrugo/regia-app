@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::gates::{GateError, GateSettings, Gates};
 use crate::launch::SurfaceKind;
-use crate::{AgentService, ServiceId};
+use crate::{AgentService, ProbeConsent, ServiceId};
 
 /// How strong a model a role needs. A service's file maps each tier to a model, or to none for the
 /// service's own default.
@@ -160,6 +160,9 @@ pub struct Settings {
     /// The services the user enabled. Without it: every known one.
     pub services: Option<Vec<ServiceId>>,
     pub surface: Option<SurfaceKind>,
+    /// The user's answer to the usage probes, given at setup. Without one there is no consent: nothing
+    /// reads the agents' tokens until the user says yes.
+    pub probes: Option<ProbeConsent>,
     #[serde(default)]
     roles: BTreeMap<Role, RoleOverride>,
     #[serde(default)]
@@ -206,6 +209,11 @@ impl Settings {
 
     pub fn service(&self, service: ServiceId) -> Option<&ServiceSettings> {
         self.service.get(&service)
+    }
+
+    /// The consent the usage probes and the token wake-up run on: refused until the user grants it.
+    pub fn probe_consent(&self) -> ProbeConsent {
+        self.probes.unwrap_or(ProbeConsent::Refused)
     }
 }
 

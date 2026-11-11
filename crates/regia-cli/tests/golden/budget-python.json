@@ -1,0 +1,52 @@
+{
+ "generato": "2026-11-11T02:00:00+00:00",
+ "provider": {
+  "claude": {
+   "provider": "claude",
+   "stato": "ok",
+   "piano": "max",
+   "finestre": {
+    "5h": {
+     "stato": "ok",
+     "usato_pct": 14.0,
+     "residuo_pct": 86.0,
+     "reset": "2026-11-11T06:40+00:00",
+     "reset_tra_s": 16800
+    },
+    "7d": {
+     "stato": "ok",
+     "usato_pct": 58.0,
+     "residuo_pct": 42.0,
+     "reset": "2026-11-11T22:00+00:00",
+     "reset_tra_s": 72000
+    }
+   }
+  },
+  "codex": {
+   "provider": "codex",
+   "stato": "ok",
+   "piano": "plus",
+   "finestre": {
+    "5h": {
+     "stato": "ok",
+     "usato_pct": 0.0,
+     "residuo_pct": 100.0,
+     "reset": "2026-11-11T07:00+00:00",
+     "reset_tra_s": 18000
+    },
+    "7d": {
+     "stato": "ok",
+     "usato_pct": 20.0,
+     "residuo_pct": 80.0,
+     "reset": "2026-11-15T17:06+00:00",
+     "reset_tra_s": 400000
+    }
+   },
+   "token": {
+    "stato": "valido",
+    "scade": "2026-11-14T02:00:00+00:00",
+    "scade_tra_s": 259200
+   }
+  }
+ }
+}
