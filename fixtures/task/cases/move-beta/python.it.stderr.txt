@@ -1,0 +1,1 @@
+avviso: campo «Progetto» non scritto (il campo «Progetto» non è in tracker.json (progetto_field_id, progetto_options)); l'etichetta progetto:beta resta la fonte, `regia progetto riempi` lo riallinea

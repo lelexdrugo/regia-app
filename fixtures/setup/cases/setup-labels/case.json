@@ -1,0 +1,9 @@
+{
+  "_note": "Synthetic. The five base labels, in order, each created or updated in place by `gh label create --force`, with its color and description; nothing is read. The text passes as it is.",
+  "args": [
+    "setup"
+  ],
+  "python": [
+    "setup"
+  ]
+}

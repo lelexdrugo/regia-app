@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. #4 from alpha to beta (ADR 0013): the count of the sub-issues of beta's objective #2, under the cap, then one edit of its labels, the new project added and the old one removed, then addSubIssue with replaceParent under #2 (#512). tracker.json has no field «Progetto», so its mirror is a warning on stderr and no write.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "move",
+    "4",
+    "--project",
+    "beta",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "sposta",
+    "4",
+    "--progetto",
+    "beta"
+  ]
+}

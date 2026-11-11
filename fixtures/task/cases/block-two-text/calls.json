@@ -1,0 +1,16 @@
+[
+  {
+    "mutation": "addBlockedBy",
+    "variables": {
+      "b": "ISSUE_6",
+      "i": "ISSUE_4"
+    }
+  },
+  {
+    "mutation": "addBlockedBy",
+    "variables": {
+      "b": "ISSUE_8",
+      "i": "ISSUE_4"
+    }
+  }
+]

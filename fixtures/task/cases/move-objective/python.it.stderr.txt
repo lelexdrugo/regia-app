@@ -1,0 +1,1 @@
+errore: #1 è un Obiettivo: non si sposta

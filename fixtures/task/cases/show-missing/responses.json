@@ -617,7 +617,28 @@
       }
     }
   ],
-  "blocker_pages": {},
+  "blocker_pages": {
+    "4": [
+      {
+        "repository": {
+          "issue": {
+            "blockedBy": {
+              "nodes": [
+                {
+                  "number": 3,
+                  "state": "OPEN"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": null,
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
   "closed_pages": [
     {
       "repository": {

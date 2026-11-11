@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. #2 has no parent: the count of #1's sub-issues, under the cap, then one addSubIssue; the text passes as it is.",
+  "scenario": "orphan",
+  "args": [
+    "task",
+    "parent",
+    "2",
+    "1"
+  ],
+  "python": [
+    "task",
+    "padre",
+    "2",
+    "1"
+  ]
+}

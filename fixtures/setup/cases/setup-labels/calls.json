@@ -1,0 +1,77 @@
+[
+  {
+    "argv": [
+      "label",
+      "create",
+      "tipo:obiettivo",
+      "--repo",
+      "example/tracker",
+      "--color",
+      "0e8a16",
+      "--description",
+      "Issue Obiettivo di un progetto (contiene il registro)",
+      "--force"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "label",
+      "create",
+      "maturità:abbozzo",
+      "--repo",
+      "example/tracker",
+      "--color",
+      "c5def5",
+      "--description",
+      "Segnaposto: spec da scrivere",
+      "--force"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "label",
+      "create",
+      "maturità:pronto",
+      "--repo",
+      "example/tracker",
+      "--color",
+      "1d76db",
+      "--description",
+      "Spec completa: eseguibile se Approvato e sbloccato",
+      "--force"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "label",
+      "create",
+      "parcheggiato",
+      "--repo",
+      "example/tracker",
+      "--color",
+      "fbca04",
+      "--description",
+      "Fuori dall'arretrato da scodare: il motivo sta in un commento",
+      "--force"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "label",
+      "create",
+      "sessione",
+      "--repo",
+      "example/tracker",
+      "--color",
+      "d93f0b",
+      "--description",
+      "Il memo propone una sessione di approfondimento con il titolare",
+      "--force"
+    ],
+    "stdin": null
+  }
+]

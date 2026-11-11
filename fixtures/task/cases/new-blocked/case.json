@@ -1,0 +1,49 @@
+{
+  "_note": "Synthetic. A task of alpha, approved and ready, blocked by #3 (conformita.md T10): the count of #1's sub-issues comes first, under the cap; gh creates #9 with its body on stdin; #9, not in the Project yet, is added and gets its status; then it goes under #1 and is blocked by #3. tracker.json has no field «Progetto», so its mirror is a warning on stderr and no write. The URL it prints is built from the tracker's owner, not read from gh.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "new",
+    "--project",
+    "alpha",
+    "--title",
+    "a new task",
+    "--body",
+    "A body.",
+    "--maturity",
+    "ready",
+    "--status",
+    "approved",
+    "--blocked-by",
+    "3",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "new",
+    "--progetto",
+    "alpha",
+    "--titolo",
+    "a new task",
+    "--corpo",
+    "A body.",
+    "--maturita",
+    "pronto",
+    "--stato",
+    "Approvato",
+    "--bloccato-da",
+    "3"
+  ],
+  "gh": {
+    "cli": {
+      "issue create": "https://tracker.invalid/issues/9\n"
+    },
+    "issues": {
+      "9": {"id": "ISSUE_9", "state": "OPEN", "subIssues": {"totalCount": 0}}
+    },
+    "nodes": {
+      "ISSUE_9": {"projectItems": {"nodes": []}}
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "_note": "Synthetic. #4 freed from #3, which blocks it, and from #6, which does not (#175): one removeBlockedBy, a warning on stderr for #6, which stays among the ones not blocking, and one comment with the reason, signed worker with the session's id, whose id comes from the URL gh prints. No step is open: the id is not recorded.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "4",
+    "--by",
+    "3,6",
+    "--reason",
+    "the gate passed",
+    "--role",
+    "worker",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "sblocca",
+    "4",
+    "--da",
+    "3,6",
+    "--motivo",
+    "the gate passed",
+    "--ruolo",
+    "worker"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-worker"
+  },
+  "gh": {
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/4#issuecomment-9301\n"
+    }
+  }
+}

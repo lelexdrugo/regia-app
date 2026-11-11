@@ -1,0 +1,26 @@
+{
+  "_note": "Synthetic. The repo and no products for beta, whose registry has neither, as a dry run: the repo gets its owner, `none` is the word for no products, and nothing is written; the text passes as it is.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "beta",
+    "--repo",
+    "beta-dossier",
+    "--products",
+    "none",
+    "--dry-run"
+  ],
+  "python": [
+    "progetto",
+    "set",
+    "--progetto",
+    "beta",
+    "--repo",
+    "beta-dossier",
+    "--prodotti",
+    "nessuno",
+    "--dry-run"
+  ]
+}

@@ -1,7 +1,8 @@
 {
-  "_note": "Synthetic. Two projects: alpha, whose registry has every key `progetto new` writes and one written by hand, and beta, with a bare registry. Tasks of alpha: an approved and ready one that blocks a proposal, a decision with comments signed in three ways and one unsigned, a child of it in progress, and one done and closed, which only the reads of every state see.",
+  "_note": "Synthetic. Two projects: alpha, whose registry has every key `progetto new` writes and one written by hand, and beta, with a bare registry. Tasks of alpha: an approved and ready one that blocks a proposal, a decision with comments signed in three ways and one unsigned, a child of it in progress, and one done and closed, which only the reads of every state see. The blockers of #4 read one issue at a time are the one of its list, as `task unblock` reads them.",
   "project_id": "PROJECT_FIXTURE",
   "page_size": 100,
+  "extra_blockers": {"4": [[[3, "OPEN"]]]},
   "issues": [
     {"number": 1, "title": "[alpha] objective of alpha", "status": "In corso", "labels": ["progetto:alpha", "tipo:obiettivo"],
      "sub": [[3, "OPEN"], [4, "OPEN"], [5, "OPEN"], [7, "CLOSED"]], "project_field": "alpha",

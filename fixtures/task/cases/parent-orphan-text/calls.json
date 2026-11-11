@@ -1,0 +1,9 @@
+[
+  {
+    "mutation": "addSubIssue",
+    "variables": {
+      "c": "ISSUE_2",
+      "p": "ISSUE_1"
+    }
+  }
+]
