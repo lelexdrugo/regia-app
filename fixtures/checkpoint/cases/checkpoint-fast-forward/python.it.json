@@ -1,0 +1,15 @@
+{
+  "dossier": {
+    "avanti": 0,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "pushato",
+    "file": [
+      ".regia/stato.md"
+    ],
+    "motivo": null,
+    "sha": "d95eff0348df173e23a9d0584e27f687dbbd4fa2"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

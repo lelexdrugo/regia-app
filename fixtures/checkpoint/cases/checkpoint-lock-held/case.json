@@ -1,0 +1,43 @@
+{
+  "_note": "Synthetic. Another orchestrator holds the project's lock: the checkpoint commits and pushes, takes no lock and leaves that one as it is.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": {
+        "progetto": "alpha",
+        "proprietario": "worker-b",
+        "preso": "2026-01-10T08:55:00.000+00:00",
+        "ttl_s": 600,
+        "scade": "2026-01-10T09:05:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    }
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "changes": {
+      ".regia/stato.md": "# Alpha\n\nState after the step.\n"
+    }
+  }
+}

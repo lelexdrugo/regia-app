@@ -1,0 +1,35 @@
+{
+  "_note": "Synthetic. Another session committed here and did not push; a file is changed and another is new, neither named: the commit goes, nothing else does.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n",
+      "notes.md": "Notes v1\n"
+    },
+    "local_commits": [
+      {
+        "theirs.md": "A commit of another session.\n"
+      }
+    ],
+    "changes": {
+      "notes.md": "Notes v2, not named\n",
+      "new.txt": "New, not named.\n"
+    }
+  }
+}

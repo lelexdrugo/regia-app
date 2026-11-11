@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": null,
+    "branch": null,
+    "cartella": "{dossier}/sub",
+    "esito": "non_disponibile",
+    "file": [],
+    "motivo": "la cartella non è la radice di un repo git",
+    "sha": null
+  },
+  "ok": false,
+  "progetto": "alpha"
+}

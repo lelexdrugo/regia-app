@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": null,
+    "branch": null,
+    "cartella": "{dossier}/missing",
+    "esito": "non_disponibile",
+    "file": [],
+    "motivo": "la cartella del progetto non esiste",
+    "sha": null
+  },
+  "ok": false,
+  "progetto": "alpha"
+}

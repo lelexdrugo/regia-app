@@ -1,0 +1,13 @@
+{
+  "log": [
+    "8b42ca0e301a728ad647f88c5030d0f232e9e42b alpha: checkpoint 2026-01-10T09:00:00Z",
+    "9bf0fcff305ec10dc1e7d8dd39be4552291a44f5 fixture: the dossier before the run"
+  ],
+  "remote": [
+    "8b42ca0e301a728ad647f88c5030d0f232e9e42b alpha: checkpoint 2026-01-10T09:00:00Z",
+    "9bf0fcff305ec10dc1e7d8dd39be4552291a44f5 fixture: the dossier before the run"
+  ],
+  "status": [
+    "A  theirs.txt"
+  ]
+}

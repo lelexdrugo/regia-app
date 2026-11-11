@@ -1,0 +1,35 @@
+{
+  "_note": "Synthetic. Another branch has a commit of its own and main a commit left behind: only main is pushed, and the remote has no other branch.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "branches": {
+      "side": {
+        "side.md": "On another branch.\n"
+      }
+    },
+    "local_commits": [
+      {
+        "here.md": "On main, never pushed.\n"
+      }
+    ]
+  }
+}

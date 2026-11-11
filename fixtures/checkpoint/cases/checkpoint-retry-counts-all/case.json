@@ -1,0 +1,33 @@
+{
+  "_note": "Synthetic. Two commits left behind: both are pushed, and the reason counts them.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "local_commits": [
+      {
+        ".regia/stato.md": "# Alpha\n\nFirst, never pushed.\n"
+      },
+      {
+        ".regia/stato.md": "# Alpha\n\nSecond, never pushed.\n"
+      }
+    ]
+  }
+}

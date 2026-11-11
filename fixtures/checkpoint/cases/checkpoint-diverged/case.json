@@ -1,0 +1,38 @@
+{
+  "_note": "Synthetic. Another clone pushed first and the dossier has a commit of its own: the fast-forward fails, the commit stays local, nothing is pushed (#442/V4).",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "remote_commits": [
+      {
+        "other.md": "From another clone.\n"
+      }
+    ],
+    "local_commits": [
+      {
+        "here.md": "A commit of this clone.\n"
+      }
+    ],
+    "changes": {
+      ".regia/stato.md": "# Alpha\n\nState after the step.\n"
+    }
+  }
+}

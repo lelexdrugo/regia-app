@@ -1,0 +1,15 @@
+{
+  "dossier": {
+    "avanti": 1,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "commit_locale",
+    "file": [
+      ".regia/stato.md"
+    ],
+    "motivo": "fetch non riuscito: and the repository exists.; push: and the repository exists.",
+    "sha": "8b42ca0e301a728ad647f88c5030d0f232e9e42b"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

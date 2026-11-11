@@ -1,0 +1,13 @@
+{
+  "log": [
+    "d95eff0348df173e23a9d0584e27f687dbbd4fa2 alpha: checkpoint 2026-01-10T09:00:00Z",
+    "1f78534abaa35ccdd8a5c1c2fda034431344fd79 fixture: another clone's commit",
+    "9bf0fcff305ec10dc1e7d8dd39be4552291a44f5 fixture: the dossier before the run"
+  ],
+  "remote": [
+    "d95eff0348df173e23a9d0584e27f687dbbd4fa2 alpha: checkpoint 2026-01-10T09:00:00Z",
+    "1f78534abaa35ccdd8a5c1c2fda034431344fd79 fixture: another clone's commit",
+    "9bf0fcff305ec10dc1e7d8dd39be4552291a44f5 fixture: the dossier before the run"
+  ],
+  "status": []
+}

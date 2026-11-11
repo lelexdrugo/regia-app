@@ -1,0 +1,31 @@
+{
+  "_note": "Synthetic. A commit left behind on a branch with no upstream: nothing is pushed, nothing is retried.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "upstream": false,
+    "local_commits": [
+      {
+        "here.md": "Never pushed.\n"
+      }
+    ]
+  }
+}

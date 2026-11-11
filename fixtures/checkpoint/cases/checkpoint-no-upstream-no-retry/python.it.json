@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": null,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "niente",
+    "file": [],
+    "motivo": null,
+    "sha": null
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

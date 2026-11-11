@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": 1,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "niente",
+    "file": [],
+    "motivo": "fast-forward non riuscito: fatal: Not possible to fast-forward, aborting.",
+    "sha": null
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

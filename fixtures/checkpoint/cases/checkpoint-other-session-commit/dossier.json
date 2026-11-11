@@ -1,0 +1,14 @@
+{
+  "log": [
+    "281a31bb7ff165267ae8d534e7bf0b1b1f167b22 fixture: a commit not pushed",
+    "489bed828ef875eb88bb6ab2316e0f73844a42c4 fixture: the dossier before the run"
+  ],
+  "remote": [
+    "281a31bb7ff165267ae8d534e7bf0b1b1f167b22 fixture: a commit not pushed",
+    "489bed828ef875eb88bb6ab2316e0f73844a42c4 fixture: the dossier before the run"
+  ],
+  "status": [
+    " M notes.md",
+    "?? new.txt"
+  ]
+}

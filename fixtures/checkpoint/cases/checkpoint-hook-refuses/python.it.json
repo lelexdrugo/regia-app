@@ -1,0 +1,15 @@
+{
+  "dossier": {
+    "avanti": 0,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "non_disponibile",
+    "file": [
+      ".regia/stato.md"
+    ],
+    "motivo": "git commit: no",
+    "sha": null
+  },
+  "ok": false,
+  "progetto": "alpha"
+}

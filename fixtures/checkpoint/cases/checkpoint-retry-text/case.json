@@ -1,0 +1,28 @@
+{
+  "_note": "Synthetic. As checkpoint-retry-pushes, in text: the line says the push was retried.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}"
+  ],
+  "python": [
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "local_commits": [
+      {
+        ".regia/stato.md": "# Alpha\n\nCommitted, never pushed.\n"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. No folder given: the registry of alpha's objective names one, which does not exist on this machine, so nothing is tried, with exit 0.",
+  "scenario": "registry-folder",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha"
+  ]
+}

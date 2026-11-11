@@ -1,0 +1,15 @@
+{
+  "dossier": {
+    "avanti": 2,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "commit_locale",
+    "file": [
+      ".regia/stato.md"
+    ],
+    "motivo": "fast-forward non riuscito: fatal: Not possible to fast-forward, aborting. (divergenza: la risolve il titolare)",
+    "sha": "ad3ddc9344a0e2053dc51d65d7d67d716758eff9"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

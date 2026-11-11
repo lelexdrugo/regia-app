@@ -1,0 +1,17 @@
+{
+  "_note": "Synthetic. A tracker with alpha's objective, whose registry is the one of the case.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {
+      "number": 1,
+      "title": "[alpha] Objective",
+      "status": "Approvato",
+      "labels": [
+        "tipo:obiettivo",
+        "progetto:alpha"
+      ],
+      "body": "<!-- regia:progetto\nid: alpha\nplaybook: generico\n-->\n\n## Obiettivo\nA synthetic objective.\n"
+    }
+  ]
+}

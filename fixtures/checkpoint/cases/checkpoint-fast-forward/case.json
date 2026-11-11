@@ -1,0 +1,33 @@
+{
+  "_note": "Synthetic. Another clone pushed first, touching no named file: the dossier fast-forwards, then commits and pushes, with no merge commit.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "remote_commits": [
+      {
+        "other.md": "From another clone.\n"
+      }
+    ],
+    "changes": {
+      ".regia/stato.md": "# Alpha\n\nState after the step.\n"
+    }
+  }
+}

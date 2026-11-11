@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": 1,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "commit_locale",
+    "file": [],
+    "motivo": "fetch non riuscito: and the repository exists.; push: and the repository exists.",
+    "sha": "abcb243f5ae0e867db0801434c13059d3e1abdda"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

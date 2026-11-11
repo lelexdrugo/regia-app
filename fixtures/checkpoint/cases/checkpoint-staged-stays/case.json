@@ -1,0 +1,31 @@
+{
+  "_note": "Synthetic. Another session staged a file and did not commit it: only the named file goes into the commit, and the other stays staged.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "staged": {
+      "theirs.txt": "Another session's work, staged.\n"
+    },
+    "changes": {
+      ".regia/stato.md": "# Alpha\n\nState after the step.\n"
+    }
+  }
+}

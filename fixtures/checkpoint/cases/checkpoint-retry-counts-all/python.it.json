@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": 0,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "pushato",
+    "file": [],
+    "motivo": "ritentato: 2 commit già fatti",
+    "sha": "7ed54d409ea178fefe383fe372f61e705173fe55"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

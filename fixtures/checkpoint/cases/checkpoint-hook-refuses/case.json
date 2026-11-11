@@ -1,0 +1,31 @@
+{
+  "_note": "Synthetic. A pre-commit hook refuses the commit: nothing is committed, and what the hook said is the reason.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "hooks": {
+      "pre-commit": "#!/bin/sh\necho no >&2\nexit 1\n"
+    },
+    "changes": {
+      ".regia/stato.md": "# Alpha\n\nState after the step.\n"
+    }
+  }
+}

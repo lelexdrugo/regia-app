@@ -1,0 +1,33 @@
+{
+  "_note": "Synthetic. Another clone pushed a change of the state, which is changed here too: the fast-forward stops, the commit stays local, no work is lost.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "remote_commits": [
+      {
+        ".regia/stato.md": "# Alpha\n\nFrom another clone.\n"
+      }
+    ],
+    "changes": {
+      ".regia/stato.md": "# Alpha\n\nState after the step.\n"
+    }
+  }
+}

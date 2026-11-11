@@ -139,7 +139,9 @@ pub struct CaseSpec {
 }
 
 /// A case's dossier: a folder of files, by default a git repo whose `files` are committed and pushed to
-/// a bare remote, its upstream, and whose `changes` are written after, not committed.
+/// a bare remote, its upstream, and whose `changes` are written after, not committed. The other fields
+/// shape the repo in between, in the order they are listed here, each commit with its own files: the
+/// paths of the dossier that one checkpoint cannot reach from a clean repo (#442/V4).
 #[derive(Debug, Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct DossierSpec {
@@ -149,6 +151,31 @@ pub struct DossierSpec {
     pub remote: bool,
     #[serde(default)]
     pub files: BTreeMap<String, String>,
+    /// Commits another clone pushed to the remote, which the dossier has not fetched.
+    #[serde(default)]
+    pub remote_commits: Vec<BTreeMap<String, String>>,
+    /// Branches besides `main`, each with a commit of its files, never pushed.
+    #[serde(default)]
+    pub branches: BTreeMap<String, BTreeMap<String, String>>,
+    /// Commits made here and never pushed: a push that failed, or another session's work.
+    #[serde(default)]
+    pub local_commits: Vec<BTreeMap<String, String>>,
+    /// `false`: `main` keeps its remote and loses its upstream.
+    #[serde(default = "yes")]
+    pub upstream: bool,
+    /// The URL `origin` gets: a relative one that leads nowhere breaks every fetch and push, and names
+    /// no path of the machine in what git says.
+    #[serde(default)]
+    pub origin_url: Option<String>,
+    /// Hooks, by name, in the folder the harness gives the repo for them.
+    #[serde(default)]
+    pub hooks: BTreeMap<String, String>,
+    /// Files someone else staged and did not commit.
+    #[serde(default)]
+    pub staged: BTreeMap<String, String>,
+    /// HEAD detached at the commit of `main`.
+    #[serde(default)]
+    pub detached: bool,
     #[serde(default)]
     pub changes: BTreeMap<String, String>,
 }
@@ -207,30 +234,89 @@ fn write_files(dir: &Path, files: &BTreeMap<String, String>, epoch: u64) {
     }
 }
 
+/// The identity, signing, hooks and line breaks of a repo of the harness: its own, never the machine's.
+fn configure_repo(dir: &Path, name: &str) {
+    let email = format!("{}@example.invalid", name.to_lowercase());
+    for (key, value) in [
+        ("user.name", name),
+        ("user.email", email.as_str()),
+        ("commit.gpgsign", "false"),
+        ("core.autocrlf", "false"),
+        ("core.hooksPath", ".git/no-hooks"),
+    ] {
+        git(dir, &["config", key, value]);
+    }
+}
+
+/// `files` written and committed in `dir` with `message`, and nothing else.
+fn commit_files(dir: &Path, files: &BTreeMap<String, String>, message: &str) {
+    write_files(dir, files, DOSSIER_FILE_EPOCH);
+    let mut args = vec!["add", "--"];
+    args.extend(files.keys().map(String::as_str));
+    git(dir, &args);
+    git(dir, &["commit", "-q", "-m", message]);
+}
+
 /// The dossier of `spec` in `state`: its files, and with `git` a repo with the harness's own identity
-/// and no signing, hooks or line-break conversion of the machine, its upstream a bare repo beside it.
+/// and no signing, hooks or line-break conversion of the machine, its upstream a bare repo beside it,
+/// then shaped as `spec` says. Every commit has the same date, so it has the same id on every run.
 pub fn prepare_dossier(state: &Path, spec: &DossierSpec) -> PathBuf {
     let dir = dossier_dir(state);
     fs::create_dir_all(&dir).expect("the dossier");
     write_files(&dir, &spec.files, DOSSIER_FILE_EPOCH);
     if spec.git {
         git(&dir, &["init", "-q", "-b", "main"]);
-        for (key, value) in [
-            ("user.name", "Fixture"),
-            ("user.email", "fixture@example.invalid"),
-            ("commit.gpgsign", "false"),
-            ("core.autocrlf", "false"),
-            ("core.hooksPath", ".git/no-hooks"),
-        ] {
-            git(&dir, &["config", key, value]);
-        }
+        configure_repo(&dir, "Fixture");
         git(&dir, &["add", "--all"]);
         git(&dir, &["commit", "-q", "-m", "fixture: the dossier before the run"]);
+        let remote = remote_dir(state).display().to_string();
         if spec.remote {
-            let remote = remote_dir(state).display().to_string();
             git(state, &["init", "-q", "--bare", "-b", "main", &remote]);
             git(&dir, &["remote", "add", "origin", &remote]);
             git(&dir, &["push", "-q", "-u", "origin", "main"]);
+        }
+        if !spec.remote_commits.is_empty() {
+            let other = state.join("dossier-other-clone");
+            // Checked out with no line-break conversion of the machine, or its files would look changed.
+            git(state, &["clone", "-q", "--config=core.autocrlf=false", &remote, &other.display().to_string()]);
+            configure_repo(&other, "Other");
+            for files in &spec.remote_commits {
+                commit_files(&other, files, "fixture: another clone's commit");
+            }
+            git(&other, &["push", "-q", "origin", "main"]);
+        }
+        for (branch, files) in &spec.branches {
+            git(&dir, &["checkout", "-q", "-b", branch]);
+            commit_files(&dir, files, "fixture: a commit on another branch");
+            git(&dir, &["checkout", "-q", "main"]);
+        }
+        for files in &spec.local_commits {
+            commit_files(&dir, files, "fixture: a commit not pushed");
+        }
+        if !spec.upstream {
+            git(&dir, &["branch", "--unset-upstream"]);
+        }
+        if let Some(url) = &spec.origin_url {
+            git(&dir, &["remote", "set-url", "origin", url]);
+        }
+        for (name, text) in &spec.hooks {
+            let hook = dir.join(".git").join("no-hooks").join(name);
+            write_files(&dir, &BTreeMap::from([(format!(".git/no-hooks/{name}"), text.clone())]), DOSSIER_FILE_EPOCH);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                fs::set_permissions(&hook, fs::Permissions::from_mode(0o755)).expect("the hook runs");
+            }
+            assert!(hook.is_file(), "the hook {name}");
+        }
+        if !spec.staged.is_empty() {
+            write_files(&dir, &spec.staged, DOSSIER_FILE_EPOCH);
+            let mut args = vec!["add", "--"];
+            args.extend(spec.staged.keys().map(String::as_str));
+            git(&dir, &args);
+        }
+        if spec.detached {
+            git(&dir, &["checkout", "-q", "--detach"]);
         }
     }
     write_files(&dir, &spec.changes, DOSSIER_CHANGE_EPOCH);
@@ -238,8 +324,9 @@ pub fn prepare_dossier(state: &Path, spec: &DossierSpec) -> PathBuf {
 }
 
 /// The dossier's repo after a run: the commits of `main` and of its remote, newest first, and what is
-/// left uncommitted; for a repo with no remote before the run, the `origin` the run gave it, if any.
-/// `None` for a dossier that is not a repo.
+/// left uncommitted; for a repo with no remote before the run, the `origin` the run gave it, if any;
+/// for a repo with other branches, the refs of the remote, which a push must leave alone. `None` for a
+/// dossier that is not a repo.
 pub fn dossier_after(state: &Path, spec: &DossierSpec) -> Option<Value> {
     let lines = |dir: &Path, args: &[&str]| -> Vec<String> { git(dir, args).lines().map(str::to_owned).collect() };
     spec.git.then(|| {
@@ -251,6 +338,9 @@ pub fn dossier_after(state: &Path, spec: &DossierSpec) -> Option<Value> {
         });
         if !spec.remote && lines(&dir, &["remote"]).iter().any(|name| name == "origin") {
             after["origin"] = json!(git(&dir, &["remote", "get-url", "origin"]).trim());
+        }
+        if spec.remote && !spec.branches.is_empty() {
+            after["remote_refs"] = json!(lines(&remote_dir(state), &["for-each-ref", "--format=%(refname)"]));
         }
         after
     })

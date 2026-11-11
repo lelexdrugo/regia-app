@@ -1,0 +1,17 @@
+{
+  "_note": "Synthetic. No folder given, and the registry of alpha's objective has no folder: the checkpoint cannot even try, exit 1.",
+  "scenario": "registry-no-folder",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "exit": 1,
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha"
+  ]
+}

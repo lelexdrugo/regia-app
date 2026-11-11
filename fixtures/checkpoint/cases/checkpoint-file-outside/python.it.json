@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": null,
+    "branch": null,
+    "cartella": "{dossier}",
+    "esito": "non_disponibile",
+    "file": [],
+    "motivo": "--file '../outside.md': esce dalla cartella del progetto",
+    "sha": null
+  },
+  "ok": false,
+  "progetto": "alpha"
+}
