@@ -101,6 +101,17 @@ impl Registry {
         self.get(format().key("folder")).filter(|folder| !folder.is_empty())
     }
 
+    /// The project's wip as written, if the registry gives it: the precheck reads it as a number, where a
+    /// value that is not one fails the tick.
+    pub fn wip(&self) -> Option<&str> {
+        self.get(format().key("wip"))
+    }
+
+    /// The project's priority as written, if the registry gives it, read as the wip is.
+    pub fn priority(&self) -> Option<&str> {
+        self.get(format().key("priority"))
+    }
+
     /// The dossier's repo, `<owner>/<name>`, or `None` when it is missing or not a repo's name: a registry
     /// written by hand must not break `projects` (`repo_del_registro`).
     pub fn repo(&self) -> Option<String> {
@@ -221,6 +232,10 @@ mod tests {
         let entries: Vec<(&str, &str)> = registry.entries().iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
         assert_eq!(entries, [("id", "alpha"), (folder, "two"), ("note", "a: b")]);
         assert_eq!(registry.folder(), Some("two"));
+        let (wip, priority) = (key("wip"), key("priority"));
+        let numbers = Registry::parse(&block(&format!("{wip}: 4\n{priority}:\n")));
+        assert_eq!((numbers.wip(), numbers.priority()), (Some("4"), Some("")), "as written, an empty one included");
+        assert_eq!((registry.wip(), registry.priority()), (None, None));
         assert_eq!(Registry::parse("no block"), Registry::default());
         assert_eq!(Registry::parse(&block(&format!("{folder}:  \n"))).folder(), None, "an empty folder is none");
     }
