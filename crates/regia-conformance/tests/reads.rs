@@ -197,6 +197,12 @@ fn the_read_cases_show_what_they_claim() {
     for role in ["titolare", "chat", "worker"] {
         assert!(roles.contains(&role), "no comment of role {role}: {roles:?}");
     }
+    // `TestTaskListJson.test_json_espone_createdAt_e_closedAt_e_i_campi_di_prima` of the dossier: both dates,
+    // a closed issue's too, and no body in a list.
+    let listed = translate_python("task list", &Case::named("list-all-graph").python_output()).unwrap();
+    let closed = listed.as_array().unwrap().iter().find(|task| task["state"] == "CLOSED").expect("a closed issue");
+    assert!(closed["closed_at"].is_string() && closed["created_at"].is_string(), "{closed}");
+    assert!(listed.as_array().unwrap().iter().all(|task| task.get("body").is_none() && task.get("updated_at").is_some()));
     let projects = translate_python("projects", &Case::named("projects-registry").python_output()).unwrap();
     for key in ["folder", "playbook", "priority", "wip", "auto_defaults", "repo", "products"] {
         assert!(projects[0].get(key).is_some(), "the registry has no {key}");

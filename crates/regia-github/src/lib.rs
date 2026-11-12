@@ -376,3 +376,28 @@ struct PagedConnection {
     page_info: PageInfo,
     nodes: Vec<StateNode>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `TestTaskListJson.test_la_query_chiede_createdAt_e_closedAt` of the dossier: the list reads both dates.
+    #[test]
+    fn the_list_asks_for_the_dates_of_creation_and_closing() {
+        assert!(ISSUES_QUERY.contains("createdAt closedAt"));
+    }
+
+    /// `TestTaskListJson.test_normalize_senza_i_campi_nuovi_non_si_rompe`: a node without the two dates reads,
+    /// with none for each.
+    #[test]
+    fn a_node_without_the_dates_still_reads() {
+        let node = json!({
+            "number": 8, "title": "open", "state": "OPEN", "stateReason": null, "body": "", "url": "u", "updatedAt": "d",
+            "labels": {"nodes": []}, "parent": null,
+            "subIssues": {"totalCount": 0, "nodes": []}, "blockedBy": {"totalCount": 0, "nodes": []},
+            "projectItems": {"nodes": []},
+        });
+        let node: IssueNode = serde_json::from_value(node).expect("a node without the dates");
+        assert_eq!((node.number, node.created_at, node.closed_at), (8, None, None));
+    }
+}

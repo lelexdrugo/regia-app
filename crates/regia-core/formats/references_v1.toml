@@ -1,0 +1,4 @@
+# The references of the dossier in format v1 (`tools/riferimenti.py` of the dossier): paths relative to the
+# dossier's folder, and the placeholder of the papers' experimental data, a whole first segment. They are
+# data, not identifiers, and stay out of the Rust sources.
+data_placeholder = "{dati}"
