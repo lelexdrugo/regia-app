@@ -21,9 +21,25 @@ use serde_json::{Value, json};
 
 const FAKE_GH: &str = env!("CARGO_BIN_EXE_fake-gh");
 
+/// Cases whose recorded output the table cannot carry, on purpose: the prototype answers, and the facade
+/// refuses what it printed. Each has a test of what the facade does, below, and the product's own test
+/// says what it answers instead.
+const NOT_THROUGH_THE_FACADE: [&str; 1] = ["step-start-old-cursor"];
+
 /// The cases of the commands that go through the facade.
 fn facade_cases() -> Vec<Case> {
-    Case::all().into_iter().filter(|case| case.spec.python.is_some()).collect()
+    Case::all().into_iter().filter(|case| case.spec.python.is_some() && !NOT_THROUGH_THE_FACADE.contains(&case.name.as_str())).collect()
+}
+
+/// #442/V7: an events cursor in the old form, the instant alone, is a string where the table wants an
+/// object, so through the facade `step start --json` fails closed with exit 1, after the prototype took
+/// the lock. The native step reads the old form (`tests/state.rs`).
+#[test]
+fn an_events_cursor_in_the_old_form_fails_closed_through_the_facade() {
+    let case = Case::named("step-start-old-cursor");
+    let run = replayed("replay-step-start-old-cursor", &case, &Replay::of(&case));
+    assert_eq!((case.spec.exit, run.exit), (0, Some(1)), "the prototype answers, the facade refuses: {}", run.stderr);
+    assert!(run.stdout.is_empty() && run.stderr.contains("cursore"), "{}", run.stderr);
 }
 
 fn os(pairs: Vec<(String, PathBuf)>) -> Vec<(String, OsString)> {

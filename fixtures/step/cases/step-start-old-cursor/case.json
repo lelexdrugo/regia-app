@@ -1,0 +1,32 @@
+{
+  "_note": "Synthetic. The events cursor of alpha is in the old form, the instant alone: the step opens and shows it (#442/V7).",
+  "args": [
+    "step",
+    "start",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "passo",
+    "inizio",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a"
+  ],
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha",
+      "doc": {
+        "valore": "2026-01-09T18:00:00Z",
+        "aggiornato": "2026-01-09T18:00:00.000+00:00"
+      }
+    }
+  ],
+  "state_after": true
+}

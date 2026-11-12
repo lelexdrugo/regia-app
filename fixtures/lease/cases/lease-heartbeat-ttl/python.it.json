@@ -1,0 +1,15 @@
+{
+  "al_posto_di": null,
+  "battito": "2026-01-10T09:00:00.000+00:00",
+  "ok": true,
+  "preso": "2026-01-10T08:50:00.000+00:00",
+  "progetto": "alpha",
+  "proprietario": "worker-a",
+  "rubato_il": null,
+  "scade": "2026-01-10T09:05:00.000+00:00",
+  "scade_tra_s": 300,
+  "scaduto": false,
+  "stato": "battito",
+  "task": 7,
+  "ttl_s": 300.0
+}

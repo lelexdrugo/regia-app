@@ -242,8 +242,14 @@ fn truthy(value: &Value) -> bool {
 /// and 12 hex digits, which the step prints for the caller to pass back when it closes.
 #[must_use]
 pub fn generated_holder() -> Holder {
-    let id = format!("{}{:012x}", format().step.generated_holder, random_u64() & 0xffff_ffff_ffff);
+    let id = format!("{}{:012x}", generated_holder_prefix(), random_u64() & 0xffff_ffff_ffff);
     Holder::new(id).expect("a generated holder is not blank")
+}
+
+/// What every generated holder starts with, before its 12 random hex digits.
+#[must_use]
+pub fn generated_holder_prefix() -> &'static str {
+    &format().step.generated_holder
 }
 
 /// The message of the dossier's commit that closes a step: `<project>: <word> <t>`, with the step's

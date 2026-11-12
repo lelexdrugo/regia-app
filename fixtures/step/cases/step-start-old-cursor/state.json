@@ -1,0 +1,43 @@
+[
+  {
+    "doc": {
+      "aggiornato": "2026-01-09T18:00:00.000+00:00",
+      "valore": "2026-01-09T18:00:00Z"
+    },
+    "generation": 1,
+    "key": "alpha",
+    "kind": "cursore",
+    "stamped": false
+  },
+  {
+    "doc": {
+      "aggiornato": "2026-01-10T09:00:00.000+00:00",
+      "valore": {
+        "commenti": [],
+        "proprietario": "worker-a",
+        "sessione": null,
+        "t": "2026-01-10T09:00:00Z",
+        "v": 1
+      }
+    },
+    "generation": 1,
+    "key": "alpha:passo",
+    "kind": "cursore",
+    "stamped": false
+  },
+  {
+    "doc": {
+      "al_posto_di": null,
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "progetto": "alpha",
+      "proprietario": "worker-a",
+      "rubato_il": null,
+      "scade": "2026-01-10T09:30:00.000+00:00",
+      "ttl_s": 1800
+    },
+    "generation": 1,
+    "key": "alpha",
+    "kind": "lock",
+    "stamped": true
+  }
+]

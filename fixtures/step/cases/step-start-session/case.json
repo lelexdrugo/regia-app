@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. No holder given: the session's id is the holder, and the step records the session.",
+  "args": [
+    "step",
+    "start",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "passo",
+    "inizio",
+    "--progetto",
+    "alpha"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "session-a"
+  },
+  "state_after": true
+}

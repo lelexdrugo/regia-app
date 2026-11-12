@@ -1,0 +1,12 @@
+{
+  "_note": "Synthetic. No lease at all, in text.",
+  "args": [
+    "lease",
+    "list"
+  ],
+  "python": [
+    "lease",
+    "list"
+  ],
+  "state_after": true
+}

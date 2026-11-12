@@ -126,6 +126,10 @@ pub struct CaseSpec {
     /// Rows of the state database before the run.
     #[serde(default)]
     pub state: Vec<StateRow>,
+    /// The rows of the state database after the run are part of the case: `record` stores them in
+    /// `state.json`, and a native run must leave the same.
+    #[serde(default)]
+    pub state_after: bool,
     /// Session variables the run sees, on both sides: only those of [`SESSION_VARIABLES`].
     #[serde(default)]
     pub env: BTreeMap<String, String>,
@@ -532,6 +536,13 @@ impl Case {
         path.is_file().then(|| read_json(&path))
     }
 
+    /// The rows of the state database after the prototype's run, from `state.json`, as [`state_rows`]
+    /// reads them; `None` for a case without [`CaseSpec::state_after`].
+    pub fn state_after(&self) -> Option<Value> {
+        let path = self.dir.join("state.json");
+        path.is_file().then(|| read_json(&path))
+    }
+
     /// The command the case runs, by the facade table's longest name.
     pub fn command_name(&self) -> String {
         Table::embedded().split_command(&self.spec.args).expect("the table knows the case's command").0
@@ -587,6 +598,59 @@ pub fn write_state(dir: &Path, rows: &[StateRow]) {
                 (&row.kind, &row.key, row.doc.to_string()),
             )
             .expect("a state row");
+    }
+}
+
+/// The rows of the state database of `dir`, in kind and key order: `{kind, key, generation, doc, stamped}`,
+/// the document parsed when it is JSON and as its text otherwise. The monotonic stamp is taken out of the
+/// document, because its clock and values are each implementation's own; `stamped` says it was there.
+pub fn state_rows(dir: &Path) -> Value {
+    let rows = regia_store::Store::at(dir).and_then(|store| store.rows()).unwrap_or_else(|error| panic!("{}: {error}", dir.display()));
+    let format = workspace_root().join("crates").join("regia-store").join("formats").join("store_v1.toml");
+    let format: toml::Table = toml::from_str(&fs::read_to_string(&format).expect("the v1 state format")).expect("TOML");
+    let stamp = format["monotonic"]["key"].as_str().expect("the key of the monotonic stamp").to_owned();
+    let rows: Vec<Value> = rows
+        .into_iter()
+        .map(|row| {
+            let mut doc = serde_json::from_str::<Value>(&row.document).unwrap_or(Value::String(row.document));
+            let stamped = doc.as_object_mut().is_some_and(|doc| doc.remove(&stamp).is_some());
+            json!({"kind": row.kind, "key": row.key, "generation": row.generation, "doc": doc, "stamped": stamped})
+        })
+        .collect();
+    Value::Array(rows)
+}
+
+/// What a generated holder reads as in a comparison: its 12 random hex digits are each run's own.
+pub const GENERATED_HOLDER: &str = "<generated>";
+
+/// `text` with every generated holder's digits as [`GENERATED_HOLDER`], so two runs that each generated
+/// one compare equal, and a holder given by hand stays as it is.
+pub fn generated_holders_as_one(text: &str) -> String {
+    let prefix = regia_store::generated_holder_prefix();
+    let mut out = String::new();
+    let mut rest = text;
+    while let Some(at) = rest.find(prefix) {
+        let after = &rest[at + prefix.len()..];
+        out.push_str(&rest[..at + prefix.len()]);
+        let digits = after.bytes().take_while(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase()).count();
+        if digits == 12 {
+            out.push_str(GENERATED_HOLDER);
+            rest = &after[12..];
+        } else {
+            rest = after;
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// [`generated_holders_as_one`] in every string of `value`.
+pub fn generated_holders_as_one_in(value: &Value) -> Value {
+    match value {
+        Value::String(text) => Value::String(generated_holders_as_one(text)),
+        Value::Array(items) => Value::Array(items.iter().map(generated_holders_as_one_in).collect()),
+        Value::Object(fields) => Value::Object(fields.iter().map(|(key, value)| (key.clone(), generated_holders_as_one_in(value))).collect()),
+        other => other.clone(),
     }
 }
 
@@ -721,6 +785,8 @@ pub struct CliRun {
     pub dossier: Option<PathBuf>,
     /// The dossier's repo after the run, when the run had a repo to work on.
     pub dossier_after: Option<Value>,
+    /// The run's state folder, with its state database.
+    pub state: PathBuf,
 }
 
 /// What the stand-in interpreter replays.
@@ -858,6 +924,7 @@ fn run_case_in(label: &str, case: &Case, build: bool, extra: impl FnOnce(&Path) 
         writes: dossier.as_ref().map_or(writes.clone(), |dossier| writes.iter().map(|write| unplace_json(write, dossier)).collect()),
         dossier,
         dossier_after,
+        state,
     }
 }
 
@@ -877,8 +944,8 @@ pub fn lf(text: &str) -> String {
 
 /// Every way `run` differs from what the prototype did for `case`: exit code, stdout through the
 /// table or as text, stderr, and with [`Writes::Compare`] the writes in order and the dossier's repo
-/// after the run. The run's dossier reads as the placeholder, as in the recording. Empty when they
-/// agree.
+/// after the run. The run's dossier reads as the placeholder, as in the recording, and a generated
+/// holder as [`GENERATED_HOLDER`]. Empty when they agree.
 pub fn differences(case: &Case, run: &CliRun, writes: Writes) -> Vec<String> {
     let mut out = Vec::new();
     if run.exit != Some(i32::from(case.spec.exit)) {
@@ -918,13 +985,15 @@ fn output_differences(case: &Case, run: &CliRun, text: &dyn Fn(&str) -> String) 
         Recorded::Json(python) => match (serde_json::from_slice::<Value>(&run.stdout), translate_python(&case.command_name(), &python)) {
             (Ok(rust), Ok(python)) => {
                 let rust = run.dossier.as_ref().map_or_else(|| rust.clone(), |dossier| unplace_json(&rust, dossier));
+                let (rust, python) = (generated_holders_as_one_in(&rust), generated_holders_as_one_in(&python));
                 out.extend(json_diff(&rust, &python).into_iter().map(|line| format!("stdout {line}")));
             }
             (Err(error), _) => out.push(format!("stdout: rust printed no JSON ({error}): {}", String::from_utf8_lossy(&run.stdout))),
             (_, Err(error)) => out.push(format!("stdout: the table does not cover the prototype's output: {error}")),
         },
         Recorded::Text(python) => {
-            let rust = text(&lf(&String::from_utf8_lossy(&run.stdout)));
+            let rust = generated_holders_as_one(&text(&lf(&String::from_utf8_lossy(&run.stdout))));
+            let python = generated_holders_as_one(&python);
             if rust != python {
                 out.push(format!("stdout: rust {rust:?}, python {python:?}"));
             }

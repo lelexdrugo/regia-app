@@ -1,0 +1,10 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "fail": {
+    "error": "the tracker does not answer",
+    "exit": 1
+  }
+}

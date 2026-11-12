@@ -46,5 +46,6 @@
       "key": "30",
       "doc": "not an object"
     }
-  ]
+  ],
+  "state_after": true
 }

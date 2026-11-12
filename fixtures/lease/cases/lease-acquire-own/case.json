@@ -1,0 +1,45 @@
+{
+  "_note": "Synthetic. worker-a takes again its own live lease of #7, for beta: the lease beats, moves to beta, and keeps when it was taken.",
+  "args": [
+    "lease",
+    "acquire",
+    "7",
+    "--project",
+    "beta",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "600",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lease",
+    "prendi",
+    "7",
+    "--progetto",
+    "beta",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "600"
+  ],
+  "state": [
+    {
+      "kind": "lease",
+      "key": "7",
+      "doc": {
+        "task": 7,
+        "progetto": "alpha",
+        "proprietario": "worker-a",
+        "preso": "2026-01-10T08:50:00.000+00:00",
+        "battito": "2026-01-10T08:50:00.000+00:00",
+        "ttl_s": 900,
+        "scade": "2026-01-10T09:05:00.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    }
+  ],
+  "state_after": true
+}

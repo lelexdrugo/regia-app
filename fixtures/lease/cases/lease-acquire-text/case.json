@@ -1,0 +1,26 @@
+{
+  "_note": "Synthetic. As lease-acquire, in text.",
+  "args": [
+    "lease",
+    "acquire",
+    "7",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "900"
+  ],
+  "python": [
+    "lease",
+    "prendi",
+    "7",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "900"
+  ],
+  "state_after": true
+}

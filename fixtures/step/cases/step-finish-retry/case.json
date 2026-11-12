@@ -1,0 +1,71 @@
+{
+  "_note": "Synthetic. A commit the step before could not push, and nothing new: the step's end pushes it and makes none of its own (#447/V7).",
+  "scenario": "tracker",
+  "args": [
+    "step",
+    "finish",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "passo",
+    "fine",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--cartella",
+    "{dossier}"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": {
+        "progetto": "alpha",
+        "proprietario": "worker-a",
+        "preso": "2026-01-10T08:30:00.000+00:00",
+        "ttl_s": 1800,
+        "scade": "2026-01-10T09:00:30.000+00:00",
+        "al_posto_di": null,
+        "rubato_il": null
+      }
+    },
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {
+          "v": 1,
+          "proprietario": "worker-a",
+          "sessione": null,
+          "t": "2026-01-10T08:30:00Z",
+          "commenti": [
+            43,
+            41,
+            43
+          ]
+        },
+        "aggiornato": "2026-01-10T08:30:00.000+00:00"
+      }
+    }
+  ],
+  "state_after": true,
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "local_commits": [
+      {
+        ".regia/stato.md": "# Alpha\n\nCommitted by the step before, never pushed.\n"
+      }
+    ]
+  }
+}

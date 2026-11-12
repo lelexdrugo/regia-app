@@ -1,0 +1,45 @@
+{
+  "_note": "Synthetic. No lock at all: the step cannot close, exit 3, and its cursor stays.",
+  "exit": 3,
+  "args": [
+    "step",
+    "finish",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--no-push",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "passo",
+    "fine",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--no-push"
+  ],
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {
+          "v": 1,
+          "proprietario": "worker-a",
+          "sessione": null,
+          "t": "2026-01-10T08:30:00Z",
+          "commenti": [
+            43,
+            41,
+            43
+          ]
+        },
+        "aggiornato": "2026-01-10T08:30:00.000+00:00"
+      }
+    }
+  ],
+  "state_after": true
+}

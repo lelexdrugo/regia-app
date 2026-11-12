@@ -1,0 +1,3 @@
+passo alpha: preso da worker-a, scade 2026-01-10T09:30:00.000+00:00 (tra 1800 s)
+t del passo: 2026-01-10T09:00:00Z
+cursore eventi: assente (niente è stato elaborato: ogni report e commento è nuovo)

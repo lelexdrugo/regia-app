@@ -1,0 +1,29 @@
+{
+  "_note": "Synthetic. A ttl of 0 is an error, exit 1, before the state is touched.",
+  "exit": 1,
+  "args": [
+    "lease",
+    "acquire",
+    "7",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "0",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lease",
+    "prendi",
+    "7",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "0"
+  ],
+  "state_after": true
+}

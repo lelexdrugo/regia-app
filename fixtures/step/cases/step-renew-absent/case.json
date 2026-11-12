@@ -1,0 +1,23 @@
+{
+  "_note": "Synthetic. No lock to renew: refused as absent, exit 3.",
+  "exit": 3,
+  "args": [
+    "step",
+    "renew",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "passo",
+    "rinnova",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a"
+  ],
+  "state_after": true
+}

@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. As step-start-free, in text: the lines the orchestrator reads when its step opens.",
+  "args": [
+    "step",
+    "start",
+    "--project",
+    "alpha",
+    "--holder",
+    "worker-a"
+  ],
+  "python": [
+    "passo",
+    "inizio",
+    "--progetto",
+    "alpha",
+    "--proprietario",
+    "worker-a"
+  ],
+  "state_after": true
+}

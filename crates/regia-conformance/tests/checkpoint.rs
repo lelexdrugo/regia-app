@@ -5,14 +5,17 @@
 //!
 //! Two normalizations, declared:
 //! - **The reason** is the product's own sentence, in English: the prototype's is translated by
-//!   [`in_the_product_s_words`] before the comparison. What git said, its last line, is compared as it
+//!   [`words::in_the_product_s_words`] before the comparison. What git said, its last line, is compared as it
 //!   is.
 //! - **The text** of the product is the contract's keys, one a line, as `budget` prints them: for a
 //!   case recorded in text, the outcome its line names is compared, and the repo.
 
 use std::path::{Path, PathBuf};
 
+mod words;
+
 use regia_conformance::{Case, CliRun, Recorded, bin_dir, json_diff, lf, run_case_on_dossier, translate_python, unplace_json, unplace_text};
+use words::{in_the_product_s_words, outcome_of_line};
 use regia_identity::env_var;
 use serde_json::{Value, json};
 
@@ -27,55 +30,6 @@ fn checkpoint_cases() -> Vec<Case> {
 /// The real binary on `case`, natively: no prototype is named, so the table's group falls back on it.
 fn native(label: &str, case: &Case, extra: Vec<(String, std::ffi::OsString)>) -> CliRun {
     run_case_on_dossier(label, case, |_| extra)
-}
-
-/// The prototype's reason in the product's words: each of its sentences, and the warnings it joins with
-/// `; `, has one in `regia-git`; what git said passes as it is.
-fn in_the_product_s_words(reason: &str) -> String {
-    const SENTENCES: [(&str, &str); 14] = [
-        ("cartella del progetto non letta: ", "the project's folder was not read: "),
-        ("la cartella del progetto non esiste", "the project's folder does not exist"),
-        ("la cartella non è la radice di un repo git", "the folder is not the root of a git repo"),
-        ("': deve essere relativo alla cartella del progetto", "': must be relative to the project's folder"),
-        ("': esce dalla cartella del progetto", "': leaves the project's folder"),
-        ("': nomina la cartella intera o .git", "': names the whole folder or .git"),
-        ("HEAD staccato: nessun branch su cui committare", "detached HEAD: no branch to commit on"),
-        ("RegiaError: git status: ", "git status: "),
-        ("nessun remoto configurato", "no remote configured"),
-        ("upstream senza remoto o riferimento leggibili", "upstream with no readable remote or ref"),
-        ("fetch non riuscito: ", "fetch failed: "),
-        ("fast-forward non riuscito: ", "fast-forward failed: "),
-        (" (divergenza: la risolve il titolare)", " (divergence: the owner resolves it)"),
-        (" non ha un upstream", " has no upstream"),
-    ];
-    let mut out = SENTENCES.iter().fold(reason.to_owned(), |text, (python, product)| text.replace(python, product));
-    out = out.replace("il branch ", "the branch ");
-    if let Some(project) = between(&out, "progetto '", "' sconosciuto") {
-        out = out.replace(&format!("progetto '{project}' sconosciuto"), &format!("project '{project}' is unknown"));
-    }
-    if let Some(project) = between(&out, "il registro di '", "' non ha la cartella") {
-        out = out.replace(&format!("il registro di '{project}' non ha la cartella"), &format!("the registry of '{project}' has no folder"));
-    }
-    if let Some(count) = between(&out, "ritentato: ", " commit già fatti") {
-        let product = if count == "1" { "retried: 1 commit already made".to_owned() } else { format!("retried: {count} commits already made") };
-        out = out.replace(&format!("ritentato: {count} commit già fatti"), &product);
-    }
-    out
-}
-
-fn between<'a>(text: &'a str, start: &str, end: &str) -> Option<&'a str> {
-    let from = text.find(start)? + start.len();
-    let to = from + text[from..].find(end)?;
-    Some(&text[from..to])
-}
-
-/// The outcome the prototype's text line names: `dossier_riga`.
-fn outcome_of_line(text: &str) -> &'static str {
-    let line = text.split_once(": ").map_or(text, |(_, rest)| rest);
-    [("pushato", "pushed"), ("commit locale", "local_commit"), ("niente da committare", "nothing"), ("nessun remoto", "no_remote"), ("non disponibile", "unavailable")]
-        .iter()
-        .find(|(python, _)| line.starts_with(python))
-        .map_or("(no outcome)", |(_, product)| product)
 }
 
 /// Every way the native run differs from what the prototype did on `case`: exit code, output through

@@ -1,0 +1,18 @@
+[
+  {
+    "doc": {
+      "al_posto_di": null,
+      "preso": "2026-01-10T08:30:00.000+00:00",
+      "progetto": "alpha",
+      "proprietario": "worker-a",
+      "rinnovato": "2026-01-10T09:00:00.000+00:00",
+      "rubato_il": null,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "ttl_s": 60
+    },
+    "generation": 2,
+    "key": "alpha",
+    "kind": "lock",
+    "stamped": true
+  }
+]

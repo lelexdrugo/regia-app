@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. No holder given and no session: the step generates one, passo- and 12 hex digits, and says so (#442/V5).",
+  "args": [
+    "step",
+    "start",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "passo",
+    "inizio",
+    "--progetto",
+    "alpha"
+  ],
+  "state_after": true
+}

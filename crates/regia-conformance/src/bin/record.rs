@@ -1,7 +1,8 @@
 //! Local only. Expands each synthetic scenario into GraphQL responses, writes each case's state rows,
 //! runs the Python prototype on them through the fake `gh`, at the fixtures' fixed instant, and stores
-//! its raw output: JSON or text, its stderr if any, and the writes it made to the tracker. The
-//! prototype is not modified and the real tracker is never read: a scenario's URLs must come back, or
+//! its raw output: JSON or text, its stderr if any, the writes it made to the tracker, and for a case
+//! that asks, the rows of the state database after the run. The prototype is not modified and the real
+//! tracker is never read: a scenario's URLs must come back, or
 //! recording stops, and so does an exit code other than the case's or an argv other than the one it
 //! expects. `--family` records only the families named, so a slice leaves the others' files alone.
 //!
@@ -13,7 +14,7 @@ use std::path::{Path, PathBuf};
 
 use regia_conformance::{
     Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
-    place_args, prepare_case_state, prepare_dossier, read_json, unplace_json, unplace_text, writes_of_run,
+    place_args, prepare_case_state, prepare_dossier, read_json, state_rows, unplace_json, unplace_text, writes_of_run,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
 use regia_exec::git::{self, CommitField};
@@ -496,6 +497,7 @@ fn main() {
         replace_text(&case.dir.join("python.it.stderr.txt"), Some(lf(&stderr)).filter(|text| !text.is_empty()).as_deref());
         replace(&case.dir.join("calls.json"), (!writes.is_empty()).then(|| Value::Array(writes.clone())));
         replace(&case.dir.join("dossier.json"), case.spec.dossier.as_ref().and_then(|spec| dossier_after(&state, spec)));
+        replace(&case.dir.join("state.json"), case.spec.state_after.then(|| state_rows(&state)));
         println!(
             "{}/{}: exit {}, {} calls to the fake gh, {} writes, {urls} URLs, all synthetic",
             case.family,

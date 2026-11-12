@@ -56,6 +56,7 @@
       }
     }
   ],
+  "state_after": true,
   "dossier": {
     "files": {
       ".regia/stato.md": "# Alpha\n\n- ✋ #6: a decision waits for the owner\n",

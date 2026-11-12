@@ -1,0 +1,1 @@
+avviso: --report-elaborati ignorato, cartella del progetto non letta: gh api graphql -f…: the tracker does not answer

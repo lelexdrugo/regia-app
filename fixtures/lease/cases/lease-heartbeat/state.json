@@ -1,0 +1,19 @@
+[
+  {
+    "doc": {
+      "al_posto_di": null,
+      "battito": "2026-01-10T09:00:00.000+00:00",
+      "preso": "2026-01-10T08:50:00.000+00:00",
+      "progetto": "alpha",
+      "proprietario": "worker-a",
+      "rubato_il": null,
+      "scade": "2026-01-10T09:15:00.000+00:00",
+      "task": 7,
+      "ttl_s": 900
+    },
+    "generation": 2,
+    "key": "7",
+    "kind": "lease",
+    "stamped": true
+  }
+]

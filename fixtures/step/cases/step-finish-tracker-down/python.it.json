@@ -1,0 +1,28 @@
+{
+  "controlli": {
+    "non_disponibile": "RegiaError: gh api graphql -f…: the tracker does not answer"
+  },
+  "cursore": {
+    "propri": {
+      "commenti": [
+        41,
+        43
+      ]
+    },
+    "t": "2026-01-10T08:30:00Z",
+    "v": 1
+  },
+  "dossier": {
+    "avanti": null,
+    "branch": null,
+    "cartella": null,
+    "esito": "non_disponibile",
+    "file": [],
+    "motivo": "cartella del progetto non letta: gh api graphql -f…: the tracker does not answer",
+    "sha": null
+  },
+  "lock": "rilasciato",
+  "ok": true,
+  "progetto": "alpha",
+  "proprietario": "worker-a"
+}

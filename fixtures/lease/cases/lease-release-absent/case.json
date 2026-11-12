@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. No lease on #7: releasing it is already done, exit 0.",
+  "args": [
+    "lease",
+    "release",
+    "7",
+    "--holder",
+    "worker-a",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lease",
+    "rilascia",
+    "7",
+    "--proprietario",
+    "worker-a"
+  ],
+  "state_after": true
+}
