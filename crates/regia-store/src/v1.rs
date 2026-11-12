@@ -15,6 +15,7 @@ pub(crate) struct Format {
     pub cursor: CursorKeys,
     pub step: StepKeys,
     pub events: EventsKeys,
+    pub declarations: DeclarationKeys,
     pub monotonic: MonotonicKeys,
     pub view: View,
     pub budget: BudgetKeys,
@@ -95,6 +96,21 @@ pub(crate) struct EventsKeys {
     pub comments: String,
     pub reports: String,
     pub report_folder: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct DeclarationKeys {
+    pub folder: String,
+    pub version: String,
+    pub ts: String,
+    pub session: String,
+    pub agent: String,
+    pub project: String,
+    pub task: String,
+    pub command: String,
+    pub role: String,
+    pub ids: Vec<(String, String)>,
+    pub step_role: String,
 }
 
 #[derive(Debug, Deserialize)]

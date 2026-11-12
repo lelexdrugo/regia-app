@@ -77,6 +77,24 @@ reports = "report"
 # Where those reports are, relative to the project's folder, with `/` between the parts.
 report_folder = ".regia/report"
 
+# The log of what sessions declare they work on (R8, `tools/dichiarazioni.py`): under the state folder,
+# `<folder>/<session>.<pid>.jsonl`, appended to, one JSON object a line with its keys in this order and a
+# field without a value left out. `ids` are the variables a session's ids come from, in order, each with
+# the key it is written with: the first one set is the line's session, and its key the line's agent. A
+# step's commands record `step_role`; the others the role of the prototype's variable, if one is set.
+[declarations]
+folder = "dichiarazioni"
+version = "v"
+ts = "ts"
+session = "sessione"
+agent = "agente"
+project = "progetto"
+task = "task"
+command = "comando"
+role = "ruolo"
+ids = [["CLAUDE_CODE_SESSION_ID", "claude"], ["ORCA_AGENT_SESSION_ID", "orca"], ["CODEX_THREAD_ID", "codex"]]
+step_role = "orchestratore"
+
 # The monotonic expiry the prototype adds to every lock, lease and probe document. `clock` names the
 # implementation of the clock that wrote it: a reader with another one falls back to `expires_at`.
 [monotonic]
