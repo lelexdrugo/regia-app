@@ -1,0 +1,20 @@
+[
+  {
+    "arguments": "input:{projectId:$p,contentId:$c}",
+    "mutation": "addProjectV2ItemById",
+    "variables": {
+      "c": "ISSUE_8",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_ADDED",
+      "o": "opt-b2",
+      "p": "PROJECT_FIXTURE"
+    }
+  }
+]

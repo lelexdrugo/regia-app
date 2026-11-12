@@ -1,0 +1,25 @@
+{
+  "_note": "Synthetic. #5 approved with a comment on behalf of the owner (G4): the status first, then the labels, then the comment signed titolare, its body in argv; no URL is read and no id is recorded.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "5",
+    "approved",
+    "--comment",
+    "Decisione: A.",
+    "--on-behalf-of-owner"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "5",
+    "Approvato",
+    "--commento",
+    "Decisione: A.",
+    "--per-conto-del-titolare"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  }
+}

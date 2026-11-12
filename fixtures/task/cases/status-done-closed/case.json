@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. #7 is closed already: done does not close it again, and the status is still written twice, three seconds apart (T11).",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "7",
+    "done"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "7",
+    "Fatto"
+  ]
+}

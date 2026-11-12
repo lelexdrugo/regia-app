@@ -1,0 +1,17 @@
+{
+  "_note": "Synthetic. #77 is not in the tracker: an error after reading its node, exit 1, no write, nothing on stdout.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "77",
+    "done"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "77",
+    "Fatto"
+  ],
+  "exit": 1
+}

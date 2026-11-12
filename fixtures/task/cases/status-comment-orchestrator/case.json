@@ -1,0 +1,46 @@
+{
+  "_note": "Synthetic. This session holds the open step of alpha, #3's project: the step wins over --role and the comment is signed orchestratore; the step's comments do not change, since no id is read (G4). The rows after the run are part of the case.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "3",
+    "in_progress",
+    "--comment",
+    "Started.",
+    "--role",
+    "worker"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "3",
+    "In corso",
+    "--commento",
+    "Started.",
+    "--ruolo",
+    "worker"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {
+          "v": 1,
+          "proprietario": "fixture-session",
+          "sessione": "fixture-session",
+          "t": "2026-01-10T08:30:00Z",
+          "commenti": [
+            41
+          ]
+        },
+        "aggiornato": "2026-01-10T08:30:00Z"
+      }
+    }
+  ],
+  "state_after": true
+}

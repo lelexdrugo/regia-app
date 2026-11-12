@@ -1,0 +1,24 @@
+[
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_8",
+      "o": "opt-a1",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "8",
+      "--repo",
+      "example/tracker",
+      "--body",
+      "A note.\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=- -->"
+    ],
+    "stdin": null
+  }
+]

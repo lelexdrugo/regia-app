@@ -1,0 +1,24 @@
+[
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_3",
+      "o": "opt-d4",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "3",
+      "--repo",
+      "example/tracker",
+      "--body",
+      "Started.\n\n— regia · orchestratore\n<!-- regia:autore ruolo=orchestratore sessione=fixture-session -->"
+    ],
+    "stdin": null
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. #8 back to inbox with a comment and no session: signed chat, with `-` for the session.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "8",
+    "inbox",
+    "--comment",
+    "A note."
+  ],
+  "python": [
+    "task",
+    "stato",
+    "8",
+    "Inbox",
+    "--commento",
+    "A note."
+  ]
+}
