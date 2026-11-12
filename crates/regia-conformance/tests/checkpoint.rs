@@ -81,6 +81,13 @@ fn native_differences(case: &Case, run: &CliRun) -> Vec<String> {
     if run.exit != Some(i32::from(case.spec.exit)) {
         out.push(format!("exit: rust {:?}, python {}; stderr: {}", run.exit, case.spec.exit, run.stderr.trim()));
     }
+    // A case of a class only (#571/V8): the sentence of an error is each side's own.
+    if case.spec.same_class_only {
+        out.extend(regia_conformance::class_differences(case, run));
+        let after = |value: Option<Value>| value.unwrap_or(Value::Null);
+        out.extend(json_diff(&after(run.dossier_after.clone()), &after(case.dossier_after())).into_iter().map(|line| format!("dossier {line}")));
+        return out;
+    }
     // A case with no dossier has no folder to put back as the placeholder.
     let unplace = |value: &Value| run.dossier.as_ref().map_or_else(|| value.clone(), |dossier| unplace_json(value, dossier));
     let unplace_line = |text: &str| run.dossier.as_ref().map_or_else(|| text.to_owned(), |dossier| unplace_text(text, dossier));
@@ -222,4 +229,23 @@ fn the_checkpoint_cases_show_what_they_claim() {
     ] {
         assert_eq!(in_the_product_s_words(name), product);
     }
+}
+
+/// #571/V8: with a git that gives no answer, or none at all, the product commits nothing and says so; the
+/// repo is as the case built it. The comparison with the prototype is by class, so this holds what the
+/// product's own sentence says.
+#[test]
+fn a_git_that_does_not_answer_commits_nothing() {
+    for (name, said) in [("checkpoint-git-timeout", "git: fake git: no answer"), ("checkpoint-git-missing", "git: git")] {
+        let case = Case::named(name);
+        let run = native(&format!("native-{name}"), &case, Vec::new());
+        assert_eq!(run.exit, Some(0), "{name}: {}", run.stderr);
+        let out: Value = serde_json::from_slice(&run.stdout).expect("JSON");
+        assert_eq!(out["dossier"]["outcome"], "unavailable", "{name}");
+        assert!(out["dossier"]["reason"].as_str().is_some_and(|reason| reason.starts_with(said)), "{name}: {out}");
+        assert_eq!(out["dossier"]["sha"], Value::Null, "{name}: no commit was made");
+    }
+    let case = Case::named("checkpoint-tracker-down");
+    let run = native("native-tracker-down", &case, Vec::new());
+    assert_eq!(run.exit, Some(1), "{}", run.stderr);
 }

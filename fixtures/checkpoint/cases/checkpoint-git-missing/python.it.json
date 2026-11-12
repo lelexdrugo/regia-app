@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": null,
+    "branch": null,
+    "cartella": "{dossier}",
+    "esito": "non_disponibile",
+    "file": [],
+    "motivo": "git: git non eseguibile: [WinError 2] Impossibile trovare il file specificato",
+    "sha": null
+  },
+  "ok": false,
+  "progetto": "alpha"
+}

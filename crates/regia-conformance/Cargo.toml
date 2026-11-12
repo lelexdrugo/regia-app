@@ -12,6 +12,12 @@ publish.workspace = true
 name = "fake-gh"
 path = "src/bin/fake_gh.rs"
 
+# Stands in for `git` in the cases of a git that does not answer: it ends every call with the exit
+# code of a deadline, 124. The prototype finds it first on PATH, the product by `REGIA_GIT`.
+[[bin]]
+name = "fake-git"
+path = "src/bin/fake_git.rs"
+
 # Stands in for the interpreter where the prototype is not, as in CI: checks the argv the facade
 # built and replays what the prototype printed for a case, with its exit code.
 [[bin]]

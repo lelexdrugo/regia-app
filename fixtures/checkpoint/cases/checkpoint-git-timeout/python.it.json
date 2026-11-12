@@ -1,0 +1,13 @@
+{
+  "dossier": {
+    "avanti": null,
+    "branch": null,
+    "cartella": "{dossier}",
+    "esito": "non_disponibile",
+    "file": [],
+    "motivo": "git: fake git: no answer",
+    "sha": null
+  },
+  "ok": false,
+  "progetto": "alpha"
+}

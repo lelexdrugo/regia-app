@@ -167,6 +167,12 @@ fn subcommand(args: &[String], responses: &Value, fixture: &Fixture) -> Result<S
 fn answer(args: &[String]) -> Result<Reply, String> {
     let fixture = fixture()?;
     let responses: Value = read_json(&fixture.responses);
+    // A tracker that does not answer: every call fails, as `gh` does without a network.
+    if let Some(error) = responses["fail"]["error"].as_str() {
+        append(fixture.log.as_ref(), "api fail")?;
+        let code = responses["fail"]["exit"].as_u64().and_then(|code| u8::try_from(code).ok()).unwrap_or(1);
+        return Ok(Reply::Fail(error.to_owned(), code));
+    }
     if args.first().is_some_and(|word| word == "api") && args.get(1).is_none_or(|word| word != "graphql") {
         return rest(args, &responses, &fixture);
     }

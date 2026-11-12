@@ -1,0 +1,23 @@
+{
+  "_note": "Synthetic. No folder given, and the tracker does not answer, so the registry cannot be read: both sides end on exit code 1. Only the class is compared, the exit code and the outcome where the output holds one, not the sentence about it.",
+  "same_class_only": true,
+  "exit": 1,
+  "gh": {
+    "fail": {
+      "error": "the tracker does not answer",
+      "exit": 1
+    }
+  },
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha"
+  ]
+}

@@ -12,7 +12,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, fixture_for_python, fixtures_dir, lf, log_var,
+    Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
     place_args, prepare_case_state, prepare_dossier, read_json, unplace_json, unplace_text, writes_of_run,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
@@ -457,6 +457,12 @@ fn main() {
         let mut launch = fixture_for_python(launch, &case.responses_path(), &state).env(&log_var(), &log);
         for (name, value) in case.spec.session_env() {
             launch = launch.env(&name, value);
+        }
+        if let Some(double) = case.spec.dossier.as_ref().and_then(|spec| spec.git_double) {
+            // The prototype looks git up on PATH; the variable for the product is of no use to it.
+            for (name, value) in git_double_env(&state, double).into_iter().filter(|(name, _)| name == "PATH") {
+                launch = launch.env(&name, value);
+            }
         }
         let output = launch.run().expect("run the prototype");
         let stderr = String::from_utf8_lossy(&output.stderr).into_owned();

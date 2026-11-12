@@ -132,6 +132,10 @@ pub struct CaseSpec {
     /// The project's dossier before the run, which the arguments name as [`DOSSIER_PLACEHOLDER`].
     #[serde(default)]
     pub dossier: Option<DossierSpec>,
+    /// The two sides fail in their own words: only the class is compared, the exit code and, where the
+    /// output holds one, the outcome of the dossier, not the text of an error (#571/V8).
+    #[serde(default)]
+    pub same_class_only: bool,
     /// Answers of the fake `gh` the scenario does not give, by key of its responses (`cli`,
     /// `mutations`), merged over those `record` builds: the URL a comment gets, for one.
     #[serde(default)]
@@ -176,12 +180,48 @@ pub struct DossierSpec {
     /// HEAD detached at the commit of `main`.
     #[serde(default)]
     pub detached: bool,
+    /// A stand-in where git should be, on both sides (#571/V8).
+    #[serde(default)]
+    pub git_double: Option<GitDouble>,
     #[serde(default)]
     pub changes: BTreeMap<String, String>,
 }
 
 fn yes() -> bool {
     true
+}
+
+/// What stands where git should be, for the paths a real git cannot be made to take.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GitDouble {
+    /// A git that answers every call with the exit code 124, as the prototype's deadline gives.
+    Timeout,
+    /// No git where the run looks for it.
+    Missing,
+}
+
+/// The variables that put `double` in place of git for a run: `REGIA_GIT` for the product, which starts
+/// only an absolute path, and `PATH` for the prototype, which looks git up there. For [`GitDouble::Missing`]
+/// `REGIA_GIT` names a file that is not there and `PATH` keeps the fake `gh` and the interpreter, and no git.
+pub fn git_double_env(state: &Path, double: GitDouble) -> Vec<(String, OsString)> {
+    let dir = state.join("fake-git");
+    let git = dir.join(format!("git{}", env::consts::EXE_SUFFIX));
+    let mut paths = vec![fake_gh_dir()];
+    match double {
+        GitDouble::Timeout => {
+            fs::create_dir_all(&dir).expect("fake git folder");
+            let source = bin_dir().join(format!("fake-git{}", env::consts::EXE_SUFFIX));
+            fs::copy(&source, &git).unwrap_or_else(|error| panic!("{}: {error}", source.display()));
+            paths.insert(0, dir);
+            paths.extend(env::var_os("PATH").iter().flat_map(env::split_paths));
+        }
+        GitDouble::Missing => {
+            let interpreter = regia_exec::Pin::resolve(Program::Python).ok();
+            paths.extend(interpreter.and_then(|pin| pin.path().parent().map(Path::to_path_buf)));
+        }
+    }
+    vec![(Program::Git.env_name(), git.into()), ("PATH".to_owned(), env::join_paths(paths).expect("PATH"))]
 }
 
 /// Where a case's arguments, the prototype's argv and what it printed name the dossier's folder,
@@ -800,6 +840,11 @@ fn run_case_in(label: &str, case: &Case, build: bool, extra: impl FnOnce(&Path) 
     for (name, value) in case.spec.session_env() {
         launch = launch.env(&name, value);
     }
+    if let Some(double) = case.spec.dossier.as_ref().and_then(|spec| spec.git_double) {
+        for (name, value) in git_double_env(&state, double) {
+            launch = launch.env(&name, value);
+        }
+    }
     for (name, value) in extra(&state) {
         launch = launch.env(&name, value);
     }
@@ -840,6 +885,35 @@ pub fn differences(case: &Case, run: &CliRun, writes: Writes) -> Vec<String> {
         out.push(format!("exit: rust {:?}, python {}; stderr: {}", run.exit, case.spec.exit, run.stderr.trim()));
     }
     let text = |text: &str| run.dossier.as_ref().map_or_else(|| text.to_owned(), |dossier| unplace_text(text, dossier));
+    if case.spec.same_class_only {
+        out.extend(class_differences(case, run));
+    } else {
+        out.extend(output_differences(case, run, &text));
+    }
+    if writes == Writes::Compare {
+        let diff = json_diff(&Value::Array(run.writes.clone()), &Value::Array(case.writes()));
+        out.extend(diff.into_iter().map(|line| format!("writes {line}")));
+        let after = |value: Option<Value>| value.unwrap_or(Value::Null);
+        let diff = json_diff(&after(run.dossier_after.clone()), &after(case.dossier_after()));
+        out.extend(diff.into_iter().map(|line| format!("dossier {line}")));
+    }
+    out
+}
+
+/// A case of [`CaseSpec::same_class_only`]: the outcome of the dossier, where the output holds one. The
+/// exit code is compared by the caller; what an error says is each side's own.
+pub fn class_differences(case: &Case, run: &CliRun) -> Vec<String> {
+    let outcome = |value: &Value| value["dossier"]["outcome"].as_str().map(str::to_owned);
+    let rust = serde_json::from_slice::<Value>(&run.stdout).ok().and_then(|value| outcome(&value));
+    let python = match case.recorded() {
+        Recorded::Json(python) => translate_python(&case.command_name(), &python).ok().and_then(|value| outcome(&value)),
+        Recorded::Text(_) => None,
+    };
+    if rust == python { Vec::new() } else { vec![format!("outcome: rust {rust:?}, python {python:?}")] }
+}
+
+fn output_differences(case: &Case, run: &CliRun, text: &dyn Fn(&str) -> String) -> Vec<String> {
+    let mut out = Vec::new();
     match case.recorded() {
         Recorded::Json(python) => match (serde_json::from_slice::<Value>(&run.stdout), translate_python(&case.command_name(), &python)) {
             (Ok(rust), Ok(python)) => {
@@ -859,13 +933,6 @@ pub fn differences(case: &Case, run: &CliRun, writes: Writes) -> Vec<String> {
     let stderr = case.recorded_stderr();
     if case.spec.python.is_some() && text(&lf(&run.stderr)) != stderr {
         out.push(format!("stderr: rust {:?}, python {stderr:?}", run.stderr));
-    }
-    if writes == Writes::Compare {
-        let diff = json_diff(&Value::Array(run.writes.clone()), &Value::Array(case.writes()));
-        out.extend(diff.into_iter().map(|line| format!("writes {line}")));
-        let after = |value: Option<Value>| value.unwrap_or(Value::Null);
-        let diff = json_diff(&after(run.dossier_after.clone()), &after(case.dossier_after()));
-        out.extend(diff.into_iter().map(|line| format!("dossier {line}")));
     }
     out
 }
