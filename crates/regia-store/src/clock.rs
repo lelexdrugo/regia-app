@@ -76,10 +76,22 @@ struct ManualState {
 }
 
 impl ManualClock {
+    /// The tag of [`ManualClock::fixed`]: neither the system's nor the prototype's.
+    pub const FIXED_TAG: &'static str = "rust/fixed";
+
     #[must_use]
     pub fn new(wall: WallTime, monotonic: f64, tag: impl Into<String>) -> Self {
         let state = ManualState { wall, monotonic, tag: tag.into(), offset_s: 0 };
         Self { state: Arc::new(Mutex::new(state)) }
+    }
+
+    /// The clock of a run at a fixed instant, the product's `REGIA_NOW`: the wall clock at `at` and a
+    /// monotonic clock that stands still, so what is taken now expires exactly its ttl later and reads
+    /// so, as the prototype's fixtures run. Its tag is its own, so a reader on the system's clock never
+    /// compares its stamps with theirs and reads the wall clock instead.
+    #[must_use]
+    pub fn fixed(at: WallTime) -> Self {
+        Self::new(at, 1000.0, Self::FIXED_TAG)
     }
 
     fn with<T>(&self, f: impl FnOnce(&mut ManualState) -> T) -> T {

@@ -11,6 +11,10 @@ pub(crate) struct Format {
     pub table: Table,
     pub kinds: Kinds,
     pub lock: LockKeys,
+    pub lease: LeaseKeys,
+    pub cursor: CursorKeys,
+    pub step: StepKeys,
+    pub events: EventsKeys,
     pub monotonic: MonotonicKeys,
     pub view: View,
     pub budget: BudgetKeys,
@@ -30,10 +34,11 @@ pub(crate) struct Table {
     pub document: String,
 }
 
-/// Only the kinds ported so far; the file lists them all.
 #[derive(Debug, Deserialize)]
 pub(crate) struct Kinds {
     pub lock: String,
+    pub lease: String,
+    pub cursor: String,
     pub cache: String,
     pub probe: String,
 }
@@ -48,6 +53,48 @@ pub(crate) struct LockKeys {
     pub replaced: String,
     pub stolen_at: String,
     pub renewed_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct LeaseKeys {
+    pub task: String,
+    pub project: String,
+    pub holder: String,
+    pub taken_at: String,
+    pub heartbeat_at: String,
+    pub ttl_s: String,
+    pub expires_at: String,
+    pub replaced: String,
+    pub stolen_at: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct CursorKeys {
+    pub value: String,
+    pub updated: String,
+    pub events: String,
+    pub step: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct StepKeys {
+    pub version: String,
+    pub holder: String,
+    pub session: String,
+    pub t: String,
+    pub comments: String,
+    pub generated_holder: String,
+    pub commit_word: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct EventsKeys {
+    pub version: String,
+    pub t: String,
+    pub own: String,
+    pub comments: String,
+    pub reports: String,
+    pub report_folder: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -128,6 +175,7 @@ pub(crate) struct Sql {
     pub upsert: String,
     pub delete: String,
     pub rows: String,
+    pub documents: String,
 }
 
 pub(crate) fn format() -> &'static Format {
@@ -161,6 +209,7 @@ pub(crate) fn sql() -> &'static Sql {
             ),
             delete: format!("DELETE FROM {t} WHERE {k} = ? AND {c} = ?"),
             rows: format!("SELECT {k}, {c}, {g}, {d} FROM {t} ORDER BY {k}, {c}"),
+            documents: format!("SELECT {c}, {d} FROM {t} WHERE {k} = ?"),
         }
     })
 }

@@ -152,6 +152,7 @@ fn state_name(state: LockState) -> &'static str {
         LockState::Taken => "taken",
         LockState::Renewed => "renewed",
         LockState::Stolen => "stolen",
+        LockState::Heartbeat => "heartbeat",
         LockState::Released => "released",
         LockState::Free => "free",
         LockState::Busy => "busy",

@@ -1,16 +1,20 @@
 //! Machine-local state in SQLite (ADR 0001, section 8), in the prototype's format while the two
 //! implementations coexist: one `regia.db`, its documents table, and the rules of the dossier's
 //! ADR 0008. The project lock is the one lock both languages share, so both must exclude each other
-//! through it (ADR 0001, section 7).
+//! through it (ADR 0001, section 7); a task's lease, the cursors and the orchestrator's step live in
+//! the same table, by the same rules.
 //!
 //! The names inside the database stay the prototype's: they are data, read from
 //! `formats/store_v1.toml`. The API is typed and in English, and returns codes, not sentences.
 
 mod budget;
 mod clock;
+mod cursor;
 mod db;
 mod folder;
+mod lease;
 mod lock;
+mod step;
 mod time;
 mod usage;
 mod v1;
@@ -25,9 +29,12 @@ use serde_json::{Number, Value};
 
 pub use budget::{BudgetError, MIN_INTERVAL_S, NO_VALUE, NOTE_OVERTAKEN, NOTE_RUNNING, PROBE_TTL_S, PROBE_WAIT, UPDATE_FAILED};
 pub use clock::{Clock, ManualClock, SystemClock};
+pub use cursor::CursorName;
 pub use db::{BUSY_WAIT, Row, SqliteError};
 pub use folder::{database_name, default_folder, is_within};
+pub use lease::{LeaseEntry, TaskNumber};
 pub use lock::{LockOutcome, LockState, LockStatus, LockView};
+pub use step::{EventsCursor, EventsParts, OpenedStep, OwnParts, StepClosing, StepOpening, generated_holder, reports_folder, step_commit_message};
 pub use time::{Precision, WallTime};
 pub use usage::{CacheInfo, NO_DATA, ProviderUsage, Reading, Served, TokenState, TokenStatus, UsageStatus, Window, round_to_tenth};
 
@@ -128,6 +135,8 @@ pub enum StoreError {
     WriteFailed(#[source] SqliteError),
     #[error("a ttl of {ttl} s runs past the last date the state can hold")]
     TtlOutOfRange { ttl: f64 },
+    #[error("the open step holds comments that are not whole numbers")]
+    StepComments,
 }
 
 /// An argument the prototype would refuse before touching the state.
@@ -140,6 +149,8 @@ pub enum InvalidArgument {
     Holder,
     #[error("invalid ttl {0}: seconds, more than 0")]
     Ttl(f64),
+    #[error("invalid cursor name {0:?}: lowercase letters, digits and hyphens")]
+    Cursor(String),
 }
 
 /// A project id as the prototype accepts it: `[a-z0-9][a-z0-9-]*`. It is also the key of the lock row.

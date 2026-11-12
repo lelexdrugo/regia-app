@@ -68,12 +68,37 @@ impl WallTime {
     /// The prototype's format: `2026-11-10T02:47:39.123+00:00`, milliseconds truncated.
     #[must_use]
     pub fn to_iso(self) -> String {
-        let seconds = self.0.div_euclid(MICROS_PER_SECOND);
+        let (date, time) = self.civil();
         let millis = self.0.rem_euclid(MICROS_PER_SECOND) / 1000;
+        format!("{date}T{time}.{millis:03}+00:00")
+    }
+
+    /// The instant of a step and of the events cursor: `strftime("%Y-%m-%dT%H:%M:%SZ")` in UTC, the
+    /// second truncated, so in doubt more events count as new.
+    #[must_use]
+    pub fn to_iso_seconds(self) -> String {
+        let (date, time) = self.civil();
+        format!("{date}T{time}Z")
+    }
+
+    /// `datetime.isoformat()` in UTC: the microseconds only when they are not zero, and `+00:00`. It is
+    /// the date a step's end records for a report, read back by the precheck to the microsecond.
+    #[must_use]
+    pub fn to_python_iso(self) -> String {
+        let (date, time) = self.civil();
+        match self.0.rem_euclid(MICROS_PER_SECOND) {
+            0 => format!("{date}T{time}+00:00"),
+            micros => format!("{date}T{time}.{micros:06}+00:00"),
+        }
+    }
+
+    /// The date and the time of day to the second, in UTC.
+    fn civil(self) -> (String, String) {
+        let seconds = self.0.div_euclid(MICROS_PER_SECOND);
         let (year, month, day) = civil_from_days(seconds.div_euclid(SECONDS_PER_DAY));
         let of_day = seconds.rem_euclid(SECONDS_PER_DAY);
         let (hour, minute, second) = (of_day / 3600, of_day / 60 % 60, of_day % 60);
-        format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{millis:03}+00:00")
+        (format!("{year:04}-{month:02}-{day:02}"), format!("{hour:02}:{minute:02}:{second:02}"))
     }
 
     /// What the prototype reads from an expiry: `datetime.fromisoformat(text.replace("Z", "+00:00"))`,
@@ -451,6 +476,26 @@ mod tests {
         assert_eq!(WallTime(-1000).to_iso(), "1969-12-31T23:59:59.999+00:00");
         assert_eq!(WallTime(MIN_MICROS).to_iso(), "0001-01-01T00:00:00.000+00:00");
         assert_eq!(WallTime(MAX_MICROS).to_iso(), "9999-12-31T23:59:59.999+00:00");
+    }
+
+    /// `datetime.fromtimestamp(ts, timezone.utc).isoformat()` on Python 3.12, for the date a step's end
+    /// records for a report: the timestamps as Python's `repr` prints them, so each is the double it read.
+    #[test]
+    fn a_file_s_date_is_written_as_python_writes_it() {
+        let vectors = [
+            (1_768_032_000.0, "2026-01-10T08:00:00+00:00"),
+            (1_768_032_000.25, "2026-01-10T08:00:00.250000+00:00"),
+            (1_768_032_000.123_456_5, "2026-01-10T08:00:00.123456+00:00"),
+            (1_768_032_000.000_000_5, "2026-01-10T08:00:00+00:00"),
+            (1_768_032_000.000_001_4, "2026-01-10T08:00:00.000001+00:00"),
+            (1_768_032_000.999_999_5, "2026-01-10T08:00:01+00:00"),
+            (1_762_918_212.345_678_8, "2025-11-12T03:30:12.345679+00:00"),
+        ];
+        for (timestamp, python) in vectors {
+            assert_eq!(WallTime::from_unix_secs_f64(timestamp).map(WallTime::to_python_iso).as_deref(), Some(python), "{timestamp}");
+        }
+        // The instant of a step: to the second, truncated.
+        assert_eq!(WallTime(1_768_033_800_999_999).to_iso_seconds(), "2026-01-10T08:30:00Z");
     }
 
     #[test]

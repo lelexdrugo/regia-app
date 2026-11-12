@@ -1,5 +1,6 @@
 //! The project lock (L4–L8 of the dossier's conformance study): one holder at a time, taken over once
 //! expired, with the outcomes of the prototype's `acquisisci`, `rinnova`, `rilascia` and lock status.
+//! A task's lease (`lease.rs`) is the same machine on another kind of row, with a heartbeat.
 
 use serde_json::{Number, Value};
 
@@ -19,6 +20,8 @@ pub enum LockState {
     Stolen,
     /// The caller held it and let it go.
     Released,
+    /// The caller's lease, extended by a heartbeat.
+    Heartbeat,
     /// Nothing to release.
     Free,
     /// Another holder has it, or the database stayed busy beyond the wait.
@@ -32,16 +35,19 @@ pub enum LockState {
 impl LockState {
     #[must_use]
     pub fn is_ok(self) -> bool {
-        matches!(self, Self::Taken | Self::Renewed | Self::Stolen | Self::Released | Self::Free)
+        matches!(self, Self::Taken | Self::Renewed | Self::Stolen | Self::Released | Self::Free | Self::Heartbeat)
     }
 }
 
-/// The outcome of [`Store::acquire_lock`], [`Store::renew_lock`] or [`Store::release_lock`].
+/// The outcome of [`Store::acquire_lock`], [`Store::renew_lock`] or [`Store::release_lock`], and of the
+/// same operations on a lease.
 #[derive(Debug, Clone, PartialEq)]
 pub enum LockOutcome {
     Taken(LockView),
     Renewed(LockView),
     Stolen(LockView),
+    /// A lease's heartbeat: only a lease has one.
+    Heartbeat(LockView),
     Released,
     Free,
     /// The lock of another holder, still valid.
@@ -61,6 +67,7 @@ impl LockOutcome {
             Self::Taken(_) => LockState::Taken,
             Self::Renewed(_) => LockState::Renewed,
             Self::Stolen(_) => LockState::Stolen,
+            Self::Heartbeat(_) => LockState::Heartbeat,
             Self::Released => LockState::Released,
             Self::Free => LockState::Free,
             Self::Busy(_) | Self::Contended { .. } => LockState::Busy,
@@ -84,7 +91,7 @@ impl LockOutcome {
     #[must_use]
     pub fn lock(&self) -> Option<&LockView> {
         match self {
-            Self::Taken(view) | Self::Renewed(view) | Self::Stolen(view) | Self::Busy(view) => Some(view),
+            Self::Taken(view) | Self::Renewed(view) | Self::Stolen(view) | Self::Heartbeat(view) | Self::Busy(view) => Some(view),
             Self::Contended { current } | Self::Foreign(current) => current.as_ref(),
             Self::Released | Self::Free | Self::Absent => None,
         }
@@ -119,7 +126,8 @@ impl LockStatus {
     }
 }
 
-/// A lock document as stored, without the fields no view shows, and its expiry at the time of reading.
+/// A lock or lease document as stored, without the fields no view shows, and its expiry at the time of
+/// reading.
 #[derive(Debug, Clone, PartialEq)]
 pub struct LockView {
     fields: Doc,
@@ -189,15 +197,27 @@ impl LockView {
     pub fn ttl_s(&self) -> Option<f64> {
         self.fields.get(&format().lock.ttl_s).and_then(Value::as_f64)
     }
+
+    /// A lease's task, as it was stored: a JSON integer when the prototype or this crate wrote it.
+    #[must_use]
+    pub fn task(&self) -> Option<&Value> {
+        self.fields.get(&format().lease.task)
+    }
+
+    /// When a lease was taken or last beat.
+    #[must_use]
+    pub fn heartbeat_at(&self) -> Option<&str> {
+        self.text(&format().lease.heartbeat_at)
+    }
 }
 
-enum Decision {
+pub(crate) enum Decision {
     Exit(Exit),
     Write(Doc, Written),
     Delete,
 }
 
-enum Exit {
+pub(crate) enum Exit {
     Busy(Doc),
     Foreign(Doc),
     Absent,
@@ -205,13 +225,14 @@ enum Exit {
 }
 
 #[derive(Clone, Copy)]
-enum Written {
+pub(crate) enum Written {
     Taken,
     Renewed,
     Stolen,
+    Heartbeat,
 }
 
-enum Transition {
+pub(crate) enum Transition {
     Exit(Exit),
     Wrote(Doc, Written),
     Deleted,
@@ -261,7 +282,7 @@ impl Store {
             stolen.insert(keys.stolen_at.clone(), now.to_iso().into());
             Ok(Decision::Write(stolen, Written::Stolen))
         })?;
-        Ok(self.outcome(project, transition))
+        Ok(self.outcome(&format().kinds.lock, project.as_str(), transition))
     }
 
     /// Extends the caller's lock, even an expired one nobody took. Refuses another holder's lock and a
@@ -282,7 +303,7 @@ impl Store {
             doc.insert(keys.renewed_at.clone(), now.to_iso().into());
             Ok(Decision::Write(doc, Written::Renewed))
         })?;
-        Ok(self.outcome(project, transition))
+        Ok(self.outcome(&format().kinds.lock, project.as_str(), transition))
     }
 
     /// Deletes the caller's lock, expired or not. Another holder's lock is refused; a missing one is
@@ -299,7 +320,7 @@ impl Store {
             }
             Ok(Decision::Delete)
         })?;
-        Ok(self.outcome(project, transition))
+        Ok(self.outcome(&format().kinds.lock, project.as_str(), transition))
     }
 
     /// Who holds the project's lock. It takes the write lock to read, as the prototype does, so a lock
@@ -327,7 +348,7 @@ impl Store {
     }
 
     /// Reads, decides and writes one document in a single `BEGIN IMMEDIATE` transaction.
-    fn transition(
+    pub(crate) fn transition(
         &self,
         kind: &str,
         key: &str,
@@ -356,11 +377,12 @@ impl Store {
         }
     }
 
-    fn outcome(&self, project: &ProjectId, transition: Transition) -> LockOutcome {
+    /// What a transition on the row `(kind, key)` did, with the document's view at the time of reading.
+    pub(crate) fn outcome(&self, kind: &str, key: &str, transition: Transition) -> LockOutcome {
         let now = self.clock.now();
         match transition {
             Transition::Contended => {
-                let current = self.db.read(&format().kinds.lock, project.as_str()).ok().flatten();
+                let current = self.db.read(kind, key).ok().flatten();
                 LockOutcome::Contended { current: current.filter(|doc| !doc.is_empty()).map(|doc| self.view(doc, now)) }
             }
             Transition::Deleted => LockOutcome::Released,
@@ -370,6 +392,7 @@ impl Store {
                     Written::Taken => LockOutcome::Taken(view),
                     Written::Renewed => LockOutcome::Renewed(view),
                     Written::Stolen => LockOutcome::Stolen(view),
+                    Written::Heartbeat => LockOutcome::Heartbeat(view),
                 }
             }
             Transition::Exit(Exit::Busy(doc)) => LockOutcome::Busy(self.view(doc, now)),
@@ -419,11 +442,11 @@ impl Store {
         Some(now.seconds_until(expires))
     }
 
-    fn is_expired(&self, doc: &Doc, now: WallTime) -> bool {
+    pub(crate) fn is_expired(&self, doc: &Doc, now: WallTime) -> bool {
         self.remaining(doc, now, &format().lock.expires_at).is_none_or(|left| left <= 0.0)
     }
 
-    fn view(&self, mut doc: Doc, now: WallTime) -> LockView {
+    pub(crate) fn view(&self, mut doc: Doc, now: WallTime) -> LockView {
         let remaining = self.remaining(&doc, now, &format().lock.expires_at);
         for hidden in &format().view.hidden {
             doc.remove(hidden);
@@ -437,11 +460,11 @@ impl Store {
     }
 }
 
-fn is_holder(doc: &Doc, holder: &Holder) -> bool {
+pub(crate) fn is_holder(doc: &Doc, holder: &Holder) -> bool {
     doc.get(&format().lock.holder).and_then(Value::as_str) == Some(holder.as_str())
 }
 
-fn expiry(now: WallTime, ttl: Ttl) -> Result<String, StoreError> {
+pub(crate) fn expiry(now: WallTime, ttl: Ttl) -> Result<String, StoreError> {
     now.checked_add_secs(ttl.as_secs_f64()).map(WallTime::to_iso).ok_or(StoreError::TtlOutOfRange { ttl: ttl.as_secs_f64() })
 }
 

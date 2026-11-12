@@ -30,6 +30,53 @@ replaced = "al_posto_di"
 stolen_at = "rubato_il"
 renewed_at = "rinnovato"
 
+# The fields of a lease document, in the order the prototype writes them: the lease of a task in
+# progress, kept alive by heartbeats. Its row has the task's number, in digits, for its key, and the
+# number is stored again as a JSON integer, which the precheck matches against the tracker's numbers.
+[lease]
+task = "task"
+project = "progetto"
+holder = "proprietario"
+taken_at = "preso"
+heartbeat_at = "battito"
+ttl_s = "ttl_s"
+expires_at = "scade"
+replaced = "al_posto_di"
+stolen_at = "rubato_il"
+
+# A cursor's document: its value and when it was written. The events cursor of a project has the
+# project's id for its key, as it always had; any other cursor `<project>:<name>`, its name with the
+# pattern of a project's id.
+[cursor]
+value = "valore"
+updated = "aggiornato"
+events = "eventi"
+step = "passo"
+
+# The value of the step cursor while an orchestrator's step is open, `null` once it closed: who opened
+# it, the session that did, when it began to observe, and the comments it wrote.
+[step]
+version = "v"
+holder = "proprietario"
+session = "sessione"
+t = "t"
+comments = "commenti"
+# A holder the step generates when it has neither one given nor a session: this and 12 hex digits.
+generated_holder = "passo-"
+# The word of the dossier's commit that closes a step: `<project>: <word> <t>`.
+commit_word = "passo"
+
+# The value of the events cursor: when the last step began to observe, and what it wrote or processed
+# itself, which the precheck does not count as new. `reports` maps a report's file name to its date.
+[events]
+version = "v"
+t = "t"
+own = "propri"
+comments = "commenti"
+reports = "report"
+# Where those reports are, relative to the project's folder, with `/` between the parts.
+report_folder = ".regia/report"
+
 # The monotonic expiry the prototype adds to every lock, lease and probe document. `clock` names the
 # implementation of the clock that wrote it: a reader with another one falls back to `expires_at`.
 [monotonic]

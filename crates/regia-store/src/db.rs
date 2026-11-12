@@ -140,6 +140,18 @@ impl Database {
         })
     }
 
+    /// The key and document of every row of `kind`, without the write lock, in no order.
+    pub fn documents(&self, kind: &str) -> Result<Vec<(String, Doc)>, StoreError> {
+        let conn = match self.open() {
+            Ok(conn) => conn,
+            Err(TxError::Busy) => return Err(StoreError::InUse),
+            Err(TxError::Failed(error)) => return Err(error),
+        };
+        let rows = documents_of(&conn, kind).map_err(|error| StoreError::ReadFailed(error.into()));
+        let _ = conn.close();
+        rows
+    }
+
     /// Every row, in key order, without the write lock: for diagnostics and tests.
     pub fn rows(&self) -> Result<Vec<Row>, StoreError> {
         let conn = match self.open() {
@@ -163,6 +175,12 @@ fn all_rows(conn: &Connection) -> rusqlite::Result<Vec<Row>> {
         };
         Ok(Row { kind: row.get(0)?, key: row.get(1)?, generation: row.get(2)?, document })
     })?;
+    rows.collect()
+}
+
+fn documents_of(conn: &Connection, kind: &str) -> rusqlite::Result<Vec<(String, Doc)>> {
+    let mut statement = conn.prepare(&sql().documents)?;
+    let rows = statement.query_map([kind], |row| Ok((row.get::<_, String>(0)?, decode(row.get(1)?))))?;
     rows.collect()
 }
 
