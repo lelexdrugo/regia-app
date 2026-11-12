@@ -23,7 +23,12 @@ pub enum V1Error {
     MissingStatus(&'static str),
     #[error("issue #{number} has status option `{option}`, which the tracker config does not bind")]
     UnknownOption { number: u64, option: String },
+    #[error("invalid local tracker config {path}: {problem}")]
+    Local { path: PathBuf, problem: String },
 }
+
+/// The keys a local `tracker.json` must have, as the prototype checks them (`CHIAVI_CONFIG`).
+const LOCAL_KEYS: [&str; 7] = ["owner", "repo", "project_number", "project_id", "project_url", "status_field_id", "status_options"];
 
 #[derive(Debug, Deserialize)]
 struct Vocabulary {
@@ -73,23 +78,38 @@ pub struct TrackerConfigV1 {
 }
 
 impl TrackerConfigV1 {
-    /// Same rule as the prototype: `tracker.json` in the state folder, otherwise
-    /// `config/tracker.json` of the dossier. An invalid local file is an error, never a fallback.
+    /// Same rule as the prototype (`config_tracker`): `tracker.json` in the state folder, otherwise
+    /// `config/tracker.json` of the dossier. A local file is checked as the prototype checks it, every key
+    /// there and an option for every status, and an invalid one is an error, never a fallback on the
+    /// dossier's, which is the owner's tracker.
     pub fn load(state_dir: Option<&Path>, dossier: Option<&Path>) -> Result<Self, V1Error> {
-        let candidates: Vec<PathBuf> = [
-            state_dir.map(|dir| dir.join("tracker.json")),
-            dossier.map(|dir| dir.join("config").join("tracker.json")),
-        ]
-        .into_iter()
-        .flatten()
-        .collect();
-        for path in &candidates {
-            if path.is_file() {
-                return Self::read(path);
-            }
+        let local = state_dir.map(|dir| dir.join("tracker.json"));
+        if let Some(path) = local.as_ref().filter(|path| path.is_file()) {
+            return Self::read_local(path);
         }
-        let tried: Vec<String> = candidates.iter().map(|p| p.display().to_string()).collect();
+        let shared = dossier.map(|dir| dir.join("config").join("tracker.json"));
+        if let Some(path) = shared.as_ref().filter(|path| path.is_file()) {
+            return Self::read(path);
+        }
+        let tried: Vec<String> = [local, shared].into_iter().flatten().map(|p| p.display().to_string()).collect();
         Err(V1Error::Missing(tried.join(", ")))
+    }
+
+    fn read_local(path: &Path) -> Result<Self, V1Error> {
+        let local = |problem: String| V1Error::Local { path: path.to_path_buf(), problem };
+        let text = std::fs::read_to_string(path).map_err(|source| V1Error::Read { path: path.to_path_buf(), source })?;
+        let value: serde_json::Value = serde_json::from_str(&text).map_err(|source| V1Error::Parse { path: path.to_path_buf(), source })?;
+        let object = value.as_object().ok_or_else(|| local("not a JSON object".to_owned()))?;
+        let missing: Vec<&str> = LOCAL_KEYS.into_iter().filter(|key| !object.contains_key(*key)).collect();
+        if !missing.is_empty() {
+            return Err(local(format!("missing the keys {}", missing.join(", "))));
+        }
+        let options = object["status_options"].as_object().ok_or_else(|| local("status_options is not an object".to_owned()))?;
+        let without: Vec<String> = vocabulary().status_labels.into_keys().filter(|label| !options.contains_key(label)).collect();
+        if !without.is_empty() {
+            return Err(local(format!("status_options without {}", without.join(", "))));
+        }
+        serde_json::from_value(value).map_err(|source| V1Error::Parse { path: path.to_path_buf(), source })
     }
 
     pub fn read(path: &Path) -> Result<Self, V1Error> {
