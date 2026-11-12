@@ -43,9 +43,13 @@ impl Clock {
         if !self.fixed {
             return Ok(store);
         }
-        let wall = WallTime::from_unix_micros(self.now.timestamp_micros())
-            .ok_or_else(|| format!("{} is out of the range of the state's dates", self.now.to_rfc3339()))?;
-        Ok(store.with_clock(ManualClock::fixed(wall)))
+        Ok(store.with_clock(ManualClock::fixed(self.wall()?)))
+    }
+
+    /// The clock's instant, as the state writes its dates.
+    pub(crate) fn wall(&self) -> Result<WallTime, String> {
+        WallTime::from_unix_micros(self.now.timestamp_micros())
+            .ok_or_else(|| format!("{} is out of the range of the state's dates", self.now.to_rfc3339()))
     }
 }
 

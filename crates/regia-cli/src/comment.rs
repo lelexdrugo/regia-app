@@ -18,6 +18,7 @@ use regia_store::ProjectId;
 use serde_json::json;
 
 use crate::clock::Clock;
+use crate::declare::record_activity;
 use crate::print_json;
 use crate::reads::{parse, python_int};
 
@@ -57,11 +58,12 @@ pub(crate) fn run(command: &str, args: &[String], catalog: &Catalog) -> Option<R
 
 fn comment(args: &CommentArgs, catalog: &Catalog) -> Result<u8, String> {
     let number = python_int(&args.number).ok_or_else(|| format!("argument number: invalid int value: '{}'", args.number))?;
-    let number = u64::try_from(number).map_err(|_| format!("invalid issue number: {number}"))?;
     let given = args.role.as_deref().and_then(SignatureRole::from_word);
+    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
+    record_activity("comment", None, Some(number), catalog);
+    let number = u64::try_from(number).map_err(|_| format!("invalid issue number: {number}"))?;
     let body = body(args)?;
     let clock = Clock::read()?;
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
     let tracker = GhTracker::new(&config);
     let session = session();
     // Read once, before signing; a failure leaves no project, and is told after the write.

@@ -11,3 +11,8 @@ comment-id-not-recorded = warning: the id of comment { $id } was not recorded in
 
 declare-done = declared: { $project }
 declare-session = (session { $session })
+
+## The record of a command in the sessions' log, which fails silently: this line only with the debug
+## variable set, followed by why in parentheses.
+
+activity-not-recorded = debug: activity not recorded

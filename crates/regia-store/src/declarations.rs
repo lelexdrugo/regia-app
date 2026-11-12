@@ -196,15 +196,15 @@ mod tests {
         assert_eq!(ids(&[]).session(), None);
     }
 
-    /// The prototype's line for a declaration of a project and a task in a Claude session that has an Orca
-    /// id too, key by key, and with fields left out.
+    /// The prototype's line for a declaration of a project and a task in a session with two ids, key by
+    /// key, and with fields left out.
     #[test]
     fn the_line_has_the_prototype_s_keys_in_its_order() {
         let k = keys();
-        let both = ids(&[(1, "orca-1"), (0, "claude-1")]);
+        let both = ids(&[(1, "second-1"), (0, "claude-1")]);
         let declaration = Declaration { command: "c d", project: Some("alpha"), task: Some(146), role: Some("r\u{e9}\"") };
         let expected = format!(
-            "{{\"{}\":1,\"{}\":\"T\",\"{}\":\"claude-1\",\"{}\":\"{}\",\"{}\":\"claude-1\",\"{}\":\"orca-1\",\"{}\":\"alpha\",\"{}\":146,\"{}\":\"c d\",\"{}\":\"r\u{e9}\\\"\"}}\n",
+            "{{\"{}\":1,\"{}\":\"T\",\"{}\":\"claude-1\",\"{}\":\"{}\",\"{}\":\"claude-1\",\"{}\":\"second-1\",\"{}\":\"alpha\",\"{}\":146,\"{}\":\"c d\",\"{}\":\"r\u{e9}\\\"\"}}\n",
             k.version, k.ts, k.session, k.agent, k.ids[0].1, k.ids[0].1, k.ids[1].1, k.project, k.task, k.command, k.role
         );
         assert_eq!(line(&both, &declaration, "T"), expected, "compact, the text unescaped but for JSON's own");

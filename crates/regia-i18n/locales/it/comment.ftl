@@ -11,3 +11,8 @@ comment-id-not-recorded = avviso: id del commento { $id } non registrato nel pas
 
 declare-done = dichiarato: { $project }
 declare-session = (sessione { $session })
+
+## The record of a command in the sessions' log, which fails silently: this line only with the debug
+## variable set, followed by why in parentheses.
+
+activity-not-recorded = debug: attività non registrata

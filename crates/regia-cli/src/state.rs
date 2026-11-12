@@ -20,6 +20,7 @@ use regia_store::{
 use serde_json::{Map, Value, json};
 
 use crate::clock::Clock;
+use crate::declare::record_activity;
 use crate::dossier::{ProjectFolder, sync};
 use crate::reads::{parse, python_int};
 use crate::{flat, print_json};
@@ -149,16 +150,45 @@ struct StepFinishArgs {
     json: bool,
 }
 
-/// `command` natively, if this module has it: its exit code, or the error to print.
+/// `command` natively, if this module has it: its exit code, or the error to print. A command that writes
+/// is recorded in the sessions' log once its arguments pass what the prototype's parser checks, a number
+/// that `int()` reads and seconds that `float()` reads, and before it runs, even if it then refuses.
 pub(crate) fn run(command: &str, args: &[String], catalog: &Catalog) -> Option<Result<u8, String>> {
+    let record = |project: Option<&str>, task: Option<i64>| record_activity(command, project, task, catalog);
     let outcome = match command {
-        "lease acquire" => parse::<LeaseAcquireArgs>(command, args).map(lease_acquire),
-        "lease heartbeat" => parse::<LeaseHeartbeatArgs>(command, args).map(lease_heartbeat),
-        "lease release" => parse::<LeaseReleaseArgs>(command, args).map(lease_release),
+        "lease acquire" => parse::<LeaseAcquireArgs>(command, args).map(|args| {
+            if let Some(task) = python_int(&args.task)
+                && reads_as_seconds(&args.ttl)
+            {
+                record(Some(&args.project), Some(task));
+            }
+            lease_acquire(args)
+        }),
+        "lease heartbeat" => parse::<LeaseHeartbeatArgs>(command, args).map(|args| {
+            if let Some(task) = python_int(&args.task)
+                && args.ttl.as_deref().is_none_or(reads_as_seconds)
+            {
+                record(None, Some(task));
+            }
+            lease_heartbeat(args)
+        }),
+        "lease release" => parse::<LeaseReleaseArgs>(command, args).map(|args| {
+            if let Some(task) = python_int(&args.task) {
+                record(None, Some(task));
+            }
+            lease_release(args)
+        }),
         "lease list" => parse::<LeaseListArgs>(command, args).map(|args| lease_list(&args, catalog)),
-        "step start" => parse::<StepArgs>(command, args).map(step_start),
-        "step renew" => parse::<StepArgs>(command, args).map(step_renew),
-        "step finish" => parse::<StepFinishArgs>(command, args).map(step_finish),
+        "step start" | "step renew" => parse::<StepArgs>(command, args).map(|args| {
+            if args.ttl.as_deref().is_none_or(reads_as_seconds) {
+                record(Some(&args.project), None);
+            }
+            if command == "step start" { step_start(args) } else { step_renew(args) }
+        }),
+        "step finish" => parse::<StepFinishArgs>(command, args).map(|args| {
+            record(Some(&args.project), None);
+            step_finish(args)
+        }),
         _ => return None,
     };
     Some(outcome.unwrap_or_else(Ok))
@@ -499,6 +529,11 @@ fn holder(id: &str) -> Result<Holder, String> {
 fn task_number(text: &str) -> Result<TaskNumber, String> {
     let number = python_int(text).ok_or_else(|| format!("argument task: invalid int value: '{text}'"))?;
     u64::try_from(number).map(TaskNumber::new).map_err(|_| format!("invalid task number: {number}"))
+}
+
+/// Whether `float()` reads `text`, with blanks around: what the prototype's parser checks of seconds.
+fn reads_as_seconds(text: &str) -> bool {
+    regia_core::pystr::strip(text).parse::<f64>().is_ok()
 }
 
 /// Seconds as the prototype's parser reads them, `float()` with blanks around: a float, as it writes it.

@@ -180,19 +180,31 @@ fn prototype() -> PathBuf {
     home
 }
 
+/// The variables of a run in `session`, Claude's.
+fn in_session(session: Option<&str>) -> Vec<(&'static str, &str)> {
+    session.map(|session| ("CLAUDE_CODE_SESSION_ID", session)).into_iter().collect()
+}
+
 /// The product with no prototype, on the state folder `dir` and the tracker of `responses`, in `session`.
 fn product(dir: &Path, responses: &Path, session: Option<&str>, args: &[&str]) -> Ran {
+    product_with(dir, responses, &in_session(session), args)
+}
+
+/// [`product`] with the variables `env`.
+fn product_with(dir: &Path, responses: &Path, env: &[(&str, &str)], args: &[&str]) -> Ran {
     let args: Vec<String> = args.iter().map(|arg| (*arg).to_owned()).collect();
-    let (mut launch, _) = fixture_for_rust(regia_exec::harness::launch(&regia_binary(), &args, dir), responses, dir);
-    if let Some(session) = session {
-        launch = launch.env("CLAUDE_CODE_SESSION_ID", session);
-    }
-    ran(launch.run().expect("run regia"))
+    let (launch, _) = fixture_for_rust(regia_exec::harness::launch(&regia_binary(), &args, dir), responses, dir);
+    ran(env.iter().fold(launch, |launch, (name, value)| launch.env(name, value)).run().expect("run regia"))
 }
 
 /// A Python script of the prototype's copy, `regia.py` at the fixtures' instant as `record` starts it, on
 /// `dir` and `responses`, in `session`; the fake `gh` logs its calls in `log`.
 fn python_run(home: &Path, dir: &Path, responses: &Path, session: Option<&str>, script: &Path, args: &[&str], log: &Path) -> Ran {
+    python_with(home, dir, responses, &in_session(session), script, args, log)
+}
+
+/// [`python_run`] with the variables `env`.
+fn python_with(home: &Path, dir: &Path, responses: &Path, env: &[(&str, &str)], script: &Path, args: &[&str], log: &Path) -> Ran {
     let interpreter = Pin::resolve(Program::Python).expect("a Python interpreter");
     let mut argv: Vec<String> = python::FLAGS.map(str::to_owned).to_vec();
     let text = script.display().to_string();
@@ -203,11 +215,8 @@ fn python_run(home: &Path, dir: &Path, responses: &Path, session: Option<&str>, 
     }
     argv.extend(args.iter().map(|arg| (*arg).to_owned()));
     let launch = regia_exec::harness::program(&interpreter, &argv, home).limits(PROTOTYPE_LIMITS);
-    let mut launch = fixture_for_python(launch, responses, dir).env(&log_var(), log);
-    if let Some(session) = session {
-        launch = launch.env("CLAUDE_CODE_SESSION_ID", session);
-    }
-    ran(launch.run().expect("run the prototype"))
+    let launch = fixture_for_python(launch, responses, dir).env(&log_var(), log);
+    ran(env.iter().fold(launch, |launch, (name, value)| launch.env(name, value)).run().expect("run the prototype"))
 }
 
 /// `regia.py <args>` of the copy.
@@ -390,4 +399,160 @@ fn the_prototype_calls_gh_as_the_product_does_on_each_comment_case() {
         let writes = json_diff(&Value::Array(rust.writes.clone()), &Value::Array(writes_of_run(&dir)));
         assert_eq!(writes, Vec::<String>::new(), "{}: the writes", case.name);
     }
+}
+
+/// The lines of the sessions' log of a state folder, file by file in name order, as each holds them. Each
+/// run is a process, with a file of its own named by its pid: compare them as sorted lines.
+fn log_lines(dir: &Path) -> Vec<String> {
+    let folder = dir.join("dichiarazioni");
+    let mut files: Vec<PathBuf> =
+        fs::read_dir(&folder).map(|entries| entries.map(|entry| entry.expect("an entry").path()).collect()).unwrap_or_default();
+    files.sort();
+    files.iter().flat_map(|file| fs::read_to_string(file).expect("a log file").lines().map(str::to_owned).collect::<Vec<_>>()).collect()
+}
+
+/// A Claude session that has an Orca id too.
+const TWO_IDS: [(&str, &str); 2] = [("CLAUDE_CODE_SESSION_ID", "claude-1"), ("ORCA_AGENT_SESSION_ID", "orca-1")];
+
+/// Acceptance 2 on `declare`: each case natively is what the prototype did, and leaves the line the
+/// prototype writes, byte for byte; with no session nothing is written. Neither opens the state database.
+#[test]
+fn every_declare_case_natively_gives_the_prototype_s_outcome_and_line() {
+    let cases = Case::of_family("declare");
+    assert!(cases.len() >= 2, "the cases of `declare` are missing: {}", cases.len());
+    for case in &cases {
+        let run = native(&format!("native-{}", case.name), case);
+        let diff = native_differences(case, &run, &[]);
+        assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
+        assert!(!run.state.join(regia_store::database_name()).exists(), "{}: the state database is not opened", case.name);
+        if case.spec.exit == 0 {
+            let line = r#"{"v":1,"ts":"2026-01-10T09:00:00Z","sessione":"session-fixture-1","agente":"claude","claude":"session-fixture-1","progetto":"alpha","task":7,"comando":"dichiara","ruolo":"worker"}"#;
+            assert_eq!(log_lines(&run.state), [line], "{}", case.name);
+        } else {
+            assert!(!run.state.join("dichiarazioni").exists(), "{}: nothing without a session", case.name);
+        }
+    }
+}
+
+/// The commands that write each record a line in the sessions' log, before they run and also when they
+/// refuse, with the prototype's words for the command, the project and the task as given, and a step's
+/// role; never a comment's body. A read records nothing, and neither does an argument the prototype's
+/// parser refuses (`TestRegistrazione` of the prototype).
+#[test]
+fn the_commands_that_write_record_a_line_each() {
+    let dir = prepare_state_dir("native-activity");
+    let responses = Case::named("comment-owner").responses_path();
+    let commands: [(&[&str], i32); 11] = [
+        (&["comment", "5", "--body", "BODY-OF-THE-COMMENT"], 0),
+        (&["step", "start", "--project", "alpha"], 0),
+        (&["lease", "acquire", "146", "--project", "alpha", "--holder", "x", "--ttl", "60"], 0),
+        (&["lease", "acquire", "146", "--project", "alpha", "--holder", "y", "--ttl", "60"], 3),
+        (&["lease", "acquire", "147", "--project", "alpha", "--holder", "x", "--ttl", "soon"], 1),
+        (&["lease", "heartbeat", "146", "--holder", "x"], 0),
+        (&["lease", "list"], 0),
+        (&["lease", "release", "146", "--holder", "x"], 0),
+        (&["step", "renew", "--project", "alpha"], 0),
+        (&["step", "finish", "--project", "alpha", "--no-push"], 0),
+        (&["declare", "--project", "alpha", "--task", "7"], 0),
+    ];
+    for (args, exit) in commands {
+        let (code, stdout, stderr) = product_with(&dir, &responses, &TWO_IDS, args);
+        assert_eq!(code, Some(exit), "{args:?}\nstdout: {stdout}\nstderr: {stderr}");
+    }
+    let lines = log_lines(&dir);
+    assert!(lines.iter().all(|line| !line.contains("BODY-OF-THE-COMMENT")), "never a body");
+    let events: Vec<Value> = lines.iter().map(|line| serde_json::from_str(line).expect("a JSON line")).collect();
+    let field = |event: &Value, key: &str| event.get(key).cloned().unwrap_or(Value::Null);
+    let mut summary: Vec<Value> =
+        events.iter().map(|event| json!([event["comando"], field(event, "progetto"), field(event, "task"), field(event, "ruolo")])).collect();
+    let step = "orchestratore";
+    let mut expected = [
+        json!(["commento", null, 5, null]),
+        json!(["passo inizio", "alpha", null, step]),
+        json!(["lease prendi", "alpha", 146, null]),
+        json!(["lease prendi", "alpha", 146, null]),
+        json!(["lease battito", null, 146, null]),
+        json!(["lease rilascia", null, 146, null]),
+        json!(["passo rinnova", "alpha", null, step]),
+        json!(["passo fine", "alpha", null, step]),
+        json!(["dichiara", "alpha", 7, null]),
+    ];
+    summary.sort_by_key(Value::to_string);
+    expected.sort_by_key(Value::to_string);
+    assert_eq!(summary, expected);
+    for event in &events {
+        assert_eq!((&event["sessione"], &event["agente"], &event["claude"], &event["orca"]), (&json!("claude-1"), &json!("claude"), &json!("claude-1"), &json!("orca-1")));
+    }
+}
+
+/// X for the log: the same commands, on the product and on the prototype at the fixtures' instant, write
+/// the same lines, byte for byte, and the prototype's reader reads the product's as its own: the same
+/// events, the same ids, the same ones attributed.
+#[test]
+#[ignore = "needs a copy of the prototype in REGIA_HOME"]
+fn the_prototype_reads_the_product_s_log_as_its_own() {
+    let home = prototype();
+    let responses = Case::named("comment-owner").responses_path();
+    let pairs: [(&[&str], &[&str]); 8] = [
+        (&["comment", "5", "--body", "x"], &["commento", "5", "--corpo", "x"]),
+        (&["step", "start", "--project", "alpha"], &["passo", "inizio", "--progetto", "alpha"]),
+        (
+            &["lease", "acquire", "146", "--project", "alpha", "--holder", "x", "--ttl", "60"],
+            &["lease", "prendi", "146", "--progetto", "alpha", "--proprietario", "x", "--ttl", "60"],
+        ),
+        (&["lease", "heartbeat", "146", "--holder", "x"], &["lease", "battito", "146", "--proprietario", "x"]),
+        (&["lease", "release", "146", "--holder", "x"], &["lease", "rilascia", "146", "--proprietario", "x"]),
+        (&["step", "renew", "--project", "alpha"], &["passo", "rinnova", "--progetto", "alpha"]),
+        (&["step", "finish", "--project", "alpha", "--no-push"], &["passo", "fine", "--progetto", "alpha", "--no-push"]),
+        (&["declare", "--project", "alpha", "--task", "7", "--role", "worker"], &["dichiara", "--progetto", "alpha", "--task", "7", "--ruolo", "worker"]),
+    ];
+    let (rust_dir, python_dir) = (prepare_state_dir("log-of-the-product"), prepare_state_dir("log-of-the-prototype"));
+    let script = home.join("tools").join("regia.py");
+    for (rust, python) in pairs {
+        let (exit, stdout, stderr) = product_with(&rust_dir, &responses, &TWO_IDS, rust);
+        assert_eq!(exit, Some(0), "{rust:?}\nstdout: {stdout}\nstderr: {stderr}");
+        let (exit, stdout, stderr) = python_with(&home, &python_dir, &responses, &TWO_IDS, &script, python, &python_dir.join("calls.log"));
+        assert_eq!(exit, Some(0), "{python:?}\nstdout: {stdout}\nstderr: {stderr}");
+    }
+    let (mut lines, mut python_lines) = (log_lines(&rust_dir), log_lines(&python_dir));
+    assert_eq!(lines.len(), 8, "a line per command");
+    lines.sort();
+    python_lines.sort();
+    assert_eq!(lines, python_lines, "the same lines, byte for byte");
+    let reader = rust_dir.join("read_logs.py");
+    let text = [
+        "# Written by the conformance test of #445: the prototype's reader of the log, on each folder.",
+        "import json, sys",
+        "sys.path.insert(0, sys.argv[1])",
+        "import dichiarazioni",
+        "out = []",
+        "for folder in sys.argv[2:]:",
+        "    events = sorted(dichiarazioni.leggi(folder), key=lambda e: json.dumps({k: v for k, v in e.items() if k not in (\"t\", \"ids\")}, sort_keys=True))",
+        "    out.append({\"events\": [{k: v for k, v in e.items() if k not in (\"t\", \"ids\")} for e in events],",
+        "                \"ids\": [sorted(e[\"ids\"]) for e in events],",
+        "                \"attributed\": sorted([e[\"comando\"], dichiarazioni.attribuisce(e)] for e in events)})",
+        "print(json.dumps(out))",
+    ];
+    fs::write(&reader, text.join("\n") + "\n").expect("the reader");
+    let folders = [rust_dir.join("dichiarazioni").display().to_string(), python_dir.join("dichiarazioni").display().to_string()];
+    let tools = home.join("tools").display().to_string();
+    let empty = rust_dir.join("no-responses.json");
+    fs::write(&empty, "{}").expect("empty responses");
+    let args = [tools.as_str(), folders[0].as_str(), folders[1].as_str()];
+    let (exit, stdout, stderr) = python_with(&home, &rust_dir, &empty, &[], &reader, &args, &rust_dir.join("reader.log"));
+    assert_eq!(exit, Some(0), "the reader\nstdout: {stdout}\nstderr: {stderr}");
+    let read: Value = serde_json::from_str(stdout.trim()).expect("JSON");
+    assert_eq!(read[0], read[1], "the product's log reads as the prototype's");
+    let attributed = json!([
+        ["commento", false],
+        ["dichiara", true],
+        ["lease battito", true],
+        ["lease prendi", true],
+        ["lease rilascia", true],
+        ["passo fine", true],
+        ["passo inizio", true],
+        ["passo rinnova", true],
+    ]);
+    assert_eq!(read[0]["attributed"], attributed, "a comment does not attribute");
+    assert_eq!(read[0]["ids"][0], json!(["claude-1", "orca-1"]));
 }

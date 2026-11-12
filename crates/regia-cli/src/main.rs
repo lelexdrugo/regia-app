@@ -1,6 +1,7 @@
 mod budget_text;
 mod clock;
 mod comment;
+mod declare;
 mod dossier;
 mod policy;
 mod reads;
@@ -116,9 +117,10 @@ struct BudgetArgs {
 }
 
 /// The commands of the table this binary implements besides its own subcommands.
-const NATIVE_THROUGH_THE_TABLE: [&str; 12] = [
+const NATIVE_THROUGH_THE_TABLE: [&str; 13] = [
     "checkpoint",
     "comment",
+    "declare",
     "projects",
     "task show",
     "task list",
@@ -238,6 +240,9 @@ fn native_command(command: &str, args: &[String], catalog: &Catalog) -> Result<u
         return outcome;
     }
     if let Some(outcome) = comment::run(command, args, catalog) {
+        return outcome;
+    }
+    if let Some(outcome) = declare::run(command, args, catalog) {
         return outcome;
     }
     match command {
