@@ -6,6 +6,7 @@ use std::collections::BTreeSet;
 use regia_core::{GraphOrder, IssueState, Status, Task, graph_order, signature_role};
 use regia_store::WallTime;
 
+use super::args::python_int;
 use super::cursor::{self, Since};
 use super::line::{Json, Reason};
 use super::v1::format;
@@ -60,25 +61,6 @@ impl Observation {
         // the dossier's warnings follow here, each only when it applies.
         Json::Object(fields)
     }
-}
-
-/// A number of the registry as Python's `int()` reads it: blanks around it, a sign, `_` between digits.
-fn python_int(text: &str) -> Option<i64> {
-    let text = regia_core::pystr::strip(text);
-    let (negative, digits) = match text.strip_prefix('-') {
-        Some(rest) => (true, rest),
-        None => (false, text.strip_prefix('+').unwrap_or(text)),
-    };
-    let well_formed = !digits.is_empty()
-        && !digits.starts_with('_')
-        && !digits.ends_with('_')
-        && !digits.contains("__")
-        && digits.chars().all(|c| c.is_ascii_digit() || c == '_');
-    if !well_formed {
-        return None;
-    }
-    let value: i64 = digits.replace('_', "").parse().ok()?;
-    Some(if negative { -value } else { value })
 }
 
 /// A number of the registry, or `default` when it is absent or empty; anything else fails the tick.

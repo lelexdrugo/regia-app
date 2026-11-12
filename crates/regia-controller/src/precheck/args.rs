@@ -90,7 +90,7 @@ fn option(name: &str) -> Result<Name, Fault> {
 }
 
 /// A whole number as Python's `int()` reads one: blanks around it, a sign, `_` between digits.
-fn python_int(text: &str) -> Option<i64> {
+pub(crate) fn python_int(text: &str) -> Option<i64> {
     let text = regia_core::pystr::strip(text);
     let (negative, digits) = match text.strip_prefix('-') {
         Some(rest) => (true, rest),
