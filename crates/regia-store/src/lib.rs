@@ -14,6 +14,7 @@ mod db;
 mod folder;
 mod lease;
 mod lock;
+mod state_file;
 mod step;
 mod time;
 mod usage;
@@ -34,6 +35,7 @@ pub use db::{BUSY_WAIT, Row, SqliteError};
 pub use folder::{database_name, default_folder, is_within};
 pub use lease::{LeaseEntry, TaskNumber};
 pub use lock::{LockOutcome, LockState, LockStatus, LockView, ViewField};
+pub use state_file::{read_state_file, remove_state_file, write_state_file};
 pub use step::{
     EventsCursor, EventsParts, OpenedStep, OwnParts, StepClosing, StepOpening, generated_holder, generated_holder_prefix, reports_folder,
     step_commit_message,

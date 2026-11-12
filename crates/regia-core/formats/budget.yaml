@@ -1,0 +1,20 @@
+# The product's copy of the prototype's `policies/budget.yaml`: its values are the product's defaults,
+# compiled in (ADR 0001, "Owner's policies"). The format is the prototype's: two levels, a section and
+# its indented keys, `#` comments. While the prototype runs, the dossier's own file is the one that counts.
+
+# Above this share of Claude's 5-hour window no automatic work starts.
+automatico:
+  claude_5h_max_pct: 75
+
+# Backfill: steps started only by new ideas in Inbox or by the backlog to drain. A lower threshold.
+riempimento:
+  claude_5h_max_pct: 50
+
+# The backlog to drain: Inbox items and approved drafts. Not part of the local override.
+scodare:
+  acceso: on
+
+# Caps of Proposals, per project: open ones, and new ones in the last 7 days.
+proposte:
+  aperte_per_progetto: 3
+  nuove_per_settimana: 5

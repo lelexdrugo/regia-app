@@ -1,0 +1,35 @@
+# The budget policy's two files, in the prototype's names (`tools/politica_budget.py` of the dossier):
+# `policies/budget.yaml`, the shared values, and the machine's local override in the state folder. Both
+# are shared with the prototype while the two coexist, so these names are data, not identifiers, and
+# stay out of the Rust sources.
+
+[file]
+path = "policies/budget.yaml"
+# [section, key] of each value.
+automatic = ["automatico", "claude_5h_max_pct"]
+backfill = ["riempimento", "claude_5h_max_pct"]
+open_per_project = ["proposte", "aperte_per_progetto"]
+new_per_week = ["proposte", "nuove_per_settimana"]
+drain = ["scodare", "acceso"]
+
+# The words of a switch, compared in lowercase, in the file and in `policy set`.
+[switch]
+on = ["on", "si", "sì", "true", "1"]
+off = ["off", "no", "false", "0"]
+
+[local]
+file = "politica-locale.json"
+version = "v"
+values = "valori"
+until = "fino"
+note = "nota"
+set_at = "impostato"
+
+# The keys of the override's values: the policy's own keys.
+[levers]
+automatic_max_pct = "automatico_max_pct"
+backfill_max_pct = "riempimento_max_pct"
+open_per_project = "aperte_per_progetto"
+new_per_week = "nuove_per_settimana"
+proposal_caps = "tetti_proposte"
+backfill = "riempimento"
