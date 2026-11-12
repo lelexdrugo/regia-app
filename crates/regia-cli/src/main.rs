@@ -1,3 +1,5 @@
+mod reads;
+
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -8,7 +10,7 @@ use chrono::{DateTime, FixedOffset, Utc};
 use regia_agents::{
     Assignment, Diversity, Env, Https, LaunchRequest, Policy, ProbeConsent, Receipt, Role, ServiceId, Settings, SurfaceKind, UsageProbes,
 };
-use regia_core::{Brief, BriefOptions, BriefTask, Tracker, TrackerBinding, TrackerConfigV1};
+use regia_core::{Brief, BriefOptions, BriefTask, Registry, Tracker, TrackerBinding, TrackerConfigV1};
 use regia_exec::{Effort, ExecError, ModelId, Program};
 use regia_facade::{Engine, FacadeError, Printed, PythonPrototype, Table};
 use regia_git::{Checkpoint, DossierSync, GitDate, Outcome};
@@ -123,7 +125,7 @@ struct CheckpointArgs {
 }
 
 /// The commands of the table this binary implements besides its own subcommands.
-const NATIVE_THROUGH_THE_TABLE: [&str; 1] = ["checkpoint"];
+const NATIVE_THROUGH_THE_TABLE: [&str; 4] = ["checkpoint", "projects", "task show", "task list"];
 
 /// The prompt: one of the two, never both.
 #[derive(clap::Args)]
@@ -216,7 +218,10 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
             let native = NATIVE_THROUGH_THE_TABLE.contains(&command.as_str());
             match route(&table, &command, native, catalog)? {
                 Some(prototype) => passthrough(&table, &prototype, &command, args, catalog),
-                None => checkpoint(args).map(ExitCode::from),
+                None => match reads::run(&command, args, catalog) {
+                    Some(outcome) => outcome.map(ExitCode::from),
+                    None => checkpoint(args).map(ExitCode::from),
+                },
             }
         }
     }
@@ -301,7 +306,8 @@ fn project_folder(project: &str) -> Result<String, String> {
         issue.status_option_id = None;
         let task = binding.resolve(issue).map_err(|error| error.to_string())?;
         if task.objective && task.project.as_deref() == Some(project) {
-            return regia_git::registry_folder(&body).ok_or_else(|| format!("the registry of '{project}' has no folder"));
+            let folder = Registry::parse(&body).folder().map(str::to_owned);
+            return folder.ok_or_else(|| format!("the registry of '{project}' has no folder"));
         }
     }
     Err(format!("project '{project}' is unknown"))
