@@ -1,0 +1,15 @@
+{
+  "dossier": {
+    "avanti": 0,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "pushato",
+    "file": [
+      "notes/two words.md"
+    ],
+    "motivo": null,
+    "sha": "d70d77824ecebcaa1d641fcf46680e2a9b800112"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

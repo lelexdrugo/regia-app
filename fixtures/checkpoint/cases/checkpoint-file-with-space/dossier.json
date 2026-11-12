@@ -1,0 +1,11 @@
+{
+  "log": [
+    "d70d77824ecebcaa1d641fcf46680e2a9b800112 alpha: checkpoint 2026-01-10T09:00:00Z",
+    "9bf0fcff305ec10dc1e7d8dd39be4552291a44f5 fixture: the dossier before the run"
+  ],
+  "remote": [
+    "d70d77824ecebcaa1d641fcf46680e2a9b800112 alpha: checkpoint 2026-01-10T09:00:00Z",
+    "9bf0fcff305ec10dc1e7d8dd39be4552291a44f5 fixture: the dossier before the run"
+  ],
+  "status": []
+}

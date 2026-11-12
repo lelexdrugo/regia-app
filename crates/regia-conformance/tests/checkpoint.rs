@@ -16,6 +16,10 @@ use regia_conformance::{Case, CliRun, Recorded, bin_dir, json_diff, lf, run_case
 use regia_identity::env_var;
 use serde_json::{Value, json};
 
+/// The cases where the product differs from the prototype on purpose, each with a test below that says
+/// how: a name with a space, which the prototype commits and a dossier path cannot spell (#571/V5).
+const DIVERGENT: [&str; 1] = ["checkpoint-file-with-space"];
+
 fn checkpoint_cases() -> Vec<Case> {
     Case::of_family("checkpoint")
 }
@@ -122,7 +126,7 @@ fn native_differences(case: &Case, run: &CliRun) -> Vec<String> {
 fn every_checkpoint_case_natively_gives_the_prototype_s_outcome() {
     let cases = checkpoint_cases();
     assert!(cases.len() >= 15, "the cases of #442/V4 and of the prototype's tests are missing");
-    for case in &cases {
+    for case in cases.iter().filter(|case| !DIVERGENT.contains(&case.name.as_str())) {
         let run = native(&format!("native-{}", case.name), case, Vec::new());
         let diff = native_differences(case, &run);
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
@@ -248,4 +252,20 @@ fn a_git_that_does_not_answer_commits_nothing() {
     let case = Case::named("checkpoint-tracker-down");
     let run = native("native-tracker-down", &case, Vec::new());
     assert_eq!(run.exit, Some(1), "{}", run.stderr);
+}
+
+/// #571/V5, the declared divergence: the prototype commits and pushes a `--file` with a space, the
+/// product answers `unavailable` with the path and the rule, and the repo stays as it was.
+#[test]
+fn a_space_in_a_file_is_refused_where_the_prototype_commits() {
+    let case = Case::named(DIVERGENT[0]);
+    let python = translate_python("checkpoint", &case.python_output()).unwrap();
+    assert_eq!(python["dossier"]["outcome"], "pushed", "the prototype commits it");
+    let run = native("native-file-with-space", &case, Vec::new());
+    assert_eq!(run.exit, Some(i32::from(case.spec.exit)), "{}", run.stderr);
+    let out: Value = serde_json::from_slice(&run.stdout).expect("JSON");
+    assert_eq!(out["dossier"]["outcome"], "unavailable");
+    assert_eq!(out["dossier"]["reason"], "--file 'notes/two words.md': invalid dossier path: has a character outside its alphabet");
+    assert_eq!(out["dossier"]["sha"], Value::Null, "nothing was committed");
+    assert_ne!(run.dossier_after, case.dossier_after(), "the repo is not the one the prototype left");
 }

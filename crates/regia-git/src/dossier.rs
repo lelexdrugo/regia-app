@@ -219,11 +219,17 @@ pub fn sync_with(git: Result<Git, ExecError>, request: &Checkpoint) -> DossierSy
         return out.done(Outcome::Nothing, reason);
     }
     // Paths from git's output reach an argv again only typed (threat model §3.6, rule 7).
-    let typed: Result<Vec<DossierPath>, _> = out.files.iter().map(|path| DossierPath::parse(path)).collect();
-    let typed = match typed {
-        Ok(typed) => typed,
-        Err(error) => return out.done(Outcome::Unavailable, Some(format!("a changed file is not a dossier path: {error}"))),
-    };
+    // The reason names the path, escaped, and the rule it breaks: what to rename (#571/V5).
+    let mut typed = Vec::new();
+    for path in &out.files.clone() {
+        match DossierPath::parse(path) {
+            Ok(path) => typed.push(path),
+            Err(error) => {
+                let reason = format!("a changed file is not a dossier path: {path:?}: {error}");
+                return out.done(Outcome::Unavailable, Some(reason));
+            }
+        }
+    }
     // `commit --only` does not know new files: only the named ones are added.
     let new: Vec<DossierPath> = changed.iter().zip(&typed).filter(|((code, _), _)| code == "??").map(|(_, path)| path.clone()).collect();
     if !new.is_empty() {

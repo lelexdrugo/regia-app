@@ -322,6 +322,27 @@ fn a_file_outside_the_folder_or_naming_all_of_it_is_refused() {
     }
 }
 
+/// #571/V5: a name outside the alphabet, given or found changed, is refused with the path and the rule,
+/// and nothing is committed: the prototype commits both.
+#[test]
+fn a_name_outside_the_alphabet_is_refused_with_its_path_and_its_rule() {
+    let repo = Repo::new();
+    write(&repo.work, &state_file(), "v1
+");
+    write(&repo.work, "notes/a b.md", "x
+");
+    let before = repo.heads();
+    let given = repo.sync(&["notes/a b.md"]);
+    assert_eq!(given.outcome, Outcome::Unavailable);
+    assert_eq!(reason(&given), "--file 'notes/a b.md': invalid dossier path: has a character outside its alphabet");
+    write(&repo.work, ".regia/journal/two words.md", "x
+");
+    let found = repo.sync(&[]);
+    assert_eq!(found.outcome, Outcome::Unavailable);
+    assert_eq!(reason(&found), "a changed file is not a dossier path: \".regia/journal/two words.md\": invalid dossier path: has a character outside its alphabet");
+    assert_eq!((repo.heads(), repo.count()), (before, "1".to_owned()), "nothing was committed");
+}
+
 /// A pattern is never one: the prototype finds nothing for `a*.txt`, and the product refuses the name,
 /// which a dossier path cannot spell. A path with `.` and `..` inside the folder is the file it names.
 #[test]
