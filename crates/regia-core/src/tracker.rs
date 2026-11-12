@@ -77,6 +77,18 @@ pub trait Tracker {
         let since = since.to_rfc3339_opts(SecondsFormat::Secs, true);
         Err(TrackerError::Unavailable(format!("this tracker does not read the changes of Status of `{label}` since {since}")))
     }
+
+    /// The names of an issue's labels: a comment reads its issue's project from them.
+    fn labels(&self, number: u64) -> Result<Vec<String>, TrackerError> {
+        Err(TrackerError::Unavailable(format!("this tracker does not read the labels of #{number}")))
+    }
+
+    /// Writes `body` as a comment on the issue, and returns what the tracker answered: the comment's URL,
+    /// whose end is its id.
+    fn add_comment(&self, number: u64, body: &str) -> Result<String, TrackerError> {
+        let _ = body;
+        Err(TrackerError::Unavailable(format!("this tracker does not write comments on #{number}")))
+    }
 }
 
 /// Adds each issue to the sub-issues of its parent when the parent's list lacks it, in list order. The

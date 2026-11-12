@@ -1,6 +1,8 @@
 //! The GitHub adapter. Everything GitHub-specific stays in this crate. The user's `gh` does the
 //! authentication, so the product never sees a token (ADR 0001, "GitHub").
 
+mod issue;
+
 use std::path::PathBuf;
 
 use regia_core::{IssueState, RawComment, RawIssue, Tracker, TrackerConfigV1, TrackerError, add_children_from_parents};
@@ -219,6 +221,14 @@ impl Tracker for GhTracker {
             }
             after = page.page_info.end_cursor;
         }
+    }
+
+    fn labels(&self, number: u64) -> Result<Vec<String>, TrackerError> {
+        self.issue_labels(number)
+    }
+
+    fn add_comment(&self, number: u64, body: &str) -> Result<String, TrackerError> {
+        self.issue_comment(number, body)
     }
 }
 
