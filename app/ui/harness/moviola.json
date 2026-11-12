@@ -1,0 +1,2257 @@
+{
+ "recorded": "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js",
+ "portfolio": [
+  {
+   "title": "Alpha, a synthetic project",
+   "id": "alpha",
+   "milestones": 7,
+   "directions": 3,
+   "health": "at_risk",
+   "last": {
+    "id": "01JCM600000000000000000000",
+    "ts": "2026-10-21T09:00:00+02:00",
+    "kind": "exception",
+    "title": "Over budget on a lane with no record",
+    "direction": "probe-c"
+   },
+   "from": "2026-10-14T10:00:00Z",
+   "to": "2026-10-21T09:00:00+02:00"
+  },
+  {
+   "title": null,
+   "id": "beta",
+   "milestones": 1,
+   "directions": 0,
+   "health": "healthy",
+   "last": {
+    "id": "01JCB100000000000000000000",
+    "ts": "2026-10-18T08:00:00Z",
+    "kind": "milestone",
+    "title": "Beta's only milestone",
+    "direction": "principale"
+   },
+   "from": "2026-10-18T08:00:00Z",
+   "to": "2026-10-18T08:00:00Z"
+  },
+  {
+   "title": null,
+   "id": "gamma",
+   "milestones": 0,
+   "directions": 0,
+   "health": null,
+   "last": null,
+   "from": null,
+   "to": null
+  }
+ ],
+ "cases": [
+  {
+   "name": "viewer",
+   "timeline": {
+    "project": "p",
+    "project_url": null,
+    "main_direction": "principale",
+    "milestones": [
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "M0",
+      "ts": "2026-10-14T10:00:00Z",
+      "kind": "milestone",
+      "title": "node 0",
+      "direction": "principale",
+      "health": "healthy",
+      "parents": [],
+      "refs": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "M1",
+      "ts": "2026-10-15T10:00:00Z",
+      "kind": "exploration",
+      "title": "node 1",
+      "direction": "x",
+      "health": "healthy",
+      "parents": [
+       "M0"
+      ],
+      "refs": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": {
+       "round": null,
+       "checks": [],
+       "defects": {
+        "found": 3,
+        "closed": null
+       }
+      },
+      "author": null,
+      "id": "M2",
+      "ts": "2026-10-15T12:00:00Z",
+      "kind": "milestone",
+      "title": "node 2",
+      "direction": "x",
+      "health": "at_risk",
+      "parents": [
+       "M1"
+      ],
+      "refs": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "M3",
+      "ts": "2026-10-19T09:00:00Z",
+      "kind": "rejoin",
+      "title": "node 3",
+      "direction": "principale",
+      "health": "healthy",
+      "parents": [
+       "M2"
+      ],
+      "refs": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "M4",
+      "ts": "2026-10-20T09:00:00Z",
+      "kind": "decision",
+      "title": "node 4",
+      "direction": "principale",
+      "health": "healthy",
+      "parents": [
+       "M3"
+      ],
+      "refs": {
+       "issue": [
+        7
+       ],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      }
+     }
+    ],
+    "directions": [
+     {
+      "opened_by": "M1",
+      "reason": "because",
+      "id": "x",
+      "title": "X",
+      "status": "rejoined"
+     }
+    ],
+    "aggregates": [
+     {
+      "project": null,
+      "window": [],
+      "round": 1,
+      "declared_subagents": null,
+      "models": [
+       {
+        "agent": "claude",
+        "model": "claude-opus-5-5",
+        "effort": null,
+        "sessions": 1,
+        "via": null
+       }
+      ],
+      "checks": [
+       {
+        "kind": "test",
+        "outcome": "ok",
+        "defects": [],
+        "model": null
+       }
+      ],
+      "defects": null,
+      "tokens": null,
+      "task": 7
+     }
+    ]
+   },
+   "expected": {
+    "lanes": [
+     {
+      "id": "principale",
+      "index": 0,
+      "status": "active",
+      "recorded": false,
+      "opened": 1791972000000,
+      "closed": null,
+      "closedBy": null,
+      "tone": {
+       "kind": "main"
+      },
+      "nodes": [
+       "M0",
+       "M3",
+       "M4"
+      ]
+     },
+     {
+      "id": "x",
+      "index": 1,
+      "status": "rejoined",
+      "recorded": true,
+      "opened": 1792058400000,
+      "closed": 1792400400000,
+      "closedBy": "M3",
+      "tone": {
+       "kind": "branch",
+       "hue": 0
+      },
+      "nodes": [
+       "M1",
+       "M2"
+      ]
+     }
+    ],
+    "nodes": [
+     {
+      "id": "M0",
+      "lane": 0,
+      "t": 1791972000000,
+      "children": [
+       "M1"
+      ],
+      "rings": [],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "M1",
+      "lane": 1,
+      "t": 1792058400000,
+      "children": [
+       "M2"
+      ],
+      "rings": [],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "M2",
+      "lane": 1,
+      "t": 1792065600000,
+      "children": [
+       "M3"
+      ],
+      "rings": [],
+      "badges": [
+       "D3"
+      ],
+      "declared": true
+     },
+     {
+      "id": "M3",
+      "lane": 0,
+      "t": 1792400400000,
+      "children": [
+       "M4"
+      ],
+      "rings": [],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "M4",
+      "lane": 0,
+      "t": 1792486800000,
+      "children": [],
+      "rings": [
+       {
+        "declared": true,
+        "model": "claude-opus-5-5"
+       }
+      ],
+      "badges": [
+       "✓"
+      ],
+      "declared": true
+     }
+    ],
+    "layouts": [
+     {
+      "width": 800,
+      "height": 400,
+      "window": null,
+      "x": [
+       150,
+       306,
+       462,
+       618,
+       774
+      ],
+      "y": [
+       102,
+       184,
+       184,
+       102,
+       102
+      ],
+      "laneY": [
+       102,
+       184
+      ],
+      "step": 156,
+      "left": 150,
+      "i0": 0,
+      "i1": 4,
+      "clip": null,
+      "stageWidth": 800,
+      "stageHeight": 400,
+      "xAt": [
+       [
+        1791946800000,
+        72
+       ],
+       [
+        1791961200000,
+        111
+       ],
+       [
+        1791972000000,
+        150
+       ],
+       [
+        1792058400000,
+        306
+       ],
+       [
+        1792065600000,
+        462
+       ],
+       [
+        1792400400000,
+        618
+       ],
+       [
+        1792486800000,
+        774
+       ],
+       [
+        1792015200000,
+        228
+       ],
+       [
+        1792062000000,
+        384
+       ],
+       [
+        1792233000000,
+        540
+       ],
+       [
+        1792443600000,
+        696
+       ],
+       [
+        1792497600000,
+        813
+       ],
+       [
+        1792512000000,
+        852
+       ]
+      ],
+      "tAt": [
+       [
+        145,
+        1791972000000
+       ],
+       [
+        157,
+        1791975876923.077
+       ],
+       [
+        313,
+        1792058723076.923
+       ],
+       [
+        469,
+        1792080623076.923
+       ],
+       [
+        625,
+        1792404276923.077
+       ],
+       [
+        781,
+        1792486800000
+       ],
+       [
+        779,
+        1792486800000
+       ]
+      ]
+     },
+     {
+      "width": 1280,
+      "height": 720,
+      "window": null,
+      "x": [
+       150,
+       426,
+       702,
+       978,
+       1254
+      ],
+      "y": [
+       102,
+       184,
+       184,
+       102,
+       102
+      ],
+      "laneY": [
+       102,
+       184
+      ],
+      "step": 276,
+      "left": 150,
+      "i0": 0,
+      "i1": 4,
+      "clip": null,
+      "stageWidth": 1280,
+      "stageHeight": 720,
+      "xAt": [
+       [
+        1791946800000,
+        12
+       ],
+       [
+        1791961200000,
+        81
+       ],
+       [
+        1791972000000,
+        150
+       ],
+       [
+        1792058400000,
+        426
+       ],
+       [
+        1792065600000,
+        702
+       ],
+       [
+        1792400400000,
+        978
+       ],
+       [
+        1792486800000,
+        1254
+       ],
+       [
+        1792015200000,
+        288
+       ],
+       [
+        1792062000000,
+        564
+       ],
+       [
+        1792233000000,
+        840
+       ],
+       [
+        1792443600000,
+        1116
+       ],
+       [
+        1792497600000,
+        1323
+       ],
+       [
+        1792512000000,
+        1392
+       ]
+      ],
+      "tAt": [
+       [
+        145,
+        1791972000000
+       ],
+       [
+        157,
+        1791974191304.348
+       ],
+       [
+        433,
+        1792058582608.6956
+       ],
+       [
+        709,
+        1792074091304.348
+       ],
+       [
+        985,
+        1792402591304.348
+       ],
+       [
+        1261,
+        1792486800000
+       ],
+       [
+        1259,
+        1792486800000
+       ]
+      ]
+     },
+     {
+      "width": 800,
+      "height": 400,
+      "window": {
+       "from": 1792054800000,
+       "to": 1792404000000
+      },
+      "x": [
+       -74,
+       194,
+       462,
+       730,
+       998
+      ],
+      "y": [
+       102,
+       184,
+       184,
+       102,
+       102
+      ],
+      "laneY": [
+       102,
+       184
+      ],
+      "step": 268,
+      "left": 150,
+      "i0": 1,
+      "i1": 3,
+      "clip": [
+       128,
+       800
+      ],
+      "stageWidth": 800,
+      "stageHeight": 400,
+      "xAt": [
+       [
+        1791946800000,
+        -208
+       ],
+       [
+        1791961200000,
+        -141
+       ],
+       [
+        1791972000000,
+        -74
+       ],
+       [
+        1792058400000,
+        194
+       ],
+       [
+        1792065600000,
+        462
+       ],
+       [
+        1792400400000,
+        730
+       ],
+       [
+        1792486800000,
+        998
+       ],
+       [
+        1792015200000,
+        60
+       ],
+       [
+        1792062000000,
+        328
+       ],
+       [
+        1792233000000,
+        596
+       ],
+       [
+        1792443600000,
+        864
+       ],
+       [
+        1792497600000,
+        1065
+       ],
+       [
+        1792512000000,
+        1132
+       ]
+      ],
+      "tAt": [
+       [
+        -79,
+        1791972000000
+       ],
+       [
+        -67,
+        1791974256716.418
+       ],
+       [
+        201,
+        1792058588059.7014
+       ],
+       [
+        469,
+        1792074344776.1194
+       ],
+       [
+        737,
+        1792402656716.418
+       ],
+       [
+        1005,
+        1792486800000
+       ],
+       [
+        1003,
+        1792486800000
+       ]
+      ]
+     }
+    ],
+    "scale": {
+     "x0": 0,
+     "x1": 800,
+     "x": [
+      [
+       1791946800000,
+       0
+      ],
+      [
+       1791961200000,
+       0
+      ],
+      [
+       1791972000000,
+       174.5
+      ],
+      [
+       1792058400000,
+       208.5
+      ],
+      [
+       1792065600000,
+       557.5
+      ],
+      [
+       1792400400000,
+       591.5
+      ],
+      [
+       1792486800000,
+       625.5
+      ],
+      [
+       1792015200000,
+       191.5
+      ],
+      [
+       1792062000000,
+       383
+      ],
+      [
+       1792233000000,
+       574.5
+      ],
+      [
+       1792443600000,
+       608.5
+      ],
+      [
+       1792497600000,
+       800
+      ],
+      [
+       1792512000000,
+       800
+      ]
+     ],
+     "joints": [
+      {
+       "x": 191.5,
+       "from": 1791972000000,
+       "to": 1792058400000
+      },
+      {
+       "x": 574.5,
+       "from": 1792065600000,
+       "to": 1792400400000
+      },
+      {
+       "x": 608.5,
+       "from": 1792400400000,
+       "to": 1792486800000
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "alpha",
+   "timeline": {
+    "project": "alpha",
+    "project_url": "https://github.com/users/acme/projects/7",
+    "main_direction": "principale",
+    "milestones": [
+     {
+      "opens_direction": null,
+      "process": {
+       "round": 1,
+       "checks": [],
+       "defects": {
+        "found": null,
+        "closed": null
+       }
+      },
+      "author": {
+       "role": "cronista",
+       "agent": "claude",
+       "model": "claude-sonnet-5-5",
+       "session": null
+      },
+      "id": "01JCM100000000000000000000",
+      "ts": "2026-10-14T10:00:00Z",
+      "kind": "milestone",
+      "direction": "principale",
+      "parents": [],
+      "title": "First synthetic step",
+      "health": "healthy",
+      "refs": {
+       "issue": [
+        12,
+        27
+       ],
+       "commit": [],
+       "report": [
+        ".regia/report/2026-10-19-12-present.md",
+        ".regia/report/2026-10-20-13-absent.md"
+       ]
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#12",
+         "url": "https://github.com/acme/tasks/issues/12"
+        },
+        {
+         "text": "#27",
+         "url": "https://github.com/acme/tasks/issues/27"
+        }
+       ],
+       "commit": [],
+       "report": [
+        {
+         "text": ".regia/report/2026-10-19-12-present.md",
+         "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+         "kind": "relative",
+         "exists": true
+        },
+        {
+         "text": ".regia/report/2026-10-20-13-absent.md",
+         "path": "<root>/projects/alpha/.regia/report/2026-10-20-13-absent.md",
+         "kind": "relative",
+         "exists": false
+        }
+       ]
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": {
+       "round": null,
+       "checks": [
+        "test",
+        "rilettura"
+       ],
+       "defects": {
+        "found": 0,
+        "closed": 0
+       }
+      },
+      "author": {
+       "role": "cronista",
+       "agent": "claude",
+       "model": "claude-sonnet-5-5",
+       "session": "ctx_synthetic"
+      },
+      "id": "01JCM200000000000000000000",
+      "ts": "2026-10-15T12:00:00Z",
+      "kind": "decision",
+      "direction": "principale",
+      "parents": [
+       "01JCM100000000000000000000"
+      ],
+      "title": "A choice waits for the owner",
+      "health": "waiting_on_owner",
+      "refs": {
+       "issue": [],
+       "commit": [
+        "abc1234"
+       ],
+       "report": [
+        "{dati}/EXP-1/results.md",
+        "C:\\Users\\someone\\x.md",
+        "/home/someone/x.md",
+        "../outside.md",
+        ".regia\\report\\2026-10-19-12-present.md"
+       ]
+      },
+      "links": {
+       "issue": [],
+       "commit": [
+        {
+         "text": "abc1234",
+         "url": "https://github.com/acme/alpha/commit/abc1234",
+         "hash": "abc1234"
+        }
+       ],
+       "report": [
+        {
+         "text": "{dati}/EXP-1/results.md",
+         "path": null,
+         "kind": "data",
+         "exists": false
+        },
+        {
+         "text": "C:\\Users\\someone\\x.md",
+         "path": null,
+         "kind": "absolute",
+         "exists": false
+        },
+        {
+         "text": "/home/someone/x.md",
+         "path": null,
+         "kind": "absolute",
+         "exists": false
+        },
+        {
+         "text": "../outside.md",
+         "path": null,
+         "kind": "outside",
+         "exists": false
+        },
+        {
+         "text": ".regia\\report\\2026-10-19-12-present.md",
+         "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+         "kind": "relative",
+         "exists": true
+        }
+       ]
+      }
+     },
+     {
+      "opens_direction": "probe-b",
+      "process": {
+       "round": 2,
+       "checks": [
+        "revisione-avversaria"
+       ],
+       "defects": {
+        "found": 3,
+        "closed": null
+       }
+      },
+      "author": {
+       "role": "cronista",
+       "agent": "claude",
+       "model": "claude-sonnet-5-5",
+       "session": "ctx_a3"
+      },
+      "id": "01JCM300000000000000000000",
+      "ts": "2026-10-16T09:00:00Z",
+      "kind": "exploration",
+      "direction": "probe-b",
+      "parents": [
+       "01JCM200000000000000000000"
+      ],
+      "title": "#14 probe B opens",
+      "health": "at_risk",
+      "refs": {
+       "issue": [
+        14
+       ],
+       "commit": [
+        "0123456789abcdef0123456789abcdef01234567"
+       ],
+       "report": [
+        ".regia/report/2026-10-19-12-present.md"
+       ]
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#14",
+         "url": "https://github.com/acme/tasks/issues/14"
+        }
+       ],
+       "commit": [
+        {
+         "text": "0123456",
+         "url": "https://github.com/acme/alpha/commit/0123456789abcdef0123456789abcdef01234567",
+         "hash": "0123456789abcdef0123456789abcdef01234567"
+        }
+       ],
+       "report": [
+        {
+         "text": ".regia/report/2026-10-19-12-present.md",
+         "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+         "kind": "relative",
+         "exists": true
+        }
+       ]
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "01JCM400000000000000000000",
+      "ts": "2026-10-19T09:00:00Z",
+      "kind": "rejoin",
+      "direction": "principale",
+      "parents": [
+       "01JCM300000000000000000000",
+       "01JCM200000000000000000000"
+      ],
+      "title": "Probe B comes back",
+      "health": "healthy",
+      "links": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      },
+      "refs": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": {
+       "round": 3,
+       "checks": [
+        "test"
+       ],
+       "defects": {
+        "found": 1,
+        "closed": 1
+       }
+      },
+      "author": {
+       "role": "cronista",
+       "agent": "claude",
+       "model": "claude-sonnet-5-5",
+       "session": "ctx_synthetic"
+      },
+      "id": "01JCM5A0000000000000000000",
+      "ts": "2026-10-20T09:00:00Z",
+      "kind": "gate",
+      "direction": "principale",
+      "parents": [
+       "01JCM400000000000000000000"
+      ],
+      "title": "A gate on the same instant",
+      "health": "healthy",
+      "refs": {
+       "issue": [
+        12
+       ],
+       "commit": [
+        "fedcba9876543210"
+       ],
+       "report": []
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#12",
+         "url": "https://github.com/acme/tasks/issues/12"
+        }
+       ],
+       "commit": [
+        {
+         "text": "fedcba9",
+         "url": "https://github.com/acme/alpha/commit/fedcba9876543210",
+         "hash": "fedcba9876543210"
+        }
+       ],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": {
+       "role": "cronista",
+       "agent": "claude",
+       "model": "claude-sonnet-5-5",
+       "session": "ctx_synthetic"
+      },
+      "id": "01JCM5B0000000000000000000",
+      "ts": "2026-10-20T09:00:00Z",
+      "kind": "abandonment",
+      "direction": "probe-d",
+      "parents": [
+       "01JCM400000000000000000000"
+      ],
+      "title": "Probe D is dropped",
+      "health": "at_risk",
+      "refs": {
+       "issue": [
+        27
+       ],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#27",
+         "url": "https://github.com/acme/tasks/issues/27"
+        }
+       ],
+       "commit": [],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": {
+       "role": "cronista",
+       "agent": "claude",
+       "model": "claude-sonnet-5-5",
+       "session": "ctx_synthetic"
+      },
+      "id": "01JCM600000000000000000000",
+      "ts": "2026-10-21T09:00:00+02:00",
+      "kind": "exception",
+      "direction": "probe-c",
+      "parents": [
+       "01JCM5A0000000000000000000"
+      ],
+      "title": "Over budget on a lane with no record",
+      "health": "at_risk",
+      "refs": {
+       "issue": [
+        99
+       ],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#99",
+         "url": "https://github.com/acme/tasks/issues/99"
+        }
+       ],
+       "commit": [],
+       "report": []
+      }
+     }
+    ],
+    "directions": [
+     {
+      "opened_by": "01JCM300000000000000000000",
+      "reason": "It worked and came back.",
+      "id": "probe-b",
+      "title": "Probe B",
+      "status": "rejoined"
+     },
+     {
+      "opened_by": "01JCM200000000000000000000",
+      "reason": "Too slow.",
+      "id": "probe-d",
+      "title": "Probe D",
+      "status": "abandoned"
+     },
+     {
+      "opened_by": "01JCM100000000000000000000",
+      "reason": "",
+      "id": "probe-e",
+      "title": "Probe E",
+      "status": "active"
+     }
+    ],
+    "aggregates": [
+     {
+      "project": "alpha",
+      "window": [
+       "2026-10-14T09:00:00Z",
+       "2026-10-14T11:00:00Z"
+      ],
+      "round": 1,
+      "declared_subagents": 0,
+      "models": [
+       {
+        "agent": "claude",
+        "model": "claude-opus-5-5",
+        "effort": "high",
+        "sessions": 1,
+        "via": null
+       },
+       {
+        "agent": "claude",
+        "model": "claude-opus-5-5",
+        "effort": null,
+        "sessions": 2,
+        "via": "report"
+       }
+      ],
+      "checks": [
+       {
+        "kind": "test",
+        "outcome": "ok",
+        "defects": [],
+        "model": "cargo test"
+       }
+      ],
+      "defects": {
+       "found": null,
+       "closed": null,
+       "closes": []
+      },
+      "tokens": {
+       "input": 584,
+       "output": 197651,
+       "cache_read": 1200,
+       "cache_write": 300
+      },
+      "task": 12
+     },
+     {
+      "project": "alpha",
+      "window": [
+       "2026-10-16",
+       "2026-10-17"
+      ],
+      "round": 2,
+      "declared_subagents": null,
+      "models": [
+       {
+        "agent": null,
+        "model": null,
+        "effort": null,
+        "sessions": 1,
+        "via": null
+       }
+      ],
+      "checks": [
+       {
+        "kind": "revisione-avversaria",
+        "outcome": "difetti",
+        "defects": [
+         "D1",
+         "D2"
+        ],
+        "model": null
+       },
+       {
+        "kind": "rilettura",
+        "outcome": null,
+        "defects": [],
+        "model": null
+       }
+      ],
+      "defects": {
+       "found": 2,
+       "closed": 1,
+       "closes": [
+        "#9/D1"
+       ]
+      },
+      "tokens": null,
+      "task": 14
+     },
+     {
+      "project": null,
+      "window": [],
+      "round": 1,
+      "declared_subagents": null,
+      "models": [],
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null,
+       "closes": []
+      },
+      "tokens": null,
+      "task": 27
+     }
+    ]
+   },
+   "expected": {
+    "lanes": [
+     {
+      "id": "principale",
+      "index": 0,
+      "status": "active",
+      "recorded": false,
+      "opened": 1791972000000,
+      "closed": null,
+      "closedBy": null,
+      "tone": {
+       "kind": "main"
+      },
+      "nodes": [
+       "01JCM100000000000000000000",
+       "01JCM200000000000000000000",
+       "01JCM400000000000000000000",
+       "01JCM5A0000000000000000000"
+      ]
+     },
+     {
+      "id": "probe-e",
+      "index": 1,
+      "status": "active",
+      "recorded": true,
+      "opened": 1791972000000,
+      "closed": null,
+      "closedBy": null,
+      "tone": {
+       "kind": "branch",
+       "hue": 0
+      },
+      "nodes": []
+     },
+     {
+      "id": "probe-d",
+      "index": 2,
+      "status": "abandoned",
+      "recorded": true,
+      "opened": 1792065600000,
+      "closed": null,
+      "closedBy": null,
+      "tone": {
+       "kind": "abandoned"
+      },
+      "nodes": [
+       "01JCM5B0000000000000000000"
+      ]
+     },
+     {
+      "id": "probe-b",
+      "index": 3,
+      "status": "rejoined",
+      "recorded": true,
+      "opened": 1792141200000,
+      "closed": 1792400400000,
+      "closedBy": "01JCM400000000000000000000",
+      "tone": {
+       "kind": "branch",
+       "hue": 2
+      },
+      "nodes": [
+       "01JCM300000000000000000000"
+      ]
+     },
+     {
+      "id": "probe-c",
+      "index": 4,
+      "status": "active",
+      "recorded": false,
+      "opened": 1791972000000,
+      "closed": null,
+      "closedBy": null,
+      "tone": {
+       "kind": "branch",
+       "hue": 3
+      },
+      "nodes": [
+       "01JCM600000000000000000000"
+      ]
+     }
+    ],
+    "nodes": [
+     {
+      "id": "01JCM100000000000000000000",
+      "lane": 0,
+      "t": 1791972000000,
+      "children": [
+       "01JCM200000000000000000000"
+      ],
+      "rings": [
+       {
+        "declared": true,
+        "model": "claude-opus-5-5"
+       },
+       {
+        "declared": true,
+        "model": null
+       }
+      ],
+      "badges": [
+       "✓"
+      ],
+      "declared": true
+     },
+     {
+      "id": "01JCM200000000000000000000",
+      "lane": 0,
+      "t": 1792065600000,
+      "children": [
+       "01JCM300000000000000000000",
+       "01JCM400000000000000000000"
+      ],
+      "rings": [],
+      "badges": [],
+      "declared": true
+     },
+     {
+      "id": "01JCM300000000000000000000",
+      "lane": 3,
+      "t": 1792141200000,
+      "children": [
+       "01JCM400000000000000000000"
+      ],
+      "rings": [
+       {
+        "declared": true,
+        "model": null
+       },
+       {
+        "declared": true,
+        "model": null
+       }
+      ],
+      "badges": [
+       "D3"
+      ],
+      "declared": true
+     },
+     {
+      "id": "01JCM400000000000000000000",
+      "lane": 0,
+      "t": 1792400400000,
+      "children": [
+       "01JCM5A0000000000000000000",
+       "01JCM5B0000000000000000000"
+      ],
+      "rings": [],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "01JCM5A0000000000000000000",
+      "lane": 0,
+      "t": 1792486800000,
+      "children": [
+       "01JCM600000000000000000000"
+      ],
+      "rings": [
+       {
+        "declared": true,
+        "model": "claude-opus-5-5"
+       }
+      ],
+      "badges": [
+       "✓",
+       "1/1"
+      ],
+      "declared": true
+     },
+     {
+      "id": "01JCM5B0000000000000000000",
+      "lane": 2,
+      "t": 1792486800000,
+      "children": [],
+      "rings": [
+       {
+        "declared": true,
+        "model": null
+       }
+      ],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "01JCM600000000000000000000",
+      "lane": 4,
+      "t": 1792566000000,
+      "children": [],
+      "rings": [
+       {
+        "declared": false,
+        "model": null
+       }
+      ],
+      "badges": [],
+      "declared": false
+     }
+    ],
+    "layouts": [
+     {
+      "width": 800,
+      "height": 400,
+      "window": null,
+      "x": [
+       150,
+       254,
+       358,
+       462,
+       566,
+       670,
+       774
+      ],
+      "y": [
+       81,
+       81,
+       249,
+       81,
+       81,
+       193,
+       305
+      ],
+      "laneY": [
+       81,
+       137,
+       193,
+       249,
+       305
+      ],
+      "step": 104,
+      "left": 150,
+      "i0": 0,
+      "i1": 6,
+      "clip": null,
+      "stageWidth": 800,
+      "stageHeight": 400,
+      "xAt": [
+       [
+        1791946800000,
+        98
+       ],
+       [
+        1791961200000,
+        124
+       ],
+       [
+        1791972000000,
+        150
+       ],
+       [
+        1792065600000,
+        254
+       ],
+       [
+        1792141200000,
+        358
+       ],
+       [
+        1792400400000,
+        462
+       ],
+       [
+        1792486800000,
+        566
+       ],
+       [
+        1792486800000,
+        566
+       ],
+       [
+        1792566000000,
+        774
+       ],
+       [
+        1792018800000,
+        202
+       ],
+       [
+        1792103400000,
+        306
+       ],
+       [
+        1792270800000,
+        410
+       ],
+       [
+        1792443600000,
+        514
+       ],
+       [
+        1792486800000,
+        566
+       ],
+       [
+        1792526400000,
+        722
+       ],
+       [
+        1792576800000,
+        800
+       ],
+       [
+        1792591200000,
+        826
+       ]
+      ],
+      "tAt": [
+       [
+        145,
+        1791972000000
+       ],
+       [
+        157,
+        1791978300000
+       ],
+       [
+        261,
+        1792070688461.5386
+       ],
+       [
+        365,
+        1792158646153.8462
+       ],
+       [
+        469,
+        1792406215384.6155
+       ],
+       [
+        573,
+        1792486800000
+       ],
+       [
+        677,
+        1792492130769.2307
+       ],
+       [
+        781,
+        1792566000000
+       ],
+       [
+        779,
+        1792566000000
+       ]
+      ]
+     },
+     {
+      "width": 1280,
+      "height": 720,
+      "window": null,
+      "x": [
+       150,
+       334,
+       518,
+       702,
+       886,
+       1070,
+       1254
+      ],
+      "y": [
+       102,
+       102,
+       348,
+       102,
+       102,
+       266,
+       430
+      ],
+      "laneY": [
+       102,
+       184,
+       266,
+       348,
+       430
+      ],
+      "step": 184,
+      "left": 150,
+      "i0": 0,
+      "i1": 6,
+      "clip": null,
+      "stageWidth": 1280,
+      "stageHeight": 720,
+      "xAt": [
+       [
+        1791946800000,
+        58
+       ],
+       [
+        1791961200000,
+        104
+       ],
+       [
+        1791972000000,
+        150
+       ],
+       [
+        1792065600000,
+        334
+       ],
+       [
+        1792141200000,
+        518
+       ],
+       [
+        1792400400000,
+        702
+       ],
+       [
+        1792486800000,
+        886
+       ],
+       [
+        1792486800000,
+        886
+       ],
+       [
+        1792566000000,
+        1254
+       ],
+       [
+        1792018800000,
+        242
+       ],
+       [
+        1792103400000,
+        426
+       ],
+       [
+        1792270800000,
+        610
+       ],
+       [
+        1792443600000,
+        794
+       ],
+       [
+        1792486800000,
+        886
+       ],
+       [
+        1792526400000,
+        1162
+       ],
+       [
+        1792576800000,
+        1300
+       ],
+       [
+        1792591200000,
+        1346
+       ]
+      ],
+      "tAt": [
+       [
+        145,
+        1791972000000
+       ],
+       [
+        157,
+        1791975560869.5652
+       ],
+       [
+        341,
+        1792068476086.9565
+       ],
+       [
+        525,
+        1792151060869.5652
+       ],
+       [
+        709,
+        1792403686956.5217
+       ],
+       [
+        893,
+        1792486800000
+       ],
+       [
+        1077,
+        1792489813043.4783
+       ],
+       [
+        1261,
+        1792566000000
+       ],
+       [
+        1259,
+        1792566000000
+       ]
+      ]
+     },
+     {
+      "width": 800,
+      "height": 400,
+      "window": {
+       "from": 1792054800000,
+       "to": 1792404000000
+      },
+      "x": [
+       -74,
+       194,
+       462,
+       730,
+       998,
+       1266,
+       1534
+      ],
+      "y": [
+       81,
+       81,
+       249,
+       81,
+       81,
+       193,
+       305
+      ],
+      "laneY": [
+       81,
+       137,
+       193,
+       249,
+       305
+      ],
+      "step": 268,
+      "left": 150,
+      "i0": 1,
+      "i1": 3,
+      "clip": [
+       128,
+       800
+      ],
+      "stageWidth": 800,
+      "stageHeight": 400,
+      "xAt": [
+       [
+        1791946800000,
+        -208
+       ],
+       [
+        1791961200000,
+        -141
+       ],
+       [
+        1791972000000,
+        -74
+       ],
+       [
+        1792065600000,
+        194
+       ],
+       [
+        1792141200000,
+        462
+       ],
+       [
+        1792400400000,
+        730
+       ],
+       [
+        1792486800000,
+        998
+       ],
+       [
+        1792486800000,
+        998
+       ],
+       [
+        1792566000000,
+        1534
+       ],
+       [
+        1792018800000,
+        60
+       ],
+       [
+        1792103400000,
+        328
+       ],
+       [
+        1792270800000,
+        596
+       ],
+       [
+        1792443600000,
+        864
+       ],
+       [
+        1792486800000,
+        998
+       ],
+       [
+        1792526400000,
+        1400
+       ],
+       [
+        1792576800000,
+        1601
+       ],
+       [
+        1792591200000,
+        1668
+       ]
+      ],
+      "tAt": [
+       [
+        -79,
+        1791972000000
+       ],
+       [
+        -67,
+        1791974444776.1194
+       ],
+       [
+        201,
+        1792067574626.8657
+       ],
+       [
+        469,
+        1792147970149.2537
+       ],
+       [
+        737,
+        1792402656716.418
+       ],
+       [
+        1005,
+        1792486800000
+       ],
+       [
+        1273,
+        1792488868656.7163
+       ],
+       [
+        1541,
+        1792566000000
+       ],
+       [
+        1539,
+        1792566000000
+       ]
+      ]
+     }
+    ],
+    "scale": {
+     "x0": 0,
+     "x1": 800,
+     "x": [
+      [
+       1791946800000,
+       0
+      ],
+      [
+       1791961200000,
+       0
+      ],
+      [
+       1791972000000,
+       315
+      ],
+      [
+       1792065600000,
+       349
+      ],
+      [
+       1792141200000,
+       383
+      ],
+      [
+       1792400400000,
+       417
+      ],
+      [
+       1792486800000,
+       451
+      ],
+      [
+       1792486800000,
+       451
+      ],
+      [
+       1792566000000,
+       485
+      ],
+      [
+       1792018800000,
+       332
+      ],
+      [
+       1792103400000,
+       366
+      ],
+      [
+       1792270800000,
+       400
+      ],
+      [
+       1792443600000,
+       434
+      ],
+      [
+       1792486800000,
+       451
+      ],
+      [
+       1792526400000,
+       468
+      ],
+      [
+       1792576800000,
+       800
+      ],
+      [
+       1792591200000,
+       800
+      ]
+     ],
+     "joints": [
+      {
+       "x": 332,
+       "from": 1791972000000,
+       "to": 1792065600000
+      },
+      {
+       "x": 366,
+       "from": 1792065600000,
+       "to": 1792141200000
+      },
+      {
+       "x": 400,
+       "from": 1792141200000,
+       "to": 1792400400000
+      },
+      {
+       "x": 434,
+       "from": 1792400400000,
+       "to": 1792486800000
+      },
+      {
+       "x": 468,
+       "from": 1792486800000,
+       "to": 1792566000000
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "beta",
+   "timeline": {
+    "project": "beta",
+    "project_url": null,
+    "main_direction": "principale",
+    "milestones": [
+     {
+      "opens_direction": null,
+      "process": {
+       "round": 1,
+       "checks": [],
+       "defects": {
+        "found": null,
+        "closed": null
+       }
+      },
+      "author": {
+       "role": "cronista",
+       "agent": "claude",
+       "model": "claude-sonnet-5-5",
+       "session": "ctx_synthetic"
+      },
+      "id": "01JCB100000000000000000000",
+      "ts": "2026-10-18T08:00:00Z",
+      "kind": "milestone",
+      "direction": "principale",
+      "parents": [],
+      "title": "Beta's only milestone",
+      "health": "healthy",
+      "refs": {
+       "issue": [
+        5
+       ],
+       "commit": [
+        "1111111"
+       ],
+       "report": [
+        ".regia/report/none.md"
+       ]
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#5",
+         "url": null
+        }
+       ],
+       "commit": [
+        {
+         "text": "1111111",
+         "url": null,
+         "hash": "1111111"
+        }
+       ],
+       "report": [
+        {
+         "text": ".regia/report/none.md",
+         "path": "<root>/projects/beta/.regia/report/none.md",
+         "kind": "relative",
+         "exists": false
+        }
+       ]
+      }
+     }
+    ],
+    "directions": [],
+    "aggregates": []
+   },
+   "expected": {
+    "lanes": [
+     {
+      "id": "principale",
+      "index": 0,
+      "status": "active",
+      "recorded": false,
+      "opened": 1792310400000,
+      "closed": null,
+      "closedBy": null,
+      "tone": {
+       "kind": "main"
+      },
+      "nodes": [
+       "01JCB100000000000000000000"
+      ]
+     }
+    ],
+    "nodes": [
+     {
+      "id": "01JCB100000000000000000000",
+      "lane": 0,
+      "t": 1792310400000,
+      "children": [],
+      "rings": [
+       {
+        "declared": false,
+        "model": null
+       }
+      ],
+      "badges": [],
+      "declared": false
+     }
+    ],
+    "layouts": [
+     {
+      "width": 800,
+      "height": 400,
+      "window": null,
+      "x": [
+       150
+      ],
+      "y": [
+       102
+      ],
+      "laneY": [
+       102
+      ],
+      "step": 624,
+      "left": 150,
+      "i0": 0,
+      "i1": 0,
+      "clip": null,
+      "stageWidth": 800,
+      "stageHeight": 400,
+      "xAt": [
+       [
+        1792285200000,
+        150
+       ],
+       [
+        1792299600000,
+        150
+       ],
+       [
+        1792310400000,
+        150
+       ],
+       [
+        1792321200000,
+        150
+       ],
+       [
+        1792335600000,
+        150
+       ]
+      ],
+      "tAt": []
+     },
+     {
+      "width": 1280,
+      "height": 720,
+      "window": null,
+      "x": [
+       150
+      ],
+      "y": [
+       102
+      ],
+      "laneY": [
+       102
+      ],
+      "step": 1104,
+      "left": 150,
+      "i0": 0,
+      "i1": 0,
+      "clip": null,
+      "stageWidth": 1280,
+      "stageHeight": 720,
+      "xAt": [
+       [
+        1792285200000,
+        150
+       ],
+       [
+        1792299600000,
+        150
+       ],
+       [
+        1792310400000,
+        150
+       ],
+       [
+        1792321200000,
+        150
+       ],
+       [
+        1792335600000,
+        150
+       ]
+      ],
+      "tAt": []
+     },
+     {
+      "width": 800,
+      "height": 400,
+      "window": null,
+      "x": [
+       150
+      ],
+      "y": [
+       102
+      ],
+      "laneY": [
+       102
+      ],
+      "step": 624,
+      "left": 150,
+      "i0": 0,
+      "i1": 0,
+      "clip": null,
+      "stageWidth": 800,
+      "stageHeight": 400,
+      "xAt": [
+       [
+        1792285200000,
+        150
+       ],
+       [
+        1792299600000,
+        150
+       ],
+       [
+        1792310400000,
+        150
+       ],
+       [
+        1792321200000,
+        150
+       ],
+       [
+        1792335600000,
+        150
+       ]
+      ],
+      "tAt": []
+     }
+    ],
+    "scale": {
+     "x0": 0,
+     "x1": 800,
+     "x": [
+      [
+       1792285200000,
+       400
+      ],
+      [
+       1792299600000,
+       400
+      ],
+      [
+       1792310400000,
+       400
+      ],
+      [
+       1792321200000,
+       400
+      ],
+      [
+       1792335600000,
+       400
+      ]
+     ],
+     "joints": []
+    }
+   }
+  }
+ ]
+}

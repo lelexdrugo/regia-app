@@ -12,12 +12,13 @@ import { contrast } from "./contrast.js";
 import { keyboard } from "./keyboard.js";
 import { language } from "./language.js";
 import { limits } from "./limits.js";
+import { moviola } from "./moviola.js";
 import { policy, serve } from "./serve.js";
 import { v07 } from "./v07.js";
 
 const UI = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TARGET = resolve(UI, "../../target");
-const PROOFS = { contrast, catalog, limits, v07, language, keyboard, brief };
+const PROOFS = { contrast, moviola, catalog, limits, v07, language, keyboard, brief };
 
 const chosen = process.argv.length > 2 ? process.argv.slice(2) : Object.keys(PROOFS);
 const results = [];
