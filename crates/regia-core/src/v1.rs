@@ -208,6 +208,14 @@ impl TrackerBinding {
         &self.objective
     }
 
+    /// The label of `maturity`.
+    pub fn maturity_label(&self, maturity: Maturity) -> &str {
+        match maturity {
+            Maturity::Draft => &self.draft,
+            Maturity::Ready => &self.ready,
+        }
+    }
+
     /// The status an option stands for, by its name, as a change of Status names it; `None` for a name
     /// the format does not know.
     pub fn status_of_name(&self, name: &str) -> Option<Status> {
