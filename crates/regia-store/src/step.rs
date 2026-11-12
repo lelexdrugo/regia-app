@@ -49,6 +49,17 @@ impl OpenedStep {
     }
 }
 
+/// What [`Store::record_own_comment`] did.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OwnComment {
+    /// The comment's id is among the open step's comments: added now, or there already.
+    Recorded,
+    /// No step is open on the project: the comment stays an event.
+    NoStep,
+    /// The open step is another session's: its comments are its own, and this one stays an event.
+    AnotherSession,
+}
+
 /// What [`Store::close_step`] did.
 #[derive(Debug, Clone, PartialEq)]
 pub enum StepClosing {
@@ -172,6 +183,59 @@ impl Store {
         }
     }
 
+    /// The session that opened the project's step, while one is open and records one as text: what tells
+    /// a comment of the orchestrator from any other. Read without the write lock.
+    ///
+    /// # Errors
+    ///
+    /// As [`Store::cursor`].
+    pub fn step_session(&self, project: &ProjectId) -> Result<Option<String>, StoreError> {
+        let step = self.cursor(project, &CursorName::step())?;
+        Ok(step.get(&format().step.session).and_then(Value::as_str).map(str::to_owned))
+    }
+
+    /// Records `comment`, the id of a comment this session has just written on an issue of the project,
+    /// among the comments of the project's open step (M4 of the dossier's conformance study), in one
+    /// transaction, so two sessions that comment at once lose neither id. The step's end copies them into the
+    /// events cursor, and the precheck does not count them as new. A step that another session opened is
+    /// left alone, unless one of the two sessions is unknown: in doubt the id is recorded, as the prototype
+    /// records it.
+    ///
+    /// # Errors
+    ///
+    /// [`StoreError::InUse`] when the database is held beyond the wait, [`StoreError::StepComments`] when
+    /// the step's comments are not a list, or when it cannot be read or written.
+    pub fn record_own_comment(&self, project: &ProjectId, comment: u64, session: Option<&str>) -> Result<OwnComment, StoreError> {
+        let kinds = &format().kinds;
+        let keys = &format().step;
+        let step_key = CursorName::step().key(project);
+        let written = self.db.write(|conn| {
+            let value = db::select(conn, &kinds.cursor, &step_key)?.and_then(|doc| doc.get(&format().cursor.value).cloned());
+            let Some(Value::Object(mut step)) = value else { return Ok(OwnComment::NoStep) };
+            let theirs = step.get(&keys.session).filter(|theirs| truthy(theirs));
+            if let (Some(theirs), Some(ours)) = (theirs, session.filter(|ours| !ours.is_empty()))
+                && theirs.as_str() != Some(ours)
+            {
+                return Ok(OwnComment::AnotherSession);
+            }
+            let mut comments = match step.get(&keys.comments).filter(|comments| truthy(comments)) {
+                Some(comments) => comments.as_array().cloned().ok_or(StoreError::StepComments)?,
+                None => Vec::new(),
+            };
+            if !comments.iter().any(|id| is_number(id, comment)) {
+                comments.push(Value::from(comment));
+                step.insert(keys.comments.clone(), Value::Array(comments));
+                db::upsert(conn, &kinds.cursor, &step_key, &cursor_doc(Value::Object(step), self.clock.now()))?;
+            }
+            Ok(OwnComment::Recorded)
+        });
+        match written {
+            Ok(recorded) => Ok(recorded),
+            Err(TxError::Busy) => Err(StoreError::InUse),
+            Err(TxError::Failed(error)) => Err(error),
+        }
+    }
+
     /// Closes the caller's open step on the project in one transaction: the events cursor gets the step's
     /// instant, its comments sorted and once each, and `reports`, the reports it processed, by file name
     /// with their dates; the step cursor is emptied. Releasing the lock is the caller's, after.
@@ -224,6 +288,11 @@ fn sorted_comments(comments: Option<&Value>) -> Result<Vec<Value>, StoreError> {
     numbers.sort_unstable();
     numbers.dedup();
     Ok(numbers.into_iter().map(Value::from).collect())
+}
+
+/// Whether a stored comment is `id`, as Python's `in` compares a number: `101.0` is `101`.
+fn is_number(value: &Value, id: u64) -> bool {
+    value.as_u64() == Some(id) || value.as_f64().is_some_and(|number| number == id as f64)
 }
 
 /// Python's truth of a JSON value: `null`, `false`, zero and empty are false.

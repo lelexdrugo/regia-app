@@ -37,7 +37,7 @@ pub use lease::{LeaseEntry, TaskNumber};
 pub use lock::{LockOutcome, LockState, LockStatus, LockView, ViewField};
 pub use state_file::{read_state_file, remove_state_file, write_state_file};
 pub use step::{
-    EventsCursor, EventsParts, OpenedStep, OwnParts, StepClosing, StepOpening, generated_holder, generated_holder_prefix, reports_folder,
+    EventsCursor, EventsParts, OpenedStep, OwnComment, OwnParts, StepClosing, StepOpening, generated_holder, generated_holder_prefix, reports_folder,
     step_commit_message,
 };
 pub use time::{Precision, WallTime};

@@ -7,8 +7,8 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use regia_store::{
-    CursorName, EventsCursor, EventsParts, Holder, LeaseEntry, LockOutcome, LockState, ManualClock, OwnParts, ProjectId, StepClosing,
-    StepOpening, Store, StoreError, TaskNumber, Ttl, WallTime, generated_holder, reports_folder, step_commit_message,
+    CursorName, EventsCursor, EventsParts, Holder, LeaseEntry, LockOutcome, LockState, ManualClock, OwnComment, OwnParts, ProjectId,
+    StepClosing, StepOpening, Store, StoreError, TaskNumber, Ttl, WallTime, generated_holder, reports_folder, step_commit_message,
 };
 use serde_json::{Value, json};
 
@@ -518,4 +518,109 @@ fn a_new_step_after_the_end_is_not_emptied() {
     store.open_step(&project("alpha"), &holder("other"), None, store.now()).unwrap();
     let value = stored(&store, "cursor", &step_key("alpha")).unwrap()[name("cursor", "value")].clone();
     assert_eq!(value[name("step", "holder")], json!("other"));
+}
+
+/// The comments of the open step, as stored.
+fn step_comments(store: &Store, project: &str) -> Value {
+    stored(store, "cursor", &step_key(project)).unwrap()[name("cursor", "value")][name("step", "comments")].clone()
+}
+
+/// `test_registra_l_id_solo_con_un_passo_aperto` (M4, #445): an id is recorded only while a step is open;
+/// the end copies it into the events cursor, and a comment after the end is not the step's.
+#[test]
+fn an_own_comment_is_recorded_only_while_a_step_is_open() {
+    let (store, _) = store("own-comment");
+    let alpha = project("alpha");
+    assert_eq!(store.record_own_comment(&alpha, 101, Some("s-1")).unwrap(), OwnComment::NoStep);
+    assert_eq!(store.cursor(&alpha, &CursorName::step()).unwrap(), Value::Null, "nothing is written without a step");
+    store.acquire_lock(&alpha, &holder("w1"), secs(1800)).unwrap();
+    store.open_step(&alpha, &holder("w1"), Some("s-1"), store.now()).unwrap();
+    assert_eq!(store.record_own_comment(&alpha, 102, Some("s-1")).unwrap(), OwnComment::Recorded);
+    assert_eq!(step_comments(&store, "alpha"), json!([102]));
+    assert_eq!(store.step_session(&alpha).unwrap().as_deref(), Some("s-1"));
+    store.close_step(&alpha, &holder("w1"), &BTreeMap::new()).unwrap();
+    store.release_lock(&alpha, &holder("w1")).unwrap();
+    assert_eq!(store.record_own_comment(&alpha, 103, Some("s-1")).unwrap(), OwnComment::NoStep);
+    assert_eq!(store.step_session(&alpha).unwrap(), None, "no step, no session");
+    let EventsCursor::Parts(parts) = store.events_cursor(&alpha).unwrap() else { panic!("the step's end writes the cursor") };
+    assert_eq!(parts.own.unwrap().comments, Some(json!([102])), "only the comment written during the step");
+}
+
+/// `test_un_altra_sessione_non_conta_come_evento_proprio` and `test_sessione_sconosciuta_registra`: another
+/// session's step is left alone, and with either session unknown the id is recorded. An id already there
+/// is not written again.
+#[test]
+fn another_session_s_step_is_left_alone_unless_a_session_is_unknown() {
+    let (store, _) = store("own-comment-sessions");
+    let alpha = project("alpha");
+    let fields = |session: Value| {
+        step_row(&[("version", json!(1)), ("holder", json!("w1")), ("session", session), ("t", json!(T0)), ("comments", json!([]))])
+    };
+    raw_row(&store, "cursor", &step_key("alpha"), &fields(json!("orchestrator-session")));
+    assert_eq!(store.record_own_comment(&alpha, 7, Some("a-worker")).unwrap(), OwnComment::AnotherSession);
+    assert_eq!(step_comments(&store, "alpha"), json!([]));
+    assert_eq!(store.record_own_comment(&alpha, 7, None).unwrap(), OwnComment::Recorded, "this session unknown");
+    assert_eq!(store.record_own_comment(&alpha, 8, Some("")).unwrap(), OwnComment::Recorded, "an empty id is none");
+    assert_eq!(step_comments(&store, "alpha"), json!([7, 8]));
+    let generation = |store: &Store| store.rows().unwrap().into_iter().find(|row| row.key == step_key("alpha")).unwrap().generation;
+    let before = generation(&store);
+    assert_eq!(store.record_own_comment(&alpha, 7, Some("orchestrator-session")).unwrap(), OwnComment::Recorded);
+    assert_eq!(generation(&store), before, "an id already there writes nothing");
+    let (store, _) = store_with_step("own-comment-no-session", &fields(Value::Null));
+    assert_eq!(store.record_own_comment(&alpha, 9, Some("a-worker")).unwrap(), OwnComment::Recorded, "the step's session unknown");
+    assert_eq!(store.step_session(&alpha).unwrap(), None);
+}
+
+fn store_with_step(label: &str, row: &str) -> (Store, ManualClock) {
+    let (store, clock) = store(label);
+    raw_row(&store, "cursor", &step_key("alpha"), row);
+    (store, clock)
+}
+
+/// The step's comments as the prototype reads them: missing or empty is none, a number written as a float
+/// is the same id, and a value that is not a list is refused before anything is written.
+#[test]
+fn the_step_s_comments_read_as_the_prototype_reads_them() {
+    let alpha = project("alpha");
+    let row = |comments: Value| step_row(&[("holder", json!("w1")), ("t", json!(T0)), ("comments", comments)]);
+    let (store, _) = store_with_step("own-comment-float", &row(json!([101.0])));
+    assert_eq!(store.record_own_comment(&alpha, 101, None).unwrap(), OwnComment::Recorded);
+    assert_eq!(step_comments(&store, "alpha"), json!([101.0]), "101.0 is 101");
+    let (store, _) = store_with_step("own-comment-missing", &step_row(&[("holder", json!("w1")), ("t", json!(T0))]));
+    store.record_own_comment(&alpha, 5, None).unwrap();
+    assert_eq!(step_comments(&store, "alpha"), json!([5]));
+    let (store, _) = store_with_step("own-comment-not-a-list", &row(json!("abc")));
+    assert!(matches!(store.record_own_comment(&alpha, 5, None), Err(StoreError::StepComments)));
+    assert_eq!(step_comments(&store, "alpha"), json!("abc"));
+    let (store, _) = store_with_step("own-comment-not-an-object", &json!({name("cursor", "value"): [1, 2]}).to_string());
+    assert_eq!(store.record_own_comment(&alpha, 5, None).unwrap(), OwnComment::NoStep);
+    assert_eq!(store.step_session(&alpha).unwrap(), None);
+}
+
+/// `test_commenti_concorrenti_non_si_perdono`: writers that record at once, each on its own connection as
+/// processes are, lose no id.
+#[test]
+fn concurrent_comments_lose_no_id() {
+    let (store, _) = store("own-comment-concurrent");
+    let alpha = project("alpha");
+    store.acquire_lock(&alpha, &holder("w1"), secs(1800)).unwrap();
+    store.open_step(&alpha, &holder("w1"), None, store.now()).unwrap();
+    let dir = store.folder().to_path_buf();
+    let barrier = std::sync::Arc::new(std::sync::Barrier::new(8));
+    let handles: Vec<_> = (2001..2009)
+        .map(|id| {
+            let (barrier, dir) = (barrier.clone(), dir.clone());
+            std::thread::spawn(move || {
+                let store = Store::at(dir).unwrap();
+                barrier.wait();
+                store.record_own_comment(&project("alpha"), id, None).unwrap()
+            })
+        })
+        .collect();
+    for handle in handles {
+        assert_eq!(handle.join().unwrap(), OwnComment::Recorded);
+    }
+    let mut ids: Vec<u64> = step_comments(&store, "alpha").as_array().unwrap().iter().map(|id| id.as_u64().unwrap()).collect();
+    ids.sort_unstable();
+    assert_eq!(ids, (2001..2009).collect::<Vec<u64>>());
 }
