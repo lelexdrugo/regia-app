@@ -1,0 +1,24 @@
+[
+  {
+    "argv": [
+      "issue",
+      "edit",
+      "6",
+      "--repo",
+      "example/tracker",
+      "--add-label",
+      "progetto:beta",
+      "--remove-label",
+      "progetto:alpha"
+    ],
+    "stdin": null
+  },
+  {
+    "arguments": "input:{issueId:$p,subIssueId:$c,replaceParent:true}",
+    "mutation": "addSubIssue",
+    "variables": {
+      "c": "ISSUE_6",
+      "p": "ISSUE_8"
+    }
+  }
+]

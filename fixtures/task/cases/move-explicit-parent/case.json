@@ -1,0 +1,24 @@
+{
+  "_note": "Synthetic. #6 from alpha to beta under #8 given by hand, not beta's Objective: the count of #8's sub-issues, the edit of the labels, then addSubIssue with replaceParent under #8. The mirror of the field is a warning on stderr.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "move",
+    "6",
+    "--project",
+    "beta",
+    "--parent",
+    "8",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "sposta",
+    "6",
+    "--progetto",
+    "beta",
+    "--padre",
+    "8"
+  ]
+}

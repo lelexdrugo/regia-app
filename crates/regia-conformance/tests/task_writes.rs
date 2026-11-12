@@ -30,7 +30,7 @@ use regia_identity::{env_var, prototype_env_var};
 use serde_json::Value;
 
 /// The writes of the `task` family this binary runs natively.
-const PORTED: [&str; 3] = ["task status", "task unblock", "task new"];
+const PORTED: [&str; 7] = ["task status", "task unblock", "task new", "task maturity", "task block", "task parent", "task move"];
 
 /// The calls to `gh` of some cases, reads included, which the tests check without the prototype: by kind
 /// as the fake logs them. The cross test checks every case against the prototype's own.
