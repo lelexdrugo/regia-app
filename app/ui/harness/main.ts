@@ -22,6 +22,7 @@ import Control from "./Control.svelte";
 import corpusFile from "./corpus.json";
 import documentsFile from "./documents.json";
 import { pseudo } from "./pseudo";
+import Stopped from "./Stopped.svelte";
 
 declare global {
   interface Window {
@@ -84,7 +85,20 @@ function huge(): BriefView {
   };
 }
 
-function brief(data: string): () => Promise<BriefView> {
+function fixtureOf(data: string): BriefView {
+  const view = data === "huge" ? huge() : BRIEFS[data];
+  if (!view) {
+    throw new Error(`no brief fixture named ${data}`);
+  }
+  return view;
+}
+
+/**
+ * The brief's answer for the address. Two negative controls of prove/brief.js change what the view is given, as a
+ * view with the mistake would show it: `sort=number`, each list sorted by number; `ported=all`, no section named
+ * as not read.
+ */
+function brief(data: string, params: URLSearchParams): () => Promise<BriefView> {
   if (data === "loading") {
     return () => new Promise<BriefView>(() => {});
   }
@@ -92,11 +106,16 @@ function brief(data: string): () => Promise<BriefView> {
     // The app's command rejects with the core's error, as text.
     return () => Promise.reject(fixtures.error);
   }
-  const view = data === "huge" ? huge() : BRIEFS[data];
-  if (!view) {
-    throw new Error(`no brief fixture named ${data}`);
+  let view = fixtureOf(data);
+  if (params.get("sort") === "number") {
+    const sorted = (tasks: BriefView["ready"]) => [...tasks].sort((a, b) => a.number - b.number);
+    view = { ...view, waiting_on_owner: sorted(view.waiting_on_owner), session: sorted(view.session), ready: sorted(view.ready), in_progress: sorted(view.in_progress) };
   }
-  return () => Promise.resolve(view);
+  if (params.get("ported") === "all") {
+    view = { ...view, not_ported: [] };
+  }
+  const answer = view;
+  return () => Promise.resolve(answer);
 }
 
 function documentOf(data: string): Document {
@@ -144,7 +163,7 @@ let mounts = 0;
 function parts(route: string) {
   const [path = "", query = ""] = route.replace(/^#\/?/, "").split("?");
   const params = new URLSearchParams(query);
-  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota"].map((name) => params.get(name)).join("&");
+  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota", "sort", "ported"].map((name) => params.get(name)).join("&");
   return { view: path.split("/")[0] ?? "", query, params, fixture };
 }
 
@@ -197,7 +216,7 @@ async function show(): Promise<void> {
     const quota = used === null ? null : { service: "claude", used: Number(used) };
     // What the app decided today: none in the app yet (#477), some in the demo's and the worst case's fixtures.
     const done = fixtures.done[data] ?? [];
-    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data), done, ...settingsOf(params), quota, onsettled };
+    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data, params), done, ...settingsOf(params), quota, onsettled };
     mounted.push(mount(App, { target: root, props }));
     if (view === "brief" && data === "loading") {
       await tick();
@@ -220,6 +239,9 @@ async function show(): Promise<void> {
       break;
     case "control":
       mounted.push(mount(Control, { target: root, props: { strings: catalogOf } }));
+      break;
+    case "stopped":
+      mounted.push(mount(Stopped, { target: root, props: { brief: fixtureOf(data) } }));
       break;
     case "v07":
       window.harnessChecks = await v07(corpus, params.get("renderer") === "unsafe" ? unsafe : appRenderer(catalogOf));

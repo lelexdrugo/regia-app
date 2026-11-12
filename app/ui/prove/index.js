@@ -1,10 +1,11 @@
 // The frontend's proofs (README.md): the contrast of the colour tokens, the catalog in a pseudo-locale, the
 // limits of every view and state, and V07 on the DOM. Each one checks the app, then a negative control of its
 // own, and fails if the app fails or if the control passes. `npm run prove` builds the harness first.
-//   node prove/index.js [contrast] [catalog] [limits] [v07] [language] [keyboard]
+//   node prove/index.js [contrast] [catalog] [limits] [v07] [language] [keyboard] [brief]
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { brief } from "./brief.js";
 import { catalog } from "./catalog.js";
 import { launch } from "./cdp.js";
 import { contrast } from "./contrast.js";
@@ -16,7 +17,7 @@ import { v07 } from "./v07.js";
 
 const UI = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TARGET = resolve(UI, "../../target");
-const PROOFS = { contrast, catalog, limits, v07, language, keyboard };
+const PROOFS = { contrast, catalog, limits, v07, language, keyboard, brief };
 
 const chosen = process.argv.length > 2 ? process.argv.slice(2) : Object.keys(PROOFS);
 const results = [];
