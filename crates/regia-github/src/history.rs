@@ -125,7 +125,7 @@ mod tests {
         nodes{... on ProjectV2ItemStatusChangedEvent{createdAt status}}}}}}}"#;
 
     /// The labels of a task of project `p`.
-    const TASK: &[&str] = &["progetto:p"];
+    const TASK: &[&str] = &["project:p"];
 
     type Read = Result<Vec<StatusHistory>, TrackerError>;
 
@@ -200,7 +200,7 @@ mod tests {
             read.unwrap(),
             [StatusHistory {
                 number: 7,
-                labels: vec!["progetto:p".to_owned()],
+                labels: vec!["project:p".to_owned()],
                 changes: vec![]
             }]
         );
@@ -210,10 +210,10 @@ mod tests {
     #[test]
     fn an_emptied_status_is_none() {
         let changes = [
-            (json!("Proposta"), "2026-01-05T10:00:00Z"),
+            (json!("Proposal"), "2026-01-05T10:00:00Z"),
             (Value::Null, "2026-01-06T10:00:00Z"),
             (json!(""), "2026-01-07T10:00:00Z"),
-            (json!("Approvato"), "2026-01-08T10:00:00Z"),
+            (json!("Approved"), "2026-01-08T10:00:00Z"),
         ];
         let (read, _) = reading(vec![answer(&[issue(9, TASK, &changes)], None)]);
         let at = |day: u8| format!("2026-01-0{day}T10:00:00Z");
@@ -221,10 +221,10 @@ mod tests {
         assert_eq!(
             read.unwrap()[0].changes,
             [
-                (named("Proposta"), at(5)),
+                (named("Proposal"), at(5)),
                 (None, at(6)),
                 (None, at(7)),
-                (named("Approvato"), at(8))
+                (named("Approved"), at(8))
             ]
         );
     }
@@ -232,12 +232,12 @@ mod tests {
     /// The adapter does not filter: an Objective stays, with its labels, for the core to leave out.
     #[test]
     fn an_objective_stays_with_its_labels() {
-        let proposal = [(json!("Proposta"), "2026-01-05T10:00:00Z")];
-        let objective = issue(1, &["progetto:p", "tipo:obiettivo"], &proposal);
+        let proposal = [(json!("Proposal"), "2026-01-05T10:00:00Z")];
+        let objective = issue(1, &["project:p", "kind:objective"], &proposal);
         let page = answer(&[objective, issue(2, TASK, &proposal)], None);
         let read = reading(vec![page]).0.unwrap();
         assert_eq!(numbers(&read), [1, 2]);
-        assert_eq!(read[0].labels, ["progetto:p", "tipo:obiettivo"]);
+        assert_eq!(read[0].labels, ["project:p", "kind:objective"]);
         assert_eq!(read[0].changes, read[1].changes);
     }
 
