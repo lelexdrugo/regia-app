@@ -1,0 +1,6 @@
+{
+  "_note": "Synthetic. A session with only an Orca id declares alpha, with no task: the id is the session's and Orca its agent; the task is null.",
+  "args": ["declare", "--project", "alpha", "--json"],
+  "python": ["--json", "dichiara", "--progetto", "alpha"],
+  "env": {"ORCA_AGENT_SESSION_ID": "orca-fixture-1"}
+}

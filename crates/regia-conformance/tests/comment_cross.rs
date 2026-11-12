@@ -26,8 +26,8 @@ use std::path::{Path, PathBuf};
 
 use regia_conformance::{
     Case, CliRun, FIXTURE_NOW, Recorded, StateRow, fixed_now_driver, fixture_for_python, fixture_for_rust, json_diff, lf, log_var,
-    prepare_case_state, prepare_state_dir, regia_binary, run_case_on_dossier, state_rows, translate_python, workspace_root, write_state,
-    writes_of_run,
+    place_args, prepare_case_state, prepare_dossier, prepare_state_dir, regia_binary, run_case_on_dossier, state_rows, translate_python,
+    workspace_root, write_state, writes_of_run,
 };
 use regia_core::{SignatureRole, sign, signature_role};
 use regia_exec::{Pin, Program, python};
@@ -389,6 +389,7 @@ fn the_prototype_calls_gh_as_the_product_does_on_each_comment_case() {
     for case in Case::of_family("comment") {
         let dir = prepare_case_state(&format!("python-calls-{}", case.name), &case);
         let argv = case.spec.python.clone().expect("a case of the facade");
+        let argv = case.spec.dossier.as_ref().map_or_else(|| argv.clone(), |spec| place_args(&argv, &prepare_dossier(&dir, spec)));
         let argv: Vec<&str> = argv.iter().map(String::as_str).collect();
         let session = case.spec.env.get("CLAUDE_CODE_SESSION_ID").map(String::as_str);
         let (exit, _, stderr) = prototype_regia(&home, &dir, &case.responses_path(), session, &argv);
@@ -426,7 +427,18 @@ fn every_declare_case_natively_gives_the_prototype_s_outcome_and_line() {
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
         assert!(!run.state.join(regia_store::database_name()).exists(), "{}: the state database is not opened", case.name);
         if case.spec.exit == 0 {
-            let line = r#"{"v":1,"ts":"2026-01-10T09:00:00Z","sessione":"session-fixture-1","agente":"claude","claude":"session-fixture-1","progetto":"alpha","task":7,"comando":"dichiara","ruolo":"worker"}"#;
+            let line = match case.name.as_str() {
+                "declare-session" => {
+                    r#"{"v":1,"ts":"2026-01-10T09:00:00Z","sessione":"session-fixture-1","agente":"claude","claude":"session-fixture-1","progetto":"alpha","task":7,"comando":"dichiara","ruolo":"worker"}"#
+                }
+                "declare-text" => {
+                    r#"{"v":1,"ts":"2026-01-10T09:00:00Z","sessione":"session-fixture-1","agente":"claude","claude":"session-fixture-1","progetto":"alpha","task":7,"comando":"dichiara"}"#
+                }
+                "declare-orca-session" => {
+                    r#"{"v":1,"ts":"2026-01-10T09:00:00Z","sessione":"orca-fixture-1","agente":"orca","orca":"orca-fixture-1","progetto":"alpha","comando":"dichiara"}"#
+                }
+                other => panic!("{other}: a case of `declare` with no line written here"),
+            };
             assert_eq!(log_lines(&run.state), [line], "{}", case.name);
         } else {
             assert!(!run.state.join("dichiarazioni").exists(), "{}: nothing without a session", case.name);

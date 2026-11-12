@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. The open step of alpha is another session's: the comment is signed chat, not orchestratore, and its id stays out of that step, so for the precheck it stays an event (M3, M4).",
+  "scenario": "tracker",
+  "args": ["comment", "5", "--body", "A worker's question.", "--json"],
+  "python": ["--json", "commento", "5", "--corpo", "A worker's question."],
+  "env": {"CLAUDE_CODE_SESSION_ID": "fixture-worker"},
+  "gh": {"cli": {"issue comment": "https://tracker.invalid/issues/5#issuecomment-9210\n"}},
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {"v": 1, "proprietario": "fixture-session", "sessione": "fixture-session", "t": "2026-01-10T08:30:00Z", "commenti": []},
+        "aggiornato": "2026-01-10T08:30:00Z"
+      }
+    }
+  ],
+  "state_after": true
+}

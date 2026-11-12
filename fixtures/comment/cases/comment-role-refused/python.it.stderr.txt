@@ -1,0 +1,5 @@
+usage: regia commento [-h] [--corpo CORPO] [--corpo-file CORPO_FILE]
+                      [--per-conto-del-titolare] [--ruolo {worker,chat}]
+                      [--json]
+                      numero
+regia commento: error: argument --ruolo: invalid choice: 'orchestratore' (choose from worker, chat)

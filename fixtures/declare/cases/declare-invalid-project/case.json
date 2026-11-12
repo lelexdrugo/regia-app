@@ -1,0 +1,7 @@
+{
+  "_note": "Synthetic. A project id outside lowercase letters, digits and hyphens: nothing is recorded, exit 1.",
+  "args": ["declare", "--project", "Bad_Id", "--json"],
+  "python": ["--json", "dichiara", "--progetto", "Bad_Id"],
+  "env": {"CLAUDE_CODE_SESSION_ID": "session-fixture-1"},
+  "exit": 1
+}

@@ -1,0 +1,6 @@
+{
+  "_note": "Synthetic. A session declares alpha #7, in text: the line names the project, the task and the session.",
+  "args": ["declare", "--project", "alpha", "--task", "7"],
+  "python": ["dichiara", "--progetto", "alpha", "--task", "7"],
+  "env": {"CLAUDE_CODE_SESSION_ID": "session-fixture-1"}
+}

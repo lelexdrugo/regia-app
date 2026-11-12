@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. The labels of #9 cannot be read (the tracker has no such issue to view): the comment is written all the same, signed chat although this session holds alpha's step, and its id is not recorded, with a warning on stderr and exit 0 (M4).",
+  "scenario": "tracker",
+  "args": ["comment", "9", "--body", "A note.", "--json"],
+  "python": ["--json", "commento", "9", "--corpo", "A note."],
+  "env": {"CLAUDE_CODE_SESSION_ID": "fixture-session"},
+  "gh": {"cli": {"issue comment": "https://tracker.invalid/issues/9#issuecomment-9212\n"}},
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {"v": 1, "proprietario": "fixture-session", "sessione": "fixture-session", "t": "2026-01-10T08:30:00Z", "commenti": []},
+        "aggiornato": "2026-01-10T08:30:00Z"
+      }
+    }
+  ],
+  "state_after": true
+}

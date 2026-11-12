@@ -1,0 +1,9 @@
+{
+  "_note": "Synthetic. The body from a file, which wins over --body: read as Python reads text, `\\r\\n` and a lone `\\r` as `\\n`, its trailing blanks gone before the signature (M1).",
+  "scenario": "tracker",
+  "dossier": {"git": false, "files": {"body.md": "Line one.\r\nLine two.\rLine three.\n\n  \n"}},
+  "args": ["comment", "5", "--body", "not this", "--body-file", "{dossier}/body.md", "--role", "worker", "--json"],
+  "python": ["--json", "commento", "5", "--corpo", "not this", "--corpo-file", "{dossier}/body.md", "--ruolo", "worker"],
+  "env": {"CLAUDE_CODE_SESSION_ID": "fixture-worker"},
+  "gh": {"cli": {"issue comment": "https://tracker.invalid/issues/5#issuecomment-9208\n"}}
+}

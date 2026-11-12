@@ -1529,6 +1529,225 @@
           }
         ]
       }
+    },
+    "PROJECT_FIXTURE": {
+      "fields": {
+        "nodes": [
+          {
+            "__typename": "ProjectV2Field",
+            "id": "FIELD_TITLE",
+            "name": "Title"
+          },
+          {
+            "__typename": "ProjectV2SingleSelectField",
+            "id": "FIELD_FIXTURE",
+            "name": "Status",
+            "options": [
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-c3",
+                "name": "Approvato"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-e5",
+                "name": "Decisione"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-f6",
+                "name": "Fatto"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-d4",
+                "name": "In corso"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-a1",
+                "name": "Inbox"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-b2",
+                "name": "Proposta"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-g7",
+                "name": "Scartato"
+              }
+            ]
+          }
+        ]
+      },
+      "items": {
+        "nodes": [
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 1
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_1"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 2
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_2"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 3
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_3"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 4
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_4"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 5
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_5"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 6
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_6"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 7
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_7"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:beta"
+                  }
+                ]
+              },
+              "number": 8
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_8"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      }
     }
   },
   "sub_issue_pages": {},

@@ -1,0 +1,14 @@
+[
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "5",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "A worker's question.\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=fixture-worker -->"
+  }
+]

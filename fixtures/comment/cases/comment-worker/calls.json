@@ -1,0 +1,14 @@
+[
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "5",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "A report.\n\n— regia · worker\n<!-- regia:autore ruolo=worker sessione=fixture-worker -->"
+  }
+]

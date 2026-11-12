@@ -1,0 +1,21 @@
+[
+  {
+    "doc": {
+      "aggiornato": "2026-01-10T09:00:00.000+00:00",
+      "valore": {
+        "commenti": [
+          41,
+          9209
+        ],
+        "proprietario": "fixture-session",
+        "sessione": "fixture-session",
+        "t": "2026-01-10T08:30:00Z",
+        "v": 1
+      }
+    },
+    "generation": 2,
+    "key": "alpha:passo",
+    "kind": "cursore",
+    "stamped": false
+  }
+]

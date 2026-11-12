@@ -1,0 +1,1 @@
+errore: dichiarazione non registrata: id progetto non valido: 'Bad_Id' (minuscole, cifre, trattini)

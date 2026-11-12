@@ -1,0 +1,7 @@
+{
+  "_note": "Synthetic. The orchestrator's role cannot be named by hand: only worker and chat. The parser refuses with 1 before any call to the tracker, so the case has no scenario (M3).",
+  "args": ["comment", "5", "--body", "x", "--role", "orchestratore"],
+  "python": ["commento", "5", "--corpo", "x", "--ruolo", "orchestratore"],
+  "env": {"CLAUDE_CODE_SESSION_ID": "fixture-session"},
+  "exit": 1
+}

@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. #8 is beta's, and this session's step is open on alpha: no step of the issue's project, so the comment is signed chat and alpha's step does not take its id (M3, M4).",
+  "scenario": "tracker",
+  "args": ["comment", "8", "--body", "A note on beta.", "--json"],
+  "python": ["--json", "commento", "8", "--corpo", "A note on beta."],
+  "env": {"CLAUDE_CODE_SESSION_ID": "fixture-session"},
+  "gh": {"cli": {"issue comment": "https://tracker.invalid/issues/8#issuecomment-9213\n"}},
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {"v": 1, "proprietario": "fixture-session", "sessione": "fixture-session", "t": "2026-01-10T08:30:00Z", "commenti": []},
+        "aggiornato": "2026-01-10T08:30:00Z"
+      }
+    }
+  ],
+  "state_after": true
+}

@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. This session holds the open step of alpha, the issue's project: the step wins over --role, the comment is signed orchestratore, and its id joins the step's comments after the one there (M3, M4). The rows after the run are part of the case.",
+  "scenario": "tracker",
+  "args": ["comment", "5", "--body", "A step's note.", "--role", "worker", "--json"],
+  "python": ["--json", "commento", "5", "--corpo", "A step's note.", "--ruolo", "worker"],
+  "env": {"CLAUDE_CODE_SESSION_ID": "fixture-session"},
+  "gh": {"cli": {"issue comment": "https://tracker.invalid/issues/5#issuecomment-9209\n"}},
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {"v": 1, "proprietario": "fixture-session", "sessione": "fixture-session", "t": "2026-01-10T08:30:00Z", "commenti": [41]},
+        "aggiornato": "2026-01-10T08:30:00Z"
+      }
+    }
+  ],
+  "state_after": true
+}

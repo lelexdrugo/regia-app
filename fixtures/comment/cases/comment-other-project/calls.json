@@ -1,0 +1,14 @@
+[
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "8",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "A note on beta.\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=fixture-session -->"
+  }
+]

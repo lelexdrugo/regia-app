@@ -1,0 +1,8 @@
+{
+  "_note": "Synthetic. A worker's comment: `--role worker` and no open step, signed worker (M3).",
+  "scenario": "tracker",
+  "args": ["comment", "5", "--body", "A report.", "--role", "worker", "--json"],
+  "python": ["--json", "commento", "5", "--corpo", "A report.", "--ruolo", "worker"],
+  "env": {"CLAUDE_CODE_SESSION_ID": "fixture-worker"},
+  "gh": {"cli": {"issue comment": "https://tracker.invalid/issues/5#issuecomment-9207\n"}}
+}

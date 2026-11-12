@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. No session id, and a step of alpha that records none: the marker's session is `-`, the role is chat, and in doubt the id joins the step's comments (M1, M4).",
+  "scenario": "tracker",
+  "args": ["comment", "5", "--body", "A note.", "--json"],
+  "python": ["--json", "commento", "5", "--corpo", "A note."],
+  "gh": {"cli": {"issue comment": "https://tracker.invalid/issues/5#issuecomment-9211\n"}},
+  "state": [
+    {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "doc": {
+        "valore": {"v": 1, "proprietario": "w1", "sessione": null, "t": "2026-01-10T08:30:00Z", "commenti": []},
+        "aggiornato": "2026-01-10T08:30:00Z"
+      }
+    }
+  ],
+  "state_after": true
+}
