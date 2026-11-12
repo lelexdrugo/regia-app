@@ -26,3 +26,14 @@ maturity-ready = pronto
 ## project label (#454 of the dossier). The command does its work all the same.
 
 task-project-field-not-written = avviso: campo «Progetto» non scritto da questo motore; l'etichetta { $label } resta la fonte, `regia progetto riempi` lo riallinea
+
+## `task maturity`: `#<number> → <label>`. `task block`: `#<number> bloccato da <list as given>`. `task parent`:
+## `#<number> è già sub-issue di #<parent>` or `#<number> ora è sub-issue di #<parent>`. `task move`:
+## `#<number>: progetto <from> → <to>, sub-issue di #<parent>`.
+
+task-maturity-set = → { $label }
+task-blocked = bloccato da { $by }
+task-parent-already = è già sub-issue di #{ $parent }
+task-parent-set = ora è sub-issue di #{ $parent }
+task-moved-from = progetto { $project }
+task-moved-parent = sub-issue di #{ $parent }

@@ -26,3 +26,14 @@ maturity-ready = ready
 ## project label (#454 of the dossier). The command does its work all the same.
 
 task-project-field-not-written = warning: the Project's field «Progetto» is not written by this engine; the label { $label } stays the source, and `regia project mirror` realigns it
+
+## `task maturity`: `#<number> → <label>`. `task block`: `#<number> bloccato da <list as given>`. `task parent`:
+## `#<number> è già sub-issue di #<parent>` or `#<number> ora è sub-issue di #<parent>`. `task move`:
+## `#<number>: progetto <from> → <to>, sub-issue di #<parent>`.
+
+task-maturity-set = → { $label }
+task-blocked = blocked by { $by }
+task-parent-already = is already a sub-issue of #{ $parent }
+task-parent-set = is now a sub-issue of #{ $parent }
+task-moved-from = project { $project }
+task-moved-parent = sub-issue of #{ $parent }

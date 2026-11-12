@@ -105,15 +105,160 @@ struct NewArgs {
     json: bool,
 }
 
+#[derive(Parser)]
+#[command(name = "task maturity", args_override_self = true)]
+struct MaturityArgs {
+    /// The issue's number.
+    number: String,
+    #[arg(value_parser = PossibleValuesParser::new(Maturity::ALL.map(Maturity::id)))]
+    maturity: String,
+    /// Accepted and ignored: the command prints a line of text, as the prototype does.
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Parser)]
+#[command(name = "task block", args_override_self = true)]
+struct BlockArgs {
+    /// The issue's number.
+    number: String,
+    /// The blockers to add: numbers separated by commas, `#` allowed.
+    #[arg(long)]
+    by: String,
+    /// Accepted and ignored: the command prints a line of text, as the prototype does.
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Parser)]
+#[command(name = "task parent", args_override_self = true)]
+struct ParentArgs {
+    /// The issue's number.
+    number: String,
+    /// The number of its new parent.
+    parent: String,
+    /// Accepted and ignored: the command prints a line of text, as the prototype does.
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Parser)]
+#[command(name = "task move", args_override_self = true)]
+struct MoveArgs {
+    /// The issue's number.
+    number: String,
+    #[arg(long)]
+    project: String,
+    /// Without it: the project's Objective.
+    #[arg(long)]
+    parent: Option<String>,
+    /// Machine-readable output: this is the contract the agents use.
+    #[arg(long)]
+    json: bool,
+}
+
 /// `command` natively, if this module has it: its exit code, or the error to print.
 pub(crate) fn run(command: &str, args: &[String], catalog: &Catalog) -> Option<Result<u8, String>> {
     let outcome = match command {
         "task status" => parse::<StatusArgs>(command, args).map(|args| status(&args, catalog)),
         "task unblock" => parse::<UnblockArgs>(command, args).map(|args| unblock(&args, catalog)),
         "task new" => parse::<NewArgs>(command, args).map(|args| new(&args, catalog)),
+        "task maturity" => parse::<MaturityArgs>(command, args).map(|args| maturity(&args, catalog)),
+        "task block" => parse::<BlockArgs>(command, args).map(|args| block(&args, catalog)),
+        "task parent" => parse::<ParentArgs>(command, args).map(|args| parent(&args, catalog)),
+        "task move" => parse::<MoveArgs>(command, args).map(|args| move_task(&args, catalog)),
         _ => return None,
     };
     Some(outcome.unwrap_or_else(Ok))
+}
+
+/// `task maturity`: one edit of the labels, the new maturity added and the other one taken off; nothing
+/// is read.
+fn maturity(args: &MaturityArgs, catalog: &Catalog) -> Result<u8, String> {
+    let number = number_argument("number", &args.number)?;
+    let maturity = Maturity::parse(&args.maturity).ok_or_else(|| format!("unknown maturity `{}`", args.maturity))?;
+    let (binding, tracker) = tracker()?;
+    record_activity("task maturity", None, Some(number), catalog);
+    let number = issue_number(number)?;
+    let label = binding.maturity_label(maturity);
+    tracker.edit_labels(number, label, Some(binding.maturity_label(maturity.other()))).map_err(tracker_error)?;
+    println!("#{number} {}", catalog.message_with("task-maturity-set", "label", label));
+    Ok(0)
+}
+
+/// `task block`: each blocker of the list added, in its order; the line names the list as it was given.
+fn block(args: &BlockArgs, catalog: &Catalog) -> Result<u8, String> {
+    let number = number_argument("number", &args.number)?;
+    let (_, tracker) = tracker()?;
+    record_activity("task block", None, Some(number), catalog);
+    let blockers = numbers(&args.by).ok_or_else(|| format!("--by takes numbers separated by commas: '{}'", args.by))?;
+    let number = issue_number(number)?;
+    for blocker in blockers {
+        add_blocker(&tracker, number, issue_number(blocker)?)?;
+    }
+    println!("#{number} {}", catalog.message_with("task-blocked", "by", &args.by));
+    Ok(0)
+}
+
+/// `task parent`: nothing to do if the issue, read among every issue, is a sub-issue of that parent
+/// already, which GitHub would refuse; else the parent's cap, then the link.
+fn parent(args: &ParentArgs, catalog: &Catalog) -> Result<u8, String> {
+    let number = number_argument("number", &args.number)?;
+    let parent = number_argument("parent", &args.parent)?;
+    let (_, tracker) = tracker()?;
+    record_activity("task parent", None, Some(number), catalog);
+    let (number, parent) = (issue_number(number)?, issue_number(parent)?);
+    let issue = tracker.all_issues().map_err(tracker_error)?.into_iter().find(|issue| issue.number == number);
+    let current = issue.as_ref().and_then(|issue| issue.parent);
+    if issue.is_some() && current == Some(parent) {
+        println!("#{number} {}", catalog.message_with("task-parent-already", "parent", &parent.to_string()));
+        return Ok(0);
+    }
+    check_parent_cap(&tracker, parent, current)?;
+    link_sub_issue(&tracker, parent, number, false)?;
+    println!("#{number} {}", catalog.message_with("task-parent-set", "parent", &parent.to_string()));
+    Ok(0)
+}
+
+/// `task move`: an open task, not an Objective, to another project: its project label changes, then its
+/// parent, the project's first Objective or `--parent`, unless it is that already.
+fn move_task(args: &MoveArgs, catalog: &Catalog) -> Result<u8, String> {
+    let number = number_argument("number", &args.number)?;
+    let parent = args.parent.as_deref().map(|parent| number_argument("--parent", parent)).transpose()?;
+    let (binding, tracker) = tracker()?;
+    record_activity("task move", Some(&args.project), Some(number), catalog);
+    let number = issue_number(number)?;
+    let tasks = open_tasks(&tracker, &binding)?;
+    let task = tasks.iter().find(|task| task.number == number).ok_or_else(|| format!("#{number} not found among the open issues"))?;
+    if task.objective {
+        return Err(format!("#{number} is an Objective: it does not move"));
+    }
+    let project = args.project.as_str();
+    let objective = tasks
+        .iter()
+        .find(|task| task.objective && task.project.as_deref() == Some(project))
+        .ok_or_else(|| format!("unknown project '{project}': see `projects`"))?;
+    // A parent of 0 is none, as for the prototype.
+    let parent = match parent.filter(|parent| *parent != 0) {
+        Some(parent) => issue_number(parent)?,
+        None => objective.number,
+    };
+    let old = task.project.clone();
+    check_parent_cap(&tracker, parent, task.parent)?;
+    let remove = old.as_deref().filter(|old| !old.is_empty() && *old != project).map(|old| binding.project_label(old));
+    tracker.edit_labels(number, &binding.project_label(project), remove.as_deref()).map_err(tracker_error)?;
+    if task.parent != Some(parent) {
+        link_sub_issue(&tracker, parent, number, true)?;
+    }
+    project_field_not_written(&tracker, &binding, number, project, catalog);
+    if args.json {
+        print_json(&json!({"task": number, "from": old, "to": project, "parent": parent}))?;
+    } else {
+        let from = catalog.message_with("task-moved-from", "project", old.as_deref().unwrap_or("-"));
+        let under = catalog.message_with("task-moved-parent", "parent", &parent.to_string());
+        println!("#{number}: {from} → {project}, {under}");
+    }
+    Ok(0)
 }
 
 /// A list of numbers as the prototype reads one: `#` dropped, split on commas, blank pieces skipped, each
