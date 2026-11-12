@@ -67,7 +67,7 @@ struct TaskListArgs {
 }
 
 /// The arguments, or the exit of a wrong one: 1, as the prototype's parser exits, and 0 for help.
-fn parse<T: Parser>(name: &str, args: &[String]) -> Result<T, u8> {
+pub(crate) fn parse<T: Parser>(name: &str, args: &[String]) -> Result<T, u8> {
     T::try_parse_from(std::iter::once(name).chain(args.iter().map(String::as_str))).map_err(|error| {
         let _ = error.print();
         let shown = matches!(error.kind(), clap::error::ErrorKind::DisplayHelp | clap::error::ErrorKind::DisplayVersion);
@@ -136,7 +136,7 @@ fn projects(args: ProjectsArgs) -> Result<u8, String> {
 
 /// An argument read as Python's `int()` reads it, which the prototype's parser applies to a number:
 /// blanks around it, a sign, and `_` between digits.
-fn python_int(text: &str) -> Option<i64> {
+pub(crate) fn python_int(text: &str) -> Option<i64> {
     let text = regia_core::pystr::strip(text);
     let (negative, digits) = match text.strip_prefix('-') {
         Some(rest) => (true, rest),

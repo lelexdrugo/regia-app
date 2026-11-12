@@ -1,4 +1,7 @@
+mod clock;
+mod dossier;
 mod reads;
+mod state;
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -6,19 +9,17 @@ use std::process::ExitCode;
 
 use clap::builder::PossibleValuesParser;
 use clap::{Parser, Subcommand};
-use chrono::{DateTime, FixedOffset, Utc};
 use regia_agents::{
     Assignment, Diversity, Env, Https, LaunchRequest, Policy, ProbeConsent, Receipt, Role, ServiceId, Settings, SurfaceKind, UsageProbes,
 };
 use regia_core::{Brief, BriefOptions, BriefTask};
 use regia_exec::{Effort, ExecError, ModelId, Program};
 use regia_facade::{Engine, FacadeError, Printed, PythonPrototype, Table};
-use regia_git::{Checkpoint, DossierSync, GitDate, Outcome};
 use regia_i18n::{Catalog, Language};
 use regia_identity::{BIN_NAME, config_dir, env_var};
-use regia_runtime::{dossier_dir, load_brief, project_folder};
+use regia_runtime::{dossier_dir, load_brief};
 use regia_store::{MIN_INTERVAL_S, Reading, Store};
-use serde_json::{Value, json};
+use serde_json::Value;
 
 #[derive(Parser)]
 #[command(name = BIN_NAME, version, about)]
@@ -105,26 +106,20 @@ struct BudgetArgs {
     min_interval: u64,
 }
 
-/// `checkpoint`, natively: the arguments of the facade table (`table/checkpoint.toml`). It is not a
-/// subcommand of [`Cli`]: while its group runs on the prototype, the facade takes its argv as it is.
-#[derive(Parser)]
-#[command(name = "checkpoint")]
-struct CheckpointArgs {
-    #[arg(long)]
-    project: String,
-    /// A file to commit besides the named ones, relative to the project's folder. Repeatable.
-    #[arg(long)]
-    file: Vec<String>,
-    /// The project's folder, in place of the one its registry names.
-    #[arg(long)]
-    folder: Option<String>,
-    /// Machine-readable output: this is the contract the agents use.
-    #[arg(long)]
-    json: bool,
-}
-
 /// The commands of the table this binary implements besides its own subcommands.
-const NATIVE_THROUGH_THE_TABLE: [&str; 4] = ["checkpoint", "projects", "task show", "task list"];
+const NATIVE_THROUGH_THE_TABLE: [&str; 11] = [
+    "checkpoint",
+    "projects",
+    "task show",
+    "task list",
+    "lease acquire",
+    "lease heartbeat",
+    "lease release",
+    "lease list",
+    "step start",
+    "step renew",
+    "step finish",
+];
 
 /// The prompt: one of the two, never both.
 #[derive(clap::Args)]
@@ -217,79 +212,23 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
             let native = NATIVE_THROUGH_THE_TABLE.contains(&command.as_str());
             match route(&table, &command, native, catalog)? {
                 Some(prototype) => passthrough(&table, &prototype, &command, args, catalog),
-                None => match reads::run(&command, args, catalog) {
-                    Some(outcome) => outcome.map(ExitCode::from),
-                    None => checkpoint(args).map(ExitCode::from),
-                },
+                None => native_command(&command, args, catalog).map(ExitCode::from),
             }
         }
     }
 }
 
-/// `checkpoint`, natively: the named files of the dossier committed and pushed, with no lock. Its exit
-/// is the prototype's: 1 when it could not even try, a project whose folder could not be read, and for a
-/// wrong argument; 0 otherwise, a failed push included.
-fn checkpoint(args: &[String]) -> Result<u8, String> {
-    let args = match CheckpointArgs::try_parse_from(std::iter::once("checkpoint").chain(args.iter().map(String::as_str))) {
-        Ok(args) => args,
-        Err(error) => {
-            let _ = error.print();
-            let shown = matches!(error.kind(), clap::error::ErrorKind::DisplayHelp | clap::error::ErrorKind::DisplayVersion);
-            return Ok(if shown { 0 } else { 1 });
-        }
-    };
-    let clock = Clock::read()?;
-    let message = format!("{}: checkpoint {}", args.project, clock.now.with_timezone(&Utc).format("%Y-%m-%dT%H:%M:%SZ"));
-    // An empty `--folder` is none, as for the prototype.
-    let folder = match args.folder.clone().filter(|folder| !folder.is_empty()) {
-        Some(folder) => Ok(folder),
-        None => project_folder(&args.project).map_err(|error| error.to_string()),
-    };
-    let dossier = match folder {
-        Ok(folder) => regia_git::sync(&Checkpoint { folder: &folder, message: &message, files: &args.file, date: clock.commit_date() }),
-        Err(error) => DossierSync::unavailable(None, format!("the project's folder was not read: {error}")),
-    };
-    let ok = dossier.outcome != Outcome::Unavailable;
-    let exit = u8::from(!ok && dossier.folder.is_none());
-    let value = json!({"ok": ok, "project": args.project, "dossier": dossier});
-    if args.json {
-        print_json(&value)?;
-    } else {
-        for line in flat(&value) {
-            println!("{line}");
-        }
+/// A command of the table that this binary implements, by its name: each module answers for its own.
+fn native_command(command: &str, args: &[String], catalog: &Catalog) -> Result<u8, String> {
+    if let Some(outcome) = reads::run(command, args, catalog) {
+        return outcome;
     }
-    Ok(exit)
-}
-
-/// The product's clock: `REGIA_NOW` when it is set, which fixes it, and the machine's otherwise.
-#[derive(Debug)]
-struct Clock {
-    now: DateTime<FixedOffset>,
-    fixed: bool,
-}
-
-impl Clock {
-    /// A `REGIA_NOW` that is not an instant with its offset is an error, never the machine's clock in
-    /// its place.
-    fn read() -> Result<Clock, String> {
-        let name = env_var("NOW");
-        Clock::of(&name, std::env::var(&name).ok())
+    if let Some(outcome) = state::run(command, args, catalog) {
+        return outcome;
     }
-
-    fn of(name: &str, value: Option<String>) -> Result<Clock, String> {
-        match value.filter(|value| !value.is_empty()) {
-            Some(value) => DateTime::parse_from_rfc3339(&value)
-                .map(|now| Clock { now, fixed: true })
-                .map_err(|_| format!("{name} is `{value}`, not an ISO 8601 instant with its offset")),
-            None => Ok(Clock { now: Utc::now().fixed_offset(), fixed: false }),
-        }
-    }
-
-    /// With the clock fixed, a commit is made at its instant, so it has the same id on every run;
-    /// otherwise git dates it, as the user's own git would.
-    fn commit_date(&self) -> Option<GitDate> {
-        self.fixed.then(|| GitDate::new(self.now.timestamp(), self.now.offset().local_minus_utc()))
+    match command {
+        "checkpoint" => dossier::checkpoint(args),
+        other => Err(format!("`{other}` has no native engine")),
     }
 }
 
@@ -580,54 +519,6 @@ mod tests {
         for line in ["provider.claude.windows.5h.open: false", "provider.claude.windows.5h.used_pct: 0.0", "provider.claude.windows.7d.used_pct: 30.0", "generated: -"] {
             assert!(lines.iter().any(|candidate| candidate == line), "{line} not in {lines:?}");
         }
-    }
-
-    /// `checkpoint` in text is the contract's keys, one leaf a line, as `budget` prints them: the
-    /// prototype's sentence (`checkpoint alpha: niente da committare`) would need a catalog.
-    #[test]
-    fn the_text_of_checkpoint_is_the_contract_s_keys() {
-        let dossier = DossierSync::unavailable(None, "the project's folder was not read: project 'alpha' is unknown".to_owned());
-        let lines = flat(&json!({"ok": false, "project": "alpha", "dossier": dossier}));
-        assert_eq!(
-            lines,
-            [
-                "dossier.ahead: -",
-                "dossier.branch: -",
-                "dossier.files: []",
-                "dossier.folder: -",
-                "dossier.outcome: unavailable",
-                "dossier.reason: the project's folder was not read: project 'alpha' is unknown",
-                "dossier.sha: -",
-                "ok: false",
-                "project: alpha",
-            ]
-        );
-    }
-
-    /// A wrong argument exits 1, as in the prototype, whose parser exits 1 and not argparse's 2; help
-    /// exits 0. None of them reads the clock, the tracker or a repo.
-    #[test]
-    fn a_wrong_argument_to_checkpoint_exits_1() {
-        let run = |argv: &[&str]| checkpoint(&argv.iter().map(|arg| (*arg).to_owned()).collect::<Vec<_>>()).unwrap();
-        assert_eq!(run(&["--project", "alpha", "--no-push"]), 1, "checkpoint has no --no-push");
-        assert_eq!(run(&["--file", "a.md"]), 1, "--project is required");
-        assert_eq!(run(&["--project"]), 1);
-        assert_eq!(run(&["--help"]), 0);
-        assert!(CheckpointArgs::try_parse_from(["checkpoint", "--project", "alpha", "--file", "a", "--file=b", "--folder", "x", "--json"]).is_ok());
-    }
-
-    /// `REGIA_NOW` fixes the clock and dates the commit with its offset; a value that is not an instant
-    /// is an error; without it, git dates the commit.
-    #[test]
-    fn the_fixed_clock_dates_the_commit() {
-        let fixed = Clock::of("REGIA_NOW", Some("2026-01-10T09:00:00Z".to_owned())).unwrap();
-        assert_eq!(fixed.now.with_timezone(&Utc).format("%Y-%m-%dT%H:%M:%SZ").to_string(), "2026-01-10T09:00:00Z");
-        assert_eq!(fixed.commit_date().map(|date| date.as_env()).as_deref(), Some("@1768035600 +0000"));
-        let east = Clock::of("REGIA_NOW", Some("2026-01-10T10:30:00+01:30".to_owned())).unwrap();
-        assert_eq!(east.commit_date().map(|date| date.as_env()).as_deref(), Some("@1768035600 +0130"));
-        assert!(Clock::of("REGIA_NOW", Some("2026-01-10".to_owned())).unwrap_err().contains("REGIA_NOW"));
-        assert!(Clock::of("REGIA_NOW", None).unwrap().commit_date().is_none());
-        assert!(Clock::of("REGIA_NOW", Some(String::new())).unwrap().commit_date().is_none(), "empty is unset");
     }
 
     /// The prototype's checks: each of these fails before a surface is even chosen.

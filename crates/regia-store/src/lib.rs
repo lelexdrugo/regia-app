@@ -33,7 +33,7 @@ pub use cursor::CursorName;
 pub use db::{BUSY_WAIT, Row, SqliteError};
 pub use folder::{database_name, default_folder, is_within};
 pub use lease::{LeaseEntry, TaskNumber};
-pub use lock::{LockOutcome, LockState, LockStatus, LockView};
+pub use lock::{LockOutcome, LockState, LockStatus, LockView, ViewField};
 pub use step::{EventsCursor, EventsParts, OpenedStep, OwnParts, StepClosing, StepOpening, generated_holder, reports_folder, step_commit_message};
 pub use time::{Precision, WallTime};
 pub use usage::{CacheInfo, NO_DATA, ProviderUsage, Reading, Served, TokenState, TokenStatus, UsageStatus, Window, round_to_tenth};

@@ -126,6 +126,40 @@ impl LockStatus {
     }
 }
 
+/// The fields a lock or lease document has, by what they mean: [`LockView::field`] reads one as stored.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ViewField {
+    /// A lease's task.
+    Task,
+    Project,
+    Holder,
+    TakenAt,
+    /// When a lease was taken or last beat.
+    HeartbeatAt,
+    TtlS,
+    ExpiresAt,
+    /// The holder whose expired lock or lease this one replaced.
+    Replaced,
+    StolenAt,
+    /// When a lock was last renewed.
+    RenewedAt,
+}
+
+impl ViewField {
+    pub const ALL: [ViewField; 10] = [
+        Self::Task,
+        Self::Project,
+        Self::Holder,
+        Self::TakenAt,
+        Self::HeartbeatAt,
+        Self::TtlS,
+        Self::ExpiresAt,
+        Self::Replaced,
+        Self::StolenAt,
+        Self::RenewedAt,
+    ];
+}
+
 /// A lock or lease document as stored, without the fields no view shows, and its expiry at the time of
 /// reading.
 #[derive(Debug, Clone, PartialEq)]
@@ -196,6 +230,25 @@ impl LockView {
     #[must_use]
     pub fn ttl_s(&self) -> Option<f64> {
         self.fields.get(&format().lock.ttl_s).and_then(Value::as_f64)
+    }
+
+    /// A field as it was stored, `null` included; `None` when the document lacks it.
+    #[must_use]
+    pub fn field(&self, field: ViewField) -> Option<&Value> {
+        let (lock, lease) = (&format().lock, &format().lease);
+        let key = match field {
+            ViewField::Task => &lease.task,
+            ViewField::Project => &lock.project,
+            ViewField::Holder => &lock.holder,
+            ViewField::TakenAt => &lock.taken_at,
+            ViewField::HeartbeatAt => &lease.heartbeat_at,
+            ViewField::TtlS => &lock.ttl_s,
+            ViewField::ExpiresAt => &lock.expires_at,
+            ViewField::Replaced => &lock.replaced,
+            ViewField::StolenAt => &lock.stolen_at,
+            ViewField::RenewedAt => &lock.renewed_at,
+        };
+        self.fields.get(key)
     }
 
     /// A lease's task, as it was stored: a JSON integer when the prototype or this crate wrote it.
