@@ -25,6 +25,16 @@ pub struct RawIssue {
     pub field_values: Vec<(String, String)>,
 }
 
+/// A comment of an issue, as the adapter reads it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RawComment {
+    /// GitHub's `databaseId`, which a comment's URL ends with.
+    pub id: Option<u64>,
+    pub created_at: String,
+    pub url: String,
+    pub body: String,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum TrackerError {
     #[error("tracker unavailable: {0}")]
@@ -37,6 +47,16 @@ pub enum TrackerError {
 pub trait Tracker {
     /// Every open issue, in tracker order.
     fn open_issues(&self) -> Result<Vec<RawIssue>, TrackerError>;
+
+    /// Every issue, open and closed, in tracker order.
+    fn all_issues(&self) -> Result<Vec<RawIssue>, TrackerError> {
+        Err(TrackerError::Unavailable("this tracker reads the open issues only".to_owned()))
+    }
+
+    /// The comments of an issue, oldest first; `None` if the tracker has no such issue.
+    fn comments(&self, number: u64) -> Result<Option<Vec<RawComment>>, TrackerError> {
+        Err(TrackerError::Unavailable(format!("this tracker does not read the comments of #{number}")))
+    }
 }
 
 /// Adds each issue to the sub-issues of its parent when the parent's list lacks it, in list order. The

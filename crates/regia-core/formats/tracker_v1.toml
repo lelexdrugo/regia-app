@@ -22,6 +22,43 @@ project = "Progetto"
 due_key = "entro"
 due_placeholder = "AAAA-MM-GG"
 
+# The registry of a project: the first block `<!-- <marker> … -->` in the body of its Objective, one
+# `key: value` a line (R1 of the dossier's conformance study). The block is open: a key written by hand
+# is kept. `no_products` are the values of the products' key that mean none, in lower case.
+[registry]
+marker = "regia:progetto"
+no_products = ["", "-", "—", "nessuno", "nessuna"]
+
+# An entry of `projects`, key by key: the prototype's name → the contract's (R2, R6). The first four
+# come from the Objective, the others from the block; a key of the block of the same name wins, as in
+# the prototype. Any other key of the block passes with its name as it is.
+[registry.keys]
+id = "id"
+obiettivo = "objective"
+titolo = "title"
+stato = "status"
+cartella = "folder"
+playbook = "playbook"
+priorita = "priority"
+wip = "wip"
+default_automatici = "auto_defaults"
+repo = "repo"
+prodotti = "products"
+
+# The signature of a comment written by the CLI (M1, M2 of the conformance study): the body, a blank
+# line, a visible line, and last a hidden marker `<!-- <marker> <role_key>=<role> … -->`. A comment
+# without a marker is the owner's. A worker's comment is its report, so it reads as one line: the
+# report's `summary_key`, or its first line.
+[signature]
+marker = "regia:autore"
+role_key = "ruolo"
+owner = "titolare"
+worker = "worker"
+visible_role_prefix = "regia ·"
+visible_owner = "il titolare, via chat"
+summary_key = "riassunto"
+summary_max = 240
+
 # Option label in `status_options` of tracker.json → canonical id. Only used once, when the config
 # is loaded, to bind each option id to its canonical id. From then on status is by option id.
 [status_labels]

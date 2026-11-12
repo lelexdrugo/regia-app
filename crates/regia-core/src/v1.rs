@@ -9,7 +9,7 @@ use crate::due::DueRule;
 use crate::model::{Maturity, Status, Task};
 use crate::tracker::RawIssue;
 
-const VOCABULARY: &str = include_str!("../formats/tracker_v1.toml");
+pub(crate) const VOCABULARY: &str = include_str!("../formats/tracker_v1.toml");
 
 #[derive(Debug, thiserror::Error)]
 pub enum V1Error {
@@ -147,13 +147,17 @@ impl TrackerBinding {
         &self.project_field
     }
 
+    /// The status of an option id of issue `number`; an option the config does not bind is an error.
+    pub fn status(&self, number: u64, option: Option<&str>) -> Result<Option<Status>, V1Error> {
+        option
+            .map(|option| {
+                self.by_option.get(option).copied().ok_or_else(|| V1Error::UnknownOption { number, option: option.to_owned() })
+            })
+            .transpose()
+    }
+
     pub fn resolve(&self, raw: RawIssue) -> Result<Task, V1Error> {
-        let status = match &raw.status_option_id {
-            None => None,
-            Some(option) => Some(*self.by_option.get(option).ok_or_else(|| {
-                V1Error::UnknownOption { number: raw.number, option: option.clone() }
-            })?),
-        };
+        let status = self.status(raw.number, raw.status_option_id.as_deref())?;
         let project = raw
             .labels
             .iter()

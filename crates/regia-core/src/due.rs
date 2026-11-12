@@ -27,12 +27,6 @@ pub fn parse_date(text: &str) -> Option<NaiveDate> {
     (year >= 1).then(|| NaiveDate::from_ymd_opt(year, month, day)).flatten()
 }
 
-/// Python's `str.strip()`: Unicode whitespace, and the four separators U+001C–U+001F, which Python counts as
-/// whitespace and Unicode does not.
-fn strip_python(text: &str) -> &str {
-    text.trim_matches(|c: char| c.is_whitespace() || ('\u{1c}'..='\u{1f}').contains(&c))
-}
-
 /// How a body declares its due date: the first YAML block is the spec's, and only a line of its own, in the
 /// first column, counts. The key and the placeholder are data of the tracker format.
 #[derive(Debug, Clone)]
@@ -57,7 +51,7 @@ impl DueRule {
         let block = self.block.captures(body)?.get(1)?.as_str();
         let written = self.line.captures(block)?.get(1)?.as_str();
         let value = written.split('#').next().unwrap_or_default();
-        let value = strip_python(value).trim_matches(|c| c == '"' || c == '\'');
+        let value = crate::pystr::strip(value).trim_matches(|c| c == '"' || c == '\'');
         if value.is_empty() || value == self.placeholder {
             return None;
         }

@@ -15,6 +15,14 @@ pub enum Status {
 }
 
 impl Status {
+    pub const ALL: [Status; 7] =
+        [Status::Inbox, Status::Proposal, Status::Approved, Status::InProgress, Status::Decision, Status::Done, Status::Discarded];
+
+    /// The status of a canonical id.
+    pub fn parse(id: &str) -> Option<Status> {
+        Status::ALL.into_iter().find(|status| status.id() == id)
+    }
+
     pub fn id(self) -> &'static str {
         match self {
             Status::Inbox => "inbox",
@@ -43,6 +51,15 @@ impl Status {
 pub enum Maturity {
     Draft,
     Ready,
+}
+
+impl Maturity {
+    pub fn id(self) -> &'static str {
+        match self {
+            Maturity::Draft => "draft",
+            Maturity::Ready => "ready",
+        }
+    }
 }
 
 /// The issue state as GitHub reports it.
