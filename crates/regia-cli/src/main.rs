@@ -6,6 +6,7 @@ mod dossier;
 mod policy;
 mod reads;
 mod state;
+mod task;
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -117,13 +118,14 @@ struct BudgetArgs {
 }
 
 /// The commands of the table this binary implements besides its own subcommands.
-const NATIVE_THROUGH_THE_TABLE: [&str; 13] = [
+const NATIVE_THROUGH_THE_TABLE: [&str; 14] = [
     "checkpoint",
     "comment",
     "declare",
     "projects",
     "task show",
     "task list",
+    "task status",
     "lease acquire",
     "lease heartbeat",
     "lease release",
@@ -243,6 +245,9 @@ fn native_command(command: &str, args: &[String], catalog: &Catalog) -> Result<u
         return outcome;
     }
     if let Some(outcome) = declare::run(command, args, catalog) {
+        return outcome;
+    }
+    if let Some(outcome) = task::run(command, args, catalog) {
         return outcome;
     }
     match command {
