@@ -124,6 +124,8 @@ impl TrackerConfigV1 {
 #[derive(Debug, Clone)]
 pub struct TrackerBinding {
     by_option: BTreeMap<String, Status>,
+    /// The options' names, as a change of Status writes them.
+    by_name: BTreeMap<String, Status>,
     project_prefix: String,
     objective: String,
     session: String,
@@ -147,6 +149,7 @@ impl TrackerBinding {
         let labels = vocabulary.labels;
         Ok(Self {
             by_option,
+            by_name: vocabulary.status_labels,
             project_prefix: labels.project_prefix,
             objective: labels.objective,
             session: labels.session,
@@ -165,6 +168,32 @@ impl TrackerBinding {
     /// The name of the Project field that mirrors the project label.
     pub fn project_field_name(&self) -> &str {
         &self.project_field
+    }
+
+    /// The label of the issues of `project`.
+    pub fn project_label(&self, project: &str) -> String {
+        format!("{}{project}", self.project_prefix)
+    }
+
+    /// The label of an Objective.
+    pub fn objective_label(&self) -> &str {
+        &self.objective
+    }
+
+    /// The status an option stands for, by its name, as a change of Status names it; `None` for a name
+    /// the format does not know.
+    pub fn status_of_name(&self, name: &str) -> Option<Status> {
+        self.by_name.get(name).copied()
+    }
+
+    /// The name of the option of `status`.
+    pub fn status_name(&self, status: Status) -> Option<&str> {
+        self.by_name.iter().find(|(_, bound)| **bound == status).map(|(name, _)| name.as_str())
+    }
+
+    /// The id of the option the config binds to `status`.
+    pub fn option_id(&self, status: Status) -> Option<&str> {
+        self.by_option.iter().find(|(_, bound)| **bound == status).map(|(option, _)| option.as_str())
     }
 
     /// The status of an option id of issue `number`; an option the config does not bind is an error.

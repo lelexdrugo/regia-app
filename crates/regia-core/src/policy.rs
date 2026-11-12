@@ -8,7 +8,7 @@
 //!
 //! Nothing here reads a file or a clock: the caller passes what it read, the instant and the time zone.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::OnceLock;
 
 use chrono::{DateTime, Duration, FixedOffset, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
@@ -16,7 +16,10 @@ use serde::Deserialize;
 use serde::de::{Deserializer, MapAccess, SeqAccess, Visitor};
 use serde_json::{Map, Value, json};
 
+use crate::model::{Status, Task};
 use crate::pystr;
+use crate::tracker::{StatusHistory, TrackerError};
+use crate::v1::TrackerBinding;
 
 const FORMAT: &str = include_str!("../formats/policy_v1.toml");
 /// The product's copy of the prototype's file: the defaults.
@@ -716,8 +719,9 @@ fn iso_offset(text: &str) -> Option<FixedOffset> {
     FixedOffset::east_opt(sign * i32::try_from(hours * 3600 + minutes * 60).ok()?)
 }
 
-/// The prototype's `_istante`: an instant of the file, `Z` read as `+00:00`; one with no offset is local.
-fn instant<Tz: TimeZone>(text: &str, zone: &Tz) -> Option<DateTime<Utc>> {
+/// The prototype's `_istante`: an instant of the file, `Z` read as `+00:00`; one with no offset is in
+/// `zone`. `None` when it does not read.
+pub fn instant<Tz: TimeZone>(text: &str, zone: &Tz) -> Option<DateTime<Utc>> {
     let (naive, offset) = iso_instant(&text.replace('Z', "+00:00"))?;
     match offset {
         Some(offset) => offset.from_local_datetime(&naive).single().map(|at| at.with_timezone(&Utc)),
@@ -936,7 +940,8 @@ pub fn set_local<Tz: TimeZone>(
     let kept = |pick: fn(&Local) -> Option<&Value>| {
         if earlier.is_empty() { Value::Null } else { local.as_ref().and_then(pick).cloned().unwrap_or(Value::Null) }
     };
-    let until = match until_text {
+    // An empty `--until` is none, as the prototype's `if fino` reads it.
+    let until = match until_text.filter(|text| !text.is_empty()) {
         Some(text) => json!(utc_seconds(until(text, now, zone)?)),
         None => kept(|local| local.until.as_ref()),
     };
@@ -996,6 +1001,48 @@ pub fn file_bytes(text: &str) -> Vec<u8> {
 }
 
 // ---------- the caps of Proposals ----------
+
+/// The numbers of the issues of `project` in Proposal, the Objective aside, in order: the prototype's
+/// `proposte_aperte`. The caller passes the open issues, as the prototype reads them.
+pub fn open_proposals(tasks: &[Task], project: &str) -> Vec<u64> {
+    let mut numbers: Vec<u64> = tasks
+        .iter()
+        .filter(|task| task.project.as_deref() == Some(project) && !task.objective && task.status == Some(Status::Proposal))
+        .map(|task| task.number)
+        .collect();
+    numbers.sort_unstable();
+    numbers
+}
+
+/// The numbers of the issues, closed ones too, that went to Proposal at `since` or after, the Objectives
+/// aside, each once however many times it went back: the prototype's `nuove_ultimi_7_giorni`, on the
+/// changes the tracker read for the project's label.
+///
+/// # Errors
+///
+/// [`TrackerError::BadResponse`] for a change to Proposal whose instant does not read: the prototype then
+/// has no weekly count.
+pub fn new_proposals(histories: &[StatusHistory], binding: &TrackerBinding, since: DateTime<Utc>) -> Result<Vec<u64>, TrackerError> {
+    let mut seen = BTreeSet::new();
+    for history in histories {
+        if history.labels.iter().any(|label| label == binding.objective_label()) {
+            continue;
+        }
+        for (status, at) in &history.changes {
+            if status.as_deref().and_then(|name| binding.status_of_name(name)) != Some(Status::Proposal) {
+                continue;
+            }
+            let read = iso_instant(&at.replace('Z', "+00:00"))
+                .and_then(|(naive, offset)| offset?.from_local_datetime(&naive).single())
+                .map(|at| at.with_timezone(&Utc));
+            let at = read.ok_or_else(|| TrackerError::BadResponse(format!("a change of Status of #{} at '{at}'", history.number)))?;
+            if at >= since {
+                seen.insert(history.number);
+            }
+        }
+    }
+    Ok(seen.into_iter().collect())
+}
 
 /// What the orchestrator reads before it opens a Proposal: the prototype's `posto_per_proposte`. `new`
 /// is `None` when the weekly source did not answer: then only the cap on the open ones holds.
@@ -1262,6 +1309,88 @@ mod tests {
         assert!(!Room::new(&policy, vec![10, 11, 12], None).room_left);
         let json = room.to_json("p", &policy);
         assert_eq!((json["new_7_days"].clone(), json["policy"].clone(), json["open_numbers"].clone()), (Value::Null, json!("file"), json!([10])));
+    }
+
+    /// The synthetic tracker of the fixtures: the labels and the options' names come from the format, as
+    /// the guard on Italian words wants.
+    fn binding() -> TrackerBinding {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../fixtures/brief/tracker.json");
+        TrackerBinding::new(&crate::v1::TrackerConfigV1::read(std::path::Path::new(path)).unwrap()).unwrap()
+    }
+
+    /// An open issue of `project` with `status`, the project's Objective with `objective`.
+    fn task(binding: &TrackerBinding, number: u64, status: Status, project: &str, objective: bool) -> Task {
+        let mut labels = vec![binding.project_label(project)];
+        if objective {
+            labels.push(binding.objective_label().to_owned());
+        }
+        binding
+            .resolve(crate::tracker::RawIssue {
+                number,
+                title: format!("t{number}"),
+                state: crate::model::IssueState::Open,
+                state_reason: None,
+                body: String::new(),
+                url: String::new(),
+                updated_at: String::new(),
+                created_at: None,
+                closed_at: None,
+                labels,
+                parent: None,
+                sub_issues: vec![],
+                blocked_by: vec![],
+                blocked_by_total: 0,
+                status_option_id: binding.option_id(status).map(str::to_owned),
+                field_values: vec![],
+            })
+            .unwrap()
+    }
+
+    /// The first test of the prototype's `TestComando`: the open Proposals of the project, not its
+    /// Objective's nor another project's.
+    #[test]
+    fn the_open_proposals_are_the_project_s_and_not_the_objective_s() {
+        let binding = binding();
+        let tasks = [
+            task(&binding, 1, Status::Approved, "p", true),
+            task(&binding, 12, Status::Proposal, "p", false),
+            task(&binding, 10, Status::Proposal, "p", false),
+            task(&binding, 20, Status::Inbox, "p", false),
+            task(&binding, 30, Status::Proposal, "q", false),
+            task(&binding, 2, Status::Proposal, "p", true),
+        ];
+        assert_eq!(open_proposals(&tasks, "p"), [10, 12]);
+    }
+
+    /// `test_nuove_negli_ultimi_7_giorni`: one per issue; out of the window, another status and the
+    /// Objective left out.
+    #[test]
+    fn the_new_proposals_of_the_last_seven_days() {
+        let binding = binding();
+        let name = |status: Status| Some(binding.status_name(status).unwrap().to_owned());
+        let at = |at: DateTime<Utc>| at.format("%Y-%m-%dT%H:%M:%SZ").to_string();
+        let (yesterday, old) = (t0() - Duration::days(1), t0() - Duration::days(8));
+        let history = |number: u64, changes: Vec<(Status, DateTime<Utc>)>, objective: bool| StatusHistory {
+            number,
+            labels: if objective { vec![binding.objective_label().to_owned()] } else { vec![binding.project_label("p")] },
+            changes: changes.into_iter().map(|(status, when)| (name(status), at(when))).collect(),
+        };
+        let histories = [
+            history(1, vec![(Status::Proposal, yesterday), (Status::Approved, yesterday)], false),
+            history(2, vec![(Status::Proposal, yesterday), (Status::Inbox, yesterday + Duration::hours(1)), (Status::Proposal, yesterday + Duration::hours(2))], false),
+            history(3, vec![(Status::Proposal, old)], false),
+            history(4, vec![(Status::Decision, yesterday)], false),
+            history(5, vec![(Status::Proposal, yesterday)], true),
+        ];
+        let since = t0() - week();
+        assert_eq!(new_proposals(&histories, &binding, since).unwrap(), [1, 2]);
+        // At the edge of the window it counts; an emptied Status or an unknown option is no Proposal.
+        let edge = [StatusHistory { number: 6, labels: vec![], changes: vec![(name(Status::Proposal), at(since)), (None, at(t0())), (Some("x".to_owned()), at(t0()))] }];
+        assert_eq!(new_proposals(&edge, &binding, since).unwrap(), [6]);
+        // An instant that does not read leaves no weekly count, only on a change to Proposal.
+        let unread = |status: Status| [StatusHistory { number: 7, labels: vec![], changes: vec![(name(status), "yesterday".to_owned())] }];
+        assert!(matches!(new_proposals(&unread(Status::Proposal), &binding, since), Err(TrackerError::BadResponse(_))));
+        assert_eq!(new_proposals(&unread(Status::Inbox), &binding, since).unwrap(), Vec::<u64>::new());
     }
 
     /// `--until`, as the prototype reads it: lowercase first, so a `Z` is not an offset any more.

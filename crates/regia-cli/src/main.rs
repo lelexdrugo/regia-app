@@ -1,5 +1,6 @@
 mod clock;
 mod dossier;
+mod policy;
 mod reads;
 mod state;
 
@@ -49,6 +50,12 @@ enum Commands {
     /// What is left of Claude's and Codex's windows, read only, and only with the user's consent to the
     /// usage probes. Exits 0, also when a value is unknown or the probes are off.
     Budget(BudgetArgs),
+    /// The budget policy: thresholds, caps of Proposals and the machine's local override. Native only:
+    /// the prototype has it in a script of its own, which the facade does not start.
+    Policy {
+        #[command(subcommand)]
+        command: policy::PolicyCommand,
+    },
     /// Commands not ported yet go to the prototype through the facade table.
     #[command(external_subcommand)]
     External(Vec<String>),
@@ -205,6 +212,7 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
             }
             Ok(ExitCode::SUCCESS)
         }
+        Commands::Policy { command } => policy::run(command, catalog),
         Commands::External(argv) => {
             let Some((command, args)) = table.split_command(&argv) else {
                 return Err(format!("unknown command `{}`", argv.first().map_or("", String::as_str)));
@@ -385,6 +393,28 @@ fn numbers(list: &[u64]) -> String {
     list.iter().map(|number| format!("#{number}")).collect::<Vec<_>>().join(", ")
 }
 
+/// A number as Python's `format(x, "g")` writes it, as the prototype prints a percentage: six significant
+/// digits without trailing zeros, and an exponent below 1e-4 or from 1e6.
+fn python_g(x: f64) -> String {
+    if !x.is_finite() {
+        return if x.is_nan() { "nan".to_owned() } else if x > 0.0 { "inf".to_owned() } else { "-inf".to_owned() };
+    }
+    if x == 0.0 {
+        return if x.is_sign_negative() { "-0".to_owned() } else { "0".to_owned() };
+    }
+    let trim = |text: &str| if text.contains('.') { text.trim_end_matches('0').trim_end_matches('.').to_owned() } else { text.to_owned() };
+    // The exponent of the number once rounded to six digits, as Python chooses the form by it.
+    let scientific = format!("{x:.5e}");
+    let (mantissa, exponent) = scientific.split_once('e').unwrap_or((&scientific, "0"));
+    let exponent: i32 = exponent.parse().unwrap_or(0);
+    if (-4..6).contains(&exponent) {
+        let decimals = usize::try_from(5 - exponent).unwrap_or(0);
+        trim(&format!("{x:.decimals$}"))
+    } else {
+        format!("{}e{}{:02}", trim(mantissa), if exponent < 0 { '-' } else { '+' }, exponent.unsigned_abs())
+    }
+}
+
 fn print_human(brief: &Brief, catalog: &Catalog) {
     let print_section = |id: &str, tasks: &[BriefTask]| {
         println!("== {}", catalog.message(id));
@@ -518,6 +548,30 @@ mod tests {
         let lines = flat(&serde_json::to_value(&reading).unwrap());
         for line in ["provider.claude.windows.5h.open: false", "provider.claude.windows.5h.used_pct: 0.0", "provider.claude.windows.7d.used_pct: 30.0", "generated: -"] {
             assert!(lines.iter().any(|candidate| candidate == line), "{line} not in {lines:?}");
+        }
+    }
+
+    /// Python's `format(x, "g")`, as Python 3.12 prints these values.
+    #[test]
+    fn numbers_print_as_python_s_g() {
+        let cases = [
+            (75.0, "75"),
+            (40.5, "40.5"),
+            (0.5, "0.5"),
+            (100.0, "100"),
+            (33.333_333, "33.3333"),
+            (99.999_95, "99.9999"),
+            (0.0001, "0.0001"),
+            (0.000_01, "1e-05"),
+            (1_234_567.0, "1.23457e+06"),
+            (0.0, "0"),
+            (74.9, "74.9"),
+            (12.25, "12.25"),
+            (999_999.5, "1e+06"),
+            (0.000_123_456_78, "0.000123457"),
+        ];
+        for (x, text) in cases {
+            assert_eq!(python_g(x), text, "{x}");
         }
     }
 

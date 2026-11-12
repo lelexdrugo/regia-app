@@ -1,5 +1,7 @@
 use std::collections::{BTreeSet, HashMap};
 
+use chrono::{DateTime, Utc};
+
 use crate::model::IssueState;
 
 /// What an adapter reads from the tracker, before labels and option ids get a meaning.
@@ -35,6 +37,17 @@ pub struct RawComment {
     pub body: String,
 }
 
+/// The changes of an issue's Status in the configured Project, as its timeline records them.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StatusHistory {
+    pub number: u64,
+    /// The issue's labels: an Objective's changes are not a task's.
+    pub labels: Vec<String>,
+    /// Oldest first: the name of the option the Status took, `None` when it was emptied, and when, in
+    /// ISO 8601.
+    pub changes: Vec<(Option<String>, String)>,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum TrackerError {
     #[error("tracker unavailable: {0}")]
@@ -56,6 +69,12 @@ pub trait Tracker {
     /// The comments of an issue, oldest first; `None` if the tracker has no such issue.
     fn comments(&self, number: u64) -> Result<Option<Vec<RawComment>>, TrackerError> {
         Err(TrackerError::Unavailable(format!("this tracker does not read the comments of #{number}")))
+    }
+
+    /// The changes of Status since `since` of every issue labelled `label`, open and closed, in tracker
+    /// order: where the Proposals of a week are counted. The Status does not move an issue's `updatedAt`.
+    fn status_histories(&self, label: &str, since: DateTime<Utc>) -> Result<Vec<StatusHistory>, TrackerError> {
+        Err(TrackerError::Unavailable(format!("this tracker does not read the changes of Status of `{label}` since {since}")))
     }
 }
 
