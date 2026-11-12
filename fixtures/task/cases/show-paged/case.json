@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. #4 found in the second page of every state, with its blockers read in two pages.",
+  "scenario": "paged",
+  "args": [
+    "task",
+    "show",
+    "4",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "show",
+    "4"
+  ]
+}

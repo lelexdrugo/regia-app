@@ -1,0 +1,22 @@
+[
+  {
+    "cartella": "dossiers/alpha",
+    "id": "alpha",
+    "obiettivo": 1,
+    "prodotti": [
+      "example/alpha-app"
+    ],
+    "repo": null,
+    "stato": "Approvato",
+    "titolo": "[alpha] objective of alpha",
+    "wip": "2"
+  },
+  {
+    "id": "beta",
+    "obiettivo": 7,
+    "prodotti": [],
+    "repo": "example/beta-dossier",
+    "stato": "In corso",
+    "titolo": "[beta] objective of beta"
+  }
+]

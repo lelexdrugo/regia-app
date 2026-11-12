@@ -1,0 +1,12 @@
+{
+  "_note": "Synthetic. The Objectives in two pages of the open issues, each with its registry.",
+  "scenario": "paged",
+  "args": [
+    "projects",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetti"
+  ]
+}

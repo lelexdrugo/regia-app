@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. Every issue, read in pages, the Objectives too, in the graph's order: the blockers and the sub-issues completed page by page, beta's children reaching it from the list, #8 cut.",
+  "scenario": "paged",
+  "args": [
+    "task",
+    "list",
+    "--include-closed",
+    "--objectives",
+    "--order",
+    "graph",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "list",
+    "--anche-chiusi",
+    "--obiettivi",
+    "--ordine",
+    "grafo"
+  ]
+}

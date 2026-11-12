@@ -83,7 +83,7 @@ fn native_differences(case: &Case, run: &CliRun, python: Option<&Recorded>) -> V
 #[test]
 fn every_read_case_natively_gives_the_prototype_s_output() {
     let cases = read_cases();
-    assert!(cases.len() >= 9, "the read cases are missing: {}", cases.len());
+    assert!(cases.len() >= 15, "the read cases are missing: {}", cases.len());
     for case in &cases {
         let run = native(&format!("native-{}", case.name), case);
         let diff = native_differences(case, &run, None);

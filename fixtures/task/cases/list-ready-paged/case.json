@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. The ready tasks, read in pages: #8 is not, since its blockers are read only in part.",
+  "scenario": "paged",
+  "args": [
+    "task",
+    "list",
+    "--ready",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "list",
+    "--pronti"
+  ]
+}

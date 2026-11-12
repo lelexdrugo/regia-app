@@ -1,0 +1,182 @@
+{
+  "_note": "Synthetic. Ten issues in pages of three, so every list is read in pages. alpha's Objective has more sub-issues than its list holds, read in two pages, one of them closed. #4, of beta, has more blockers than its list holds, read in two pages: #2 and #6 still open, #5 closed. #8 is approved and ready and its blockers read are closed, but the rest of them fails to read, so it is not ready and its graph is cut. #10, an Inbox of beta, waits for #3 of alpha, so alpha's #3 unblocks one task with a status and no approved work. beta's Objective lists none of its children: they reach it from the list.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 3,
+  "issues": [
+    {
+      "number": 1,
+      "title": "[alpha] objective of alpha",
+      "status": "Approvato",
+      "labels": [
+        "progetto:alpha",
+        "tipo:obiettivo"
+      ],
+      "sub": [
+        [
+          2,
+          "OPEN"
+        ]
+      ],
+      "sub_total": 4,
+      "body": "<!-- regia:progetto\nid: alpha\ncartella: dossiers/alpha\nwip: 2\nprodotti: example/alpha-app\n-->\n\n## Obiettivo\n\nA synthetic objective.\n"
+    },
+    {
+      "number": 2,
+      "title": "approved and ready, blocks 4",
+      "status": "Approvato",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1
+    },
+    {
+      "number": 3,
+      "title": "in progress, blocks 10",
+      "status": "In corso",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1
+    },
+    {
+      "number": 4,
+      "title": "approved, blocked by three in two pages",
+      "status": "Approvato",
+      "labels": [
+        "progetto:beta",
+        "maturità:pronto"
+      ],
+      "parent": 7,
+      "blocked_by": [
+        [
+          2,
+          "OPEN"
+        ]
+      ],
+      "blocked_by_total": 3,
+      "body": "A spec read in pages.\n\n```yaml\nprogetto: beta\n```\n"
+    },
+    {
+      "number": 5,
+      "title": "done and closed",
+      "status": "Fatto",
+      "labels": [
+        "progetto:beta",
+        "maturità:pronto"
+      ],
+      "parent": 7,
+      "state_reason": "COMPLETED",
+      "closed_at": "2026-01-05T09:00:00Z"
+    },
+    {
+      "number": 6,
+      "title": "a proposal that blocks 4",
+      "status": "Proposta",
+      "labels": [
+        "progetto:beta",
+        "maturità:abbozzo"
+      ],
+      "parent": 7
+    },
+    {
+      "number": 7,
+      "title": "[beta] objective of beta",
+      "status": "In corso",
+      "labels": [
+        "progetto:beta",
+        "tipo:obiettivo"
+      ],
+      "body": "<!-- regia:progetto\nid: beta\nrepo: example/beta-dossier\n-->\n"
+    },
+    {
+      "number": 8,
+      "title": "ready, but its blockers are read only in part",
+      "status": "Approvato",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1,
+      "blocked_by": [
+        [
+          5,
+          "CLOSED"
+        ]
+      ],
+      "blocked_by_total": 21
+    },
+    {
+      "number": 9,
+      "title": "a closed child of alpha",
+      "status": "Scartato",
+      "labels": [
+        "progetto:alpha",
+        "maturità:abbozzo"
+      ],
+      "parent": 1,
+      "state_reason": "NOT_PLANNED",
+      "closed_at": "2026-01-06T09:00:00Z"
+    },
+    {
+      "number": 10,
+      "title": "an inbox of beta that waits for 3",
+      "status": "Inbox",
+      "labels": [
+        "progetto:beta"
+      ],
+      "blocked_by": [
+        [
+          3,
+          "OPEN"
+        ]
+      ]
+    }
+  ],
+  "extra_blockers": {
+    "4": [
+      [
+        [
+          2,
+          "OPEN"
+        ],
+        [
+          5,
+          "CLOSED"
+        ]
+      ],
+      [
+        [
+          6,
+          "OPEN"
+        ]
+      ]
+    ],
+    "8": "the rest of the blockers does not read"
+  },
+  "extra_sub_issues": {
+    "1": [
+      [
+        [
+          2,
+          "OPEN"
+        ],
+        [
+          3,
+          "OPEN"
+        ]
+      ],
+      [
+        [
+          8,
+          "OPEN"
+        ],
+        [
+          9,
+          "CLOSED"
+        ]
+      ]
+    ]
+  }
+}

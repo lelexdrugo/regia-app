@@ -1,0 +1,37 @@
+{
+  "bloccato_da": [
+    [
+      2,
+      "OPEN"
+    ],
+    [
+      5,
+      "CLOSED"
+    ],
+    [
+      6,
+      "OPEN"
+    ]
+  ],
+  "bloccato_da_totale": 3,
+  "body": "A spec read in pages.\n\n```yaml\nprogetto: beta\n```\n",
+  "campo_progetto": null,
+  "closedAt": null,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "labels": [
+    "progetto:beta",
+    "maturità:pronto"
+  ],
+  "maturita": "pronto",
+  "number": 4,
+  "obiettivo": false,
+  "parent": 7,
+  "progetto": "beta",
+  "state": "OPEN",
+  "stateReason": null,
+  "stato": "Approvato",
+  "sub": [],
+  "title": "approved, blocked by three in two pages",
+  "updatedAt": "2026-01-02T03:04:05Z",
+  "url": "https://tracker.invalid/issues/4"
+}

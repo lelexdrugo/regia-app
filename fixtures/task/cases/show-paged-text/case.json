@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. alpha's Objective as text, its sub-issues read in pages, a closed one among them.",
+  "scenario": "paged",
+  "args": [
+    "task",
+    "show",
+    "1",
+    "--short"
+  ],
+  "python": [
+    "task",
+    "show",
+    "1",
+    "--breve"
+  ]
+}

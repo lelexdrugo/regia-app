@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. alpha's tasks in the graph's order: the scope filters the list, not the graph, so #3 of alpha still counts #10 of beta.",
+  "scenario": "paged",
+  "args": [
+    "task",
+    "list",
+    "--project",
+    "alpha",
+    "--order",
+    "graph",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "list",
+    "--progetto",
+    "alpha",
+    "--ordine",
+    "grafo"
+  ]
+}
