@@ -1,6 +1,6 @@
 use std::collections::{BTreeSet, HashMap};
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, SecondsFormat, Utc};
 
 use crate::model::IssueState;
 
@@ -74,6 +74,7 @@ pub trait Tracker {
     /// The changes of Status since `since` of every issue labelled `label`, open and closed, in tracker
     /// order: where the Proposals of a week are counted. The Status does not move an issue's `updatedAt`.
     fn status_histories(&self, label: &str, since: DateTime<Utc>) -> Result<Vec<StatusHistory>, TrackerError> {
+        let since = since.to_rfc3339_opts(SecondsFormat::Secs, true);
         Err(TrackerError::Unavailable(format!("this tracker does not read the changes of Status of `{label}` since {since}")))
     }
 }
