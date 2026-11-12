@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. The list of blockers is required: the parser refuses, exit 1, no call; no tracker is read.",
+  "args": [
+    "task",
+    "unblock",
+    "4",
+    "--reason",
+    "x"
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "4",
+    "--motivo",
+    "x"
+  ],
+  "exit": 1
+}

@@ -1,0 +1,55 @@
+{
+  "_note": "Synthetic. #5 blocked by #3 and #4, freed from `3,9,4`: #9 does not block it, a warning on stderr; the JSON lists both removed, #9 among the ones not blocking, and the comment's id.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "5",
+    "--by",
+    "3,9,4",
+    "--reason",
+    "x",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "sblocca",
+    "5",
+    "--da",
+    "3,9,4",
+    "--motivo",
+    "x"
+  ],
+  "gh": {
+    "blocker_pages": {
+      "5": [
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "number": 3,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 4,
+                    "state": "OPEN"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9314\n"
+    }
+  }
+}

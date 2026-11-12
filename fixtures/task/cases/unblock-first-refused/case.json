@@ -1,0 +1,57 @@
+{
+  "_note": "Synthetic. The tracker refuses the first removal: nothing was removed, so no comment, and exit 1.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "5",
+    "--by",
+    "3",
+    "--reason",
+    "x"
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "5",
+    "--da",
+    "3",
+    "--motivo",
+    "x"
+  ],
+  "exit": 1,
+  "gh": {
+    "blocker_pages": {
+      "5": [
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "number": 3,
+                    "state": "OPEN"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "mutation_errors": {
+      "removeBlockedBy": [
+        {
+          "when": {
+            "b": "ISSUE_3"
+          },
+          "message": "refused by the fixture"
+        }
+      ]
+    }
+  }
+}

@@ -15,7 +15,9 @@
 //! mutation by its name, its variables as text and its arguments as the query writes them, without
 //! blanks, so a value written in the query counts too; a subcommand by its argv with `--name=value`
 //! split and `-R` spelled `--repo`, and the body it read on stdin. It answers a mutation from the
-//! fixture's `mutations` and a subcommand from its `cli`, by the subcommand's two words.
+//! fixture's `mutations` and a subcommand from its `cli`, by the subcommand's two words. A mutation the
+//! fixture's `mutation_errors` names, with the variables it lists, is refused with `errors`, as GitHub
+//! refuses a write.
 //!
 //! For `init` it answers the REST calls of `gh api <path>` from the fixture's `rest`, by method and
 //! path, and the Projects of an owner from its `owner`. A method other than GET is a write, logged by
@@ -189,6 +191,9 @@ fn answer(args: &[String]) -> Result<Reply, String> {
         let line = json!({"mutation": name, "variables": variables, "arguments": arguments});
         append(fixture.writes.as_ref(), &line.to_string())?;
         append(fixture.log.as_ref(), &format!("mutation {name}"))?;
+        if let Some(message) = refusal(&responses["mutation_errors"][&name], &variables) {
+            return Ok(Reply::Out(json!({"data": null, "errors": [{"message": message}]}).to_string()));
+        }
         let data = responses["mutations"].get(&name).ok_or_else(|| format!("no fixture answer for mutation {name}"))?;
         let projected = project_query(&query, data)?;
         return serde_json::to_string(&json!({ "data": projected })).map(Reply::Out).map_err(|error| error.to_string());
@@ -271,6 +276,14 @@ fn answer(args: &[String]) -> Result<Reply, String> {
     let projected = project_query(&query, &page)?;
     append(fixture.log.as_ref(), &kind)?;
     serde_json::to_string(&json!({ "data": projected })).map(Reply::Out).map_err(|error| error.to_string())
+}
+
+/// The message of the fixture's refusal of a mutation with these variables: the first entry of its
+/// `mutation_errors` whose `when` they all match. GraphQL answers it with `errors`, as GitHub refuses a write.
+fn refusal(entries: &Value, variables: &Map<String, Value>) -> Option<String> {
+    let entries = entries.as_array()?;
+    let matches = |entry: &&Value| entry["when"].as_object().is_some_and(|when| when.iter().all(|(key, value)| variables.get(key) == Some(value)));
+    entries.iter().find(matches).map(|entry| entry["message"].as_str().unwrap_or_default().to_owned())
 }
 
 /// `gh api <path>`, REST: a read answered from the fixture's `rest` by method and path, with the status

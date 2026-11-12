@@ -1,0 +1,64 @@
+{
+  "_note": "Synthetic. The tracker refuses the removal of #4 (G1): #3, removed before it, still gets its comment, then the command fails with exit 1 and prints nothing.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "5",
+    "--by",
+    "3,4",
+    "--reason",
+    "x"
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "5",
+    "--da",
+    "3,4",
+    "--motivo",
+    "x"
+  ],
+  "exit": 1,
+  "gh": {
+    "blocker_pages": {
+      "5": [
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "number": 3,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 4,
+                    "state": "OPEN"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9316\n"
+    },
+    "mutation_errors": {
+      "removeBlockedBy": [
+        {
+          "when": {
+            "b": "ISSUE_4"
+          },
+          "message": "refused by the fixture"
+        }
+      ]
+    }
+  }
+}

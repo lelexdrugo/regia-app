@@ -30,11 +30,11 @@ use regia_identity::{env_var, prototype_env_var};
 use serde_json::Value;
 
 /// The writes of the `task` family this binary runs natively.
-const PORTED: [&str; 1] = ["task status"];
+const PORTED: [&str; 3] = ["task status", "task unblock", "task new"];
 
 /// The calls to `gh` of some cases, reads included, which the tests check without the prototype: by kind
 /// as the fake logs them. The cross test checks every case against the prototype's own.
-const CALLS: [(&str, &[&str]); 5] = [
+const CALLS: [(&str, &[&str]); 7] = [
     (
         "status-done",
         &[
@@ -53,6 +53,14 @@ const CALLS: [(&str, &[&str]); 5] = [
     ),
     ("status-comment-owner", &["issue 5", "node ISSUE_5", "mutation updateProjectV2ItemFieldValue", "issue view", "issue comment"]),
     ("status-missing", &["issue 77"]),
+    (
+        "unblock-one-text",
+        &["blockers 5 0", "issue 5", "issue 3", "mutation removeBlockedBy", "issue view", "issue comment"],
+    ),
+    (
+        "unblock-paged",
+        &["blockers 5 0", "blockers 5 1", "blockers 5 2", "issue 5", "issue 7", "mutation removeBlockedBy", "issue view", "issue comment"],
+    ),
 ];
 
 /// The cases of the ported writes.
@@ -112,7 +120,7 @@ fn differences(case: &Case, run: &CliRun, writes: &[Value]) -> Vec<String> {
 #[test]
 fn every_write_case_natively_gives_the_prototype_s_outcome() {
     let cases = cases();
-    assert!(cases.len() >= 10, "the cases of the writes are missing: {}", cases.len());
+    assert!(cases.len() >= 30, "the cases of the writes are missing: {}", cases.len());
     for case in &cases {
         let run = native(&format!("native-{}", case.name), case);
         let diff = differences(case, &run, &case.writes());

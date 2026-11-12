@@ -1,0 +1,1 @@
+errore: progetto 'gamma' sconosciuto: crealo con 'progetto new'

@@ -1,0 +1,57 @@
+{
+  "_note": "Synthetic. #5 freed from #3 and #6, written `3,#6`: both removals first, in the list's order, then a single comment naming both.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "5",
+    "--by",
+    "3,#6",
+    "--reason",
+    "fallback decided"
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "5",
+    "--da",
+    "3,#6",
+    "--motivo",
+    "fallback decided"
+  ],
+  "gh": {
+    "blocker_pages": {
+      "5": [
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "number": 3,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 4,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 6,
+                    "state": "OPEN"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9312\n"
+    }
+  }
+}

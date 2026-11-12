@@ -1,0 +1,22 @@
+[
+  {
+    "arguments": "input:{issueId:$i,blockingIssueId:$b}",
+    "mutation": "removeBlockedBy",
+    "variables": {
+      "b": "ISSUE_3",
+      "i": "ISSUE_4"
+    }
+  },
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "4",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "Sbloccato da #3: the gate passed\n\n— regia · orchestratore\n<!-- regia:autore ruolo=orchestratore sessione=fixture-session -->"
+  }
+]
