@@ -1,0 +1,25 @@
+{
+  "_note": "Synthetic. The comments of the Decision do not read: the tracker's error.",
+  "transcribes": [
+    "test_precheck.py::TestFailClosed::test_commenti_non_leggibili"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Decisione"
+    }
+  ],
+  "runs": [
+    {
+      "comments_missing": [
+        2
+      ]
+    }
+  ]
+}

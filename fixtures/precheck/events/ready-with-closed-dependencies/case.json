@@ -1,0 +1,46 @@
+{
+  "_note": "Synthetic. Four approved tasks: #2 and #4 are ready, #3 waits on an open issue, #5 is a draft. #5 is also #466's backlog, a key the comparison takes out.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_pronti_con_dipendenze_chiuse"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Approvato"
+    },
+    {
+      "n": 3,
+      "status": "Approvato",
+      "blocked_by": [
+        [
+          9,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "n": 4,
+      "status": "Approvato",
+      "blocked_by": [
+        [
+          9,
+          "CLOSED"
+        ]
+      ]
+    },
+    {
+      "n": 5,
+      "status": "Approvato",
+      "maturity": "abbozzo"
+    }
+  ],
+  "runs": [
+    {}
+  ]
+}

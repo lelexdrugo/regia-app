@@ -1,0 +1,15 @@
+{
+  "oracle_repository": "lelexdrugo/regia",
+  "oracle_commit": "6e6e4fb631ac9055c4b39b3621c698f18f6f1170",
+  "oracle_last_change": {
+    "tools/precheck.py": "ab54425c3083fd4c68468e52c0c185dadd41ae33",
+    "tools/regia.py": "bc17bcf7ea73c3cc3c1f091f104fd02665a7923a",
+    "tools/runtime.py": "e90a3e14094fafdd9050c78bc2e5caa377bd23fd",
+    "tools/politica_budget.py": "8774a57f1d1d6593c6e3462e8c2b26a8da12771f",
+    "tools/tests/test_precheck.py": "8774a57f1d1d6593c6e3462e8c2b26a8da12771f"
+  },
+  "driver": "crates/regia-conformance/tests/precheck.rs",
+  "python": "3.12.10",
+  "recorded_at": "2026-11-12",
+  "now": "2026-01-10T09:00:00Z"
+}

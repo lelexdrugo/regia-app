@@ -1,0 +1,10 @@
+[
+  {
+    "exit": 1,
+    "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"illeggibile\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 1,
+    "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"illeggibile\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
+  }
+]

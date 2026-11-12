@@ -1,0 +1,182 @@
+{
+  "_note": "Synthetic. Acceptance 3 and #406: a.md written at a time with a fraction past the microsecond, b.md later, both after the cursor's instant; the step lists them, or some, with the date Python reads.",
+  "transcribes": [
+    "test_passo.py::TestReportElaborati (the precheck's side)"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    }
+  ],
+  "runs": [
+    {
+      "note": "both listed with their dates: nothing new",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": [],
+            "report": {
+              "a.md": "2026-01-10T08:30:00.123457+00:00",
+              "b.md": "2026-01-10T08:40:00+00:00"
+            }
+          }
+        }
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T08:30:00.1234567Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:40:00Z"
+        }
+      ]
+    },
+    {
+      "note": "b.md arrived during the step, not listed: it wakes",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": [],
+            "report": {
+              "a.md": "2026-01-10T08:30:00.123457+00:00"
+            }
+          }
+        }
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T08:30:00.1234567Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:40:00Z"
+        }
+      ]
+    },
+    {
+      "note": "a.md listed, then written again: it wakes",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": [],
+            "report": {
+              "a.md": "2026-01-10T08:20:00+00:00",
+              "b.md": "2026-01-10T08:40:00+00:00"
+            }
+          }
+        }
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T08:30:00.1234567Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:40:00Z"
+        }
+      ]
+    },
+    {
+      "note": "a.md listed a microsecond before the date Python reads: it wakes",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": [],
+            "report": {
+              "a.md": "2026-01-10T08:30:00.123456+00:00",
+              "b.md": "2026-01-10T08:40:00+00:00"
+            }
+          }
+        }
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T08:30:00.1234567Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:40:00Z"
+        }
+      ]
+    },
+    {
+      "note": "a cursor before #406, without the reports: both",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T08:30:00.1234567Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:40:00Z"
+        }
+      ]
+    },
+    {
+      "note": "the plain form: both",
+      "cursor": {
+        "p": "2026-01-10T08:00:00Z"
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T08:30:00.1234567Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:40:00Z"
+        }
+      ]
+    },
+    {
+      "note": "listed but older than the cursor's instant: nothing",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:50:00Z",
+          "propri": {
+            "commenti": [],
+            "report": {
+              "a.md": "2026-01-10T08:30:00.123457+00:00"
+            }
+          }
+        }
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T08:30:00.1234567Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:40:00Z"
+        }
+      ]
+    }
+  ]
+}

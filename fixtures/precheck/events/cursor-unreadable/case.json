@@ -1,0 +1,63 @@
+{
+  "_note": "Synthetic. Events cursors that do not read; the last, own parts that are a list, the prototype's internal error.",
+  "transcribes": [
+    "test_precheck.py::TestFailClosed::test_cursore_illeggibile"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    }
+  ],
+  "runs": [
+    {
+      "cursor": {
+        "p": 42
+      }
+    },
+    {
+      "cursor": {
+        "p": [
+          "x"
+        ]
+      }
+    },
+    {
+      "cursor": {
+        "p": "non-una-data"
+      }
+    },
+    {
+      "cursor": {
+        "p": {
+          "t": "boh"
+        }
+      }
+    },
+    {
+      "cursor": {
+        "p": {
+          "t": "2026-01-10T09:00:00Z",
+          "propri": {
+            "commenti": [
+              "a"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "note": "own parts that are no object",
+      "cursor": {
+        "p": {
+          "t": "2026-01-10T09:00:00Z",
+          "propri": [
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

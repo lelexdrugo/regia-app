@@ -1,0 +1,6 @@
+[
+  {
+    "exit": 1,
+    "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"runtime\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
+  }
+]

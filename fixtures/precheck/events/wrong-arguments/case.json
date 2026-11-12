@@ -1,0 +1,61 @@
+{
+  "_note": "Synthetic. Arguments the precheck does not take: its own error, exit 1, never the parser's 2.",
+  "transcribes": [
+    "test_precheck.py::TestFailClosed::test_argomenti_errati_escono_1_non_2"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    }
+  ],
+  "runs": [
+    {
+      "args": [
+        "--boh"
+      ]
+    },
+    {
+      "args": [
+        "--help"
+      ]
+    },
+    {
+      "args": [
+        "-h"
+      ]
+    },
+    {
+      "args": [
+        "--stallo-n",
+        "x"
+      ]
+    },
+    {
+      "args": [
+        "--progetto"
+      ]
+    },
+    {
+      "args": [
+        "posizionale"
+      ]
+    },
+    {
+      "note": "an ambiguous prefix",
+      "args": [
+        "--st",
+        "3"
+      ]
+    },
+    {
+      "note": "a unique prefix reads",
+      "args": [
+        "--prog",
+        "p"
+      ]
+    }
+  ]
+}

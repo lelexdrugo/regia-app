@@ -1,0 +1,6 @@
+[
+  {
+    "exit": 0,
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"lease-scadute\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"lease-scadute\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":1,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  }
+]

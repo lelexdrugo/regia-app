@@ -1,0 +1,9 @@
+{
+  "_note": "Synthetic. No issue at all: idle, no project.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_nessun_progetto_e_idle"
+  ],
+  "runs": [
+    {}
+  ]
+}

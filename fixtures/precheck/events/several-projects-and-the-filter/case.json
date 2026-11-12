@@ -1,0 +1,42 @@
+{
+  "_note": "Synthetic. Two projects, one with a ready task; the filter on one, and on one nobody knows.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_piu_progetti_e_filtro"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "a",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Approvato",
+      "project": "b",
+      "objective": true
+    },
+    {
+      "n": 10,
+      "status": "Approvato",
+      "project": "b"
+    }
+  ],
+  "runs": [
+    {
+      "note": "both"
+    },
+    {
+      "args": [
+        "--progetto",
+        "a"
+      ]
+    },
+    {
+      "args": [
+        "--progetto",
+        "zz"
+      ]
+    }
+  ]
+}

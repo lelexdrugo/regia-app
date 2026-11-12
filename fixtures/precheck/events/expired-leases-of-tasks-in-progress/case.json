@@ -1,0 +1,48 @@
+{
+  "_note": "Synthetic. Expired leases: of a task in progress here, of a task not in progress, of a task in progress named for another project, and a row that does not read. One row per task, as the state keeps them.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_lease_scadute_solo_di_task_in_corso"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 3,
+      "status": "In corso"
+    },
+    {
+      "n": 5,
+      "status": "In corso"
+    }
+  ],
+  "runs": [
+    {
+      "leases": [
+        {
+          "task": 3,
+          "project": "p",
+          "expired": true
+        },
+        {
+          "task": 8,
+          "project": "p",
+          "expired": true
+        },
+        {
+          "task": 5,
+          "project": "altro",
+          "expired": true
+        },
+        {
+          "task": 9,
+          "project": null,
+          "unreadable": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "_note": "Synthetic. Comments on a Decision, a task in progress and a Proposal: one before the cursor, one the step wrote, two new.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_commenti_su_decisione_e_proposta_esclusi_gli_eventi_propri"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Decisione"
+    },
+    {
+      "n": 3,
+      "status": "In corso"
+    },
+    {
+      "n": 4,
+      "status": "Proposta"
+    }
+  ],
+  "comments": {
+    "2": [
+      {
+        "id": 100,
+        "created": "2026-01-10T07:00:00Z"
+      },
+      {
+        "id": 101,
+        "created": "2026-01-10T08:30:00Z"
+      },
+      {
+        "id": 102,
+        "created": "2026-01-10T08:40:00Z"
+      }
+    ],
+    "3": [
+      {
+        "id": 103,
+        "created": "2026-01-10T09:00:00Z"
+      }
+    ],
+    "4": [
+      {
+        "id": 104,
+        "created": "2026-01-10T09:00:00Z"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "note": "two answers",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": [
+              101
+            ]
+          }
+        }
+      }
+    },
+    {
+      "note": "only the step's own: waiting on the owner",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": [
+              101,
+              102
+            ]
+          }
+        }
+      },
+      "issues": [
+        {
+          "n": 1,
+          "status": "Approvato",
+          "project": "p",
+          "objective": true
+        },
+        {
+          "n": 2,
+          "status": "Decisione"
+        }
+      ]
+    }
+  ]
+}

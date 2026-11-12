@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. Every call to the tracker fails, with a sentence outside ASCII: an error, in an ASCII line, last.",
+  "transcribes": [
+    "test_precheck.py::TestFailClosed::test_tracker_guasto",
+    "test_precheck.py::TestFailClosed::test_sempre_una_riga_json_per_ultima"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    }
+  ],
+  "runs": [
+    {
+      "tracker_fails": "gh: rete giù, é"
+    }
+  ]
+}
