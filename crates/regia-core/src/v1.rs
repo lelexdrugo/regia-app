@@ -298,6 +298,24 @@ mod tests {
         assert_eq!(task.status, Some(Status::InProgress));
     }
 
+    /// T1 of the dossier's conformance study: the first label with the project's prefix wins, in the order
+    /// the tracker gives the labels; the same holds for maturity.
+    #[test]
+    fn the_first_project_label_wins() {
+        let binding = TrackerBinding::new(&config()).unwrap();
+        let labels = vocabulary().labels;
+        let mut issue = raw(None);
+        issue.labels = vec![
+            "other".to_owned(),
+            format!("{}beta", labels.project_prefix),
+            labels.maturity.ready.clone(),
+            format!("{}alpha", labels.project_prefix),
+            labels.maturity.draft.clone(),
+        ];
+        let task = binding.resolve(issue).unwrap();
+        assert_eq!((task.project.as_deref(), task.maturity), (Some("beta"), Some(Maturity::Ready)));
+    }
+
     #[test]
     fn an_unknown_option_is_an_error_not_a_silent_guess() {
         let binding = TrackerBinding::new(&config()).unwrap();
