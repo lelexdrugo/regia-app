@@ -1,6 +1,7 @@
 //! The GitHub adapter. Everything GitHub-specific stays in this crate. The user's `gh` does the
 //! authentication, so the product never sees a token (ADR 0001, "GitHub").
 
+mod history;
 mod issue;
 
 use std::path::PathBuf;
@@ -59,11 +60,22 @@ impl GhTracker {
         number: Option<u64>,
         after: Option<&str>,
     ) -> Result<T, TrackerError> {
+        let number = number.map(|number| ("n", json!(number)));
+        self.graphql_with(query, number.as_slice(), after)
+    }
+
+    /// `graphql` with the query's own variables, besides the repository and the cursor.
+    fn graphql_with<T: for<'de> Deserialize<'de>>(
+        &self,
+        query: &str,
+        extra: &[(&str, Value)],
+        after: Option<&str>,
+    ) -> Result<T, TrackerError> {
         let gh = self.gh.as_ref().map_err(|error| TrackerError::Unavailable(error.clone()))?;
         // The whole request, with typed variables, goes on stdin: no value reaches gh's argv.
         let mut variables = json!({"o": self.owner, "r": self.repo});
-        if let Some(number) = number {
-            variables["n"] = json!(number);
+        for (name, value) in extra {
+            variables[*name] = value.clone();
         }
         if let Some(after) = after {
             variables["after"] = json!(after);
@@ -78,7 +90,13 @@ impl GhTracker {
             let stderr = String::from_utf8_lossy(&output.stderr);
             return Err(TrackerError::Unavailable(format!("gh api graphql: {}", stderr.trim())));
         }
-        let envelope: Value = serde_json::from_slice(&output.stdout)
+        Self::data(&output.stdout)
+    }
+
+    /// The `data` of what GraphQL answered: an answer that does not read, or that has `errors`, is a bad
+    /// response.
+    fn data<T: for<'de> Deserialize<'de>>(stdout: &[u8]) -> Result<T, TrackerError> {
+        let envelope: Value = serde_json::from_slice(stdout)
             .map_err(|error| TrackerError::BadResponse(error.to_string()))?;
         if let Some(errors) = envelope.get("errors").filter(|errors| !errors.is_null()) {
             return Err(TrackerError::BadResponse(errors.to_string()));
