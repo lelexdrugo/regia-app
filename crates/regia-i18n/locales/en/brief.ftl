@@ -82,8 +82,8 @@ brief-controller-budget = { $rounds ->
        *[other] The budget has been unknown for { $rounds } rounds: nothing starts by itself until it is read.
     }
 brief-controller-budget-since = Unknown since { $when }.
-brief-controller-open = It could not open this by itself today; open it by hand:
-brief-controller-resume = Stopped, and it will not resume this by itself:
+brief-controller-open = To open by hand today:
+brief-controller-resume = Stopped, to resume by hand:
 brief-why = Why
 brief-how = How
 brief-where = Where

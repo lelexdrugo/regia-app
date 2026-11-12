@@ -82,8 +82,8 @@ brief-controller-budget = { $rounds ->
        *[other] Il budget è sconosciuto da { $rounds } giri: non parte nulla da solo finché non si legge.
     }
 brief-controller-budget-since = Sconosciuto dal { $when }.
-brief-controller-open = Oggi non è riuscito ad aprirla da solo; aprila a mano:
-brief-controller-resume = Fermata, e non la riprenderà da solo:
+brief-controller-open = Da aprire a mano, oggi:
+brief-controller-resume = Fermata, da riprendere a mano:
 brief-why = Perché
 brief-how = Come
 brief-where = Dove
