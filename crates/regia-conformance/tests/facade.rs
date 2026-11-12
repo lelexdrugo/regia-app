@@ -263,7 +263,8 @@ fn an_altered_exit_output_or_argv_is_noticed() {
 /// in the user's language, from the catalog, and never with a traceback or a panic.
 #[test]
 fn without_the_prototype_the_catalog_says_so() {
-    let case = Case::named("maturity-ready");
+    // A command no slice has ported yet: `task maturity` was the example until #446 ported it.
+    let case = Case::named("mirror-dry-run");
     for language in Language::ALL {
         let catalog = Catalog::new(language);
         let tag = || (env_var("LANG"), OsString::from(language.tag()));
@@ -277,8 +278,8 @@ fn without_the_prototype_the_catalog_says_so() {
         let brief = Case::named("core");
         let forced = run_case(&format!("forced-python-{language}"), &brief, |_| vec![(env_var("ENGINE"), "python".into()), tag()]);
         for (run, id, command) in [
-            (&missing, "facade-not-ported", "task maturity"),
-            (&not_found, "facade-no-python", "task maturity"),
+            (&missing, "facade-not-ported", "project mirror"),
+            (&not_found, "facade-no-python", "project mirror"),
             (&forced, "facade-no-prototype", "brief"),
         ] {
             assert_eq!(run.exit, Some(1), "{language}, {id}: {}", run.stderr);

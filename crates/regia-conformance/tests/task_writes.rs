@@ -21,13 +21,14 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use regia_conformance::{
-    Case, CliRun, FIXTURE_NOW, Recorded, fixed_now_driver, fixture_for_python, json_diff, lf, log_var, place_args, prepare_case_state,
-    prepare_dossier, run_case_on_dossier, state_rows, translate_python, writes_of_run,
+    Case, CliRun, FIXTURE_NOW, Recorded, fixed_now_driver, fixture_for_python, fixture_for_rust, json_diff, lf, log_var, place_args,
+    prepare_case_state, prepare_dossier, prepare_state_dir, regia_binary, run_case_on_dossier, state_rows, translate_python,
+    writes_of_run,
 };
 use regia_exec::{Pin, Program, python};
 use regia_facade::PROTOTYPE_LIMITS;
 use regia_identity::{env_var, prototype_env_var};
-use serde_json::Value;
+use serde_json::{Value, json};
 
 /// The writes of the `task` family this binary runs natively.
 const PORTED: [&str; 7] = ["task status", "task unblock", "task new", "task maturity", "task block", "task parent", "task move"];
@@ -157,6 +158,42 @@ fn a_write_out_of_order_fails_the_comparison() {
     let diff = differences(&case, &run, &swapped);
     println!("the control's differences:\n{}", diff.join("\n"));
     assert!(diff.iter().any(|line| line.starts_with("writes ")), "a swap must show: {diff:?}");
+}
+
+/// #445/V5: each of the seven writes records its line in the sessions' log, with the prototype's words for
+/// the command, its project and its issue, after the parser's checks and before the command's own refusals.
+#[test]
+fn each_write_records_its_line_in_the_sessions_log() {
+    let dir = prepare_state_dir("native-task-activity");
+    let runs: [(&str, Value); 8] = [
+        ("status-approved-text", json!(["task stato", null, 8])),
+        ("unblock-one-text", json!(["task sblocca", null, 5])),
+        ("unblock-by-not-a-number", json!(["task sblocca", null, 4])),
+        ("new-blocked", json!(["task new", "alpha", null])),
+        ("maturity-ready", json!(["task maturita", null, 3])),
+        ("block-two-text", json!(["task blocca", null, 4])),
+        ("parent-orphan-text", json!(["task padre", null, 2])),
+        ("move-beta", json!(["task sposta", "beta", 4])),
+    ];
+    for (name, _) in &runs {
+        let case = Case::named(name);
+        let responses = if case.responses_path().is_file() { case.responses_path() } else { Case::named("status-done").responses_path() };
+        let (launch, _) = fixture_for_rust(regia_exec::harness::launch(&regia_binary(), &case.spec.args, &dir), &responses, &dir);
+        let output = launch.env("CLAUDE_CODE_SESSION_ID", "claude-1").run().expect("run regia");
+        assert_eq!(output.status.code(), Some(i32::from(case.spec.exit)), "{name}: {}", String::from_utf8_lossy(&output.stderr));
+    }
+    let folder = dir.join("dichiarazioni");
+    let mut lines: Vec<Value> = Vec::new();
+    for entry in fs::read_dir(&folder).expect("the log's folder") {
+        let text = fs::read_to_string(entry.expect("an entry").path()).expect("a log file");
+        lines.extend(text.lines().map(|line| serde_json::from_str::<Value>(line).expect("a JSON line")));
+    }
+    let field = |event: &Value, key: &str| event.get(key).cloned().unwrap_or(Value::Null);
+    let mut summary: Vec<Value> = lines.iter().map(|event| json!([event["comando"], field(event, "progetto"), field(event, "task")])).collect();
+    let mut expected: Vec<Value> = runs.iter().map(|(_, line)| line.clone()).collect();
+    summary.sort_by_key(Value::to_string);
+    expected.sort_by_key(Value::to_string);
+    assert_eq!(summary, expected);
 }
 
 /// The copy of the prototype in `REGIA_HOME`.
