@@ -6,9 +6,3 @@
 # prototype's `DOSSIER_FILE`. A folder stands for every file under it.
 [named]
 files = [".regia/stato.md", ".regia/decisioni.md", ".regia/journal"]
-
-# Where the body of a project's objective names its folder: the first block `<!-- <marker> … -->`, one
-# `key: value` a line, the last line of a key winning.
-[registry]
-marker = "regia:progetto"
-folder = "cartella"

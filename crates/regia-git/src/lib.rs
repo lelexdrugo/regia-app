@@ -15,5 +15,5 @@
 mod dossier;
 mod git;
 
-pub use dossier::{Checkpoint, DossierSync, Outcome, named_files, named_paths, registry_folder, sync, sync_with};
+pub use dossier::{Checkpoint, DossierSync, Outcome, named_files, named_paths, sync, sync_with};
 pub use git::{Git, GitDate, Run, TIMEOUT};

@@ -4,7 +4,7 @@
 use std::path::PathBuf;
 
 use regia_core::{
-    Brief, BriefOptions, Tracker, TrackerBinding, TrackerConfigV1, TrackerError, V1Error, build_brief, parse_date,
+    Brief, BriefOptions, Registry, Tracker, TrackerBinding, TrackerConfigV1, TrackerError, V1Error, build_brief, parse_date,
 };
 use regia_github::GhTracker;
 use regia_identity::{env_var, prototype_env_var, state_dir};
@@ -19,9 +19,40 @@ pub enum BriefError {
     Today { name: String, value: String },
 }
 
+/// Why the folder of a project was not read. The reasons of `checkpoint` and `step finish` repeat it.
+#[derive(Debug, thiserror::Error)]
+pub enum FolderError {
+    #[error(transparent)]
+    Format(#[from] V1Error),
+    #[error(transparent)]
+    Tracker(#[from] TrackerError),
+    #[error("the registry of '{0}' has no folder")]
+    NoFolder(String),
+    #[error("project '{0}' is unknown")]
+    Unknown(String),
+}
+
 /// The dossier of the prototype, while the prototype exists.
 pub fn dossier_dir() -> Option<PathBuf> {
     std::env::var_os(prototype_env_var("HOME")).filter(|value| !value.is_empty()).map(PathBuf::from)
+}
+
+/// The folder the registry of the project's objective names, read from the tracker as the prototype
+/// reads it: the first open objective with the project's label. Its status plays no part, so an option
+/// the binding does not know on some issue does not hide the folder.
+pub fn project_folder(project: &str) -> Result<String, FolderError> {
+    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref())?;
+    let binding = TrackerBinding::new(&config)?;
+    for mut issue in GhTracker::new(&config).open_issues()? {
+        let body = std::mem::take(&mut issue.body);
+        issue.status_option_id = None;
+        let task = binding.resolve(issue)?;
+        if task.objective && task.project.as_deref() == Some(project) {
+            let folder = Registry::parse(&body).folder().map(str::to_owned);
+            return folder.ok_or_else(|| FolderError::NoFolder(project.to_owned()));
+        }
+    }
+    Err(FolderError::Unknown(project.to_owned()))
 }
 
 pub fn load_brief(options: &BriefOptions) -> Result<Brief, BriefError> {

@@ -1,5 +1,4 @@
-//! The dossier: which files a checkpoint commits, where the registry names the folder, and the
-//! prototype's `dossier_sync` on them.
+//! The dossier: which files a checkpoint commits, and the prototype's `dossier_sync` on them.
 
 use std::path::{Component, Path, PathBuf};
 use std::sync::OnceLock;
@@ -16,20 +15,12 @@ const FORMAT: &str = include_str!("../formats/dossier_v1.toml");
 #[serde(deny_unknown_fields)]
 struct Format {
     named: Named,
-    registry: Registry,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Named {
     files: Vec<String>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Registry {
-    marker: String,
-    folder: String,
 }
 
 fn format() -> &'static Format {
@@ -41,40 +32,6 @@ fn format() -> &'static Format {
 pub fn named_files() -> Vec<DossierPath> {
     let files = &format().named.files;
     files.iter().map(|file| DossierPath::parse(file).expect("a named file of format v1 is a dossier path")).collect()
-}
-
-/// The project's folder as the registry block of its objective's body names it, as the prototype's
-/// `registro` reads it: the first `<!-- <marker> … -->`, its lines `key: value`, the last line of the key.
-/// `None` without a block, without the key, or with the key empty.
-pub fn registry_folder(body: &str) -> Option<String> {
-    let registry = &format().registry;
-    let block = registry_block(body, &registry.marker)?;
-    let mut folder = None;
-    for line in block.split(is_line_break) {
-        if let Some((key, value)) = line.split_once(':')
-            && key.trim() == registry.folder
-        {
-            folder = Some(value.trim().to_owned());
-        }
-    }
-    folder.filter(|folder| !folder.is_empty())
-}
-
-/// The text of the first `<!--\s*<marker>\s*(.*?)-->` in `body`.
-fn registry_block<'a>(body: &'a str, marker: &str) -> Option<&'a str> {
-    let mut rest = body;
-    while let Some(start) = rest.find("<!--") {
-        rest = &rest[start + 4..];
-        if let Some(inner) = rest.trim_start().strip_prefix(marker) {
-            let inner = inner.trim_start();
-            return inner.find("-->").map(|end| &inner[..end]);
-        }
-    }
-    None
-}
-
-fn is_line_break(c: char) -> bool {
-    matches!(c, '\n' | '\r' | '\u{b}' | '\u{c}' | '\u{1c}' | '\u{1d}' | '\u{1e}' | '\u{85}' | '\u{2028}' | '\u{2029}')
 }
 
 /// What happened to the dossier, with the contract's names (`dossier_outcome` of the facade table).
@@ -403,23 +360,6 @@ mod tests {
         let named = named_files();
         assert_eq!(named.len(), 3);
         assert!(named.iter().all(|path| path.as_str().starts_with(".regia/")));
-    }
-
-    /// The registry of the prototype's objectives: the block with its marker, `key: value` lines, the
-    /// last line of a key winning, an empty value being none.
-    #[test]
-    fn the_registry_names_the_folder() {
-        let marker = &format().registry.marker;
-        let key = &format().registry.folder;
-        let body = format!("intro\n<!-- other -->\n<!--\n  {marker}\nid: alpha\n{key}: C:\\work\\alpha \n-->\n\n## Goal\n");
-        assert_eq!(registry_folder(&body).as_deref(), Some("C:\\work\\alpha"));
-        let twice = format!("<!-- {marker}\n{key}: /a\n{key}:  /b:c \n-->");
-        assert_eq!(registry_folder(&twice).as_deref(), Some("/b:c"), "the last line wins; a colon in the value stays");
-        assert_eq!(registry_folder(&format!("<!-- {marker}\nid: alpha\n-->")), None);
-        assert_eq!(registry_folder(&format!("<!-- {marker}\n{key}:\n-->")), None, "an empty folder is none");
-        assert_eq!(registry_folder(&format!("<!-- {marker}\n{key}: /a\n")), None, "a block that does not close");
-        assert_eq!(registry_folder(&format!("<!-- {marker}-->")), None);
-        assert_eq!(registry_folder("no block"), None);
     }
 
     #[test]

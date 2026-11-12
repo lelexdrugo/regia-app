@@ -10,14 +10,13 @@ use chrono::{DateTime, FixedOffset, Utc};
 use regia_agents::{
     Assignment, Diversity, Env, Https, LaunchRequest, Policy, ProbeConsent, Receipt, Role, ServiceId, Settings, SurfaceKind, UsageProbes,
 };
-use regia_core::{Brief, BriefOptions, BriefTask, Registry, Tracker, TrackerBinding, TrackerConfigV1};
+use regia_core::{Brief, BriefOptions, BriefTask};
 use regia_exec::{Effort, ExecError, ModelId, Program};
 use regia_facade::{Engine, FacadeError, Printed, PythonPrototype, Table};
 use regia_git::{Checkpoint, DossierSync, GitDate, Outcome};
-use regia_github::GhTracker;
 use regia_i18n::{Catalog, Language};
-use regia_identity::{BIN_NAME, config_dir, env_var, state_dir};
-use regia_runtime::{dossier_dir, load_brief};
+use regia_identity::{BIN_NAME, config_dir, env_var};
+use regia_runtime::{dossier_dir, load_brief, project_folder};
 use regia_store::{MIN_INTERVAL_S, Reading, Store};
 use serde_json::{Value, json};
 
@@ -244,7 +243,7 @@ fn checkpoint(args: &[String]) -> Result<u8, String> {
     // An empty `--folder` is none, as for the prototype.
     let folder = match args.folder.clone().filter(|folder| !folder.is_empty()) {
         Some(folder) => Ok(folder),
-        None => project_folder(&args.project),
+        None => project_folder(&args.project).map_err(|error| error.to_string()),
     };
     let dossier = match folder {
         Ok(folder) => regia_git::sync(&Checkpoint { folder: &folder, message: &message, files: &args.file, date: clock.commit_date() }),
@@ -292,25 +291,6 @@ impl Clock {
     fn commit_date(&self) -> Option<GitDate> {
         self.fixed.then(|| GitDate::new(self.now.timestamp(), self.now.offset().local_minus_utc()))
     }
-}
-
-/// The folder the registry of the project's objective names, read from the tracker as the prototype
-/// reads it: the first open objective with the project's label. Its status plays no part, so an option
-/// the binding does not know on some issue does not hide the folder.
-fn project_folder(project: &str) -> Result<String, String> {
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
-    let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
-    let issues = GhTracker::new(&config).open_issues().map_err(|error| error.to_string())?;
-    for mut issue in issues {
-        let body = std::mem::take(&mut issue.body);
-        issue.status_option_id = None;
-        let task = binding.resolve(issue).map_err(|error| error.to_string())?;
-        if task.objective && task.project.as_deref() == Some(project) {
-            let folder = Registry::parse(&body).folder().map(str::to_owned);
-            return folder.ok_or_else(|| format!("the registry of '{project}' has no folder"));
-        }
-    }
-    Err(format!("project '{project}' is unknown"))
 }
 
 /// Where `command` runs: `Some` with the prototype, `None` in this binary. `REGIA_ENGINE` forces one
