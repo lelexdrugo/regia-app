@@ -497,6 +497,35 @@ fn the_commands_that_write_record_a_line_each() {
     }
 }
 
+/// `test_scrittura_del_log_che_fallisce_…` and `test_errore_di_scrittura_solo_con_regia_debug`: with a file
+/// where the log's folder should be, a command answers as it does with the log, and says nothing; with the
+/// prototype's debug variable it says so in one line on stderr. `declare`, whose only effect is the line,
+/// exits 1 and says why.
+#[test]
+fn a_log_that_cannot_be_written_changes_no_command() {
+    let responses = Case::named("comment-owner").responses_path();
+    let (writable, unwritable) = (prepare_state_dir("native-log-writable"), prepare_state_dir("native-log-unwritable"));
+    fs::write(unwritable.join("dichiarazioni"), "a file, not a folder").expect("the file");
+    let debug = prototype_env_var("DEBUG");
+    for args in [
+        &["lease", "acquire", "146", "--project", "alpha", "--holder", "x", "--ttl", "60", "--json"][..],
+        &["comment", "5", "--body", "x", "--json"],
+        &["step", "start", "--project", "alpha", "--json"],
+    ] {
+        let with_log = product_with(&writable, &responses, &TWO_IDS, args);
+        let without = product_with(&unwritable, &responses, &TWO_IDS, args);
+        assert_eq!(without, with_log, "{args:?}: the same answer, and nothing on stderr");
+        assert_eq!(without.2, "", "{args:?}");
+    }
+    let env = [TWO_IDS[0], TWO_IDS[1], (debug.as_str(), "1")];
+    let (exit, _, stderr) = product_with(&unwritable, &responses, &env, &["lease", "release", "146", "--holder", "x", "--json"]);
+    assert_eq!((exit, stderr.lines().count()), (Some(0), 1), "one line with the debug variable: {stderr}");
+    assert!(stderr.starts_with("debug: "), "{stderr}");
+    let (exit, stdout, stderr) = product_with(&unwritable, &responses, &TWO_IDS, &["declare", "--project", "alpha"]);
+    assert_eq!((exit, stdout.as_str()), (Some(1), ""), "{stderr}");
+    assert!(stderr.contains("declaration not recorded"), "{stderr}");
+}
+
 /// X for the log: the same commands, on the product and on the prototype at the fixtures' instant, write
 /// the same lines, byte for byte, and the prototype's reader reads the product's as its own: the same
 /// events, the same ids, the same ones attributed.
