@@ -1,7 +1,8 @@
 //! The precheck as a command, for the conformance harness: a line of diagnostics, then the outcome line,
-//! and the outcome's exit code. It takes the prototype's arguments and prints its line, so it can stand in
-//! for the prototype's precheck where that one is run. It never reads its standard input. The clock is `REGIA_NOW`
-//! when set, which also fixes the state's.
+//! and the outcome's exit code. It takes the prototype's arguments and prints its line's events and
+//! decision; the budget and the series of a stall join the line with #466, and only then can it stand in
+//! for the prototype's precheck. It never reads its standard input. The clock is `REGIA_NOW` when set,
+//! which also fixes the state's.
 
 use std::process::ExitCode;
 
