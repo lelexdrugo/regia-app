@@ -6,7 +6,8 @@ mod issue;
 
 use std::path::PathBuf;
 
-use regia_core::{IssueState, RawComment, RawIssue, Tracker, TrackerConfigV1, TrackerError, add_children_from_parents};
+use chrono::{DateTime, Utc};
+use regia_core::{IssueState, RawComment, RawIssue, StatusHistory, Tracker, TrackerConfigV1, TrackerError, add_children_from_parents};
 use regia_exec::{Pin, Program};
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -239,6 +240,10 @@ impl Tracker for GhTracker {
             }
             after = page.page_info.end_cursor;
         }
+    }
+
+    fn status_histories(&self, label: &str, since: DateTime<Utc>) -> Result<Vec<StatusHistory>, TrackerError> {
+        self.read_status_histories(label, since)
     }
 
     fn labels(&self, number: u64) -> Result<Vec<String>, TrackerError> {

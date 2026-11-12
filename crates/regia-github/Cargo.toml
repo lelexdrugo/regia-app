@@ -7,6 +7,7 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+chrono.workspace = true
 regia-core.workspace = true
 regia-exec.workspace = true
 serde.workspace = true

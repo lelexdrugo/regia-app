@@ -2955,6 +2955,7 @@ dependencies = [
 name = "regia-github"
 version = "0.0.1"
 dependencies = [
+ "chrono",
  "regia-core",
  "regia-exec",
  "serde",

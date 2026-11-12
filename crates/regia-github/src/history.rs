@@ -2,13 +2,7 @@
 //! `nuove_ultimi_7_giorni` reads them to count a week's Proposals: its query `_NUOVE_Q`, a page of 100
 //! issues at a time. Like the prototype, it reads at most 50 changes of an issue, and from any Project.
 
-// The trait's method has to name `DateTime<Utc>`, and this crate does not depend on chrono yet: the
-// delegation waits for the decision of #579's gate, and with it the code below gets its caller.
-#![expect(
-    dead_code,
-    reason = "Tracker::status_histories delegates here once #579's gate is decided"
-)]
-
+use chrono::{DateTime, SecondsFormat, Utc};
 use regia_core::{StatusHistory, TrackerError};
 use serde::Deserialize;
 use serde_json::json;
@@ -24,15 +18,23 @@ const HISTORIES_QUERY: &str = r#"query($o:String!,$r:String!,$label:String!,$sin
         nodes{... on ProjectV2ItemStatusChangedEvent{createdAt status}}}}}}}"#;
 
 impl GhTracker {
-    /// The changes of Status since `since`, ISO 8601 to the second with `Z`, of every issue labelled `label`.
+    /// The changes of Status since `since` of every issue labelled `label`.
     pub(crate) fn read_status_histories(
         &self,
         label: &str,
-        since: &str,
+        since: DateTime<Utc>,
     ) -> Result<Vec<StatusHistory>, TrackerError> {
-        let variables = [("label", json!(label)), ("since", json!(since))];
+        let variables = [
+            ("label", json!(label)),
+            ("since", json!(iso_seconds(since))),
+        ];
         histories(|after| self.graphql_with(HISTORIES_QUERY, &variables, after))
     }
+}
+
+/// `since` as the prototype writes it with `strftime("%Y-%m-%dT%H:%M:%SZ")`: ISO 8601, cut to the second, with `Z`.
+fn iso_seconds(since: DateTime<Utc>) -> String {
+    since.to_rfc3339_opts(SecondsFormat::Secs, true)
 }
 
 /// Every page from the first, each asked with the cursor the one before ended at. A page that fails
@@ -158,6 +160,16 @@ mod tests {
 
     fn numbers(histories: &[StatusHistory]) -> Vec<u64> {
         histories.iter().map(|history| history.number).collect()
+    }
+
+    /// `since` goes to GitHub as the prototype sends it: to the second, cut and not rounded, with `Z`.
+    #[test]
+    fn since_is_written_to_the_second_with_z() {
+        let since = DateTime::parse_from_rfc3339("2026-11-05T16:40:00.999+01:00").unwrap();
+        assert_eq!(
+            iso_seconds(since.with_timezone(&Utc)),
+            "2026-11-05T15:40:00Z"
+        );
     }
 
     /// The query is the prototype's, which reads closed issues too: only the label becomes a variable.
