@@ -1,0 +1,23 @@
+{
+  "_note": "Synthetic. The state database is a file that is not one: the state's error, at the first read.",
+  "transcribes": [
+    "test_precheck.py::TestFailClosed::test_runtime_guasto_in_ogni_punto (the first point read; the others need a state that fails on purpose)"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Approvato"
+    }
+  ],
+  "runs": [
+    {
+      "database_garbage": true
+    }
+  ]
+}

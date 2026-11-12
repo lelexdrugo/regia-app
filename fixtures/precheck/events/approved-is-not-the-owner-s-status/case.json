@@ -1,0 +1,44 @@
+{
+  "_note": "Synthetic. A decision passed and the task approved and ready: the ready task is the event, and the comments of an approved task are not read for answers.",
+  "transcribes": [
+    "test_firma_commenti.py::TestCambioDiStatoComeEvento::test_approvato_e_pronto_fa_evento_da_solo (the second, a draft, is #466's backlog)"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Approvato"
+    }
+  ],
+  "comments": {
+    "2": [
+      {
+        "id": 10,
+        "created": "2026-01-10T08:55:00Z",
+        "body": "A report.",
+        "sign": [
+          "worker",
+          "s-2"
+        ]
+      }
+    ]
+  },
+  "runs": [
+    {
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      }
+    }
+  ]
+}

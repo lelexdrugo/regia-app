@@ -1,0 +1,14 @@
+[
+  {
+    "exit": 0,
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"pronti\",\"cursore\":[{\"progetto\":\"a\",\"valore\":null},{\"progetto\":\"b\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"a\",\"esito\":\"idle\",\"motivo\":\"nessun-evento\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0},{\"id\":\"b\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[10],\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"nessun-evento\",\"cursore\":[{\"progetto\":\"a\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"a\",\"esito\":\"idle\",\"motivo\":\"nessun-evento\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 1,
+    "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"interno\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
+  }
+]

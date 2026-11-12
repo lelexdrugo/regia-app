@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. The Objective is a Proposal: its project is not active, whatever its tasks.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_obiettivo_in_proposta_non_e_monitorato"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Proposta",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Approvato"
+    }
+  ],
+  "runs": [
+    {}
+  ]
+}

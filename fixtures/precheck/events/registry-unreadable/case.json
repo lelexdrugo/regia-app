@@ -1,0 +1,37 @@
+{
+  "_note": "Synthetic. A wip that is not a number, and an Objective without a project.",
+  "transcribes": [
+    "test_precheck.py::TestFailClosed::test_registro_illeggibile"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    }
+  ],
+  "runs": [
+    {
+      "issues": [
+        {
+          "n": 1,
+          "status": "Approvato",
+          "project": "p",
+          "objective": true,
+          "registry": "id: p\ncartella: \nwip: molti\npriorita: 3"
+        }
+      ]
+    },
+    {
+      "issues": [
+        {
+          "n": 1,
+          "status": "Approvato",
+          "project": null,
+          "objective": true
+        }
+      ]
+    }
+  ]
+}

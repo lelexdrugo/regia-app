@@ -1,0 +1,25 @@
+{
+  "_note": "Synthetic. A registry with an empty folder: no report is read, not even from the dossier's folder of the project.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_progetto_senza_cartella_non_legge_il_cwd"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true,
+      "registry": "id: p\ncartella: \nwip: 2\npriorita: 3"
+    }
+  ],
+  "runs": [
+    {
+      "reports": [
+        {
+          "name": "x.md",
+          "modified": "2026-01-10T09:00:00Z"
+        }
+      ]
+    }
+  ]
+}

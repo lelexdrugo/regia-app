@@ -1,0 +1,122 @@
+# Format v1 of the precheck (P1-P4 of the dossier's conformance study): the words of the prototype's
+# `tools/precheck.py`, which its controller and the automation that runs it read in the outcome line. They
+# are data, not identifiers, so they stay out of the Rust sources. The line keeps them as they are: a
+# controller of either language reads the same line.
+
+# The outcome line: the last line of stdout, one compact JSON object in ASCII, with its keys in this
+# order. A longer line keeps only the counts, and a detail of an error only its first characters.
+[line]
+version = 1
+max_length = 3500
+detail_length = 300
+diagnostic = "precheck:"
+
+[line.keys]
+version = "v"
+outcome = "outcome"
+exit = "exit"
+reason = "motivo"
+cursor = "cursore"
+payload = "payload"
+t = "t"
+
+# The closed vocabulary: each outcome, its exit code and its reasons (P2). Exit 3 means nothing to do here,
+# while in `lock`, `lease` and `step` it means refused (P3).
+[outcomes.new_activity]
+word = "new-activity"
+exit = 0
+
+[outcomes.new_activity.reasons]
+ready = "pronti"
+reports = "report-nuovi"
+answers = "risposta-a-gate"
+inbox = "inbox"
+leases = "lease-scadute"
+backlog = "da-formulare"
+silent_workers = "worker-silente"
+
+[outcomes.idle]
+word = "idle"
+exit = 3
+
+[outcomes.idle.reasons]
+no_event = "nessun-evento"
+busy = "occupato"
+wip_limit = "limite-wip"
+budget = "budget"
+proposals_exhausted = "proposte-esaurite"
+waiting_on_owner = "attesa-del-titolare"
+work_in_progress = "lavoro-in-corso"
+
+[outcomes.terminal_state]
+word = "terminal-state"
+exit = 0
+
+[outcomes.terminal_state.reasons]
+objective_done = "obiettivo-fatto"
+stall = "stallo"
+
+[outcomes.error]
+word = "error"
+exit = 1
+
+[outcomes.error.reasons]
+tracker = "tracker"
+runtime = "runtime"
+unreadable = "illeggibile"
+internal = "interno"
+
+# The payload: the projects, each with its outcome and counts; the detail of an error; the counts alone
+# when the line would be too long.
+[payload]
+projects = "progetti"
+truncated = "troncato"
+detail = "dettaglio"
+
+# An entry of `projects`, in the order of its keys. The counts after `events` are written in this order,
+# the optional ones only when they apply; `tasks` holds the first ready tasks.
+[project]
+id = "id"
+outcome = "esito"
+reason = "motivo"
+events = "eventi"
+ready = "pronti"
+reports = "report"
+answers = "gate"
+inbox = "inbox"
+leases = "lease"
+silent = "silenti"
+blocked_by_wip = "bloccati_wip"
+in_progress = "in_corso"
+waiting_on_owner = "attesa_titolare"
+tasks = "task"
+max_tasks = 10
+
+# An entry of `cursor`: each project observed, with the instant its events cursor holds.
+[cursor]
+project = "progetto"
+value = "valore"
+
+# The events cursor, as a step's end writes it: the same words as `[events]` of `regia-store`'s
+# `store_v1.toml`, read here as the prototype's precheck reads them.
+[events]
+t = "t"
+own = "propri"
+comments = "commenti"
+reports = "report"
+
+# The arguments of the prototype's command line, and their defaults. A wrong argument is an error of the
+# precheck, exit 1, never the parser's 2.
+[options]
+project = "--progetto"
+stall_n = "--stallo-n"
+stall_s = "--stallo-s"
+realert_s = "--rialert-s"
+budget_max = "--budget-max"
+deadline_s = "--scadenza-s"
+
+[options.defaults]
+stall_n = 3
+stall_s = 3600.0
+realert_s = 86400.0
+deadline_s = 100.0

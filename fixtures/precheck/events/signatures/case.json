@@ -1,0 +1,385 @@
+{
+  "_note": "Synthetic. Acceptance 2: comments on a Decision after the cursor, signed by the product's signer with each role, unsigned, and with a marker that does not read.",
+  "transcribes": [
+    "test_firma_commenti.py::TestPrecheckFiltraIFirmati (the precheck's side)"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Decisione"
+    }
+  ],
+  "runs": [
+    {
+      "note": "a chat's comment is no answer",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 201,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "A question.",
+            "sign": [
+              "chat",
+              "s-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "note": "the owner's, relayed by a chat, is",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 202,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "Decisione: B.",
+            "sign": [
+              "titolare",
+              "s-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "note": "a worker's and an orchestrator's are not",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 203,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "A report.",
+            "sign": [
+              "worker",
+              "s-2"
+            ]
+          },
+          {
+            "id": 204,
+            "created": "2026-01-10T08:11:00Z",
+            "body": "A step's note.",
+            "sign": [
+              "orchestratore",
+              "s-3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "note": "unsigned, and a marker that does not read, are the owner's",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 205,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "Written on the site."
+          },
+          {
+            "id": 206,
+            "created": "2026-01-10T08:11:00Z",
+            "body": "A note.\n\n— regia · worker\n<!-- regia:autor ruolo=worker sessione=s-2 -->"
+          }
+        ]
+      }
+    },
+    {
+      "note": "all of them: three answers",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 201,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "A question.",
+            "sign": [
+              "chat",
+              "s-1"
+            ]
+          },
+          {
+            "id": 202,
+            "created": "2026-01-10T08:11:00Z",
+            "body": "Decisione: B.",
+            "sign": [
+              "titolare",
+              "s-1"
+            ]
+          },
+          {
+            "id": 203,
+            "created": "2026-01-10T08:12:00Z",
+            "body": "A report.",
+            "sign": [
+              "worker",
+              "s-2"
+            ]
+          },
+          {
+            "id": 204,
+            "created": "2026-01-10T08:13:00Z",
+            "body": "A step's note.",
+            "sign": [
+              "orchestratore",
+              "s-3"
+            ]
+          },
+          {
+            "id": 205,
+            "created": "2026-01-10T08:14:00Z",
+            "body": "Written on the site."
+          },
+          {
+            "id": 206,
+            "created": "2026-01-10T08:15:00Z",
+            "body": "A note.\n\n— regia · worker\n<!-- regia:autor ruolo=worker sessione=s-2 -->"
+          }
+        ]
+      }
+    },
+    {
+      "note": "the owner's, but the step's own by its id",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": [
+              202
+            ]
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 202,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "Decisione: B.",
+            "sign": [
+              "titolare",
+              "s-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "note": "the owner's, before the cursor",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:20:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 202,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "Decisione: B.",
+            "sign": [
+              "titolare",
+              "s-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "note": "a role the regia does not name is still the regia's",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 207,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "A review.\n<!-- regia:autore ruolo=revisore sessione=s -->"
+          }
+        ]
+      }
+    },
+    {
+      "note": "five markers that do not read, and an empty body: six answers",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 210,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "x\n<!-- regia:autore ruolo= -->"
+          },
+          {
+            "id": 211,
+            "created": "2026-01-10T08:11:00Z",
+            "body": "x\n<!-- regia:autore -->"
+          },
+          {
+            "id": 212,
+            "created": "2026-01-10T08:12:00Z",
+            "body": "x\n<!-- regia:autore ruolo=worker"
+          },
+          {
+            "id": 213,
+            "created": "2026-01-10T08:13:00Z",
+            "body": "x\n<!-- regia:autore ruolo=worker sessione=s -->\nuna riga dopo"
+          },
+          {
+            "id": 214,
+            "created": "2026-01-10T08:14:00Z",
+            "body": "x\n<!-- regia:autor ruolo=worker -->"
+          },
+          {
+            "id": 215,
+            "created": "2026-01-10T08:15:00Z",
+            "body": ""
+          }
+        ]
+      }
+    },
+    {
+      "note": "on a Proposal, a worker's is no answer",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "issues": [
+        {
+          "n": 1,
+          "status": "Approvato",
+          "project": "p",
+          "objective": true
+        },
+        {
+          "n": 2,
+          "status": "Proposta"
+        }
+      ],
+      "comments": {
+        "2": [
+          {
+            "id": 203,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "A report.",
+            "sign": [
+              "worker",
+              "s-2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "note": "on a Proposal, the owner's is",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "issues": [
+        {
+          "n": 1,
+          "status": "Approvato",
+          "project": "p",
+          "objective": true
+        },
+        {
+          "n": 2,
+          "status": "Proposta"
+        }
+      ],
+      "comments": {
+        "2": [
+          {
+            "id": 202,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "Decisione: B.",
+            "sign": [
+              "titolare",
+              "s-1"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

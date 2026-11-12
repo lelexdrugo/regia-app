@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. One task with a status the configuration does not know: no event, idle.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_nessun_evento_e_idle_3_e_non_chiama_il_budget (the outcome; the budget is #466)"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Fatto-non-aperto",
+      "maturity": "abbozzo"
+    }
+  ],
+  "runs": [
+    {}
+  ]
+}

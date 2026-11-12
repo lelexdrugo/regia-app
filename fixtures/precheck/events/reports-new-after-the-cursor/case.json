@@ -1,0 +1,93 @@
+{
+  "_note": "Synthetic. Reports on disk, newer or older than the cursor's instant, in its two forms.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_report_nuovi_rispetto_al_cursore",
+    "test_precheck.py::TestRuntimeVero::test_pronti_report_e_cursore_su_disco"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    }
+  ],
+  "runs": [
+    {
+      "note": "no cursor: both",
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T07:00:00Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:55:00Z"
+        }
+      ]
+    },
+    {
+      "note": "one after t",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z"
+        }
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T07:00:00Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:55:00Z"
+        }
+      ]
+    },
+    {
+      "note": "the plain form, read and never moved",
+      "cursor": {
+        "p": "2026-01-10T09:00:00Z"
+      },
+      "reports": [
+        {
+          "name": "a.md",
+          "modified": "2026-01-10T07:00:00Z"
+        },
+        {
+          "name": "b.md",
+          "modified": "2026-01-10T08:55:00Z"
+        }
+      ]
+    },
+    {
+      "note": "a report at the instant, no cursor",
+      "reports": [
+        {
+          "name": "2026-01-10-1-x.md",
+          "modified": "2026-01-10T09:00:00Z"
+        }
+      ]
+    },
+    {
+      "note": "the same report, a cursor a minute after",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T09:01:00Z"
+        }
+      },
+      "reports": [
+        {
+          "name": "2026-01-10-1-x.md",
+          "modified": "2026-01-10T09:00:00Z"
+        },
+        {
+          "name": "notes.txt",
+          "modified": "2026-01-10T09:30:00Z"
+        }
+      ]
+    }
+  ]
+}

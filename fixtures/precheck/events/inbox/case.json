@@ -1,0 +1,27 @@
+{
+  "_note": "Synthetic. Two Inbox items with no creation date and no cursor: both new.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_inbox"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Inbox",
+      "maturity": ""
+    },
+    {
+      "n": 3,
+      "status": "Inbox",
+      "maturity": ""
+    }
+  ],
+  "runs": [
+    {}
+  ]
+}

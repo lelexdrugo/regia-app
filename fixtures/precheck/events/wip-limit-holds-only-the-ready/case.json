@@ -1,0 +1,63 @@
+{
+  "_note": "Synthetic. Two tasks in progress fill the wip: the ready one waits, a report still passes; with a place free the first ready starts.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_limite_wip_blocca_solo_i_pronti"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "In corso"
+    },
+    {
+      "n": 3,
+      "status": "In corso"
+    },
+    {
+      "n": 4,
+      "status": "Approvato"
+    }
+  ],
+  "runs": [
+    {
+      "note": "wip full"
+    },
+    {
+      "note": "a report passes",
+      "reports": [
+        {
+          "name": "r.md",
+          "modified": "2026-01-10T09:00:00Z"
+        }
+      ]
+    },
+    {
+      "note": "one place",
+      "issues": [
+        {
+          "n": 1,
+          "status": "Approvato",
+          "project": "p",
+          "objective": true
+        },
+        {
+          "n": 2,
+          "status": "In corso"
+        },
+        {
+          "n": 4,
+          "status": "Approvato"
+        },
+        {
+          "n": 5,
+          "status": "Approvato"
+        }
+      ]
+    }
+  ]
+}

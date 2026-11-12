@@ -1,0 +1,42 @@
+{
+  "_note": "Synthetic. The project's lock held, expired, a row that does not read, and none. The prototype's lock in the middle of a write (the state held past the wait) is not built here.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_lock_occupato_e_idle_e_non_error (runs 1 and 3)",
+    "test_precheck.py::TestRuntimeVero::test_lock_vero_occupato_e_libero"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Approvato"
+    }
+  ],
+  "runs": [
+    {
+      "note": "held",
+      "locks": {
+        "p": "held"
+      }
+    },
+    {
+      "note": "expired",
+      "locks": {
+        "p": "expired"
+      }
+    },
+    {
+      "note": "a row that does not read is nobody's",
+      "locks": {
+        "p": "unreadable"
+      }
+    },
+    {
+      "note": "none"
+    }
+  ]
+}

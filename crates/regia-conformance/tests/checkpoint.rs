@@ -7,8 +7,8 @@
 //! - **The reason** is the product's own sentence, in English: the prototype's is translated by
 //!   [`words::in_the_product_s_words`] before the comparison. What git said, its last line, is compared as it
 //!   is.
-//! - **The text** of the product is the contract's keys, one a line, as `budget` prints them: for a
-//!   case recorded in text, the outcome its line names is compared, and the repo.
+//! - **The text** of the product is the contract's keys, one leaf a line, as `lock`, `lease` and `step`
+//!   print theirs: for a case recorded in text, the outcome its line names is compared, and the repo.
 
 use std::path::{Path, PathBuf};
 

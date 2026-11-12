@@ -1,0 +1,6 @@
+[
+  {
+    "exit": 0,
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"inbox\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"inbox\",\"eventi\":2,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":2,\"lease\":0,\"arretrato\":2,\"arretrato_task\":[2,3],\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  }
+]

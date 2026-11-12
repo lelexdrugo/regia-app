@@ -1,0 +1,29 @@
+{
+  "_note": "Synthetic. An Inbox item without a creation date counts as new, after a cursor too.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_inbox_senza_createdAt_conta_come_nuova"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    },
+    {
+      "n": 2,
+      "status": "Inbox",
+      "maturity": ""
+    }
+  ],
+  "runs": [
+    {
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T09:00:00Z"
+        }
+      }
+    }
+  ]
+}

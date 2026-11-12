@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. A tick with no time left: the tracker is not read, and the tick fails as the tracker's.",
+  "transcribes": [
+    "test_precheck.py::TestVincoli::test_il_giro_ha_una_scadenza"
+  ],
+  "issues": [
+    {
+      "n": 1,
+      "status": "Approvato",
+      "project": "p",
+      "objective": true
+    }
+  ],
+  "runs": [
+    {
+      "args": [
+        "--scadenza-s",
+        "0"
+      ]
+    }
+  ]
+}
