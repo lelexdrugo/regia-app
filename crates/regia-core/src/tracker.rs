@@ -159,6 +159,12 @@ pub trait Tracker {
         Err(not_written(format!("an issue «{title}»")))
     }
 
+    /// The page of issue `number` on the tracker's site, built, not read.
+    fn issue_url(&self, number: u64) -> Option<String> {
+        let _ = number;
+        None
+    }
+
     /// Adds the label `add` to issue `number`, and takes `remove` off it.
     fn edit_labels(&self, number: u64, add: &str, remove: Option<&str>) -> Result<(), TrackerError> {
         let _ = remove;

@@ -309,6 +309,10 @@ impl Tracker for GhTracker {
     fn edit_labels(&self, number: u64, add: &str, remove: Option<&str>) -> Result<(), TrackerError> {
         self.issue_edit_labels(number, add, remove)
     }
+
+    fn issue_url(&self, number: u64) -> Option<String> {
+        Some(format!("https://github.com/{}/{}/issues/{number}", self.owner, self.repo))
+    }
 }
 
 #[derive(Deserialize)]

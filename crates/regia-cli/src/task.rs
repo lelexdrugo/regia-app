@@ -12,15 +12,20 @@ use std::time::Duration;
 
 use clap::Parser;
 use clap::builder::PossibleValuesParser;
-use regia_core::{IssueState, SignatureRole, Status, Tracker, TrackerBinding, TrackerConfigV1, TrackerError, project_of_labels, sign};
+use regia_core::{
+    IssueState, Maturity, SignatureRole, Status, Task, Tracker, TrackerBinding, TrackerConfigV1, TrackerError, comment_id,
+    created_issue_number, project_of_labels, sign,
+};
 use regia_github::GhTracker;
 use regia_i18n::Catalog;
 use regia_identity::state_dir;
 use regia_runtime::dossier_dir;
+use serde_json::json;
 
 use crate::clock::Clock;
-use crate::comment::{is_this_session_s_step, session};
+use crate::comment::{is_this_session_s_step, record_own, session};
 use crate::declare::record_activity;
+use crate::print_json;
 use crate::reads::{parse, python_int};
 
 /// How long a closing status waits before it is written a second time (T11 of the dossier's conformance
@@ -52,13 +57,258 @@ struct StatusArgs {
     json: bool,
 }
 
+#[derive(Parser)]
+#[command(name = "task unblock", args_override_self = true)]
+struct UnblockArgs {
+    /// The issue's number.
+    number: String,
+    /// The blockers to remove: numbers separated by commas, `#` allowed.
+    #[arg(long)]
+    by: String,
+    /// Why: it becomes a signed comment on the issue.
+    #[arg(long)]
+    reason: String,
+    /// The comment relays a decision of the owner.
+    #[arg(long)]
+    on_behalf_of_owner: bool,
+    #[arg(long, value_parser = PossibleValuesParser::new(SignatureRole::BY_HAND.map(SignatureRole::word)))]
+    role: Option<String>,
+    /// Machine-readable output: this is the contract the agents use.
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Parser)]
+#[command(name = "task new", args_override_self = true)]
+struct NewArgs {
+    #[arg(long)]
+    project: String,
+    #[arg(long)]
+    title: String,
+    #[arg(long, default_value = "")]
+    body: String,
+    /// A UTF-8 file, read in place of `--body`.
+    #[arg(long)]
+    body_file: Option<String>,
+    /// Without it: the project's Objective.
+    #[arg(long)]
+    parent: Option<String>,
+    /// Numbers separated by commas, `#` allowed.
+    #[arg(long)]
+    blocked_by: Option<String>,
+    #[arg(long, default_value = "draft", value_parser = PossibleValuesParser::new(Maturity::ALL.map(Maturity::id)))]
+    maturity: String,
+    #[arg(long, default_value = "inbox", value_parser = PossibleValuesParser::new(Status::ALL.map(Status::id)))]
+    status: String,
+    /// Machine-readable output: this is the contract the agents use.
+    #[arg(long)]
+    json: bool,
+}
+
 /// `command` natively, if this module has it: its exit code, or the error to print.
 pub(crate) fn run(command: &str, args: &[String], catalog: &Catalog) -> Option<Result<u8, String>> {
     let outcome = match command {
         "task status" => parse::<StatusArgs>(command, args).map(|args| status(&args, catalog)),
+        "task unblock" => parse::<UnblockArgs>(command, args).map(|args| unblock(&args, catalog)),
+        "task new" => parse::<NewArgs>(command, args).map(|args| new(&args, catalog)),
         _ => return None,
     };
     Some(outcome.unwrap_or_else(Ok))
+}
+
+/// A list of numbers as the prototype reads one: `#` dropped, split on commas, blank pieces skipped, each
+/// piece read by `int()`; `None` if a piece is not a number.
+fn numbers(text: &str) -> Option<Vec<i64>> {
+    text.replace('#', "").split(',').filter(|piece| !regia_core::pystr::strip(piece).is_empty()).map(python_int).collect()
+}
+
+fn joined(numbers: &[i64]) -> String {
+    numbers.iter().map(|number| format!("#{number}")).collect::<Vec<_>>().join(", ")
+}
+
+/// `task unblock`: each blocker of the list that blocks the issue is removed, in the list's order; then one
+/// comment with the reason, signed, for those removed. A removal that fails stops the list: the ones
+/// already removed still get their comment, and then the command fails.
+fn unblock(args: &UnblockArgs, catalog: &Catalog) -> Result<u8, String> {
+    let number = number_argument("number", &args.number)?;
+    let given = args.role.as_deref().and_then(SignatureRole::from_word);
+    let (_, tracker) = tracker()?;
+    record_activity("task unblock", None, Some(number), catalog);
+    let mut by: Vec<i64> = Vec::new();
+    for blocker in numbers(&args.by).ok_or_else(|| format!("--by takes numbers separated by commas: '{}'", args.by))? {
+        if !by.contains(&blocker) {
+            by.push(blocker);
+        }
+    }
+    if by.is_empty() {
+        return Err("--by takes at least one number".to_owned());
+    }
+    let reason = regia_core::pystr::strip(&args.reason);
+    if reason.is_empty() {
+        return Err("--reason cannot be blank".to_owned());
+    }
+    let number = issue_number(number)?;
+    let current = tracker.blocker_numbers(number).map_err(tracker_error)?.ok_or_else(|| not_found(number))?;
+    let (mut unblocked, mut not_blocking, mut failure) = (Vec::new(), Vec::new(), None);
+    for blocker in by {
+        let Some(found) = current.iter().copied().find(|current| i64::try_from(*current).is_ok_and(|current| current == blocker)) else {
+            not_blocking.push(blocker);
+            eprintln!("{} #{number}", catalog.message_with("task-not-a-blocker", "blocker", &blocker.to_string()));
+            continue;
+        };
+        if let Err(error) = remove_blocker(&tracker, number, found) {
+            failure = Some(error);
+            break;
+        }
+        unblocked.push(blocker);
+    }
+    let mut id = None;
+    if !unblocked.is_empty() {
+        let body = format!("{}: {reason}", catalog.message_with("task-unblock-comment", "blockers", &joined(&unblocked)));
+        let session = session();
+        let project = tracker.labels(number).map(|labels| project_of_labels(&labels));
+        let clock = Clock::read()?;
+        let step_of_this_session = || match &project {
+            Ok(Some(project)) => is_this_session_s_step(&clock, project, session.as_deref()),
+            _ => false,
+        };
+        let role = SignatureRole::of_comment(args.on_behalf_of_owner, !args.on_behalf_of_owner && step_of_this_session(), given);
+        let printed = tracker.add_comment(number, &sign(&body, role, session.as_deref())).map_err(tracker_error)?;
+        id = comment_id(regia_core::pystr::strip(&printed));
+        if let Some(id) = id
+            && let Err(error) = record_own(&clock, id, &project, session.as_deref())
+        {
+            eprintln!("{} ({error})", catalog.message_with("comment-id-not-recorded", "id", &id.to_string()));
+        }
+    }
+    if let Some(failure) = failure {
+        return Err(failure);
+    }
+    if args.json {
+        print_json(&json!({"number": number, "unblocked": unblocked, "not_blocking": not_blocking, "comment": id}))?;
+    } else if unblocked.is_empty() {
+        println!("#{number}: {}", catalog.message("task-unblock-none"));
+    } else {
+        println!("#{number} {}", catalog.message_with("task-unblocked", "blockers", &joined(&unblocked)));
+    }
+    Ok(0)
+}
+
+/// Removes `blocker` from the blockers of `number`, each read by its node first.
+fn remove_blocker(tracker: &dyn Tracker, number: u64, blocker: u64) -> Result<(), String> {
+    let issue = tracker.issue_node(number).map_err(tracker_error)?.ok_or_else(|| not_found(number))?;
+    let blocking = tracker.issue_node(blocker).map_err(tracker_error)?.ok_or_else(|| not_found(blocker))?;
+    tracker.remove_blocked_by(&issue.id, &blocking.id).map_err(tracker_error)
+}
+
+/// Adds `blocker` to the blockers of `number`, each read by its node first.
+fn add_blocker(tracker: &dyn Tracker, number: u64, blocker: u64) -> Result<(), String> {
+    let issue = tracker.issue_node(number).map_err(tracker_error)?.ok_or_else(|| not_found(number))?;
+    let blocking = tracker.issue_node(blocker).map_err(tracker_error)?.ok_or_else(|| not_found(blocker))?;
+    tracker.add_blocked_by(&issue.id, &blocking.id).map_err(tracker_error)
+}
+
+/// Makes `child` a sub-issue of `parent`, each read by its node first, the parent before the child.
+fn link_sub_issue(tracker: &dyn Tracker, parent: u64, child: u64, replace_parent: bool) -> Result<(), String> {
+    let parent_issue = tracker.issue_node(parent).map_err(tracker_error)?.ok_or_else(|| not_found(parent))?;
+    let child_issue = tracker.issue_node(child).map_err(tracker_error)?.ok_or_else(|| not_found(child))?;
+    tracker.add_sub_issue(&parent_issue.id, &child_issue.id, replace_parent).map_err(tracker_error)
+}
+
+/// The sub-issues GitHub lets an issue have, closed ones included (#505 of the dossier).
+const SUB_ISSUE_CAP: u64 = 100;
+
+/// An error if `parent` is at the cap of sub-issues, before any write. The parent the issue has already
+/// adds no child, and is not counted.
+fn check_parent_cap(tracker: &dyn Tracker, parent: u64, current: Option<u64>) -> Result<(), String> {
+    if current == Some(parent) {
+        return Ok(());
+    }
+    let count = tracker.sub_issue_count(parent).map_err(tracker_error)?.ok_or_else(|| not_found(parent))?;
+    if count >= SUB_ISSUE_CAP {
+        return Err(format!("#{parent} has {count} sub-issues already, GitHub's cap ({SUB_ISSUE_CAP}): choose another parent; nothing was changed"));
+    }
+    Ok(())
+}
+
+/// The mirror of the project label in the Project's field is not written by this engine: the issue's node
+/// is read, as the prototype reads it before it looks at the config, and a warning says the label stays
+/// the source.
+fn project_field_not_written(tracker: &dyn Tracker, binding: &TrackerBinding, number: u64, project: &str, catalog: &Catalog) {
+    let label = binding.project_label(project);
+    match tracker.issue_node(number) {
+        Ok(_) => eprintln!("{}", catalog.message_with("task-project-field-not-written", "label", &label)),
+        Err(error) => eprintln!("{} ({error})", catalog.message_with("task-project-field-not-written", "label", &label)),
+    }
+}
+
+/// The open issues, resolved without their statuses: a write needs their labels and links only.
+fn open_tasks(tracker: &dyn Tracker, binding: &TrackerBinding) -> Result<Vec<Task>, String> {
+    let mut tasks = Vec::new();
+    for mut issue in tracker.open_issues().map_err(tracker_error)? {
+        issue.status_option_id = None;
+        tasks.push(binding.resolve(issue).map_err(|error| error.to_string())?);
+    }
+    Ok(tasks)
+}
+
+/// `task new`: an issue in the project, under its Objective or `--parent`, with its labels, its status, its
+/// parent and its blockers, in the prototype's order; the parent's cap is checked before the issue exists.
+fn new(args: &NewArgs, catalog: &Catalog) -> Result<u8, String> {
+    let parent = args.parent.as_deref().map(|parent| number_argument("--parent", parent)).transpose()?;
+    let maturity = Maturity::parse(&args.maturity).ok_or_else(|| format!("unknown maturity `{}`", args.maturity))?;
+    let status = Status::parse(&args.status).ok_or_else(|| format!("unknown status `{}`", args.status))?;
+    let (binding, tracker) = tracker()?;
+    record_activity("task new", Some(&args.project), None, catalog);
+    // Checked before the issue exists, so a wrong list leaves no issue without its blockers.
+    let blocked_by = match args.blocked_by.as_deref() {
+        Some(list) => numbers(list).ok_or_else(|| format!("--blocked-by takes numbers separated by commas: '{list}'"))?,
+        None => Vec::new(),
+    };
+    let blocked_by = blocked_by.into_iter().map(issue_number).collect::<Result<Vec<u64>, String>>()?;
+    // The last Objective of a project wins, as in the prototype's map.
+    let objective = open_tasks(&tracker, &binding)?
+        .into_iter()
+        .rfind(|task| task.objective && task.project.as_deref() == Some(args.project.as_str()))
+        .ok_or_else(|| format!("unknown project '{}': create it with `project new`", args.project))?;
+    // A parent of 0 is none, as for the prototype.
+    let parent = match parent.filter(|parent| *parent != 0) {
+        Some(parent) => issue_number(parent)?,
+        None => objective.number,
+    };
+    check_parent_cap(&tracker, parent, None)?;
+    let body = match args.body_file.as_deref().filter(|file| !file.is_empty()) {
+        Some(file) => read_text(file)?,
+        None => args.body.clone(),
+    };
+    let labels = [binding.project_label(&args.project), binding.maturity_label(maturity).to_owned()];
+    let printed = tracker.create_issue(&args.title, &body, &labels).map_err(tracker_error)?;
+    let number = created_issue_number(&printed).ok_or_else(|| format!("gh issue create printed no issue's URL: {printed}"))?;
+    set_status(&tracker, &binding, number, status)?;
+    project_field_not_written(&tracker, &binding, number, &args.project, catalog);
+    link_sub_issue(&tracker, parent, number, false)?;
+    for blocker in blocked_by {
+        add_blocker(&tracker, number, blocker)?;
+    }
+    let url = tracker.issue_url(number).unwrap_or_default();
+    if args.json {
+        print_json(&json!({"task": number, "parent": parent, "url": url}))?;
+    } else {
+        let parts = [
+            catalog.message_with("task-created-parent", "parent", &parent.to_string()),
+            catalog.message_with("task-created-status", "status", &catalog.message(&format!("state-{}", status.id()))),
+            catalog.message(&format!("maturity-{}", maturity.id())),
+        ];
+        println!("{} ({}) {url}", catalog.message_with("task-created", "number", &number.to_string()), parts.join(", "));
+    }
+    Ok(0)
+}
+
+/// A UTF-8 file as the prototype reads text: `\r\n` and `\r` as `\n`.
+fn read_text(file: &str) -> Result<String, String> {
+    let bytes = std::fs::read(file).map_err(|error| format!("{file}: {error}"))?;
+    let text = String::from_utf8(bytes).map_err(|error| format!("{file}: not UTF-8 ({error})"))?;
+    Ok(text.replace("\r\n", "\n").replace('\r', "\n"))
 }
 
 /// The binding of the config, and the tracker it names.

@@ -5,3 +5,24 @@
 ## `task status`: `#<number> → <status>`, the status in the words of `state-*`.
 
 task-status-set = → { $status }
+
+## `task unblock`: `#<number> sbloccato da #3, #6`, or `#<number>: nessun bloccante da togliere`. The warning
+## is followed by ` #<number>`. The comment on the issue is `<task-unblock-comment>: <reason>`, then signed.
+
+task-unblocked = unblocked from { $blockers }
+task-unblock-none = no blocker to remove
+task-not-a-blocker = warning: #{ $blocker } was not among the blockers of
+task-unblock-comment = Unblocked from { $blockers }
+
+## `task new`: `task #<n> creato (padre #<p>, stato <status>, <maturity>) <url>`.
+
+task-created = task #{ $number } created
+task-created-parent = parent #{ $parent }
+task-created-status = status { $status }
+maturity-draft = draft
+maturity-ready = ready
+
+## On stderr, for `task new` and `task move`: this engine does not write the Project's field that mirrors the
+## project label (#454 of the dossier). The command does its work all the same.
+
+task-project-field-not-written = warning: the Project's field «Progetto» is not written by this engine; the label { $label } stays the source, and `regia project mirror` realigns it
