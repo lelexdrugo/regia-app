@@ -1,0 +1,35 @@
+{
+  "controlli": {
+    "avvisi": [
+      "approvato-mai-partito: la cronologia degli stati non si legge, si applicano due criteri su tre (età, report)",
+      "progetto-campo: il campo «Progetto» non è in tracker.json, controllo saltato",
+      "alpha: cartella del dossier non trovata, controlli sul dossier saltati"
+    ],
+    "per_controllo": {},
+    "totale": 0,
+    "voci": []
+  },
+  "cursore": {
+    "propri": {
+      "commenti": [
+        41,
+        43
+      ]
+    },
+    "t": "2026-01-10T08:30:00Z",
+    "v": 1
+  },
+  "dossier": {
+    "avanti": null,
+    "branch": null,
+    "cartella": "/no-such-folder/alpha",
+    "esito": "non_disponibile",
+    "file": [],
+    "motivo": "la cartella del progetto non esiste",
+    "sha": null
+  },
+  "lock": "rilasciato",
+  "ok": true,
+  "progetto": "alpha",
+  "proprietario": "worker-a"
+}
