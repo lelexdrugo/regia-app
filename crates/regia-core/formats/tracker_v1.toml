@@ -46,14 +46,22 @@ repo = "repo"
 prodotti = "products"
 
 # The signature of a comment written by the CLI (M1, M2 of the conformance study): the body, a blank
-# line, a visible line, and last a hidden marker `<!-- <marker> <role_key>=<role> … -->`. A comment
-# without a marker is the owner's. A worker's comment is its report, so it reads as one line: the
-# report's `summary_key`, or its first line.
+# line, a visible line, and last a hidden marker `<!-- <marker> <role_key>=<role> <session_key>=<id> -->`.
+# A comment without a marker is the owner's. A worker's comment is its report, so it reads as one line:
+# the report's `summary_key`, or its first line.
+#
+# The roles (M3): `owner` for a decision of the owner relayed by a chat, `orchestrator` for the session
+# whose step of the issue's project is open, `worker` and `chat` by hand, `chat` without a role. The
+# marker of a comment written with no session has `no_session` for its id.
 [signature]
 marker = "regia:autore"
 role_key = "ruolo"
+session_key = "sessione"
+no_session = "-"
 owner = "titolare"
+orchestrator = "orchestratore"
 worker = "worker"
+chat = "chat"
 visible_role_prefix = "regia ·"
 visible_owner = "il titolare, via chat"
 summary_key = "riassunto"

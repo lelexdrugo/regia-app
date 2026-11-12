@@ -20,7 +20,7 @@ pub mod tracker;
 pub mod v1;
 
 pub use brief::{Brief, BriefOptions, BriefTask, GraphWarnings, UNSET_STATUS, build_brief};
-pub use comment::{Comment, InstantError, comments, parse_instant, signature_role, summary_line, without_signature};
+pub use comment::{Comment, InstantError, SignatureRole, comment_id, comments, parse_instant, sign, signature_role, summary_line, without_signature};
 pub use deadline::{Deadline, FallbackReason, JobState, Verdict};
 pub use due::{DueMark, IgnoredDue, parse_date};
 pub use graph::{GraphOrder, Metrics, graph_order};
