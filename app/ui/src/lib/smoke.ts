@@ -88,11 +88,29 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** What `app-smoke` compares with the CLI. Taken before any probe adds an element to the page. */
+interface Placed {
+  section: string;
+  number: number;
+  rank: number;
+}
+
+/** The queue's rows in the DOM's order, with the list of the core's brief each comes from and its place there. */
+function rows(): Placed[] {
+  return [...document.querySelectorAll<HTMLElement>("li[data-section]")].map((item) => ({
+    section: item.dataset["section"] ?? "",
+    number: Number(item.dataset["number"]),
+    rank: Number(item.dataset["rank"]),
+  }));
+}
+
+/**
+ * What `app-smoke` compares with the CLI, taken before any probe adds an element to the page. The tasks that need
+ * a session show in their own group, as in the CLI's text, so the core's `waiting_on_owner` comes back by place.
+ */
 function snapshot(language: string) {
   const sections: Record<string, number[]> = { waiting_on_owner: [], ready: [], in_progress: [] };
-  for (const item of document.querySelectorAll<HTMLElement>("li[data-section]")) {
-    (sections[item.dataset["section"] ?? ""] ??= []).push(Number(item.dataset["number"]));
+  for (const row of rows().sort((a, b) => a.rank - b.rank)) {
+    (sections[row.section] ??= []).push(row.number);
   }
   return {
     language,
@@ -102,6 +120,32 @@ function snapshot(language: string) {
     scripts_inline: document.querySelectorAll("script:not([src])").length,
     text: document.body.innerText,
   };
+}
+
+/**
+ * The order on screen is the core's (#476): inside each group of the queue the places only grow, and each list of
+ * the core's brief is there whole, every place once. Otherwise the snapshot's sort could hide a group drawn in
+ * another order.
+ */
+function order(): Check {
+  const problems: string[] = [];
+  for (const list of document.querySelectorAll("ul.qlist")) {
+    const places = [...list.querySelectorAll<HTMLElement>("li[data-section]")].map((item) => Number(item.dataset["rank"]));
+    if (places.some((place, index) => index > 0 && place <= (places[index - 1] ?? -1))) {
+      problems.push(`a group out of the core's order: ${places.join(",")}`);
+    }
+  }
+  const bySection = new Map<string, number[]>();
+  for (const row of rows()) {
+    bySection.set(row.section, [...(bySection.get(row.section) ?? []), row.rank]);
+  }
+  for (const [section, places] of bySection) {
+    const sorted = [...places].sort((a, b) => a - b);
+    if (sorted.some((place, index) => place !== index)) {
+      problems.push(`${section}: places ${sorted.join(",")}`);
+    }
+  }
+  return { name: "the brief's groups keep the core's order", ok: problems.length === 0, detail: problems.join("; ") || "ok" };
 }
 
 /** The four features the UX prototype's CSS and dialogs rely on (#473, change 3), used, not only parsed. */
@@ -288,10 +332,12 @@ async function events(): Promise<Check[]> {
 
 export async function runSmoke(strings: Catalog): Promise<void> {
   const report = snapshot(strings.language);
+  const ordered = order();
   const saved = await invoke<Settings>("get_settings");
   // V07 first, while the page has no probe's element, violation or request in it.
   const cases = await invoke<CorpusCase[]>("smoke_corpus");
   const checks = await v07(cases, appRenderer(strings));
+  checks.push(ordered);
   checks.push(...firstPaint(saved, strings.language));
   checks.push(...features());
   const { checks: cspChecks, expected } = await csp();

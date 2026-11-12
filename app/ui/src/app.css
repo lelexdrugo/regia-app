@@ -347,23 +347,364 @@ h1 {
   max-width: 72ch;
 }
 
-.brief-section h2 {
-  margin: 12px 0 4px;
-  font: 600 var(--fs-section) / 20px var(--font);
+.titlerow-main {
+  flex: 1;
+  min-width: 0;
 }
 
-.brief-list {
+.titlerow-sub {
+  margin-top: 2px;
+  color: var(--muted);
+}
+
+.stamp {
+  flex: none;
+  margin-top: 6px;
+  color: var(--faint);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.93em;
+}
+
+.faint {
+  color: var(--faint);
+}
+
+.alert-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  background-color: var(--negative);
+  -webkit-mask: url("./icons/warn.svg") center / contain no-repeat;
+  mask: url("./icons/warn.svg") center / contain no-repeat;
+}
+
+/* The brief: one column of blocks, the queue's groups first. The screen is the only scroller. */
+.queue {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 880px;
+}
+
+.qgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.qgroup-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 8px 2px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.qgroup-head h2 {
   margin: 0;
-  padding-left: 1rem;
+  font: 600 var(--fs-body) / 20px var(--font);
 }
 
-/* A title can be one unbroken word of 200 characters. */
-.brief-list li {
+.count {
+  margin-left: auto;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.qgroup > .note,
+.alert .note {
+  padding: 0 8px;
+}
+
+.alert .note {
+  padding-left: 22px;
+}
+
+.queue .empty {
+  max-width: none;
+}
+
+.qlist,
+.mini,
+.alerts,
+.warnings {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qlist {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.qrow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 7px 8px;
+  border-radius: var(--radius-control);
+}
+
+.qrow:hover {
+  background: var(--surface);
+}
+
+.qrow-done {
+  color: var(--muted);
+}
+
+.qrow-top,
+.qrow-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+  font-size: var(--fs-small);
+}
+
+.issue {
+  flex: none;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.qrow-when {
+  margin-left: auto;
+  color: var(--faint);
+  white-space: nowrap;
+}
+
+/* A title can be one unbroken word of 200 characters: two lines at most, the whole of it on hover. */
+.qrow-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   overflow-wrap: anywhere;
 }
 
-.warning {
+.project {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qrow-chain {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.pill {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-chip);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pill.accent {
+  background: var(--pill-accent-bg);
+  color: var(--pill-accent-ink);
+}
+
+.pill.neutral {
+  background: var(--pill-neutral-bg);
+  color: var(--pill-neutral-ink);
+}
+
+.pill.negative {
+  background: var(--pill-negative-bg);
+  color: var(--pill-negative-ink);
+}
+
+/* The chain as frames of a strip, the product's own mark: lit for what the answer unblocks at once. */
+.frames {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 1px;
+}
+
+.frames i {
+  width: 5px;
+  height: 9px;
+  background: var(--raised);
+  border: 1px solid var(--lane-edge);
+  border-radius: 1px;
+}
+
+.frames i.lit {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.frames .more {
+  margin-left: 3px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.empty {
+  padding: 10px;
+  border: 1px dashed var(--line-control);
+  border-radius: var(--radius-control);
+  color: var(--muted);
+}
+
+.error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+}
+
+.error-box p {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 8px;
+}
+
+.skeleton .bar {
+  height: 14px;
+  background: var(--raised);
+  border-radius: 2px;
+}
+
+.skeleton .bar:nth-child(3n) {
+  width: 62%;
+}
+
+.skeleton .bar:nth-child(3n + 1) {
+  width: 88%;
+}
+
+.warnings {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px;
   color: var(--negative);
+  overflow-wrap: anywhere;
+}
+
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px;
+  min-width: 0;
+}
+
+.alert-lead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2px 8px;
+  overflow-wrap: anywhere;
+}
+
+.alert-fields {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 12px;
+  margin: 0 0 0 22px;
+  font-size: var(--fs-small);
+}
+
+.alert-fields dt {
+  color: var(--muted);
+}
+
+.alert-fields dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.mini li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.mini li:last-child {
+  border-bottom: 0;
+}
+
+.mini-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+  min-width: 0;
+}
+
+.mini-head .project {
+  max-width: 40%;
+}
+
+.mini-what {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mini-detail {
+  min-width: 0;
+  color: var(--muted);
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+}
+
+.more-line {
+  padding: 2px 8px;
+  font-size: var(--fs-small);
+}
+
+.more-line a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .btn {

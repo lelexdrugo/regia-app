@@ -10,6 +10,7 @@ import { mount, tick, unmount } from "svelte";
 
 import tauri from "../../src-tauri/tauri.conf.json";
 import type { BriefView, Document, Settings, SettingsChange } from "../src/lib/bindings";
+import type { Done } from "../src/lib/brief";
 import DocumentView from "../src/lib/content/Document.svelte";
 import { type Catalog, catalog } from "../src/lib/i18n";
 import { DENSITIES, DIRECTIONS, draw } from "../src/lib/look";
@@ -62,15 +63,25 @@ interface Source {
 const corpus = corpusFile as unknown as (CorpusCase & Source)[];
 const documents = documentsFile as unknown as (Source & { document: Document })[];
 
-const BRIEFS: Record<string, BriefView> = { demo: briefs.demo, worst: briefs.worst, empty: briefs.empty, one: briefs.one };
+// Written by hand in the shape of ipc.rs's BriefView: JSON widens its enums to strings, so they are typed here, once.
+const fixtures = briefs as unknown as Record<"demo" | "worst" | "empty" | "one", BriefView> & {
+  error: string;
+  done: Record<string, Done[]>;
+};
+const BRIEFS: Record<string, BriefView> = { demo: fixtures.demo, worst: fixtures.worst, empty: fixtures.empty, one: fixtures.one };
 
-/** 1,284 tasks, the UX prototype's longest queue: the demo's titles over and over. */
+/** 1,284 tasks, the UX prototype's longest queue: the demo's tasks over and over, numbered anew. */
 function huge(): BriefView {
-  const { waiting_on_owner, ready, in_progress } = briefs.demo;
-  const titles = [...waiting_on_owner, ...ready, ...in_progress].map((task) => task.title);
-  const tasks = (first: number, count: number) =>
-    Array.from({ length: count }, (_, index) => ({ number: first + index, title: titles[index % titles.length] ?? "" }));
-  return { waiting_on_owner: tasks(10_000, 412), ready: tasks(20_000, 640), in_progress: tasks(30_000, 232), graph: null };
+  const { waiting_on_owner, ready, in_progress } = fixtures.demo;
+  const tasks = (from: BriefView["ready"], first: number, count: number) =>
+    Array.from({ length: count }, (_, index) => ({ ...from[index % from.length]!, number: first + index }));
+  return {
+    ...fixtures.demo,
+    waiting_on_owner: tasks(waiting_on_owner, 10_000, 412),
+    session: [],
+    ready: tasks(ready, 20_000, 640),
+    in_progress: tasks(in_progress, 30_000, 232),
+  };
 }
 
 function brief(data: string): () => Promise<BriefView> {
@@ -79,7 +90,7 @@ function brief(data: string): () => Promise<BriefView> {
   }
   if (data === "error") {
     // The app's command rejects with the core's error, as text.
-    return () => Promise.reject(briefs.error);
+    return () => Promise.reject(fixtures.error);
   }
   const view = data === "huge" ? huge() : BRIEFS[data];
   if (!view) {
@@ -184,7 +195,9 @@ async function show(): Promise<void> {
     // quota=<used> shows the sidebar's quota on a fixture (#439/D29): the app has no source for it yet.
     const used = params.get("quota");
     const quota = used === null ? null : { service: "claude", used: Number(used) };
-    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data), ...settingsOf(params), quota, onsettled };
+    // What the app decided today: none in the app yet (#477), some in the demo's and the worst case's fixtures.
+    const done = fixtures.done[data] ?? [];
+    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data), done, ...settingsOf(params), quota, onsettled };
     mounted.push(mount(App, { target: root, props }));
     if (view === "brief" && data === "loading") {
       await tick();

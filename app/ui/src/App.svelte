@@ -4,6 +4,7 @@
   import { onMount, tick, untrack } from "svelte";
 
   import type { BriefView, LanguageTag, Settings as Saved, SettingsChange } from "./lib/bindings";
+  import type { Done } from "./lib/brief";
   import type { Catalog } from "./lib/i18n";
   import { draw, type Look, type Saving } from "./lib/look";
   import { href, parse, type Route, same, type Section } from "./lib/route";
@@ -21,6 +22,8 @@
     catalogFor: (language: LanguageTag) => Catalog;
     product: string;
     load: () => Promise<BriefView>;
+    /** What was decided in the app today, for the brief's group: none in this version (#477, F34). */
+    done?: Done[];
     /** The settings as `get_settings` answered them, before the shell was drawn. */
     settings: Saved;
     /** Saves the fields given, and answers what is saved (`set_settings`). */
@@ -31,7 +34,7 @@
     onsettled?: () => void;
   }
 
-  let { strings, catalogFor, product, load, settings, save, quota = null, onsettled }: Props = $props();
+  let { strings, catalogFor, product, load, done = [], settings, save, quota = null, onsettled }: Props = $props();
 
   let route: Route = $state(parse(location.hash));
   let main: HTMLElement | undefined = $state();
@@ -181,7 +184,7 @@
   />
   <main id="main" tabindex="-1" bind:this={main}>
     {#if route.section === "brief"}
-      <Brief strings={words} {load} {...onsettled ? { onsettled } : {}} />
+      <Brief strings={words} {load} {done} {...onsettled ? { onsettled } : {}} />
     {:else if route.section === "settings"}
       <Settings strings={words} {catalogFor} {look} {saving} onlook={changeLook} onlanguage={changeLanguage} />
     {:else}

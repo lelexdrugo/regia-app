@@ -15,11 +15,55 @@ os: string,
  */
 smoke: boolean, };
 
-export type BriefView = { waiting_on_owner: Array<TaskView>, ready: Array<TaskView>, in_progress: Array<TaskView>, graph: GraphView | null, };
+export type BriefView = { waiting_on_owner: Array<TaskView>, 
+/**
+ * The tasks of `waiting_on_owner` that need a working session with the owner, in the same order.
+ */
+session: Array<TaskView>, ready: Array<TaskView>, in_progress: Array<TaskView>, graph: GraphView | null, due_ignored: Array<IgnoredDueView>, controller: ControllerView | null, dossier: Array<DossierView>, 
+/**
+ * Keyed by project.
+ */
+outside_tracker: { [key in string]: OutsideTrackerView }, 
+/**
+ * The sections of the contract this build does not produce: the view says so, instead of an all-clear.
+ */
+not_ported: Array<string>, };
+
+export type TaskView = { number: number, title: string, status: StatusView | null, 
+/**
+ * The project's id, from its label: `null` without one, or with an empty one.
+ */
+project: string | null, 
+/**
+ * The graph's measures, on the sections it orders; `null` in a cycle and in `in_progress`.
+ */
+unblocks: number | null, unblocks_total: number | null, chain: number | null, cycle: boolean, 
+/**
+ * The due date the spec declares, `YYYY-MM-DD`, when the core could read one.
+ */
+due: string | null, due_soon: boolean, overdue: boolean, };
+
+export type StatusView = "inbox" | "proposal" | "approved" | "in_progress" | "decision" | "done" | "discarded";
 
 export type GraphView = { cycles: Array<Array<number>>, truncated: Array<number>, };
 
-export type TaskView = { number: number, title: string, };
+export type IgnoredDueView = { number: number, value: string, };
+
+export type ControllerView = { last_round: string | null, stale: boolean, budget: ControllerBudgetView | null, to_open: Array<ControllerToOpenView>, to_resume: Array<ControllerToResumeView>, };
+
+export type ControllerBudgetView = { rounds: number, since: string | null, reason: string | null, };
+
+export type ControllerToOpenView = { name: string, folder: string | null, prompt: string | null, reason: string | null, };
+
+export type ControllerToResumeView = { project: string | null, session: string | null, resumes: string | null, how: string | null, reason: string | null, };
+
+export type DossierView = { project: string, folder: string, problem: DossierProblem, branch: string | null, ahead: number | null, detail: string | null, };
+
+export type DossierProblem = "folder_missing" | "not_a_repo" | "no_remote" | "no_upstream" | "detached_head" | "git_failed" | "not_pushed";
+
+export type OutsideTrackerView = { total: number, items: Array<OutsideTrackerItemView>, more: number, };
+
+export type OutsideTrackerItemView = { check: string, project: string, where: string | null, text: string, why: string | null, };
 
 export type Document = { blocks: Array<Block>, 
 /**

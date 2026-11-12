@@ -44,7 +44,6 @@ brief-done-choice = { $outcome ->
     }
 brief-done-writing = sto scrivendo
 brief-done-written = scritto
-brief-stopped = #{ $n } è interrotto: disco di lavoro pieno. Riparte quando c'è spazio.
 brief-stopped-link = Vedi la console
 queue-chain-title = Sblocca subito { $unlocks } task; la catena di lavoro che aspetta è lunga { $chain }
 brief-empty-title = La coda è vuota
@@ -59,3 +58,40 @@ dossier-unpushed = { $n ->
     }
 dossier-noremote = senza remoto
 dossier-missing = cartella mancante
+
+## The app's queue, its blocks and their states. What others wrote (titles, projects, reasons, folders) is
+## shown next to these words, never inside them.
+
+brief-error-lead = Non riesco a leggere il brief:
+brief-not-read = Non letto: il brief non si è potuto leggere.
+queue-due = entro il { $day }
+queue-overdue = scaduto il { $day }
+queue-unlocks-total = sblocca { $n } ({ $total } con Inbox e Proposte)
+queue-cycle = in ciclo
+brief-due-ignored = #{ $n }: la scadenza non è una data AAAA-MM-GG, quindi è ignorata:
+brief-not-ported = { $section ->
+        [controller] Questa versione non legge ancora gli avvisi del controller.
+        [dossier] Questa versione non controlla ancora i dossier.
+       *[other] Questa versione non cerca ancora gli impegni fuori dal tracker.
+    }
+brief-controller = Dal controller
+brief-controller-round = Il suo ultimo giro: { $when }.
+brief-controller-stale = Il suo ultimo giro è del { $when }, e da allora è fermo: questo può essere vecchio.
+brief-controller-budget = { $rounds ->
+        [one] Il budget è sconosciuto da { $rounds } giro: non parte nulla da solo finché non si legge.
+       *[other] Il budget è sconosciuto da { $rounds } giri: non parte nulla da solo finché non si legge.
+    }
+brief-controller-budget-since = Sconosciuto dal { $when }.
+brief-controller-open = Oggi non è riuscito ad aprirla da solo; aprila a mano:
+brief-controller-resume = Fermata, e non la riprenderà da solo:
+brief-why = Perché
+brief-how = Come
+brief-where = Dove
+brief-prompt = Prompt
+brief-session-id = Sessione
+brief-resumes = Si può riprendere
+dossier-not-repo = la cartella non è la radice di un repo git
+dossier-no-upstream = il branch non ha un upstream
+dossier-detached = HEAD staccato: nessun branch
+dossier-git-failed = git non ha risposto
+dossier-on-branch = sul branch

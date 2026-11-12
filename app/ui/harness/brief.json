@@ -1,51 +1,248 @@
 {
   "demo": {
     "waiting_on_owner": [
-      { "number": 101, "title": "Choose the default colour direction of the welcome screen" },
-      { "number": 102, "title": "Publish the test build to the private channel" },
-      { "number": 103, "title": "Proposal: a weekly summary of what the agents changed" },
-      { "number": 104, "title": "Review the fixture for the empty state" }
+      { "number": 101, "title": "Choose the default colour direction of the welcome screen", "status": "decision", "project": "atelier", "unblocks": 3, "unblocks_total": 5, "chain": 4, "cycle": false, "due": "2026-11-13", "due_soon": true, "overdue": false },
+      { "number": 105, "title": "Plan the archive's data model in a working session", "status": "decision", "project": "archive", "unblocks": 2, "unblocks_total": 2, "chain": 3, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 102, "title": "Publish the test build to the private channel", "status": "proposal", "project": "atelier", "unblocks": 1, "unblocks_total": 1, "chain": 2, "cycle": false, "due": "2026-11-09", "due_soon": false, "overdue": true },
+      { "number": 103, "title": "Proposal: a weekly summary of what the agents changed", "status": "proposal", "project": "notes", "unblocks": 0, "unblocks_total": 2, "chain": 2, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 104, "title": "Review the fixture for the empty state", "status": "decision", "project": "atelier", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": "2026-12-20", "due_soon": false, "overdue": false },
+      { "number": 106, "title": "Agree the scope of the second volume with the editor", "status": "proposal", "project": "archive", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 131, "title": "Merge the two importers into one", "status": "proposal", "project": "notes", "unblocks": null, "unblocks_total": null, "chain": null, "cycle": true, "due": null, "due_soon": false, "overdue": false },
+      { "number": 132, "title": "Keep one importer per source", "status": "decision", "project": "notes", "unblocks": null, "unblocks_total": null, "chain": null, "cycle": true, "due": null, "due_soon": false, "overdue": false }
+    ],
+    "session": [
+      { "number": 105, "title": "Plan the archive's data model in a working session", "status": "decision", "project": "archive", "unblocks": 2, "unblocks_total": 2, "chain": 3, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 106, "title": "Agree the scope of the second volume with the editor", "status": "proposal", "project": "archive", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false }
     ],
     "ready": [
-      { "number": 111, "title": "Sort the ready list by the chain it unblocks" },
-      { "number": 112, "title": "Write the importer's error messages" },
-      { "number": 113, "title": "Add the keyboard shortcut for the next task" }
+      { "number": 111, "title": "Sort the ready list by the chain it unblocks", "status": "approved", "project": "atelier", "unblocks": 2, "unblocks_total": 3, "chain": 3, "cycle": false, "due": "2026-11-14", "due_soon": true, "overdue": false },
+      { "number": 112, "title": "Write the importer's error messages", "status": "approved", "project": "notes", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 113, "title": "Add the keyboard shortcut for the next task", "status": "approved", "project": "atelier", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": "2026-12-01", "due_soon": false, "overdue": false }
     ],
     "in_progress": [
-      { "number": 121, "title": "Draw the timeline of the last week" },
-      { "number": 122, "title": "Read the settings file once at start" }
+      { "number": 121, "title": "Draw the timeline of the last week", "status": "in_progress", "project": "atelier", "unblocks": null, "unblocks_total": null, "chain": null, "cycle": false, "due": "2026-11-12", "due_soon": true, "overdue": false },
+      { "number": 122, "title": "Read the settings file once at start", "status": "in_progress", "project": "notes", "unblocks": null, "unblocks_total": null, "chain": null, "cycle": false, "due": null, "due_soon": false, "overdue": false }
     ],
-    "graph": { "cycles": [[131, 132]], "truncated": [140] }
+    "graph": { "cycles": [[131, 132]], "truncated": [140] },
+    "due_ignored": [
+      { "number": 141, "value": "next Friday" }
+    ],
+    "controller": {
+      "last_round": "2026-11-12T07:41:00Z",
+      "stale": false,
+      "budget": null,
+      "to_open": [
+        { "name": "evening-chronicle", "folder": "/home/someone/projects/notes", "prompt": "update the moviola of notes", "reason": "the chat opened yesterday has no closing file yet" }
+      ],
+      "to_resume": [
+        { "project": "archive", "session": "0d4c2f9a-1b7e-4f43-9a51-6c2d1e8b7a30", "resumes": "2026-11-12T10:30:00Z", "how": "the Continue button in the worker's tab", "reason": "the working disk is full: the worker stopped while writing the index" }
+      ]
+    },
+    "dossier": [
+      { "project": "notes", "folder": "/home/someone/projects/notes", "problem": "not_pushed", "branch": "main", "ahead": 2, "detail": null },
+      { "project": "archive", "folder": "/home/someone/projects/archive", "problem": "no_remote", "branch": null, "ahead": null, "detail": null }
+    ],
+    "outside_tracker": {
+      "atelier": {
+        "total": 2,
+        "items": [
+          { "check": "state-without-issue", "project": "atelier", "where": ".regia/state.md:12", "text": "A to-do in the state file with no open issue", "why": "nothing in the tracker carries it" },
+          { "check": "open-question", "project": "atelier", "where": "docs/open-questions.md:4", "text": "Which printer profile for the proofs?", "why": "a question without an issue" }
+        ],
+        "more": 0
+      }
+    },
+    "not_ported": []
   },
   "worst": {
     "waiting_on_owner": [
-      { "number": 1, "title": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…" },
-      { "number": 2147483647, "title": "Rename_every_variable_of_the_importer_module_so_that_each_name_says_what_its_value_holds_and_nothing_else_including_the_names_the_tests_use_to_build_their_fixtures_and_those_only_scripts_read" },
-      { "number": 3, "title": "<img src=x onerror=\"window.__pwned=1\"> Review the import <script>window.__pwned=1</script>" },
-      { "number": 4, "title": "Approve ‹U+202E›evil‹U+202C› now, ‹U+2066›isolated‹U+2069›" },
-      { "number": 5, "title": "مراجعة نموذج التهديدات قبل الإصدار التجريبي الأول" },
-      { "number": 6, "title": "既定の配色を選び、空の状態の画面を最初の起動で確かめる" },
-      { "number": 7, "title": "👩🏽‍💻 Ship the 🏳️‍🌈 build to the 🧑‍🤝‍🧑 testers" },
-      { "number": 8, "title": "" },
-      { "number": 9, "title": "x" }
+      { "number": 1, "title": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "status": "decision", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "unblocks": 1284, "unblocks_total": 99999, "chain": 1284, "cycle": false, "due": "2026-11-12", "due_soon": true, "overdue": false },
+      { "number": 2147483647, "title": "Rename_every_variable_of_the_importer_module_so_that_each_name_says_what_its_value_holds_and_nothing_else_including_the_names_the_tests_use_to_build_their_fixtures_and_those_only_scripts_read", "status": "proposal", "project": "x", "unblocks": null, "unblocks_total": null, "chain": null, "cycle": true, "due": null, "due_soon": false, "overdue": false },
+      { "number": 3, "title": "<img src=x onerror=\"window.__pwned=1\"> Review the import <script>window.__pwned=1</script>", "status": "decision", "project": "<img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": "2026-11-01", "due_soon": false, "overdue": true },
+      { "number": 4, "title": "Approve ‹U+202E›evil‹U+202C› now, ‹U+2066›isolated‹U+2069›", "status": "proposal", "project": "Approve ‹U+202E›evil‹U+202C›", "unblocks": 2147483647, "unblocks_total": 2147483647, "chain": 2147483647, "cycle": false, "due": "2026-11-15", "due_soon": true, "overdue": false },
+      { "number": 5, "title": "مراجعة نموذج التهديدات قبل الإصدار التجريبي الأول", "status": "decision", "project": "مشروع-التجربة", "unblocks": 0, "unblocks_total": 1, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 6, "title": "既定の配色を選び、空の状態の画面を最初の起動で確かめる", "status": "proposal", "project": "既定のプロジェクト", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 7, "title": "👩🏽‍💻 Ship the 🏳️‍🌈 build to the 🧑‍🤝‍🧑 testers", "status": "decision", "project": "🏳️‍🌈👩🏽‍💻", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 8, "title": "", "status": "proposal", "project": null, "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 9, "title": "x", "status": "decision", "project": null, "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": "0001-01-01", "due_soon": false, "overdue": true }
+    ],
+    "session": [
+      { "number": 6, "title": "既定の配色を選び、空の状態の画面を最初の起動で確かめる", "status": "proposal", "project": "既定のプロジェクト", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false },
+      { "number": 7, "title": "👩🏽‍💻 Ship the 🏳️‍🌈 build to the 🧑‍🤝‍🧑 testers", "status": "decision", "project": "🏳️‍🌈👩🏽‍💻", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false }
     ],
     "ready": [
-      { "number": 99999, "title": "https://example.invalid/a/very/long/address/that/someone/pasted/into/the/title/of/a/task/instead/of/a/sentence/describing/the/work?with=parameters&and=more&parameters=still" }
+      { "number": 99999, "title": "https://example.invalid/a/very/long/address/that/someone/pasted/into/the/title/of/a/task/instead/of/a/sentence/describing/the/work?with=parameters&and=more&parameters=still", "status": "approved", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": "9999-12-31", "due_soon": false, "overdue": false }
     ],
     "in_progress": [
-      { "number": 10, "title": "שלום עולם: לבדוק את הכיוון של הטקסט בשורה אחת" }
+      { "number": 10, "title": "שלום עולם: לבדוק את הכיוון של הטקסט בשורה אחת", "status": "in_progress", "project": "פרויקט", "unblocks": null, "unblocks_total": null, "chain": null, "cycle": false, "due": null, "due_soon": false, "overdue": false }
     ],
     "graph": {
-      "cycles": [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], [2147483647, 99999]],
-      "truncated": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80]
-    }
+      "cycles": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30
+        ],
+        [2147483647, 99999]
+      ],
+      "truncated": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ]
+    },
+    "due_ignored": [
+      { "number": 3, "value": "<img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>" },
+      { "number": 2147483647, "value": "２０２６-１１-１２" }
+    ],
+    "controller": {
+      "last_round": "2026-11-02T08:12:00Z",
+      "stale": true,
+      "budget": { "rounds": 1284, "since": "2026-10-30T06:00:00Z", "reason": "the usage endpoint answered 429 to every probe since the token was renewed, <img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>" },
+      "to_open": [
+        { "name": "morning-dailies-for-historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "folder": "C:\\Users\\someone\\workspaces\\historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name\\dossier\\with\\many\\folders\\inside", "prompt": "dailies historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name <img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>", "reason": "<img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script> the chat of 1 November has no closing file" }
+      ],
+      "to_resume": [
+        { "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "session": "ctx_000000000000000000000000000000000000000000000000000000000000", "resumes": "not a moment", "how": "resume-tool --from someone --spec C:\\Users\\someone\\workspaces\\historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name\\dossier\\with\\many\\folders\\inside\\spec.md --worktree current", "reason": "worker stopped by the usage limit halfway through the records, can resume after the 5-hour window resets" },
+        { "project": null, "session": null, "resumes": null, "how": null, "reason": null }
+      ]
+    },
+    "dossier": [
+      { "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "folder": "C:\\Users\\someone\\workspaces\\historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name\\dossier\\with\\many\\folders\\inside", "problem": "not_pushed", "branch": "someone/historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name-branch", "ahead": 1284, "detail": null },
+      { "project": "x", "folder": "/x", "problem": "git_failed", "branch": null, "ahead": null, "detail": "fatal: detected dubious ownership in repository at '/x' <img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>" },
+      { "project": "<img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>", "folder": "/y", "problem": "detached_head", "branch": null, "ahead": null, "detail": null },
+      { "project": "z", "folder": "/z", "problem": "not_a_repo", "branch": null, "ahead": null, "detail": null },
+      { "project": "w", "folder": "/w", "problem": "no_upstream", "branch": "main", "ahead": null, "detail": null },
+      { "project": "v", "folder": "/v/does/not/exist", "problem": "folder_missing", "branch": null, "ahead": null, "detail": null },
+      { "project": "u", "folder": "/u", "problem": "no_remote", "branch": null, "ahead": null, "detail": null }
+    ],
+    "outside_tracker": {
+      "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name": {
+        "total": 1284,
+        "items": [
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:1", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 1 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:2", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 2 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:3", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 3 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:4", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 4 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:5", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 5 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:6", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 6 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:7", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 7 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:8", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 8 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:9", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 9 steps either" },
+          { "check": "state-without-issue", "project": "historical-photo-archive-of-the-north-east-territorial-section-with-a-very-long-name", "where": ".regia/state.md:10", "text": "Rewrite the importer so that it reads every report of the last quarter, keeps only the ones an agent wrote, drops the duplicates and writes one summary per area that anyone can read in a minute…", "why": "nothing in the tracker carries it, and nothing in the last 10 steps either" }
+        ],
+        "more": 1274
+      },
+      "<img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>": {
+        "total": 1,
+        "items": [
+          { "check": "open-question", "project": "<img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>", "where": null, "text": "<img src=x onerror=\"window.__pwned=1\"> <script>window.__pwned=1</script>", "why": null }
+        ],
+        "more": 0
+      }
+    },
+    "not_ported": []
   },
-  "empty": { "waiting_on_owner": [], "ready": [], "in_progress": [], "graph": null },
-  "one": {
-    "waiting_on_owner": [{ "number": 101, "title": "Choose the default colour direction of the welcome screen" }],
+  "empty": {
+    "waiting_on_owner": [],
+    "session": [],
     "ready": [],
     "in_progress": [],
-    "graph": null
+    "graph": null,
+    "due_ignored": [],
+    "controller": null,
+    "dossier": [],
+    "outside_tracker": {},
+    "not_ported": ["controller", "dossier", "outside_tracker"]
   },
-  "error": "gh exited with 1: HTTP 502: the server did not answer in time (https://api.github.example.invalid/graphql), after three tries over forty seconds; the brief shows what it read last"
+  "one": {
+    "waiting_on_owner": [
+      { "number": 101, "title": "Choose the default colour direction of the welcome screen", "status": "decision", "project": "atelier", "unblocks": 0, "unblocks_total": 0, "chain": 1, "cycle": false, "due": null, "due_soon": false, "overdue": false }
+    ],
+    "session": [],
+    "ready": [],
+    "in_progress": [],
+    "graph": null,
+    "due_ignored": [],
+    "controller": null,
+    "dossier": [],
+    "outside_tracker": {},
+    "not_ported": ["controller", "dossier", "outside_tracker"]
+  },
+  "error": "gh exited with 1: HTTP 502: the server did not answer in time (https://api.github.example.invalid/graphql), after three tries over forty seconds; the brief shows what it read last",
+  "done": {
+    "demo": [
+      { "number": 99, "title": "Pick the paper for the catalogue", "outcome": "option", "choice": "B", "written": true },
+      { "number": 98, "title": "Approve the press release", "outcome": "approve", "choice": null, "written": false }
+    ],
+    "worst": [
+      { "number": 2147483647, "title": "Rename_every_variable_of_the_importer_module_so_that_each_name_says_what_its_value_holds_and_nothing_else_including_the_names_the_tests_use_to_build_their_fixtures_and_those_only_scripts_read", "outcome": "discard", "choice": null, "written": true },
+      { "number": 3, "title": "<img src=x onerror=\"window.__pwned=1\"> Review the import <script>window.__pwned=1</script>", "outcome": "option", "choice": "D", "written": false },
+      { "number": 8, "title": "", "outcome": "defer", "choice": null, "written": true }
+    ]
+  }
 }
