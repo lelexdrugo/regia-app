@@ -240,3 +240,67 @@ fn the_precheck_reads_the_product_s_cursor_and_its_reports() {
     store.write_cursor(&alpha, &events, cursor).expect("the cursor without reports");
     assert_eq!(precheck_reports(&home, &dir, &responses), 3, "without the reports, all three are new");
 }
+
+/// `test_passo_e_cursore_sono_scritti_prima_di_rilasciare_il_lock`, as a black box: a trigger copies the
+/// cursors aside at the moment the lock's row is deleted. By then the step must be closed and the events
+/// cursor written, or another `step start` could write a step the end would then empty.
+fn assert_closed_before_release(label: &str, finish: impl Fn(&Path) -> Ran, start: impl Fn(&Path) -> Ran) {
+    let dir = prepare_state_dir(&format!("release-order-{label}"));
+    let (exit, stdout, stderr) = start(&dir);
+    assert_eq!(exit, Some(0), "{label}: the step opens\nstdout: {stdout}\nstderr: {stderr}");
+    let format = v1();
+    let column = |key: &str| format["table"][key].as_str().expect("a column of the v1 table").to_owned();
+    let [table, kind, key, _, document] = ["name", "kind", "key", "generation", "document"].map(column);
+    let conn = rusqlite::Connection::open(dir.join(regia_store::database_name())).expect("the state database");
+    conn.execute_batch(&format!(
+        "CREATE TABLE witness ({kind} TEXT, {key} TEXT, {document} TEXT);
+         CREATE TRIGGER witness_of_the_release AFTER DELETE ON {table} WHEN OLD.{kind} = '{lock}' BEGIN
+           INSERT INTO witness SELECT {kind}, {key}, {document} FROM {table} WHERE {kind} = '{cursor}';
+         END;",
+        lock = name("kinds", "lock"),
+        cursor = name("kinds", "cursor"),
+    ))
+    .expect("the witness");
+    let (exit, stdout, stderr) = finish(&dir);
+    assert_eq!(exit, Some(0), "{label}: the step closes\nstdout: {stdout}\nstderr: {stderr}");
+    let seen: Vec<(String, Value)> = conn
+        .prepare(&format!("SELECT {key}, {document} FROM witness ORDER BY {key}"))
+        .and_then(|mut statement| {
+            statement.query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)))?.collect::<Result<Vec<_>, _>>()
+        })
+        .expect("the witness's rows")
+        .into_iter()
+        .map(|(key, text)| (key, serde_json::from_str(&text).expect("JSON")))
+        .collect();
+    let value = name("cursor", "value");
+    let step = format!("alpha:{}", name("cursor", "step"));
+    assert_eq!(seen.len(), 2, "{label}: the cursors at the release: {seen:?}");
+    assert_eq!(seen[0].0, "alpha");
+    assert_eq!(seen[0].1[&value][name("events", "own")], json!({name("events", "comments"): []}), "{label}: the cursor is written");
+    assert_eq!((seen[1].0.as_str(), &seen[1].1[&value]), (step.as_str(), &Value::Null), "{label}: the step is closed");
+}
+
+#[test]
+fn the_step_closes_before_its_lock_is_released_on_the_product() {
+    let args = |command: &'static str| move |dir: &Path| {
+        let args = ["step", command, "--project", "alpha", "--holder", "w1", "--no-push", "--json"];
+        let args = if command == "start" { &args[..6] } else { &args[..] };
+        product(dir, &empty_responses(dir), args)
+    };
+    assert_closed_before_release("product", args("finish"), args("start"));
+}
+
+#[test]
+#[ignore = "needs the prototype's dossier in REGIA_HOME"]
+fn the_step_closes_before_its_lock_is_released_on_the_prototype() {
+    let home = prototype();
+    let run = |args: &'static [&'static str]| {
+        let home = home.clone();
+        move |dir: &Path| prototype_run(&home, dir, &empty_responses(dir), "regia.py", args)
+    };
+    assert_closed_before_release(
+        "prototype",
+        run(&["--json", "passo", "fine", "--progetto", "alpha", "--proprietario", "w1", "--no-push"]),
+        run(&["--json", "passo", "inizio", "--progetto", "alpha", "--proprietario", "w1"]),
+    );
+}

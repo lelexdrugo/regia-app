@@ -440,3 +440,82 @@ fn the_step_s_commit_and_its_reports_are_where_the_prototype_has_them() {
     let folder = reports_folder(std::path::Path::new("root"));
     assert_eq!(folder, std::path::Path::new("root").join(".regia").join("report"));
 }
+
+/// The prototype's contention on a lease, with a connection per writer on the system's clock: eight
+/// writers at once on a free lease, one wins; six on an expired one, one steals it.
+#[test]
+fn one_writer_wins_a_lease_and_one_thief_steals_an_expired_one() {
+    let dir = folder("contention");
+    let race = |task_number: u64, writers: usize, prefix: &'static str| {
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(writers));
+        let handles: Vec<_> = (0..writers)
+            .map(|i| {
+                let (barrier, dir) = (barrier.clone(), dir.clone());
+                std::thread::spawn(move || {
+                    let store = Store::at(dir).unwrap();
+                    barrier.wait();
+                    let outcome = store.acquire_lease(task(task_number), &project("alpha"), &holder(&format!("{prefix}{i}")), secs(60)).unwrap();
+                    (outcome.state(), format!("{prefix}{i}"))
+                })
+            })
+            .collect();
+        handles.into_iter().map(|handle| handle.join().unwrap()).collect::<Vec<_>>()
+    };
+    let outcomes = race(9999, 8, "w");
+    let winners: Vec<&String> = outcomes.iter().filter(|(state, _)| *state == LockState::Taken).map(|(_, who)| who).collect();
+    assert_eq!(winners.len(), 1, "{outcomes:?}");
+    assert!(outcomes.iter().all(|(state, _)| matches!(state, LockState::Taken | LockState::Busy)), "{outcomes:?}");
+    let store = Store::at(&dir).unwrap();
+    store.acquire_lease(task(42), &project("alpha"), &holder("gone"), Ttl::from_secs_f64(0.05).unwrap()).unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(120));
+    let outcomes = race(42, 6, "thief");
+    let thieves: Vec<&String> = outcomes.iter().filter(|(state, _)| *state == LockState::Stolen).map(|(_, who)| who).collect();
+    assert_eq!(thieves.len(), 1, "{outcomes:?}");
+    let listed = store.leases(false).unwrap();
+    let held = listed.iter().find_map(|entry| match entry {
+        LeaseEntry::Lease(view) if view.task() == Some(&json!(42)) => view.holder().map(str::to_owned),
+        _ => None,
+    });
+    assert_eq!(held.as_deref(), Some(thieves[0].as_str()));
+}
+
+/// `test_cursori_concorrenti_non_perdono_aggiornamenti`: eight writers, each on its project's cursor, ten
+/// writes each; every cursor ends with its last value.
+#[test]
+fn concurrent_cursors_lose_no_write() {
+    let dir = folder("concurrent-cursors");
+    let barrier = std::sync::Arc::new(std::sync::Barrier::new(8));
+    let handles: Vec<_> = (0..8)
+        .map(|i| {
+            let (barrier, dir) = (barrier.clone(), dir.clone());
+            std::thread::spawn(move || {
+                let store = Store::at(dir).unwrap();
+                barrier.wait();
+                for n in 0..10 {
+                    store.write_cursor(&project(&format!("p{i}")), &CursorName::events(), json!(n)).unwrap();
+                }
+            })
+        })
+        .collect();
+    for handle in handles {
+        handle.join().unwrap();
+    }
+    let store = Store::at(&dir).unwrap();
+    let values: Vec<Value> = (0..8).map(|i| store.cursor(&project(&format!("p{i}")), &CursorName::events()).unwrap()).collect();
+    assert_eq!(values, vec![json!(9); 8]);
+}
+
+/// After a step's end, another holder's new step is the one the cursor holds: the end emptied the step
+/// before, never after.
+#[test]
+fn a_new_step_after_the_end_is_not_emptied() {
+    let (store, _) = store("after-the-end");
+    store.acquire_lock(&project("alpha"), &holder("w1"), secs(1800)).unwrap();
+    store.open_step(&project("alpha"), &holder("w1"), None, store.now()).unwrap();
+    assert!(matches!(store.close_step(&project("alpha"), &holder("w1"), &BTreeMap::new()).unwrap(), StepClosing::Closed(_)));
+    store.release_lock(&project("alpha"), &holder("w1")).unwrap();
+    store.acquire_lock(&project("alpha"), &holder("other"), secs(1800)).unwrap();
+    store.open_step(&project("alpha"), &holder("other"), None, store.now()).unwrap();
+    let value = stored(&store, "cursor", &step_key("alpha")).unwrap()[name("cursor", "value")].clone();
+    assert_eq!(value[name("step", "holder")], json!("other"));
+}
