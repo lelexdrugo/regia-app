@@ -1,3 +1,4 @@
+mod budget_text;
 mod clock;
 mod dossier;
 mod policy;
@@ -202,11 +203,11 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
                 return passthrough(&table, &prototype, "budget", &argv, catalog);
             }
             let reading = budget(&args, &settings()?)?;
-            let value = serde_json::to_value(&reading).map_err(|error| error.to_string())?;
             if args.json {
-                print_json(&value)?;
+                print_json(&serde_json::to_value(&reading).map_err(|error| error.to_string())?)?;
             } else {
-                for line in flat(&value) {
+                let now = clock::Clock::read()?.now.with_timezone(&chrono::Utc);
+                for line in budget_text::lines(&reading, now, &chrono::Local, catalog) {
                     println!("{line}");
                 }
             }
@@ -341,7 +342,7 @@ fn budget(args: &BudgetArgs, settings: &Settings) -> Result<Reading, String> {
 }
 
 /// A JSON value as `key: value` lines, one per leaf, the keys of the contract joined by dots: the text
-/// form of a command whose words would otherwise need a catalog.
+/// form of a command whose words are not in the catalog yet.
 fn flat(value: &Value) -> Vec<String> {
     fn walk(prefix: &str, value: &Value, out: &mut Vec<String>) {
         match value {
@@ -536,19 +537,6 @@ mod tests {
         }
         assert_eq!(args(&[]).min_interval, 300);
         assert!(parse(&["budget", "--min-interval", "soon"]).is_err());
-    }
-
-    /// `TestFinestraNonAperta.test_il_testo_di_regia_budget_dice_non_aperta`: the text form says the
-    /// window is not open, with the contract's keys.
-    #[test]
-    fn the_text_of_budget_says_a_window_is_not_open() {
-        let windows = vec![("5h".to_owned(), regia_store::Window::read(0.0, None)), ("7d".to_owned(), regia_store::Window::read(30.0, Some(("2099-01-01T00:00+00:00".to_owned(), 60))))];
-        let claude = regia_store::ProviderUsage::new("claude", Some("max".to_owned()), windows, None, None);
-        let reading = Reading { generated: None, providers: vec![("claude".to_owned(), claude)], cache: None };
-        let lines = flat(&serde_json::to_value(&reading).unwrap());
-        for line in ["provider.claude.windows.5h.open: false", "provider.claude.windows.5h.used_pct: 0.0", "provider.claude.windows.7d.used_pct: 30.0", "generated: -"] {
-            assert!(lines.iter().any(|candidate| candidate == line), "{line} not in {lines:?}");
-        }
     }
 
     /// Python's `format(x, "g")`, as Python 3.12 prints these values.

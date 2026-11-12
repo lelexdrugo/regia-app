@@ -92,7 +92,7 @@ pub(crate) fn checkpoint(args: &[String]) -> Result<u8, String> {
 mod tests {
     use super::*;
 
-    /// `checkpoint` in text is the contract's keys, one leaf a line, as `budget` prints them: the
+    /// `checkpoint` in text is the contract's keys, one leaf a line, as the state commands print them: the
     /// prototype's sentence (`checkpoint alpha: niente da committare`) would need a catalog.
     #[test]
     fn the_text_of_checkpoint_is_the_contract_s_keys() {
