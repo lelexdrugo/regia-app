@@ -3,13 +3,14 @@
 
 use std::path::PathBuf;
 
-use regia_core::{IssueState, RawIssue, Tracker, TrackerConfigV1, TrackerError, add_children_from_parents};
+use regia_core::{IssueState, RawComment, RawIssue, Tracker, TrackerConfigV1, TrackerError, add_children_from_parents};
 use regia_exec::{Pin, Program};
 use serde::Deserialize;
 use serde_json::{Value, json};
 
+/// The list of issues; `{STATES}` is the filter on their state, empty for every state.
 const ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$after:String){repository(owner:$o,name:$r){
-  issues(first:100,after:$after,states:[OPEN],orderBy:{field:CREATED_AT,direction:ASC}){
+  issues(first:100,after:$after,{STATES}orderBy:{field:CREATED_AT,direction:ASC}){
     pageInfo{hasNextPage endCursor}
     nodes{number title state stateReason body url updatedAt createdAt closedAt
       labels(first:20){nodes{name}}
@@ -21,6 +22,9 @@ const ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$after:String){reposit
 
 const BLOCKERS_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
   blockedBy(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{number state}}}}}"#;
+
+const COMMENTS_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
+  comments(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{databaseId createdAt url body}}}}}"#;
 
 const SUB_ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
   subIssues(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{number state}}}}}"#;
@@ -152,13 +156,16 @@ impl GhTracker {
     }
 }
 
-impl Tracker for GhTracker {
-    fn open_issues(&self) -> Result<Vec<RawIssue>, TrackerError> {
+impl GhTracker {
+    /// The issues `states` lets through, in tracker order, each with its blockers and sub-issues read in
+    /// full where the list cuts them.
+    fn issues(&self, states: &str) -> Result<Vec<RawIssue>, TrackerError> {
+        let query = ISSUES_QUERY.replace("{STATES}", states);
         let mut issues: Vec<RawIssue> = Vec::new();
         let mut items_seen = 0;
         let mut after: Option<String> = None;
         loop {
-            let data: IssuesData = self.graphql(ISSUES_QUERY, None, after.as_deref())?;
+            let data: IssuesData = self.graphql(&query, None, after.as_deref())?;
             let connection = data.repository.issues;
             for node in connection.nodes {
                 let sub_issues_total = node.sub_issues.total_count;
@@ -183,6 +190,67 @@ impl Tracker for GhTracker {
         }
         Ok(issues)
     }
+}
+
+impl Tracker for GhTracker {
+    fn open_issues(&self) -> Result<Vec<RawIssue>, TrackerError> {
+        self.issues("states:[OPEN],")
+    }
+
+    fn all_issues(&self) -> Result<Vec<RawIssue>, TrackerError> {
+        self.issues("")
+    }
+
+    fn comments(&self, number: u64) -> Result<Option<Vec<RawComment>>, TrackerError> {
+        let mut comments = Vec::new();
+        let mut after: Option<String> = None;
+        loop {
+            let data: CommentsData = self.graphql(COMMENTS_QUERY, Some(number), after.as_deref())?;
+            let Some(issue) = data.repository.issue else { return Ok(None) };
+            let page = issue.comments;
+            comments.extend(page.nodes.into_iter().map(|node| RawComment {
+                id: node.database_id,
+                created_at: node.created_at,
+                url: node.url,
+                body: node.body.unwrap_or_default(),
+            }));
+            if !page.page_info.has_next_page {
+                return Ok(Some(comments));
+            }
+            after = page.page_info.end_cursor;
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct CommentsData {
+    repository: CommentsRepository,
+}
+
+#[derive(Deserialize)]
+struct CommentsRepository {
+    issue: Option<CommentsIssue>,
+}
+
+#[derive(Deserialize)]
+struct CommentsIssue {
+    comments: CommentPage,
+}
+
+#[derive(Deserialize)]
+struct CommentPage {
+    #[serde(rename = "pageInfo")]
+    page_info: PageInfo,
+    nodes: Vec<CommentNode>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CommentNode {
+    database_id: Option<u64>,
+    created_at: String,
+    url: String,
+    body: Option<String>,
 }
 
 #[derive(Deserialize)]
