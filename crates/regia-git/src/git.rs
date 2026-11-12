@@ -9,6 +9,11 @@ use regia_exec::{Args, DossierPath, ExecError, Limits, Pin, Program, Text};
 /// The deadline of every call, the prototype's `GIT_TIMEOUT_S`.
 pub const TIMEOUT: Duration = Duration::from_secs(120);
 
+/// The calls that write to the repo or its remote, and run the user's hooks or other tools of the user's
+/// choosing: they do not get the settings of a read (regia-exec, rule 8). `fetch` is one: it writes
+/// the remote-tracking refs.
+const WRITES: [&str; 5] = ["fetch", "merge", "add", "commit", "push"];
+
 /// The exit codes the prototype gives a call past its deadline, and a git that could not start.
 const TIMED_OUT: i32 = 124;
 const NOT_RUN: i32 = 127;
@@ -71,6 +76,9 @@ impl Git {
     pub(crate) fn run(&self, folder: &Path, args: Args, date: Option<GitDate>) -> Run {
         let subcommand = args.tokens().next().map_or_else(String::new, |token| token.to_string_lossy().into_owned());
         let mut launch = self.pin.launch(args, folder).limits(Limits { timeout: TIMEOUT, ..Limits::default() });
+        if WRITES.contains(&subcommand.as_str()) {
+            launch = launch.writing();
+        }
         if let Some(date) = date {
             launch = launch.env("GIT_AUTHOR_DATE", date.as_env()).env("GIT_COMMITTER_DATE", date.as_env());
         }
@@ -147,12 +155,12 @@ pub(crate) mod call {
     }
 
     pub fn add(paths: &[DossierPath]) -> Args {
-        with_paths(Args::new().word("add"), paths)
+        with_literal_paths(Args::new().word("add"), paths)
     }
 
     /// A commit of `paths` alone, whatever else is staged.
     pub fn commit(message: &Text, paths: &[DossierPath]) -> Args {
-        with_paths(Args::new().word("commit").word("--only").opt("--message", message), paths)
+        with_literal_paths(Args::new().word("commit").word("--only").opt("--message", message), paths)
     }
 
     pub fn head() -> Args {
@@ -173,8 +181,17 @@ pub(crate) mod call {
         Args::new().word("push").word("--end-of-options").value(remote).value(refspec)
     }
 
+    /// A read: the environment makes the pathspecs literal.
     fn with_paths(args: Args, paths: &[DossierPath]) -> Args {
         paths.iter().fold(args.word("--"), Args::value)
+    }
+
+    /// A write: it does not have that environment, so each pathspec says it is literal (#571/V4). The
+    /// alternative, `--pathspec-from-file` with `--pathspec-file-nul`, reads each entry as a pathspec with
+    /// its magic, so it is not literal by itself, and `git --literal-pathspecs` sets the very variable that
+    /// would reach the hooks.
+    fn with_literal_paths(args: Args, paths: &[DossierPath]) -> Args {
+        paths.iter().fold(args.word("--"), Args::pathspec)
     }
 }
 
@@ -210,8 +227,11 @@ mod tests {
         assert!(!push.iter().any(|token| token == "-f" || token.starts_with("--force") || token.starts_with('+')));
         let paths = [DossierPath::parse(".regia/journal").unwrap(), DossierPath::parse("docs/plan.md").unwrap()];
         let commit = tokens(&call::commit(&Text::parse("alpha: checkpoint 2026-01-10T09:00:00Z").unwrap(), &paths));
-        assert_eq!(commit, ["commit", "--only", "--message=alpha: checkpoint 2026-01-10T09:00:00Z", "--", ".regia/journal", "docs/plan.md"]);
-        assert_eq!(tokens(&call::add(&paths[..1])), ["add", "--", ".regia/journal"]);
+        assert_eq!(
+            commit,
+            ["commit", "--only", "--message=alpha: checkpoint 2026-01-10T09:00:00Z", "--", ":(literal).regia/journal", ":(literal)docs/plan.md"]
+        );
+        assert_eq!(tokens(&call::add(&paths[..1])), ["add", "--", ":(literal).regia/journal"]);
         let status = tokens(&call::status(&paths[1..]));
         assert_eq!(status, ["status", "--porcelain=v1", "-z", "--untracked-files=all", "--", "docs/plan.md"]);
     }

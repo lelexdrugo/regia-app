@@ -112,6 +112,17 @@ impl Args {
         self
     }
 
+    /// A path of the dossier as a pathspec that git reads literally, whatever the environment says:
+    /// `:(literal)<path>`. For the calls that write, which do not get `GIT_LITERAL_PATHSPECS` (it would
+    /// reach the user's hooks). The alphabet of a [`DossierPath`] has no glob anyway: this is the second lock.
+    #[must_use]
+    pub fn pathspec(mut self, path: &DossierPath) -> Self {
+        let mut token = OsString::from(":(literal)");
+        token.push(path.as_arg());
+        self.0.push(token);
+        self
+    }
+
     pub fn tokens(&self) -> impl Iterator<Item = &OsStr> {
         self.0.iter().map(OsString::as_os_str)
     }
@@ -155,8 +166,9 @@ pub mod gh {
     }
 }
 
-/// Read-only `git`. The environment of [`Program::Git`](crate::Program::Git) adds no prompt, no
-/// optional lock, literal pathspecs and no fsmonitor, without a `-c` in argv.
+/// Read-only `git`. The environment of a read of [`Program::Git`](crate::Program::Git) adds no prompt, no
+/// optional lock, literal pathspecs and no fsmonitor, without a `-c` in argv; a write does not get the
+/// last three ([`Launch::writing`](crate::Launch::writing)).
 pub mod git {
     use crate::{Args, DossierPath, GitRef};
 

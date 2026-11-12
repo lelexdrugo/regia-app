@@ -37,17 +37,24 @@ const PROTOTYPE: &[&str] =
 const GH: &[(&str, &str)] =
     &[("GH_HOST", "github.com"), ("GH_PROMPT_DISABLED", "1"), ("GH_NO_UPDATE_NOTIFIER", "1"), ("GH_PAGER", "cat")];
 
-/// Set for `git` (rule 8, and the prototype's `_git`). `GIT_CONFIG_*` turns fsmonitor off without a
-/// `-c` in argv.
-const GIT: &[(&str, &str)] = &[
-    ("GIT_TERMINAL_PROMPT", "0"),
-    ("GCM_INTERACTIVE", "never"),
+/// Set for every `git` call: no prompt, for the user or for a credential helper.
+const GIT: &[(&str, &str)] = &[("GIT_TERMINAL_PROMPT", "0"), ("GCM_INTERACTIVE", "never")];
+
+/// Set for the `git` calls that read, and for those only (rule 8, and the prototype's `_git`): no
+/// optional lock, literal pathspecs and no fsmonitor. `GIT_CONFIG_*` turns fsmonitor off without a `-c`
+/// in argv. A write ([`Launch::writing`]) does not get them, because they would reach the user's hooks
+/// and every `git` a hook starts: a hook with a glob would change its meaning.
+const GIT_READS: &[(&str, &str)] = &[
     ("GIT_OPTIONAL_LOCKS", "0"),
     ("GIT_LITERAL_PATHSPECS", "1"),
     ("GIT_CONFIG_COUNT", "1"),
     ("GIT_CONFIG_KEY_0", "core.fsmonitor"),
     ("GIT_CONFIG_VALUE_0", "false"),
 ];
+
+/// Inherited by `git` and by no other program: the agent's socket, which a push over SSH asks, and the
+/// folder of gpg, which a signed commit reads. A socket and a folder are not secrets (rule 4).
+const GIT_USER: &[&str] = &["SSH_AUTH_SOCK", "GNUPGHOME"];
 
 /// A secret passes only when a caller names it with [`Launch::env`], as the settings of an agent
 /// do (rule 4). A caller that forwards variables by prefix leaves these out too.
@@ -78,16 +85,19 @@ fn inherits(program: Program, name: &OsStr) -> bool {
             }
             Program::Claude => name == "CLAUDE_CONFIG_DIR",
             Program::Codex => name == "CODEX_HOME",
-            Program::Git | Program::Orca => false,
+            Program::Git => GIT_USER.contains(&name.as_str()),
+            Program::Orca => false,
         }
 }
 
-fn forced(program: Program) -> &'static [(&'static str, &'static str)] {
-    match program {
-        Program::Gh | Program::Python => GH,
-        Program::Git => GIT,
+fn forced(program: Program, writes: bool) -> Vec<(&'static str, &'static str)> {
+    let list: &[&[(&str, &str)]] = match program {
+        Program::Gh | Program::Python => &[GH],
+        Program::Git if writes => &[GIT],
+        Program::Git => &[GIT, GIT_READS],
         Program::Claude | Program::Codex | Program::Orca => &[],
-    }
+    };
+    list.concat()
 }
 
 /// Deadline and output caps of a run.
@@ -138,6 +148,7 @@ pub struct Launch {
     set: Vec<(OsString, OsString)>,
     removed: Vec<OsString>,
     limits: Limits,
+    writes: bool,
     parent: Option<Vec<(OsString, OsString)>>,
 }
 
@@ -165,6 +176,7 @@ impl Launch {
             set: Vec::new(),
             removed: Vec::new(),
             limits: Limits::default(),
+            writes: false,
             parent: None,
         }
     }
@@ -196,6 +208,15 @@ impl Launch {
         self
     }
 
+    /// A `git` call that writes: commit, merge, push. It does not get the settings of a read (no optional
+    /// lock, no literal pathspecs, no fsmonitor off), which would reach the user's hooks. Without it a
+    /// call is a read. No other program reads it.
+    #[must_use]
+    pub fn writing(mut self) -> Self {
+        self.writes = true;
+        self
+    }
+
     /// Test only: the environment the allow-list reads, in place of this process's (V18).
     #[cfg(feature = "harness")]
     #[must_use]
@@ -223,7 +244,7 @@ impl Launch {
                 out.push((name.to_os_string(), value.to_os_string()));
             }
         };
-        for (name, value) in forced(program) {
+        for (name, value) in forced(program, self.writes) {
             put(OsStr::new(name), Some(OsStr::new(value)));
         }
         for name in &self.removed {
@@ -628,6 +649,54 @@ mod tests {
         let python_names = names(&python.environment(Program::Python));
         assert!(python_names.contains(&"REGIA_HOME".to_owned()) && python_names.contains(&"MOVIOLA_TASKS".to_owned()));
         assert!(!python_names.contains(&"REGIA_X_TOKEN".to_owned()), "a secret by name never passes by prefix");
+    }
+
+    /// #571/V4: what `git` sees. A read has the settings of rule 8; a write has none of them, so the user's
+    /// hooks do not either, and both have what a push over SSH and a signed commit need.
+    #[test]
+    fn git_reads_have_the_settings_and_writes_do_not_and_both_keep_the_agent_and_the_gpg_folder() {
+        let parent: Vec<(OsString, OsString)> = [
+            ("PATH", "/bin"),
+            ("SSH_AUTH_SOCK", "/run/agent.sock"),
+            ("GNUPGHOME", "/home/u/gnupg"),
+            ("GITHUB_TOKEN", "canary"),
+            ("MY_SIGNING_KEY", "canary"),
+            ("GIT_DIR", "/elsewhere"),
+        ]
+        .map(|(name, value)| (OsString::from(name), OsString::from(value)))
+        .to_vec();
+        let pin = Pin::at(Program::Git, &std::env::current_exe().unwrap()).unwrap();
+        let seen = |writes: bool| {
+            let mut launch = pin.launch(Args::new(), Path::new("."));
+            launch.parent = Some(parent.clone());
+            if writes {
+                launch = launch.writing();
+            }
+            names(&launch.environment(Program::Git))
+        };
+        let settings = ["GIT_OPTIONAL_LOCKS", "GIT_LITERAL_PATHSPECS", "GIT_CONFIG_COUNT", "GIT_CONFIG_KEY_0", "GIT_CONFIG_VALUE_0"];
+        let (reads, writes) = (seen(false), seen(true));
+        for name in settings {
+            assert!(reads.contains(&name.to_owned()), "a read lacks {name}");
+            assert!(!writes.contains(&name.to_owned()), "a write has {name}");
+        }
+        for list in [&reads, &writes] {
+            for name in ["GIT_TERMINAL_PROMPT", "GCM_INTERACTIVE", "SSH_AUTH_SOCK", "GNUPGHOME", "PATH"] {
+                assert!(list.contains(&name.to_owned()), "{name} is missing");
+            }
+            for name in ["GITHUB_TOKEN", "MY_SIGNING_KEY", "GIT_DIR"] {
+                assert!(!list.contains(&name.to_owned()), "{name} came through");
+            }
+        }
+    }
+
+    #[test]
+    fn only_git_inherits_the_agent_socket_and_the_gpg_folder() {
+        for program in Program::ALL {
+            for name in GIT_USER {
+                assert_eq!(inherits(program, OsStr::new(name)), program == Program::Git, "{program} and {name}");
+            }
+        }
     }
 
     #[test]
