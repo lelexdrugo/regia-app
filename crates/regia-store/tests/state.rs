@@ -525,7 +525,7 @@ fn step_comments(store: &Store, project: &str) -> Value {
     stored(store, "cursor", &step_key(project)).unwrap()[name("cursor", "value")][name("step", "comments")].clone()
 }
 
-/// `test_registra_l_id_solo_con_un_passo_aperto` (M4, #445): an id is recorded only while a step is open;
+/// The first of the prototype's `TestCommentoProprio` (M4, #445): an id is recorded only while a step is open;
 /// the end copies it into the events cursor, and a comment after the end is not the step's.
 #[test]
 fn an_own_comment_is_recorded_only_while_a_step_is_open() {
@@ -546,9 +546,8 @@ fn an_own_comment_is_recorded_only_while_a_step_is_open() {
     assert_eq!(parts.own.unwrap().comments, Some(json!([102])), "only the comment written during the step");
 }
 
-/// `test_un_altra_sessione_non_conta_come_evento_proprio` and `test_sessione_sconosciuta_registra`: another
-/// session's step is left alone, and with either session unknown the id is recorded. An id already there
-/// is not written again.
+/// The fifth and sixth of `TestCommentoProprio`: another session's step is left alone, and with either
+/// session unknown the id is recorded. An id already there is not written again.
 #[test]
 fn another_session_s_step_is_left_alone_unless_a_session_is_unknown() {
     let (store, _) = store("own-comment-sessions");
@@ -597,8 +596,8 @@ fn the_step_s_comments_read_as_the_prototype_reads_them() {
     assert_eq!(store.step_session(&alpha).unwrap(), None);
 }
 
-/// `test_commenti_concorrenti_non_si_perdono`: writers that record at once, each on its own connection as
-/// processes are, lose no id.
+/// The last of `TestCommentoProprio`: writers that record at once, each on its own connection as processes
+/// are, lose no id.
 #[test]
 fn concurrent_comments_lose_no_id() {
     let (store, _) = store("own-comment-concurrent");

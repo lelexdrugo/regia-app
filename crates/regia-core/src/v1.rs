@@ -67,6 +67,14 @@ fn vocabulary() -> Vocabulary {
     toml::from_str(VOCABULARY).expect("the embedded v1 vocabulary is valid")
 }
 
+/// The project an issue's labels name, as a comment reads it (`_contesto_commento`): what follows the
+/// project's prefix in the first label that has it; `None` without one, or with nothing after the prefix.
+#[must_use]
+pub fn project_of_labels(labels: &[String]) -> Option<String> {
+    let prefix = vocabulary().labels.project_prefix;
+    labels.iter().find_map(|label| label.strip_prefix(prefix.as_str())).filter(|project| !project.is_empty()).map(str::to_owned)
+}
+
 /// `tracker.json`, in the v1 format. Only the fields this slice reads.
 #[derive(Debug, Clone, Deserialize)]
 pub struct TrackerConfigV1 {
@@ -293,6 +301,18 @@ mod tests {
             status_option_id: option.map(str::to_owned),
             field_values: vec![],
         }
+    }
+
+    /// The first label with the prefix names the project; one with nothing after the prefix names none.
+    #[test]
+    fn a_comment_reads_its_issue_s_project_from_the_labels() {
+        let prefix = vocabulary().labels.project_prefix;
+        let labels = |names: &[&str]| names.iter().map(|name| (*name).to_owned()).collect::<Vec<_>>();
+        let (alpha, beta) = (format!("{prefix}alpha"), format!("{prefix}beta"));
+        assert_eq!(project_of_labels(&labels(&["bug", alpha.as_str(), beta.as_str()])).as_deref(), Some("alpha"));
+        assert_eq!(project_of_labels(&labels(&["bug"])), None);
+        assert_eq!(project_of_labels(&labels(&[prefix.as_str()])), None);
+        assert_eq!(project_of_labels(&[]), None);
     }
 
     #[test]

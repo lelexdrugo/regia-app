@@ -33,4 +33,4 @@ pub use reference::{Reference, ReferenceKind, Unresolved, data_root, resolve};
 pub use registry::{EntryError, Registry, full_repo, project_entry, registry_with};
 pub use text::{Normalized, normalize, normalize_document, normalize_title};
 pub use tracker::{RawComment, RawIssue, StatusHistory, Tracker, TrackerError, add_children_from_parents};
-pub use v1::{TrackerBinding, TrackerConfigV1, V1Error};
+pub use v1::{TrackerBinding, TrackerConfigV1, V1Error, project_of_labels};
