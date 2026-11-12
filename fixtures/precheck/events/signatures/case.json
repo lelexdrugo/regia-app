@@ -239,6 +239,147 @@
           }
         ]
       }
+    },
+    {
+      "note": "a role the regia does not name is still the regia's",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 207,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "A review.\n<!-- regia:autore ruolo=revisore sessione=s -->"
+          }
+        ]
+      }
+    },
+    {
+      "note": "five markers that do not read, and an empty body: six answers",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "comments": {
+        "2": [
+          {
+            "id": 210,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "x\n<!-- regia:autore ruolo= -->"
+          },
+          {
+            "id": 211,
+            "created": "2026-01-10T08:11:00Z",
+            "body": "x\n<!-- regia:autore -->"
+          },
+          {
+            "id": 212,
+            "created": "2026-01-10T08:12:00Z",
+            "body": "x\n<!-- regia:autore ruolo=worker"
+          },
+          {
+            "id": 213,
+            "created": "2026-01-10T08:13:00Z",
+            "body": "x\n<!-- regia:autore ruolo=worker sessione=s -->\nuna riga dopo"
+          },
+          {
+            "id": 214,
+            "created": "2026-01-10T08:14:00Z",
+            "body": "x\n<!-- regia:autor ruolo=worker -->"
+          },
+          {
+            "id": 215,
+            "created": "2026-01-10T08:15:00Z",
+            "body": ""
+          }
+        ]
+      }
+    },
+    {
+      "note": "on a Proposal, a worker's is no answer",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "issues": [
+        {
+          "n": 1,
+          "status": "Approvato",
+          "project": "p",
+          "objective": true
+        },
+        {
+          "n": 2,
+          "status": "Proposta"
+        }
+      ],
+      "comments": {
+        "2": [
+          {
+            "id": 203,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "A report.",
+            "sign": [
+              "worker",
+              "s-2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "note": "on a Proposal, the owner's is",
+      "cursor": {
+        "p": {
+          "v": 1,
+          "t": "2026-01-10T08:00:00Z",
+          "propri": {
+            "commenti": []
+          }
+        }
+      },
+      "issues": [
+        {
+          "n": 1,
+          "status": "Approvato",
+          "project": "p",
+          "objective": true
+        },
+        {
+          "n": 2,
+          "status": "Proposta"
+        }
+      ],
+      "comments": {
+        "2": [
+          {
+            "id": 202,
+            "created": "2026-01-10T08:10:00Z",
+            "body": "Decisione: B.",
+            "sign": [
+              "titolare",
+              "s-1"
+            ]
+          }
+        ]
+      }
     }
   ]
 }

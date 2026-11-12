@@ -278,3 +278,174 @@ fn tick(sources: &dyn Sources, options: &Options) -> Result<Verdict, Fault> {
     };
     Ok(Verdict { reason, cursor: Json::List(cursor), payload })
 }
+
+#[cfg(test)]
+mod tests {
+    use std::cell::RefCell;
+    use std::collections::BTreeMap;
+
+    use regia_core::{Maturity, RawComment, SignatureRole, sign};
+    use serde_json::{Value, json};
+
+    use super::*;
+    use crate::precheck::{ExpiredLease, ObjectiveRegistry, Report};
+
+    /// Sources that answer from memory, and remember which comments were read.
+    #[derive(Default)]
+    struct Fake {
+        issues: Vec<Issue>,
+        comments: BTreeMap<u64, Vec<RawComment>>,
+        cursors: BTreeMap<String, Value>,
+        busy: Vec<String>,
+        read: RefCell<Vec<u64>>,
+    }
+
+    impl Sources for Fake {
+        fn issues(&self) -> Result<Vec<Issue>, String> {
+            Ok(self.issues.clone())
+        }
+
+        fn comments(&self, number: u64) -> Result<Vec<RawComment>, String> {
+            self.read.borrow_mut().push(number);
+            Ok(self.comments.get(&number).cloned().unwrap_or_default())
+        }
+
+        fn events_cursor(&self, project: &str) -> Result<Value, String> {
+            Ok(self.cursors.get(project).cloned().unwrap_or(Value::Null))
+        }
+
+        fn lock_busy(&self, project: &str) -> Result<bool, String> {
+            Ok(self.busy.iter().any(|busy| busy == project))
+        }
+
+        fn expired_leases(&self) -> Result<Vec<ExpiredLease>, String> {
+            Ok(Vec::new())
+        }
+
+        fn reports(&self, _folder: &str) -> Result<Vec<Report>, String> {
+            Ok(Vec::new())
+        }
+    }
+
+    fn task(number: u64, project: &str, status: Status) -> Task {
+        Task {
+            number,
+            title: String::new(),
+            state: IssueState::Open,
+            state_reason: None,
+            status: Some(status),
+            project: Some(project.to_owned()),
+            project_field: None,
+            maturity: Some(Maturity::Ready),
+            objective: false,
+            labels: Vec::new(),
+            parent: None,
+            sub_issues: Vec::new(),
+            blocked_by: Vec::new(),
+            blocked_by_total: 0,
+            url: String::new(),
+            updated_at: String::new(),
+            created_at: None,
+            closed_at: None,
+            due: None,
+        }
+    }
+
+    fn issue(task: Task) -> Issue {
+        Issue { task, registry: None }
+    }
+
+    fn objective(number: u64, project: &str, status: Status, wip: &str, priority: &str) -> Issue {
+        let mut task = task(number, project, status);
+        (task.objective, task.maturity) = (true, None);
+        let registry = ObjectiveRegistry { wip: Some(wip.to_owned()), priority: Some(priority.to_owned()), folder: None };
+        Issue { task, registry: Some(registry) }
+    }
+
+    fn line(fake: &Fake) -> Value {
+        let (_, line) = evaluate(fake, &Options::default()).line(WallTime::parse_iso("2026-01-10T09:00:00Z").unwrap());
+        serde_json::from_str(&line).unwrap()
+    }
+
+    fn project_of(line: &Value, id: &str) -> Value {
+        let projects = line[&format().line.keys.payload][&format().payload.projects].as_array().unwrap().clone();
+        projects.into_iter().find(|project| project[&format().project.id] == id).unwrap()
+    }
+
+    #[test]
+    fn the_ready_tasks_go_by_the_graph_s_order_as_many_as_the_wip_has_room_for() {
+        // #20 unblocks #21, which unblocks #22: its chain is the longest, so it goes first among the ready.
+        let mut blocked = task(21, "p", Status::Approved);
+        blocked.blocked_by = vec![(20, IssueState::Open)];
+        blocked.blocked_by_total = 1;
+        let mut last = task(22, "p", Status::Approved);
+        last.blocked_by = vec![(21, IssueState::Open)];
+        last.blocked_by_total = 1;
+        let issues = vec![
+            objective(1, "p", Status::Approved, "2", "3"),
+            issue(task(10, "p", Status::Approved)),
+            issue(task(20, "p", Status::Approved)),
+            issue(blocked),
+            issue(last),
+            issue(task(30, "p", Status::Approved)),
+        ];
+        let line = line(&Fake { issues, ..Fake::default() });
+        let project = project_of(&line, "p");
+        assert_eq!(project[&format().project.tasks], json!([20, 10]), "the chain first, then by number");
+        assert_eq!(project[&format().project.blocked_by_wip], 1);
+        assert_eq!(line[&format().line.keys.reason], Reason::Ready.word());
+    }
+
+    #[test]
+    fn a_wip_below_the_work_in_progress_leaves_no_place() {
+        let issues = vec![objective(1, "p", Status::Approved, "-1", "3"), issue(task(2, "p", Status::InProgress)), issue(task(3, "p", Status::Approved))];
+        let line = line(&Fake { issues, ..Fake::default() });
+        assert_eq!(line[&format().line.keys.reason], Reason::WipLimit.word());
+    }
+
+    #[test]
+    fn an_objective_in_decision_waits_for_the_owner_and_its_comments_are_read() {
+        let owner = sign("Decision: B.", SignatureRole::Owner, Some("s"));
+        let chat = sign("A question.", SignatureRole::Chat, Some("s"));
+        let comment = |id: u64, body: &str| RawComment { id: Some(id), created_at: "2026-01-10T08:30:00Z".to_owned(), url: String::new(), body: body.to_owned() };
+        let issues = vec![objective(1, "p", Status::Decision, "2", "3")];
+        let cursors = BTreeMap::from([("p".to_owned(), json!({format().events.t.as_str(): "2026-01-10T08:00:00Z"}))]);
+        let fake = Fake { issues: issues.clone(), comments: BTreeMap::from([(1, vec![comment(5, &chat)])]), cursors: cursors.clone(), ..Fake::default() };
+        assert_eq!(line(&fake)[&format().line.keys.reason], Reason::WaitingOnOwner.word());
+        assert_eq!(*fake.read.borrow(), [1]);
+        let fake = Fake { issues, comments: BTreeMap::from([(1, vec![comment(5, &chat), comment(6, &owner)])]), cursors, ..Fake::default() };
+        let line = line(&fake);
+        assert_eq!(line[&format().line.keys.reason], Reason::Answers.word());
+        assert_eq!(project_of(&line, "p")[&format().project.answers], 1);
+    }
+
+    #[test]
+    fn the_tick_takes_the_first_new_activity_or_the_strongest_reason_to_wait() {
+        let issues = || {
+            vec![
+                objective(1, "a", Status::Approved, "2", "1"),
+                issue(task(2, "a", Status::Decision)),
+                objective(3, "b", Status::Approved, "2", "2"),
+                issue(task(4, "b", Status::Approved)),
+            ]
+        };
+        // `a` waits for the owner and `b` is held: held is the stronger reason.
+        let line = line(&Fake { issues: issues(), busy: vec!["b".to_owned()], ..Fake::default() });
+        assert_eq!(line[&format().line.keys.reason], Reason::Busy.word());
+        let ids: Vec<Value> = line[&format().line.keys.cursor].as_array().unwrap().iter().map(|entry| entry[&format().cursor.project].clone()).collect();
+        assert_eq!(ids, [json!("a"), json!("b")], "by priority, then id");
+        assert_eq!(project_of(&line, "b").as_object().unwrap().len(), 4, "a held project has only its id, outcome, reason and events");
+        // `b` has a ready task: the tick's new activity, though `a` comes first.
+        let fake = Fake { issues: issues(), ..Fake::default() };
+        assert_eq!(super::tests::line(&fake)[&format().line.keys.reason], Reason::Ready.word());
+    }
+
+    #[test]
+    fn a_priority_that_is_not_a_number_fails_only_for_an_active_project() {
+        let issues = vec![objective(1, "a", Status::Proposal, "2", "high"), objective(2, "b", Status::Approved, "2", "")];
+        assert_eq!(line(&Fake { issues, ..Fake::default() })[&format().line.keys.reason], Reason::NoEvent.word());
+        let issues = vec![objective(1, "a", Status::Approved, "2", "high")];
+        let verdict = evaluate(&Fake { issues, ..Fake::default() }, &Options::default());
+        assert_eq!((verdict.reason, verdict.cursor), (Reason::Unreadable, Json::Null));
+    }
+}
