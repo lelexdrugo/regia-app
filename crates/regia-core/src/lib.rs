@@ -10,6 +10,7 @@ pub mod graph;
 pub mod link;
 pub mod markdown;
 pub mod model;
+pub mod moviola;
 pub mod policy;
 pub mod pystr;
 pub mod reads;

@@ -1,0 +1,127 @@
+# The moviola's files in a project's dossier, as the prototype writes them (`docs/moviola/CONTRATTO.md` of the
+# dossier, §3 and §5, schemas `moviola.*/v0`): where they are, the keys of their records and the words of their
+# closed lists. They are data of format v1, not identifiers, and stay out of the Rust sources. Each table maps
+# the product's name of a field (left) to the prototype's key (right); the product's names are provisional,
+# for the gate of the names (#223 of the dossier).
+
+# `<project folder>/.regia/moviola/`, one segment each.
+folder = [".regia", "moviola"]
+milestones = "milestones.jsonl"
+directions = "direzioni.jsonl"
+aggregates = "aggregati.jsonl"
+# `snapshot/<milestone id>.json`: the sidecars.
+snapshots = "snapshot"
+snapshot_extension = "json"
+# The implicit direction, which has no record (§5.7).
+main_direction = "principale"
+
+[milestone]
+id = "id"
+ts = "ts"
+kind = "tipo"
+title = "titolo"
+direction = "direzione"
+parents = "genitori"
+health = "salute"
+opens_direction = "apre_direzione"
+refs = "rif"
+process = "processo"
+author = "autore"
+
+[refs]
+issue = "issue"
+commit = "commit"
+report = "report"
+
+[process]
+round = "round"
+checks = "controlli"
+defects = "difetti"
+
+[defects]
+found = "trovati"
+closed = "chiusi"
+closes = "chiude"
+
+[author]
+role = "ruolo"
+agent = "agente"
+model = "modello"
+session = "sessione"
+
+[direction]
+id = "id"
+title = "titolo"
+opened_by = "aperta_da"
+status = "stato"
+reason = "motivo"
+
+[aggregate]
+project = "progetto"
+task = "task"
+window = "finestra"
+round = "round"
+declared_subagents = "sottoagenti_dichiarati"
+models = "modelli"
+checks = "controlli"
+defects = "difetti"
+tokens = "token"
+
+[model]
+agent = "agente"
+model = "modello"
+effort = "effort"
+sessions = "sessioni"
+via = "via"
+
+[check]
+kind = "tipo"
+outcome = "esito"
+defects = "difetti"
+model = "modello"
+
+[tokens]
+input = "in"
+output = "out"
+cache_read = "cache_lettura"
+cache_write = "cache_scrittura"
+
+[snapshot]
+id = "id"
+ts = "ts"
+changed = "cambiato"
+direction = "direzione"
+open_decisions = "decisioni_aperte"
+risks = "rischi"
+next = "prossimo"
+in_brief = "in_breve"
+changed_claims = "claim_cambiati"
+deviations = "deviazioni"
+process = "processo"
+
+[deviation]
+plan = "piano"
+deviation = "deviazione"
+reason = "motivo"
+impact = "impatto"
+
+# The closed lists the prototype's `registra` enforces (§5.3, §5.4, §5.7): the product's id (left), the
+# prototype's word (right).
+[kinds]
+milestone = "milestone"
+decision = "decisione"
+gate = "gate"
+exception = "eccezione"
+exploration = "esplorazione"
+rejoin = "rientro"
+abandonment = "abbandono"
+
+[health]
+healthy = "in salute"
+at_risk = "a rischio"
+waiting_on_owner = "in attesa del titolare"
+
+[direction_status]
+active = "attiva"
+abandoned = "abbandonata"
+rejoined = "rientrata"

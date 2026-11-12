@@ -1,0 +1,16 @@
+{
+ "schema": "moviola.snapshot/v0",
+ "id": "01JCB100000000000000000000",
+ "progetto": "beta",
+ "ts": "2026-10-18T08:00:00Z",
+ "cambiato": [
+  "One thing changed.",
+  "Another one, with #12."
+ ],
+ "decisioni_aperte": [
+  "Which probe next?"
+ ],
+ "rischi": [],
+ "direzione": "Keep the main line.",
+ "prossimo": "Run the probe."
+}
