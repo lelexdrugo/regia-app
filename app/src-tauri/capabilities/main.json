@@ -3,5 +3,13 @@
   "identifier": "main",
   "description": "What the main window may call: the app's own commands, and nothing from Tauri's core or any plugin.",
   "windows": ["main"],
-  "permissions": ["allow-get-app-info", "allow-get-brief", "allow-get-settings", "allow-set-settings"]
+  "permissions": [
+    "allow-get-app-info",
+    "allow-get-brief",
+    "allow-list-projects",
+    "allow-get-timeline",
+    "allow-get-snapshot",
+    "allow-get-settings",
+    "allow-set-settings"
+  ]
 }

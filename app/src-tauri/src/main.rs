@@ -4,6 +4,7 @@
 compile_error!("the smoke feature lets the webview write a file and quit the app: never in a release build");
 
 mod ipc;
+mod moviola;
 mod navigation;
 mod settings;
 #[cfg(feature = "smoke")]
@@ -17,6 +18,7 @@ use tauri::webview::NewWindowResponse;
 use tauri::{AppHandle, Manager, Runtime, State, WebviewWindow, WebviewWindowBuilder};
 
 use crate::ipc::{AppInfo, BriefView};
+use crate::moviola::Moviola;
 use crate::navigation::AppOrigin;
 use crate::settings::{Settings, SettingsChange, Store};
 
@@ -88,19 +90,30 @@ fn open_main_window<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     Ok(())
 }
 
-fn builder<R: Runtime>(builder: tauri::Builder<R>, store: Store) -> tauri::Builder<R> {
-    let builder = builder.manage(store);
+fn builder<R: Runtime>(builder: tauri::Builder<R>, store: Store, moviola: Moviola) -> tauri::Builder<R> {
+    let builder = builder.manage(store).manage(moviola);
     #[cfg(feature = "smoke")]
     let builder = builder.invoke_handler(tauri::generate_handler![
         get_app_info,
         get_brief,
+        moviola::list_projects,
+        moviola::get_timeline,
+        moviola::get_snapshot,
         get_settings,
         set_settings,
         smoke::smoke_report,
         smoke::smoke_corpus
     ]);
     #[cfg(not(feature = "smoke"))]
-    let builder = builder.invoke_handler(tauri::generate_handler![get_app_info, get_brief, get_settings, set_settings]);
+    let builder = builder.invoke_handler(tauri::generate_handler![
+        get_app_info,
+        get_brief,
+        moviola::list_projects,
+        moviola::get_timeline,
+        moviola::get_snapshot,
+        get_settings,
+        set_settings
+    ]);
     builder
 }
 
@@ -110,7 +123,7 @@ fn main() {
     let store = Store::new(settings_dir());
     let mut context = tauri::generate_context!();
     settings::draw_first_paint(&mut context, store.clone());
-    builder(tauri::Builder::default(), store)
+    builder(tauri::Builder::default(), store, Moviola::default())
         .setup(|app| {
             #[cfg(feature = "smoke")]
             smoke::start_pings(app.handle().clone());
@@ -134,7 +147,11 @@ mod acl {
 
     /// The settings stay in a folder of the test's own, never the user's configuration.
     fn window_with(dir: Option<PathBuf>) -> WebviewWindow<MockRuntime> {
-        let app = builder(mock_builder(), Store::new(dir)).build(tauri::generate_context!()).expect("the mock app");
+        window_of(Store::new(dir), Moviola::default())
+    }
+
+    fn window_of(store: Store, moviola: Moviola) -> WebviewWindow<MockRuntime> {
+        let app = builder(mock_builder(), store, moviola).build(tauri::generate_context!()).expect("the mock app");
         WebviewWindowBuilder::new(&app, "main", WebviewUrl::default()).build().expect("the main window")
     }
 
@@ -230,6 +247,65 @@ mod acl {
         let window = window();
         for from in ["https://example.invalid", "http://tauri.localhost.attacker.com", "tauri://localhost.attacker.com"] {
             assert_refused(invoke(&window, "get_app_info", json!({}), from), &format!("get_app_info from {from}"));
+        }
+    }
+
+    /// The moviola's fixtures, known as the registry would give them, so the commands never read the tracker.
+    fn moviola_window() -> WebviewWindow<MockRuntime> {
+        use regia_core::moviola::{LinkSettings, Project};
+        let projects = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/moviola/projects");
+        let project = |id: &str| Project { id: id.to_owned(), folder: projects.join(id), title: None };
+        let links = LinkSettings { owner: Some("acme".to_owned()), repo: Some("tasks".to_owned()), ..LinkSettings::default() };
+        window_of(Store::new(None), Moviola::with(vec![project("alpha"), project("beta")], links))
+    }
+
+    #[test]
+    fn the_moviola_answers_by_its_ids_with_snake_case_arguments() {
+        let window = moviola_window();
+        let timeline = invoke(&window, "get_timeline", json!({ "project_id": "alpha" }), origin()).expect("get_timeline is allowed");
+        assert_eq!(timeline["project"], "alpha");
+        assert_eq!(timeline["milestones"].as_array().map(Vec::len), Some(7));
+        let first = &timeline["milestones"][0];
+        assert_eq!(first["links"]["issue"][0], json!({ "text": "#12", "url": "https://github.com/acme/tasks/issues/12" }));
+        assert_eq!(first["kind"], "milestone");
+        assert!(timeline.get("snapshot").is_none() && first.get("snapshot").is_none(), "the sidecars come one at a time");
+        let range = json!({ "project_id": "alpha", "from": "2026-10-21", "to": null });
+        let late = invoke(&window, "get_timeline", range, origin()).expect("a range");
+        assert_eq!(late["milestones"].as_array().map(Vec::len), Some(1));
+        let snapshot = json!({ "project_id": "alpha", "milestone_id": "01JCM100000000000000000000" });
+        let sidecar = invoke(&window, "get_snapshot", snapshot, origin()).expect("get_snapshot is allowed");
+        assert_eq!(sidecar["in_brief"], "The project starts. Nothing is late.");
+        let elsewhere = json!({ "project_id": "beta", "milestone_id": "01JCM100000000000000000000" });
+        assert_eq!(invoke(&window, "get_snapshot", elsewhere, origin()).unwrap(), Value::Null, "another project's milestone");
+    }
+
+    #[test]
+    fn the_moviola_refuses_what_is_not_one_of_its_ids() {
+        let window = moviola_window();
+        let long = "a".repeat(65);
+        let refused = [
+            ("get_timeline", json!({ "projectId": "alpha" })),
+            ("get_timeline", json!({ "project_id": "gamma" })),
+            ("get_timeline", json!({ "project_id": "../alpha" })),
+            ("get_timeline", json!({ "project_id": "ALPHA" })),
+            ("get_timeline", json!({ "project_id": long })),
+            ("get_timeline", json!({ "project_id": 7 })),
+            ("get_timeline", json!({ "project_id": "alpha", "from": "yesterday" })),
+            ("get_timeline", json!({ "project_id": "alpha", "to": "2026-10-21".repeat(8) })),
+            ("get_snapshot", json!({ "project_id": "alpha" })),
+            ("get_snapshot", json!({ "project_id": "alpha", "milestone_id": "../01JCM100000000000000000000" })),
+            ("get_snapshot", json!({ "project_id": "alpha", "milestone_id": "01JCM100000000000000000000.json" })),
+            ("get_snapshot", json!({ "project_id": "alpha", "milestone_id": "" })),
+        ];
+        for (command, args) in refused {
+            let outcome = invoke(&window, command, args.clone(), origin());
+            assert!(outcome.is_err(), "{command} {args} was answered: {outcome:?}");
+        }
+        let unknown = json!({ "project_id": "alpha", "milestone_id": "01JCZZZZZZZZZZZZZZZZZZZZZZ" });
+        assert_eq!(invoke(&window, "get_snapshot", unknown, origin()).unwrap(), Value::Null);
+        for from in ["https://example.invalid", "http://tauri.localhost.attacker.com"] {
+            let args = json!({ "project_id": "alpha" });
+            assert_refused(invoke(&window, "get_timeline", args, from), &format!("get_timeline from {from}"));
         }
     }
 }

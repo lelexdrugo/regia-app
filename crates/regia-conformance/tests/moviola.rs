@@ -19,6 +19,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::workspace_root;
+use regia_core::TrackerConfigV1;
 use regia_core::moviola::{self, LinkSettings, MoviolaError, Project, Range};
 use regia_exec::{Pin, Program, python};
 use regia_facade::PROTOTYPE_LIMITS;
@@ -614,4 +615,30 @@ fn text_written_by_agents_reaches_the_view_normalized() {
     fs::write(&milestones, text.replacen("First synthetic step", "First\\u202e step\\n\\u001b[31mred", 1)).unwrap();
     let first = moviola::read_milestones(&alpha).unwrap().into_iter().next().unwrap();
     assert_eq!(first.title, "First‹U+202E› step red");
+}
+
+/// `fonti.config_tracker` as the links read it: no configuration, or the dossier's unreadable, is none; a local
+/// file that does not read is an error, never the dossier's in its place (#203 of the dossier).
+#[test]
+fn the_links_take_the_tracker_s_configuration_by_the_prototype_s_rule() {
+    let root = PathBuf::from(env!("CARGO_TARGET_TMPDIR")).join("moviola").join("config");
+    let _ = fs::remove_dir_all(&root);
+    let (state, dossier) = (root.join("state"), root.join("dossier"));
+    fs::create_dir_all(&state).unwrap();
+    fs::create_dir_all(dossier.join("config")).unwrap();
+    let load = || TrackerConfigV1::load_for_links(Some(&state), Some(&dossier));
+    assert!(load().unwrap().is_none());
+    let shared = dossier.join("config").join("tracker.json");
+    fs::write(&shared, "{not json").unwrap();
+    assert!(load().unwrap().is_none());
+    let config = json!({"owner": "acme", "repo": "tasks", "project_id": "p", "status_field_id": "f", "status_options": {},
+                        "project_url": "https://github.com/users/acme/projects/7"});
+    fs::write(&shared, config.to_string()).unwrap();
+    let read = load().unwrap().unwrap();
+    assert_eq!((read.owner.as_str(), read.project_url.as_deref()), ("acme", Some("https://github.com/users/acme/projects/7")));
+    fs::write(&shared, json!({"owner": "acme", "repo": "tasks", "project_id": "p", "status_field_id": "f", "status_options": {},
+                              "project_url": 7}).to_string()).unwrap();
+    assert_eq!(load().unwrap().unwrap().project_url, None, "a Project that is not a string is none");
+    fs::write(state.join("tracker.json"), "{}").unwrap();
+    assert!(load().is_err(), "a local file that does not read");
 }

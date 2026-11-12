@@ -16,6 +16,8 @@ tauri-build.workspace = true
 
 [dependencies]
 regia-core.workspace = true
+# The registry of the projects, for the moviola's commands: a composition that belongs to regia-runtime.
+regia-github.workspace = true
 regia-i18n.workspace = true
 regia-identity.workspace = true
 regia-runtime.workspace = true

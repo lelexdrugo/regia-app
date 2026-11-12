@@ -15,7 +15,9 @@ const CSP: &str = "default-src 'none'; script-src 'self'; style-src 'self'; img-
                    frame-src 'none'; worker-src 'none'; media-src 'none'; manifest-src 'none'";
 
 /// The commands of the threat model's §3.4: no other command may reach the webview without a new row there.
-const COMMANDS_OF_THE_MODEL: [&str; 24] = [
+/// `get_snapshot` has none yet: it is the route of a sidecar that the gate of #400 of the dossier turned into a
+/// command (row F132 of the dossier's inventory), and the row is to add.
+const COMMANDS_OF_THE_MODEL: [&str; 25] = [
     "get_app_info",
     "get_setup_status",
     "get_brief",
@@ -24,6 +26,7 @@ const COMMANDS_OF_THE_MODEL: [&str; 24] = [
     "get_task",
     "get_document",
     "get_timeline",
+    "get_snapshot",
     "list_sessions",
     "get_session_transcript",
     "get_daily",
