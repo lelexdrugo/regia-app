@@ -1,0 +1,37 @@
+{
+ "schema": "moviola.snapshot/v0",
+ "id": "01JCM300000000000000000000",
+ "progetto": "alpha",
+ "ts": "2026-10-16T09:00:00Z",
+ "cambiato": [
+  "One thing changed.",
+  "Another one, with #12."
+ ],
+ "decisioni_aperte": [
+  "Which probe next?"
+ ],
+ "rischi": [],
+ "direzione": "Keep the main line.",
+ "prossimo": "Run the probe.",
+ "claim_cambiati": [
+  "C1 is weaker."
+ ],
+ "deviazioni": [
+  {
+   "piano": "Run A",
+   "deviazione": "Ran B",
+   "motivo": "A broke",
+   "impatto": "One day"
+  }
+ ],
+ "processo": {
+  "round": 2,
+  "controlli": [
+   "revisione-avversaria"
+  ],
+  "difetti": {
+   "trovati": 3,
+   "chiusi": null
+  }
+ }
+}

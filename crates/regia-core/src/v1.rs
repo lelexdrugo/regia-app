@@ -83,6 +83,14 @@ pub struct TrackerConfigV1 {
     pub project_id: String,
     pub status_field_id: String,
     pub status_options: BTreeMap<String, String>,
+    /// The Project's page, for the moviola's link (§8 of its contract): `None` when it is missing or not a
+    /// string, which the prototype passes on as it is and no other reader needs.
+    #[serde(default, deserialize_with = "string_or_none")]
+    pub project_url: Option<String>,
+}
+
+fn string_or_none<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Option<String>, D::Error> {
+    Ok(serde_json::Value::deserialize(deserializer)?.as_str().map(str::to_owned))
 }
 
 impl TrackerConfigV1 {
@@ -101,6 +109,18 @@ impl TrackerConfigV1 {
         }
         let tried: Vec<String> = [local, shared].into_iter().flatten().map(|p| p.display().to_string()).collect();
         Err(V1Error::Missing(tried.join(", ")))
+    }
+
+    /// The configuration as the prototype's moviola takes it for its links (`config_tracker` of its `fonti.py`): a
+    /// local file that does not read is an error, as in [`load`](Self::load), since no configuration would drop
+    /// the URLs in silence and the dossier's would name another tracker; with no local file, a configuration of
+    /// the dossier that is missing or does not read is none.
+    pub fn load_for_links(state_dir: Option<&Path>, dossier: Option<&Path>) -> Result<Option<Self>, V1Error> {
+        match Self::load(state_dir, dossier) {
+            Ok(config) => Ok(Some(config)),
+            Err(error) if state_dir.is_some_and(|dir| dir.join("tracker.json").is_file()) => Err(error),
+            Err(_) => Ok(None),
+        }
     }
 
     fn read_local(path: &Path) -> Result<Self, V1Error> {
@@ -279,6 +299,7 @@ mod tests {
             project_id: "p".into(),
             status_field_id: "f".into(),
             status_options,
+            project_url: None,
         }
     }
 

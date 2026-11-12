@@ -8,7 +8,7 @@
 use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 use regia_agents::{Cli, Env, LaunchError, LaunchRequest, LaunchSurface, Orca, OrcaWaits, Receipt, ServiceId, Waits};
@@ -23,17 +23,21 @@ pub fn exe(name: &str) -> String {
     format!("{name}{}", std::env::consts::EXE_SUFFIX)
 }
 
-/// The fake, as `cargo test` builds the examples: `target/<profile>/examples/`, next to `deps/`.
+/// The fake, as `cargo test` builds the examples: `target/<profile>/examples/`, found from the test
+/// itself, which is in `<profile>/deps/` before Cargo 1.100 and in `<profile>/build/<package>/<hash>/out/` since.
 pub fn fake() -> PathBuf {
     let test = std::env::current_exe().expect("own path");
-    let profile = test.parent().and_then(Path::parent).expect("the profile folder");
-    let fake = profile.join("examples").join(exe("fake_agent"));
-    assert!(
-        fake.is_file(),
-        "{} is missing: `cargo test` builds the examples, `cargo test --test <name>` alone does not (add --examples)",
-        fake.display()
-    );
-    fake
+    let name = exe("fake_agent");
+    test.ancestors()
+        .skip(1)
+        .map(|dir| dir.join("examples").join(&name))
+        .find(|fake| fake.is_file())
+        .unwrap_or_else(|| {
+            panic!(
+                "examples/{name} not found above {}: `cargo test` builds the examples, `cargo test --test <name>` alone does not (add --examples)",
+                test.display()
+            )
+        })
 }
 
 pub struct Trial {

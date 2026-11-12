@@ -1,0 +1,3 @@
+{"schema": "moviola.direzione/v0", "id": "probe-b", "titolo": "Probe B", "aperta_da": "01JCM300000000000000000000", "stato": "rientrata", "motivo": "It worked and came back."}
+{"schema": "moviola.direzione/v0", "id": "probe-d", "titolo": "Probe D", "aperta_da": "01JCM200000000000000000000", "stato": "abbandonata", "motivo": "Too slow."}
+{"schema": "moviola.direzione/v0", "id": "probe-e", "titolo": "Probe E", "aperta_da": "01JCM100000000000000000000", "stato": "attiva", "motivo": ""}

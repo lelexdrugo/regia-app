@@ -1,0 +1,90 @@
+{
+ "projects": [
+  {
+   "id": "beta",
+   "folder": "projects/beta",
+   "title": null
+  },
+  {
+   "id": "alpha",
+   "folder": "projects/alpha",
+   "title": "Alpha, a synthetic project"
+  },
+  {
+   "id": "gamma",
+   "folder": "projects/gamma",
+   "title": ""
+  }
+ ],
+ "links": {
+  "alpha": {
+   "owner": "acme",
+   "repo": "tasks",
+   "project_url": "https://github.com/users/acme/projects/7",
+   "remote": "https://github.com/acme/alpha"
+  },
+  "beta": {
+   "owner": null,
+   "repo": null,
+   "project_url": null,
+   "remote": null
+  },
+  "gamma": {
+   "owner": "acme",
+   "repo": "",
+   "project_url": "",
+   "remote": ""
+  }
+ },
+ "remotes": [
+  "https://user:secret@github.com/acme/p.git",
+  "git@github.com:acme/p.git",
+  "ssh://git@host.example:2222/acme/p.git/",
+  "http://host/a/b/",
+  "https://github.com/acme/p.git\n",
+  "git@host:p",
+  "https://host",
+  "file:///srv/p.git",
+  "/srv/p.git",
+  "",
+  "user@hést:x/y.git"
+ ],
+ "ranges": [
+  [
+   null,
+   null
+  ],
+  [
+   "2026-10-15",
+   "2026-10-19"
+  ],
+  [
+   null,
+   "2026-10-20T09:00:00Z"
+  ],
+  [
+   "2026-10-20 09:00:00",
+   null
+  ],
+  [
+   "2026-10-21",
+   null
+  ],
+  [
+   "2026-10-21T08:00:00+01:00",
+   null
+  ],
+  [
+   "yesterday",
+   null
+  ],
+  [
+   null,
+   ""
+  ],
+  [
+   "2026-02-30",
+   null
+  ]
+ ]
+}

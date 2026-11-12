@@ -5,7 +5,7 @@ use tauri_build::{AppManifest, Attributes};
 /// The commands of a release build. Declaring them turns on Tauri's ACL for them: a command no capability
 /// allows cannot be called from the webview. `tests/security.rs` (V02) keeps this list, the handlers in
 /// `main.rs` and `capabilities/main.json` equal.
-const COMMANDS: &[&str] = &["get_app_info", "get_brief", "get_settings", "set_settings"];
+const COMMANDS: &[&str] = &["get_app_info", "get_brief", "list_projects", "get_timeline", "get_snapshot", "get_settings", "set_settings"];
 
 /// Test only: compiled in with the `smoke` feature, never in a release build (see `main.rs`).
 const SMOKE_COMMANDS: &[&str] = &["smoke_report", "smoke_corpus"];

@@ -1,0 +1,948 @@
+{
+ "portfolio": [
+  {
+   "id": "alpha",
+   "milestone": 7,
+   "direzioni": 3,
+   "salute": "a rischio",
+   "ultima": {
+    "id": "01JCM600000000000000000000",
+    "ts": "2026-10-21T09:00:00+02:00",
+    "tipo": "eccezione",
+    "titolo": "Over budget on a lane with no record",
+    "direzione": "probe-c"
+   },
+   "dal": "2026-10-14T10:00:00Z",
+   "al": "2026-10-21T09:00:00+02:00",
+   "titolo": "Alpha, a synthetic project"
+  },
+  {
+   "id": "beta",
+   "milestone": 1,
+   "direzioni": 0,
+   "salute": "in salute",
+   "ultima": {
+    "id": "01JCB100000000000000000000",
+    "ts": "2026-10-18T08:00:00Z",
+    "tipo": "milestone",
+    "titolo": "Beta's only milestone",
+    "direzione": "principale"
+   },
+   "dal": "2026-10-18T08:00:00Z",
+   "al": "2026-10-18T08:00:00Z"
+  },
+  {
+   "id": "gamma",
+   "milestone": 0,
+   "direzioni": 0,
+   "salute": null,
+   "ultima": null,
+   "dal": null,
+   "al": null
+  }
+ ],
+ "views": {
+  "beta": {
+   "progetto": "beta",
+   "project_url": null,
+   "milestones": [
+    {
+     "schema": "moviola.milestone/v0",
+     "id": "01JCB100000000000000000000",
+     "ts": "2026-10-18T08:00:00Z",
+     "progetto": "beta",
+     "tipo": "milestone",
+     "direzione": "principale",
+     "genitori": [],
+     "titolo": "Beta's only milestone",
+     "salute": "in salute",
+     "rif": {
+      "issue": [
+       5
+      ],
+      "commit": [
+       "1111111"
+      ],
+      "report": [
+       ".regia/report/none.md"
+      ]
+     },
+     "processo": {
+      "round": 1,
+      "controlli": [],
+      "difetti": {
+       "trovati": null,
+       "chiusi": null
+      }
+     },
+     "autore": {
+      "ruolo": "cronista",
+      "agente": "claude",
+      "modello": "claude-sonnet-5-5",
+      "sessione": "ctx_synthetic"
+     },
+     "snapshot": "snapshot/01JCB100000000000000000000.json",
+     "link": {
+      "issue": [
+       {
+        "testo": "#5",
+        "url": null
+       }
+      ],
+      "commit": [
+       {
+        "testo": "1111111",
+        "url": null,
+        "hash": "1111111"
+       }
+      ],
+      "report": [
+       {
+        "testo": ".regia/report/none.md",
+        "percorso": "<root>/projects/beta/.regia/report/none.md",
+        "tipo": "relativo",
+        "esiste": false
+       }
+      ],
+      "pagina": "/p/beta/snapshot/01JCB100000000000000000000.html"
+     }
+    }
+   ],
+   "direzioni": [],
+   "aggregati": [],
+   "snapshot": {
+    "01JCB100000000000000000000": {
+     "schema": "moviola.snapshot/v0",
+     "id": "01JCB100000000000000000000",
+     "progetto": "beta",
+     "ts": "2026-10-18T08:00:00Z",
+     "cambiato": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "decisioni_aperte": [
+      "Which probe next?"
+     ],
+     "rischi": [],
+     "direzione": "Keep the main line.",
+     "prossimo": "Run the probe."
+    }
+   }
+  },
+  "alpha": {
+   "progetto": "alpha",
+   "project_url": "https://github.com/users/acme/projects/7",
+   "milestones": [
+    {
+     "schema": "moviola.milestone/v0",
+     "id": "01JCM100000000000000000000",
+     "ts": "2026-10-14T10:00:00Z",
+     "progetto": "alpha",
+     "tipo": "milestone",
+     "direzione": "principale",
+     "genitori": [],
+     "titolo": "First synthetic step",
+     "salute": "in salute",
+     "rif": {
+      "issue": [
+       12,
+       27
+      ],
+      "commit": [],
+      "report": [
+       ".regia/report/2026-10-19-12-present.md",
+       ".regia/report/2026-10-20-13-absent.md"
+      ]
+     },
+     "processo": {
+      "round": 1,
+      "controlli": [],
+      "difetti": {
+       "trovati": null,
+       "chiusi": null
+      }
+     },
+     "autore": {
+      "ruolo": "cronista",
+      "agente": "claude",
+      "modello": "claude-sonnet-5-5",
+      "sessione": null
+     },
+     "snapshot": "snapshot/01JCM100000000000000000000.json",
+     "link": {
+      "issue": [
+       {
+        "testo": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "testo": "#27",
+        "url": "https://github.com/acme/tasks/issues/27"
+       }
+      ],
+      "commit": [],
+      "report": [
+       {
+        "testo": ".regia/report/2026-10-19-12-present.md",
+        "percorso": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "tipo": "relativo",
+        "esiste": true
+       },
+       {
+        "testo": ".regia/report/2026-10-20-13-absent.md",
+        "percorso": "<root>/projects/alpha/.regia/report/2026-10-20-13-absent.md",
+        "tipo": "relativo",
+        "esiste": false
+       }
+      ],
+      "pagina": "/p/alpha/snapshot/01JCM100000000000000000000.html"
+     }
+    },
+    {
+     "schema": "moviola.milestone/v0",
+     "id": "01JCM200000000000000000000",
+     "ts": "2026-10-15T12:00:00Z",
+     "progetto": "alpha",
+     "tipo": "decisione",
+     "direzione": "principale",
+     "genitori": [
+      "01JCM100000000000000000000"
+     ],
+     "titolo": "A choice waits for the owner",
+     "salute": "in attesa del titolare",
+     "rif": {
+      "issue": [],
+      "commit": [
+       "abc1234"
+      ],
+      "report": [
+       "{dati}/EXP-1/results.md",
+       "C:\\Users\\someone\\x.md",
+       "/home/someone/x.md",
+       "../outside.md",
+       ".regia\\report\\2026-10-19-12-present.md"
+      ]
+     },
+     "processo": {
+      "round": null,
+      "controlli": [
+       "test",
+       "rilettura"
+      ],
+      "difetti": {
+       "trovati": 0,
+       "chiusi": 0
+      }
+     },
+     "autore": {
+      "ruolo": "cronista",
+      "agente": "claude",
+      "modello": "claude-sonnet-5-5",
+      "sessione": "ctx_synthetic"
+     },
+     "snapshot": "snapshot/01JCM200000000000000000000.json",
+     "link": {
+      "issue": [],
+      "commit": [
+       {
+        "testo": "abc1234",
+        "url": "https://github.com/acme/alpha/commit/abc1234",
+        "hash": "abc1234"
+       }
+      ],
+      "report": [
+       {
+        "testo": "{dati}/EXP-1/results.md",
+        "percorso": null,
+        "tipo": "dati",
+        "esiste": false
+       },
+       {
+        "testo": "C:\\Users\\someone\\x.md",
+        "percorso": null,
+        "tipo": "assoluto",
+        "esiste": false
+       },
+       {
+        "testo": "/home/someone/x.md",
+        "percorso": null,
+        "tipo": "assoluto",
+        "esiste": false
+       },
+       {
+        "testo": "../outside.md",
+        "percorso": null,
+        "tipo": "fuori",
+        "esiste": false
+       },
+       {
+        "testo": ".regia\\report\\2026-10-19-12-present.md",
+        "percorso": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "tipo": "relativo",
+        "esiste": true
+       }
+      ],
+      "pagina": "/p/alpha/snapshot/01JCM200000000000000000000.html"
+     }
+    },
+    {
+     "schema": "moviola.milestone/v0",
+     "id": "01JCM300000000000000000000",
+     "ts": "2026-10-16T09:00:00Z",
+     "progetto": "alpha",
+     "tipo": "esplorazione",
+     "direzione": "probe-b",
+     "genitori": [
+      "01JCM200000000000000000000"
+     ],
+     "titolo": "#14 probe B opens",
+     "salute": "a rischio",
+     "apre_direzione": "probe-b",
+     "rif": {
+      "issue": [
+       14
+      ],
+      "commit": [
+       "0123456789abcdef0123456789abcdef01234567"
+      ],
+      "report": [
+       ".regia/report/2026-10-19-12-present.md"
+      ]
+     },
+     "processo": {
+      "round": 2,
+      "controlli": [
+       "revisione-avversaria"
+      ],
+      "difetti": {
+       "trovati": 3,
+       "chiusi": null
+      }
+     },
+     "autore": {
+      "ruolo": "cronista",
+      "agente": "claude",
+      "modello": "claude-sonnet-5-5",
+      "sessione": "ctx_a3"
+     },
+     "snapshot": "snapshot/01JCM300000000000000000000.json",
+     "link": {
+      "issue": [
+       {
+        "testo": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       }
+      ],
+      "commit": [
+       {
+        "testo": "0123456",
+        "url": "https://github.com/acme/alpha/commit/0123456789abcdef0123456789abcdef01234567",
+        "hash": "0123456789abcdef0123456789abcdef01234567"
+       }
+      ],
+      "report": [
+       {
+        "testo": ".regia/report/2026-10-19-12-present.md",
+        "percorso": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "tipo": "relativo",
+        "esiste": true
+       }
+      ],
+      "pagina": "/p/alpha/snapshot/01JCM300000000000000000000.html"
+     }
+    },
+    {
+     "id": "01JCM400000000000000000000",
+     "ts": "2026-10-19T09:00:00Z",
+     "tipo": "rientro",
+     "direzione": "principale",
+     "genitori": [
+      "01JCM300000000000000000000",
+      "01JCM200000000000000000000"
+     ],
+     "titolo": "Probe B comes back",
+     "salute": "in salute",
+     "link": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "pagina": "/p/alpha/snapshot/01JCM400000000000000000000.html"
+     }
+    },
+    {
+     "schema": "moviola.milestone/v0",
+     "id": "01JCM5A0000000000000000000",
+     "ts": "2026-10-20T09:00:00Z",
+     "progetto": "alpha",
+     "tipo": "gate",
+     "direzione": "principale",
+     "genitori": [
+      "01JCM400000000000000000000"
+     ],
+     "titolo": "A gate on the same instant",
+     "salute": "in salute",
+     "rif": {
+      "issue": [
+       12
+      ],
+      "commit": [
+       "fedcba9876543210"
+      ],
+      "report": []
+     },
+     "processo": {
+      "round": 3,
+      "controlli": [
+       "test"
+      ],
+      "difetti": {
+       "trovati": 1,
+       "chiusi": 1
+      }
+     },
+     "autore": {
+      "ruolo": "cronista",
+      "agente": "claude",
+      "modello": "claude-sonnet-5-5",
+      "sessione": "ctx_synthetic"
+     },
+     "snapshot": "snapshot/01JCM5A0000000000000000000.json",
+     "link": {
+      "issue": [
+       {
+        "testo": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       }
+      ],
+      "commit": [
+       {
+        "testo": "fedcba9",
+        "url": "https://github.com/acme/alpha/commit/fedcba9876543210",
+        "hash": "fedcba9876543210"
+       }
+      ],
+      "report": [],
+      "pagina": "/p/alpha/snapshot/01JCM5A0000000000000000000.html"
+     }
+    },
+    {
+     "schema": "moviola.milestone/v0",
+     "id": "01JCM5B0000000000000000000",
+     "ts": "2026-10-20T09:00:00Z",
+     "progetto": "alpha",
+     "tipo": "abbandono",
+     "direzione": "probe-d",
+     "genitori": [
+      "01JCM400000000000000000000"
+     ],
+     "titolo": "Probe D is dropped",
+     "salute": "a rischio",
+     "rif": {
+      "issue": [
+       27
+      ]
+     },
+     "autore": {
+      "ruolo": "cronista",
+      "agente": "claude",
+      "modello": "claude-sonnet-5-5",
+      "sessione": "ctx_synthetic"
+     },
+     "snapshot": "snapshot/01JCM5B0000000000000000000.json",
+     "link": {
+      "issue": [
+       {
+        "testo": "#27",
+        "url": "https://github.com/acme/tasks/issues/27"
+       }
+      ],
+      "commit": [],
+      "report": [],
+      "pagina": "/p/alpha/snapshot/01JCM5B0000000000000000000.html"
+     }
+    },
+    {
+     "schema": "moviola.milestone/v0",
+     "id": "01JCM600000000000000000000",
+     "ts": "2026-10-21T09:00:00+02:00",
+     "progetto": "alpha",
+     "tipo": "eccezione",
+     "direzione": "probe-c",
+     "genitori": [
+      "01JCM5A0000000000000000000"
+     ],
+     "titolo": "Over budget on a lane with no record",
+     "salute": "a rischio",
+     "rif": {
+      "issue": [
+       99
+      ]
+     },
+     "autore": {
+      "ruolo": "cronista",
+      "agente": "claude",
+      "modello": "claude-sonnet-5-5",
+      "sessione": "ctx_synthetic"
+     },
+     "snapshot": "snapshot/01JCM600000000000000000000.json",
+     "link": {
+      "issue": [
+       {
+        "testo": "#99",
+        "url": "https://github.com/acme/tasks/issues/99"
+       }
+      ],
+      "commit": [],
+      "report": [],
+      "pagina": "/p/alpha/snapshot/01JCM600000000000000000000.html"
+     }
+    }
+   ],
+   "direzioni": [
+    {
+     "schema": "moviola.direzione/v0",
+     "id": "probe-b",
+     "titolo": "Probe B",
+     "aperta_da": "01JCM300000000000000000000",
+     "stato": "rientrata",
+     "motivo": "It worked and came back."
+    },
+    {
+     "schema": "moviola.direzione/v0",
+     "id": "probe-d",
+     "titolo": "Probe D",
+     "aperta_da": "01JCM200000000000000000000",
+     "stato": "abbandonata",
+     "motivo": "Too slow."
+    },
+    {
+     "schema": "moviola.direzione/v0",
+     "id": "probe-e",
+     "titolo": "Probe E",
+     "aperta_da": "01JCM100000000000000000000",
+     "stato": "attiva",
+     "motivo": ""
+    }
+   ],
+   "aggregati": [
+    {
+     "schema": "moviola.aggregato/v0",
+     "progetto": "alpha",
+     "task": 12,
+     "finestra": [
+      "2026-10-14T09:00:00Z",
+      "2026-10-14T11:00:00Z"
+     ],
+     "round": 1,
+     "sottoagenti_dichiarati": 0,
+     "modelli": [
+      {
+       "agente": "claude",
+       "modello": "claude-opus-5-5",
+       "effort": "high",
+       "sessioni": 1
+      },
+      {
+       "agente": "claude",
+       "modello": "claude-opus-5-5",
+       "effort": null,
+       "sessioni": 2,
+       "via": "report"
+      }
+     ],
+     "controlli": [
+      {
+       "tipo": "test",
+       "esito": "ok",
+       "difetti": [],
+       "modello": "cargo test"
+      }
+     ],
+     "difetti": {
+      "trovati": null,
+      "chiusi": null
+     },
+     "token": {
+      "in": 584,
+      "out": 197651,
+      "cache_lettura": 1200,
+      "cache_scrittura": 300
+     }
+    },
+    {
+     "schema": "moviola.aggregato/v0",
+     "progetto": "alpha",
+     "task": 14,
+     "finestra": [
+      "2026-10-16",
+      "2026-10-17"
+     ],
+     "round": 2,
+     "sottoagenti_dichiarati": null,
+     "modelli": [
+      {
+       "agente": null,
+       "modello": null,
+       "effort": null,
+       "sessioni": 1
+      }
+     ],
+     "controlli": [
+      {
+       "tipo": "revisione-avversaria",
+       "esito": "difetti",
+       "difetti": [
+        "D1",
+        "D2"
+       ]
+      },
+      {
+       "tipo": "rilettura",
+       "esito": null
+      }
+     ],
+     "difetti": {
+      "trovati": 2,
+      "chiusi": 1,
+      "chiude": [
+       "#9/D1"
+      ]
+     },
+     "token": null
+    },
+    {
+     "schema": "moviola.aggregato/v0",
+     "task": 27,
+     "round": 1,
+     "modelli": [],
+     "difetti": {
+      "trovati": null,
+      "chiusi": null
+     }
+    }
+   ],
+   "snapshot": {
+    "01JCM100000000000000000000": {
+     "schema": "moviola.snapshot/v0",
+     "id": "01JCM100000000000000000000",
+     "progetto": "alpha",
+     "ts": "2026-10-14T10:00:00Z",
+     "cambiato": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "decisioni_aperte": [
+      "Which probe next?"
+     ],
+     "rischi": [],
+     "direzione": "Keep the main line.",
+     "prossimo": "Run the probe.",
+     "in_breve": "The project starts. Nothing is late.",
+     "processo": {
+      "round": 1,
+      "controlli": [],
+      "difetti": {
+       "trovati": null,
+       "chiusi": null
+      }
+     }
+    },
+    "01JCM200000000000000000000": {
+     "schema": "moviola.snapshot/v0",
+     "id": "01JCM200000000000000000000",
+     "progetto": "alpha",
+     "ts": "2026-10-15T12:00:00Z",
+     "cambiato": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "decisioni_aperte": [
+      "Which probe next?"
+     ],
+     "rischi": [],
+     "direzione": "Keep the main line.",
+     "prossimo": "Run the probe.",
+     "processo": {
+      "round": null,
+      "controlli": [
+       "test"
+      ],
+      "difetti": {
+       "trovati": 0,
+       "chiusi": 0
+      }
+     }
+    },
+    "01JCM300000000000000000000": {
+     "schema": "moviola.snapshot/v0",
+     "id": "01JCM300000000000000000000",
+     "progetto": "alpha",
+     "ts": "2026-10-16T09:00:00Z",
+     "cambiato": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "decisioni_aperte": [
+      "Which probe next?"
+     ],
+     "rischi": [],
+     "direzione": "Keep the main line.",
+     "prossimo": "Run the probe.",
+     "claim_cambiati": [
+      "C1 is weaker."
+     ],
+     "deviazioni": [
+      {
+       "piano": "Run A",
+       "deviazione": "Ran B",
+       "motivo": "A broke",
+       "impatto": "One day"
+      }
+     ],
+     "processo": {
+      "round": 2,
+      "controlli": [
+       "revisione-avversaria"
+      ],
+      "difetti": {
+       "trovati": 3,
+       "chiusi": null
+      }
+     }
+    },
+    "01JCM400000000000000000000": null,
+    "01JCM5A0000000000000000000": {
+     "schema": "moviola.snapshot/v0",
+     "id": "01JCM5A0000000000000000000",
+     "progetto": "alpha",
+     "ts": "2026-10-20T09:00:00Z",
+     "cambiato": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "decisioni_aperte": [
+      "Which probe next?"
+     ],
+     "rischi": [],
+     "direzione": "Keep the main line.",
+     "prossimo": "Run the probe.",
+     "in_breve": "A gate is open.",
+     "processo": {
+      "round": 3,
+      "controlli": [
+       "test"
+      ],
+      "difetti": {
+       "trovati": 1,
+       "chiusi": 1
+      }
+     }
+    },
+    "01JCM5B0000000000000000000": {
+     "schema": "moviola.snapshot/v0",
+     "id": "01JCM5B0000000000000000000",
+     "progetto": "alpha",
+     "ts": "2026-10-20T09:00:00Z",
+     "cambiato": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "decisioni_aperte": [
+      "Which probe next?"
+     ],
+     "rischi": [],
+     "direzione": "Keep the main line.",
+     "prossimo": "Run the probe.",
+     "processo": {
+      "round": null,
+      "controlli": [],
+      "difetti": {
+       "trovati": null,
+       "chiusi": null
+      }
+     }
+    },
+    "01JCM600000000000000000000": {
+     "schema": "moviola.snapshot/v0",
+     "id": "01JCM600000000000000000000",
+     "progetto": "alpha",
+     "ts": "2026-10-21T07:00:00Z",
+     "cambiato": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "decisioni_aperte": [
+      "Which probe next?"
+     ],
+     "rischi": [],
+     "direzione": "Keep the main line.",
+     "prossimo": "Run the probe.",
+     "processo": {
+      "round": null,
+      "controlli": [],
+      "difetti": {
+       "trovati": null,
+       "chiusi": null
+      }
+     }
+    }
+   }
+  },
+  "gamma": {
+   "progetto": "gamma",
+   "project_url": "",
+   "milestones": [],
+   "direzioni": [],
+   "aggregati": [],
+   "snapshot": {}
+  }
+ },
+ "remotes": [
+  [
+   "https://user:secret@github.com/acme/p.git",
+   "https://github.com/acme/p"
+  ],
+  [
+   "git@github.com:acme/p.git",
+   "https://github.com/acme/p"
+  ],
+  [
+   "ssh://git@host.example:2222/acme/p.git/",
+   "https://host.example/acme/p"
+  ],
+  [
+   "http://host/a/b/",
+   "http://host/a/b"
+  ],
+  [
+   "https://github.com/acme/p.git\n",
+   "https://github.com/acme/p"
+  ],
+  [
+   "git@host:p",
+   "https://host/p"
+  ],
+  [
+   "https://host",
+   null
+  ],
+  [
+   "file:///srv/p.git",
+   null
+  ],
+  [
+   "/srv/p.git",
+   null
+  ],
+  [
+   "",
+   null
+  ],
+  [
+   "user@hést:x/y.git",
+   "https://hést/x/y"
+  ]
+ ],
+ "ranges": [
+  [
+   null,
+   null,
+   {
+    "from": null,
+    "to": null,
+    "kept": [
+     "01JCM100000000000000000000",
+     "01JCM200000000000000000000",
+     "01JCM300000000000000000000",
+     "01JCM400000000000000000000",
+     "01JCM5A0000000000000000000",
+     "01JCM5B0000000000000000000",
+     "01JCM600000000000000000000"
+    ]
+   }
+  ],
+  [
+   "2026-10-15",
+   "2026-10-19",
+   {
+    "from": "2026-10-15T00:00:00Z",
+    "to": "2026-10-20T00:00:00Z",
+    "kept": [
+     "01JCM200000000000000000000",
+     "01JCM300000000000000000000",
+     "01JCM400000000000000000000"
+    ]
+   }
+  ],
+  [
+   null,
+   "2026-10-20T09:00:00Z",
+   {
+    "from": null,
+    "to": "2026-10-20T09:00:00Z",
+    "kept": [
+     "01JCM100000000000000000000",
+     "01JCM200000000000000000000",
+     "01JCM300000000000000000000",
+     "01JCM400000000000000000000"
+    ]
+   }
+  ],
+  [
+   "2026-10-20 09:00:00",
+   null,
+   {
+    "from": "2026-10-20T09:00:00Z",
+    "to": null,
+    "kept": [
+     "01JCM5A0000000000000000000",
+     "01JCM5B0000000000000000000",
+     "01JCM600000000000000000000"
+    ]
+   }
+  ],
+  [
+   "2026-10-21",
+   null,
+   {
+    "from": "2026-10-21T00:00:00Z",
+    "to": null,
+    "kept": [
+     "01JCM600000000000000000000"
+    ]
+   }
+  ],
+  [
+   "2026-10-21T08:00:00+01:00",
+   null,
+   {
+    "from": "2026-10-21T07:00:00Z",
+    "to": null,
+    "kept": [
+     "01JCM600000000000000000000"
+    ]
+   }
+  ],
+  [
+   "yesterday",
+   null,
+   {
+    "error": true
+   }
+  ],
+  [
+   null,
+   "",
+   {
+    "error": true
+   }
+  ],
+  [
+   "2026-02-30",
+   null,
+   {
+    "error": true
+   }
+  ]
+ ]
+}
