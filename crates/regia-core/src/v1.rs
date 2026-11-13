@@ -36,6 +36,15 @@ struct Vocabulary {
     fields: Fields,
     body: Body,
     status_labels: BTreeMap<String, Status>,
+    base_labels: Vec<BaseLabel>,
+}
+
+/// A label `setup` and `init` create on the tracker, with its color and description.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct BaseLabel {
+    pub name: String,
+    pub color: String,
+    pub description: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -65,6 +74,40 @@ struct MaturityLabels {
 
 fn vocabulary() -> Vocabulary {
     toml::from_str(VOCABULARY).expect("the embedded v1 vocabulary is valid")
+}
+
+/// The labels `setup` and `init` create, in their order (T6 of the dossier's conformance study).
+#[must_use]
+pub fn base_labels() -> Vec<BaseLabel> {
+    vocabulary().base_labels
+}
+
+/// The names of the options of the Project's status field, in the order of the statuses.
+#[must_use]
+pub fn status_option_names() -> Vec<String> {
+    let by_name = vocabulary().status_labels;
+    Status::ALL
+        .into_iter()
+        .filter_map(|status| by_name.iter().find(|(_, bound)| **bound == status).map(|(name, _)| name.clone()))
+        .collect()
+}
+
+/// The name of the Project's field that mirrors the project label.
+#[must_use]
+pub fn project_field_name() -> String {
+    vocabulary().fields.project
+}
+
+/// The prefix of a project's label, which the project's id follows.
+#[must_use]
+pub fn project_label_prefix() -> String {
+    vocabulary().labels.project_prefix
+}
+
+/// The local `tracker.json` of a state folder, which wins over the dossier's: the one place its path is built.
+#[must_use]
+pub fn local_config_file(state_dir: &Path) -> PathBuf {
+    state_dir.join("tracker.json")
 }
 
 /// The project an issue's labels name, as a comment reads it (`_contesto_commento`): what follows the
@@ -99,7 +142,7 @@ impl TrackerConfigV1 {
     /// there and an option for every status, and an invalid one is an error, never a fallback on the
     /// dossier's, which is the owner's tracker.
     pub fn load(state_dir: Option<&Path>, dossier: Option<&Path>) -> Result<Self, V1Error> {
-        let local = state_dir.map(|dir| dir.join("tracker.json"));
+        let local = state_dir.map(local_config_file);
         if let Some(path) = local.as_ref().filter(|path| path.is_file()) {
             return Self::read_local(path);
         }
@@ -118,7 +161,7 @@ impl TrackerConfigV1 {
     pub fn load_for_links(state_dir: Option<&Path>, dossier: Option<&Path>) -> Result<Option<Self>, V1Error> {
         match Self::load(state_dir, dossier) {
             Ok(config) => Ok(Some(config)),
-            Err(error) if state_dir.is_some_and(|dir| dir.join("tracker.json").is_file()) => Err(error),
+            Err(error) if state_dir.is_some_and(|dir| local_config_file(dir).is_file()) => Err(error),
             Err(_) => Ok(None),
         }
     }
@@ -405,5 +448,25 @@ mod tests {
         let mut config = config();
         config.status_options.pop_first();
         assert!(matches!(TrackerBinding::new(&config), Err(V1Error::MissingStatus(_))));
+    }
+
+    /// The labels `setup` and `init` create are those the rest of the format reads, and one more, in the
+    /// prototype's order: the objective, the two maturities, the parked one, the session.
+    #[test]
+    fn the_base_labels_are_the_labels_of_the_format() {
+        let labels = vocabulary().labels;
+        let names: Vec<String> = base_labels().into_iter().map(|label| label.name).collect();
+        assert_eq!(names.len(), 5);
+        assert_eq!([&names[0], &names[1], &names[2], &names[4]], [&labels.objective, &labels.maturity.draft, &labels.maturity.ready, &labels.session]);
+        assert!(base_labels().iter().all(|label| label.color.len() == 6 && label.color.chars().all(|c| c.is_ascii_hexdigit())));
+    }
+
+    /// The options of the status field, in the order of the statuses, each bound to its status.
+    #[test]
+    fn the_status_options_follow_the_order_of_the_statuses() {
+        let names = status_option_names();
+        let binding = TrackerBinding::new(&config()).unwrap();
+        let statuses: Vec<Status> = names.iter().map(|name| binding.status_of_name(name).unwrap()).collect();
+        assert_eq!(statuses, Status::ALL);
     }
 }
