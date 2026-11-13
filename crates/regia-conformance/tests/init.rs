@@ -259,6 +259,23 @@ fn without_a_folder_of_skills_one_item_says_so() {
     assert_eq!(plan["ready"], true);
 }
 
+/// The prototype's `nessuna skill in <folder>`: a dossier whose `skills/` holds no folder with a `SKILL.md` gives one
+/// item that names the folder.
+#[test]
+fn a_folder_without_a_skill_is_named_in_its_item() {
+    let case = Case::named("init-plan-ready");
+    let run = run_case_on_dossier("native-skill-empty-folder", &case, |state| {
+        let root = state.join("dossier-without-skills");
+        fs::create_dir_all(root.join("skills").join("not-a-skill")).unwrap();
+        vec![(env_var("LANG"), "it".into()), (prototype_env_var("HOME"), root.into())]
+    });
+    let plan = native_json(&run).unwrap();
+    let skill = item(&plan, "skill");
+    let folder = run.state.join("dossier-without-skills").join("skills");
+    assert_eq!(skill["detail"], json!(format!("nessuna skill in {}", folder.display())));
+    assert_eq!((&skill["outcome"], &skill["action"]), (&json!("error"), &json!("manual")));
+}
+
 /// `test_gh_assente`: without `gh` there is no plan: exit 1, nothing on stdout, for `plan` and for `derive`.
 #[test]
 fn without_gh_there_is_no_plan() {
