@@ -2,8 +2,11 @@
 //! authentication, so the product never sees a token (ADR 0001, "GitHub").
 
 mod history;
+mod init;
 mod issue;
 mod write;
+
+pub use init::GhInit;
 
 use std::path::PathBuf;
 
