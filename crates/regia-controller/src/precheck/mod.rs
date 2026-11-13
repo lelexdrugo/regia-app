@@ -22,9 +22,12 @@
 //! fault of a source or of a project fails the whole tick closed, with exit 1. The only thing the precheck
 //! writes is its detector's own accounting: the count of the budget's failed readings.
 //!
-//! **Not here yet (#466):** the series that finds a stall, the backlog to formulate, the caps of the
-//! Proposals, the silent workers and the dossier's warnings. Each has its place below, marked, and none
-//! of their reasons or keys is produced.
+//! Each project also counts its **backlog to formulate** (#211): every Inbox item and every approved draft
+//! that can be drained, the last event in priority (`da-formulare`). The **cap of the open Proposals**
+//! holds back the Inbox part of it, and a new Inbox item (`proposte-esaurite`).
+//!
+//! **Not here yet (#466):** the series that finds a stall, the silent workers and the dossier's warnings.
+//! Each has its place below, marked, and none of their reasons or keys is produced.
 
 mod args;
 mod budget;

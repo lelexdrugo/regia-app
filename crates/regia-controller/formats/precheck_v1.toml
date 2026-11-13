@@ -94,8 +94,17 @@ silent = "silenti"
 blocked_by_wip = "bloccati_wip"
 in_progress = "in_corso"
 waiting_on_owner = "attesa_titolare"
+backlog = "arretrato"
+proposals = "proposte"
 tasks = "task"
 max_tasks = 10
+backlog_tasks = "arretrato_task"
+
+# The backlog to formulate (§6.4 point 11 of the design note, #211): every Inbox item and every approved
+# draft, when the wip has room, except a parent with open sub-issues, a blocked task and an item with this
+# label.
+[backlog]
+parked = "parcheggiato"
 
 # An entry of `cursor`: each project observed, with the instant its events cursor holds.
 [cursor]

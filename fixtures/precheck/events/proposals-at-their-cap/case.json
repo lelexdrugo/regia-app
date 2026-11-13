@@ -1,0 +1,33 @@
+{
+  "_note": "Synthetic. A new Inbox item with the open Proposals at their cap (3 of the policy file, or the override's): the backfill does not start, every other event does, and another project is not held.",
+  "transcribes": [
+    "test_precheck_budget.py::TestProposteEsaurite::test_solo_inbox_e_proposte_al_tetto_e_idle",
+    "test_precheck_budget.py::TestProposteEsaurite::test_sotto_il_tetto_la_inbox_passa",
+    "test_precheck_budget.py::TestProposteEsaurite::test_il_tetto_viene_dalla_politica (the override in place of the test's policy)",
+    "test_precheck_budget.py::TestProposteEsaurite::test_conta_solo_le_proposte_del_progetto_e_non_gli_altri_stati",
+    "test_precheck_budget.py::TestProposteEsaurite::test_altri_eventi_con_proposte_al_tetto_passano_come_oggi",
+    "test_precheck_budget.py::TestProposteEsaurite::test_un_progetto_sospeso_non_ferma_gli_altri",
+    "test_precheck_budget.py::TestProposteEsaurite::test_motivo_complessivo_quando_tutti_sono_fermi_per_questo"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Inbox", "maturity": ""},
+    {"n": 10, "status": "Proposta", "maturity": ""},
+    {"n": 11, "status": "Proposta", "maturity": ""},
+    {"n": 12, "status": "Proposta", "maturity": ""}
+  ],
+  "comments": {
+    "10": [{"id": 7, "created": "2026-01-10T09:00:00Z"}]
+  },
+  "runs": [
+    {"note": "only the Inbox, three Proposals: held", "comments": {}},
+    {"note": "two Proposals: the Inbox starts", "comments": {}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}]},
+    {"note": "one Proposal, the override's cap of one", "comments": {}, "local_override": {"v": 1, "valori": {"aperte_per_progetto": 1}, "fino": null, "nota": null, "impostato": null}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}, {"n": 10, "status": "Proposta", "maturity": ""}]},
+    {"note": "another project's Proposal and the other statuses do not count", "comments": {}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 30, "status": "Proposta", "project": "q", "maturity": ""}, {"n": 31, "status": "Decisione", "maturity": ""}, {"n": 33, "status": "Inbox", "maturity": ""}]},
+    {"note": "a ready task at the cap passes", "comments": {}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}, {"n": 3, "status": "Approvato"}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 12, "status": "Proposta", "maturity": ""}]},
+    {"note": "a report at the cap passes", "comments": {}, "reports": [{"name": "r.md", "modified": "2026-01-10T09:00:00Z"}]},
+    {"note": "an answer at the cap passes"},
+    {"note": "an expired lease at the cap passes", "comments": {}, "leases": [{"task": 3, "project": "p", "expired": true}], "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}, {"n": 3, "status": "In corso"}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 12, "status": "Proposta", "maturity": ""}]},
+    {"note": "a project held does not hold the next one", "comments": {}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 12, "status": "Proposta", "maturity": ""}, {"n": 50, "status": "Approvato", "project": "q", "objective": true}, {"n": 51, "status": "Approvato", "project": "q"}]}
+  ]
+}

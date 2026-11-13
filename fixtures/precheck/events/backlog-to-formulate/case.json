@@ -1,0 +1,65 @@
+{
+  "_note": "Synthetic. The prototype's draft with its dependencies read only in part is not built here: the tracker's reader of either side asks for the pages left. The backlog: approved drafts, when the wip has room, and Inbox items of any age, but no parent with open sub-issues, no blocked task and no parked item; in the graph's order, ten numbers at most. Its budget is backfill's, and the cap of the Proposals holds back its Inbox part only; the policy file turns it off.",
+  "transcribes": [
+    "test_scodare.py::TestMotivo (all eight)",
+    "test_scodare.py::TestBudgetETetti (all five; the override in place of the test's policy)",
+    "test_scodare.py::TestInterruttore::test_spento_nessun_motivo_nuovo (the policy file in place of the test's policy)",
+    "test_scodare.py::TestInterruttore::test_spento_le_inbox_nuove_e_i_tetti_restano_come_prima (the policy file in place of the test's policy)",
+    "test_precheck.py::TestEventi::test_inbox_conta_solo_le_voci_create_dopo_t (run 3)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Approvato", "maturity": "abbozzo"}
+  ],
+  "runs": [
+    {"note": "an approved draft, no blocks, a free place"},
+    {"note": "an old Inbox item is backlog, not an event", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z"}]},
+    {"note": "a task just approved as a draft wakes without a comment", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 211, "status": "Approvato", "maturity": "abbozzo"}]},
+    {"note": "a ready task comes first", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Approvato", "maturity": "abbozzo"}, {"n": 3, "status": "Approvato"}]},
+    {"note": "a new Inbox item comes first", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Approvato", "maturity": "abbozzo"}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "a report comes first", "reports": [{"name": "r.md", "modified": "2026-01-10T09:00:00Z"}]},
+    {"note": "what is left out", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "issues": [
+      {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 5\npriorita: 3"},
+      {"n": 2, "status": "Approvato", "maturity": "abbozzo", "sub": [[10, "OPEN"]]},
+      {"n": 3, "status": "Approvato", "maturity": "abbozzo", "sub": [[11, "CLOSED"]]},
+      {"n": 4, "status": "Approvato", "maturity": "abbozzo", "blocked_by": [[9, "OPEN"]]},
+      {"n": 5, "status": "Approvato", "maturity": "abbozzo", "blocked_by": [[9, "CLOSED"]]},
+      {"n": 7, "status": "Approvato", "maturity": "abbozzo", "labels": ["parcheggiato"]},
+      {"n": 8, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z", "sub": [[12, "OPEN"]]},
+      {"n": 9, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z", "blocked_by": [[13, "OPEN"]]},
+      {"n": 10, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z", "labels": ["altra", "parcheggiato"]},
+      {"n": 14, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z"}
+    ]},
+    {"note": "only items left out do not wake", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "issues": [
+      {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+      {"n": 2, "status": "Approvato", "maturity": "abbozzo", "sub": [[10, "OPEN"]]},
+      {"n": 3, "status": "Approvato", "maturity": "abbozzo", "labels": ["parcheggiato"]},
+      {"n": 4, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z", "labels": ["parcheggiato"]}
+    ]},
+    {"note": "the wip full: the drafts do not count", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 20, "status": "In corso"}, {"n": 21, "status": "In corso"}, {"n": 2, "status": "Approvato", "maturity": "abbozzo"}]},
+    {"note": "the wip full: the Inbox items do", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 20, "status": "In corso"}, {"n": 21, "status": "In corso"}, {"n": 2, "status": "Approvato", "maturity": "abbozzo"}, {"n": 3, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z"}]},
+    {"note": "the graph's order, ten numbers at most", "issues": [
+      {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 5\npriorita: 3"},
+      {"n": 2, "status": "Approvato", "maturity": "abbozzo"}, {"n": 3, "status": "Approvato", "maturity": "abbozzo"}, {"n": 4, "status": "Approvato", "maturity": "abbozzo"},
+      {"n": 5, "status": "Approvato", "maturity": "abbozzo"}, {"n": 6, "status": "Approvato", "maturity": "abbozzo"}, {"n": 7, "status": "Approvato", "maturity": "abbozzo"},
+      {"n": 8, "status": "Approvato", "maturity": "abbozzo"}, {"n": 9, "status": "Approvato", "maturity": "abbozzo"}, {"n": 10, "status": "Approvato", "maturity": "abbozzo"},
+      {"n": 11, "status": "Approvato", "maturity": "abbozzo"}, {"n": 12, "status": "Approvato", "maturity": "abbozzo"}, {"n": 13, "status": "Approvato", "maturity": "abbozzo"},
+      {"n": 14, "status": "Approvato", "maturity": "abbozzo"}, {"n": 15, "status": "Approvato", "maturity": "abbozzo"},
+      {"n": 30, "status": "Approvato", "maturity": "abbozzo"},
+      {"n": 31, "status": "Approvato", "blocked_by": [[30, "OPEN"]]}
+    ]},
+    {"note": "the budget unknown: idle, and the backlog stays in the payload", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "usage": {"failed": "timeout"}},
+    {"note": "above the backfill's threshold", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "usage": {"pct": 55.0}},
+    {"note": "at it", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "usage": {"pct": 50.0}},
+    {"note": "under it", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "usage": {"pct": 49.9}},
+    {"note": "backfill off leaves the automatic threshold", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "usage": {"pct": 60.0}, "local_override": {"v": 1, "valori": {"riempimento": false}, "fino": null, "nota": null, "impostato": null}},
+    {"note": "the Proposals at their cap: the Inbox part does not count", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z"}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 12, "status": "Proposta", "maturity": ""}]},
+    {"note": "the Proposals at their cap: the drafts do", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z"}, {"n": 3, "status": "Approvato", "maturity": "abbozzo"}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 12, "status": "Proposta", "maturity": ""}]},
+    {"note": "the caps off: the Inbox counts at the cap too", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "local_override": {"v": 1, "valori": {"tetti_proposte": false}, "fino": null, "nota": null, "impostato": null}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z"}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 12, "status": "Proposta", "maturity": ""}]},
+    {"note": "a new Inbox item at the cap with a draft: the draft starts", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": "", "created": "2026-01-10T09:05:00Z"}, {"n": 3, "status": "Approvato", "maturity": "abbozzo"}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 12, "status": "Proposta", "maturity": ""}]},
+    {"note": "drain off in the policy file: no backlog", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:00:00Z", "propri": {"commenti": []}}}, "policy_file": "automatico:\n  claude_5h_max_pct: 75\nriempimento:\n  claude_5h_max_pct: 50\nscodare:\n  acceso: off\nproposte:\n  aperte_per_progetto: 3\n  nuove_per_settimana: 5\n", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Approvato", "maturity": "abbozzo"}, {"n": 3, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z"}]},
+    {"note": "drain off: a new Inbox item at the cap is held as before", "policy_file": "automatico:\n  claude_5h_max_pct: 75\nriempimento:\n  claude_5h_max_pct: 50\nscodare:\n  acceso: off\nproposte:\n  aperte_per_progetto: 3\n  nuove_per_settimana: 5\n", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}, {"n": 10, "status": "Proposta", "maturity": ""}, {"n": 11, "status": "Proposta", "maturity": ""}, {"n": 12, "status": "Proposta", "maturity": ""}]},
+    {"note": "drain off: a new Inbox item starts as before", "policy_file": "automatico:\n  claude_5h_max_pct: 75\nriempimento:\n  claude_5h_max_pct: 50\nscodare:\n  acceso: off\nproposte:\n  aperte_per_progetto: 3\n  nuove_per_settimana: 5\n", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}]},
+    {"note": "every Inbox item old: backlog", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:10:00Z"}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": "", "created": "2026-01-07T09:00:00Z"}, {"n": 3, "status": "Inbox", "maturity": "", "created": "2026-01-10T07:00:00Z"}, {"n": 4, "status": "Inbox", "maturity": "", "created": "2026-01-10T09:05:00Z"}]}
+  ]
+}

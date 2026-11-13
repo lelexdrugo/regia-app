@@ -73,8 +73,9 @@ pub const FIXTURE_NOW: &str = "2026-01-10T09:00:00Z";
 /// machine's, unless its case names one in `env`.
 pub const SESSION_VARIABLES: [&str; 3] = ["CLAUDE_CODE_SESSION_ID", "ORCA_AGENT_SESSION_ID", "CODEX_THREAD_ID"];
 
-/// Folders of `fixtures/` whose cases drive something other than the CLI: the controller's oracle.
-const NOT_CLI: [&str; 1] = ["controller"];
+/// Folders of `fixtures/` whose cases drive something other than the CLI: the controller's oracle, and
+/// the precheck's, whose cases are in `fixtures/precheck/events/` and run the `precheck` binary.
+const NOT_CLI: [&str; 2] = ["controller", "precheck"];
 
 /// The prototype's driver that runs it at [`FIXTURE_NOW`].
 pub fn fixed_now_driver() -> PathBuf {

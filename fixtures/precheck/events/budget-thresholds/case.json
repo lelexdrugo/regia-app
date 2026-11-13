@@ -1,0 +1,35 @@
+{
+  "_note": "Synthetic. Claude's 5-hour window at the thresholds: 75 for automatic work and 50 for backfill, from the policy file, the local override over them and --budget-max over both. A ready task, an Inbox item alone, a report and an answer.",
+  "transcribes": [
+    "test_precheck.py::TestEventi::test_budget",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_solo_inbox_fra_50_e_75_e_idle_budget",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_solo_inbox_sotto_la_soglia_di_riempimento_parte",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_la_soglia_viene_dalla_politica (the override in place of the test's policy)",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_gli_altri_eventi_non_vedono_la_soglia_di_riempimento",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_oltre_il_75_tutto_si_ferma_come_oggi",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_il_flag_budget_max_ha_la_precedenza",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_senza_flag_la_soglia_automatica_viene_dalla_politica (the override in place of the test's policy)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Approvato"}
+  ],
+  "comments": {
+    "10": [{"id": 7, "created": "2026-01-10T09:00:00Z"}]
+  },
+  "runs": [
+    {"note": "a ready task at the threshold", "usage": {"pct": 75.0}},
+    {"note": "a ready task just under it", "usage": {"pct": 74.9}},
+    {"note": "--budget-max over the policy, below the use", "args": ["--budget-max", "30"], "usage": {"pct": 40.0}},
+    {"note": "--budget-max over the policy, above the use", "args": ["--budget-max", "90"], "usage": {"pct": 80.0}},
+    {"note": "the override's automatic threshold", "usage": {"pct": 80.0}, "local_override": {"v": 1, "valori": {"automatico_max_pct": 90}, "fino": null, "nota": "synthetic", "impostato": "2026-01-10T08:00:00+00:00"}},
+    {"note": "an Inbox item alone under the backfill's threshold", "usage": {"pct": 49.9}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "an Inbox item alone at it", "usage": {"pct": 50.0}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "an Inbox item alone between the two", "usage": {"pct": 74.9}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "an Inbox item alone above the automatic one", "usage": {"pct": 80.0}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "the override's backfill threshold", "usage": {"pct": 60.0}, "local_override": {"v": 1, "valori": {"riempimento_max_pct": 70}, "fino": null, "nota": null, "impostato": null}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "a ready task and an Inbox item between the two", "usage": {"pct": 60.0}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Approvato"}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "a report between the two", "usage": {"pct": 60.0}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}], "reports": [{"name": "r.md", "modified": "2026-01-10T09:00:00Z"}]},
+    {"note": "an answer between the two", "usage": {"pct": 60.0}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 10, "status": "Proposta", "maturity": ""}]}
+  ]
+}

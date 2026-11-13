@@ -46,9 +46,9 @@ use serde_json::{Value, json};
 
 /// The keys of the prototype's payload, and of each of its projects, that #466 has not ported yet.
 const LATER_PAYLOAD_KEYS: [&str; 0] = [];
-const LATER_PROJECT_KEYS: [&str; 8] = ["serie", "rinviato", "arretrato", "arretrato_task", "proposte", "dossier", "silenti", "silenti_task"];
+const LATER_PROJECT_KEYS: [&str; 5] = ["serie", "rinviato", "dossier", "silenti", "silenti_task"];
 /// The reasons that only the parts not ported yet produce: a recorded run must end with none of them.
-const LATER_REASONS: [&str; 4] = ["stallo", "da-formulare", "proposte-esaurite", "worker-silente"];
+const LATER_REASONS: [&str; 2] = ["stallo", "worker-silente"];
 
 /// What the prototype's `t` reads as in a recording.
 const T_PLACEHOLDER: &str = "{precheck-t}";
@@ -127,6 +127,8 @@ struct IssueSpec {
     maturity: Option<String>,
     #[serde(default)]
     blocked_by: Vec<(u64, String)>,
+    /// How many dependencies the tracker counts, when more than it lists: read only in part.
+    blocked_total: Option<usize>,
     #[serde(default)]
     sub: Vec<(u64, String)>,
     created: Option<String>,
@@ -312,7 +314,7 @@ fn node(spec: &IssueSpec, dossier: &str, config: &Value, now: &str) -> Value {
         "labels": {"nodes": labels.iter().map(|name| json!({"name": name})).collect::<Vec<_>>()},
         "parent": null,
         "subIssues": {"totalCount": spec.sub.len(), "nodes": pairs(&spec.sub)},
-        "blockedBy": {"totalCount": spec.blocked_by.len(), "nodes": pairs(&spec.blocked_by)},
+        "blockedBy": {"totalCount": spec.blocked_total.unwrap_or(spec.blocked_by.len()), "nodes": pairs(&spec.blocked_by)},
         "projectItems": {"nodes": [{"project": {"id": config["project_id"]}, "fieldValueByName": field_by_name, "fieldValues": {"nodes": field_values}}]},
     })
 }
@@ -945,13 +947,14 @@ fn the_format_s_vocabulary_is_the_prototype_s() {
 #[test]
 fn the_comparison_notices_a_difference() {
     let line = r#"{"v":1,"outcome":"new-activity","exit":0,"motivo":"pronti","cursore":[{"progetto":"p","valore":null}],"payload":{"progetti":[{"id":"p","esito":"new-activity","motivo":"pronti","eventi":1,"pronti":1,"report":0,"gate":0,"inbox":0,"lease":0,"task":[2]}],"budget":{"claude_5h_pct":10.0},"politica":"file"},"t":"2026-01-10T09:00:00Z"}"#;
-    let recorded = json!({"exit": 0, "line": with_placeholder_t(&line.replace(r#""lease":0,"task""#, r#""lease":0,"arretrato":1,"task""#))});
+    let recorded = json!({"exit": 0, "line": with_placeholder_t(&line.replace(r#""task":[2]"#, r#""task":[2],"serie":1"#))});
     let ran = |line: &str| Ran { exit: Some(0), stdout: format!("precheck: rust\n{line}\n"), stderr: String::new() };
     assert_eq!(differences(&ran(line), &recorded), Vec::<String>::new(), "the keys not ported yet are out of the prototype's side");
     for altered in [
         line.replace("\"pronti\":1", "\"pronti\":2"),
         line.replace(r#""report":0,"gate":0"#, r#""gate":0,"report":0"#),
-        line.replace(r#""task":[2]"#, r#""task":[2],"serie":1"#),
+        line.replace(r#""task":[2]"#, r#""task":[2],"rinviato":true"#),
+        line.replace(r#""lease":0,"task""#, r#""lease":0,"arretrato":1,"task""#),
         line.replace("\"motivo\":\"pronti\",\"cursore\"", "\"motivo\":\"inbox\",\"cursore\""),
         line.replace("10.0", "10"),
         line.replace(",\"politica\":\"file\"", ""),

@@ -35,6 +35,8 @@ struct Observation {
     t: Option<String>,
     counts: Vec<(&'static str, i64)>,
     tasks: Vec<u64>,
+    /// The first numbers of the backlog to formulate, in the graph's order.
+    backlog: Vec<u64>,
     /// Whether the tick counts towards a stall: new activity, or a held lock (#466).
     countable: bool,
 }
@@ -56,12 +58,15 @@ impl Observation {
             (words.events.clone(), Json::Int(self.events())),
         ];
         fields.extend(self.counts.iter().map(|(key, count)| ((*key).to_owned(), Json::Int(*count))));
+        let numbers = |numbers: &[u64]| Json::List(numbers.iter().map(|number| Json::Int(i64::try_from(*number).unwrap_or(i64::MAX))).collect());
         if !self.tasks.is_empty() {
-            let tasks = self.tasks.iter().map(|number| Json::Int(i64::try_from(*number).unwrap_or(i64::MAX))).collect();
-            fields.push((words.tasks.clone(), Json::List(tasks)));
+            fields.push((words.tasks.clone(), numbers(&self.tasks)));
         }
-        // #466: the backlog's tasks, the silent workers' tasks, the series of a stall, a postponement and
-        // the dossier's warnings follow here, each only when it applies.
+        if !self.backlog.is_empty() {
+            fields.push((words.backlog_tasks.clone(), numbers(&self.backlog)));
+        }
+        // #466: the silent workers' tasks, the series of a stall, a postponement and the dossier's
+        // warnings follow here, each only when it applies.
         Json::Object(fields)
     }
 }
@@ -89,8 +94,25 @@ fn signed_by_the_regia(body: &str) -> bool {
     signature_role(body).is_some_and(|role| role != regia_core::SignatureRole::Owner.word())
 }
 
+/// Whether an item can be drained from the backlog (#211): not a parent with open sub-issues, not blocked
+/// nor with its dependencies read only in part, and not parked. A new Inbox item must be so too to be an
+/// event (#393): one born parked or blocked wakes nobody.
+fn drainable(task: &Task) -> bool {
+    !task.sub_issues.iter().any(|(_, state)| *state == IssueState::Open)
+        && !task.blocked_by.iter().any(|(_, state)| *state == IssueState::Open)
+        && task.blocked_by_total <= u64::try_from(task.blocked_by.len()).unwrap_or(u64::MAX)
+        && !task.labels.iter().any(|label| *label == format().backlog.parked)
+}
+
 /// Observes one active project. `issues` are every open issue, of every project.
-fn observe(sources: &dyn Sources, project: &Project<'_>, issues: &[Issue], graph: &GraphOrder, leases: &[super::ExpiredLease]) -> Result<Observation, Fault> {
+fn observe(
+    sources: &dyn Sources,
+    project: &Project<'_>,
+    issues: &[Issue],
+    graph: &GraphOrder,
+    leases: &[super::ExpiredLease],
+    policy: &Policy,
+) -> Result<Observation, Fault> {
     let wip = registry_number(project.wip, "wip", DEFAULT_WIP)?;
     let mine: Vec<&Task> = issues.iter().map(|issue| &issue.task).filter(|task| task.project.as_deref() == Some(project.id.as_str())).collect();
     let work: Vec<&Task> = mine.iter().copied().filter(|task| !task.objective).collect();
@@ -102,7 +124,15 @@ fn observe(sources: &dyn Sources, project: &Project<'_>, issues: &[Issue], graph
 
     if sources.lock_busy(&project.id).map_err(Fault::runtime)? {
         // #466: a held lock is counted for a stall, by its digest.
-        return Ok(Observation { id: project.id.clone(), reason: Reason::Busy, t: t_text, counts: Vec::new(), tasks: Vec::new(), countable: true });
+        return Ok(Observation {
+            id: project.id.clone(),
+            reason: Reason::Busy,
+            t: t_text,
+            counts: Vec::new(),
+            tasks: Vec::new(),
+            backlog: Vec::new(),
+            countable: true,
+        });
     }
 
     let in_progress: BTreeSet<u64> = work.iter().filter(|task| task.status == Some(Status::InProgress)).map(|task| task.number).collect();
@@ -114,7 +144,7 @@ fn observe(sources: &dyn Sources, project: &Project<'_>, issues: &[Issue], graph
     let ready: Vec<u64> = ready_all.iter().take(free).map(|task| task.number).collect();
     let mut inbox = 0;
     for task in work.iter().filter(|task| task.status == Some(Status::Inbox)) {
-        if created_after(task, t)? {
+        if created_after(task, t)? && drainable(task) {
             inbox += 1;
         }
     }
@@ -165,18 +195,45 @@ fn observe(sources: &dyn Sources, project: &Project<'_>, issues: &[Issue], graph
     if ready_all.len() > ready.len() {
         counts.push((words.blocked_by_wip.as_str(), count(ready_all.len() - ready.len())));
     }
-    // #466: the backlog to formulate is counted here, and the caps of the Proposals hold the Inbox back.
+    // The cap of the open Proposals (#141) holds the Inbox back: the drafts it does not.
+    let proposals = work.iter().filter(|task| task.status == Some(Status::Proposal)).count();
+    let at_cap = policy.proposal_caps && u64::try_from(proposals).unwrap_or(u64::MAX) >= policy.open_per_project;
+    let (backlog, held) = if policy.drain {
+        let items: Vec<&Task> = work.iter().copied().filter(|task| drainable(task)).collect();
+        let from_inbox: Vec<&Task> = items.iter().copied().filter(|task| task.status == Some(Status::Inbox)).collect();
+        let mut chosen: Vec<&Task> = if free > 0 {
+            items.iter().copied().filter(|task| task.status == Some(Status::Approved) && task.maturity == Some(regia_core::Maturity::Draft)).collect()
+        } else {
+            Vec::new()
+        };
+        if !at_cap {
+            chosen.extend(from_inbox.iter().copied());
+        }
+        chosen.sort_by_key(|task| graph.sort_key(task.number));
+        (chosen.iter().map(|task| task.number).collect::<Vec<u64>>(), at_cap && !from_inbox.is_empty())
+    } else {
+        (Vec::new(), false)
+    };
     let by_event = |reason: Reason| match reason {
         Reason::Answers => answers,
         Reason::Reports => reports,
         Reason::Leases => expired,
         Reason::Ready => ready.len(),
-        Reason::Inbox => inbox,
+        Reason::Inbox if !at_cap => inbox,
         _ => 0,
     };
-    let event = Reason::EVENTS_BY_PRIORITY.into_iter().find(|reason| by_event(*reason) > 0);
+    let mut event = Reason::EVENTS_BY_PRIORITY.into_iter().find(|reason| by_event(*reason) > 0);
+    if !backlog.is_empty() {
+        counts.push((words.backlog.as_str(), count(backlog.len())));
+        // The last in priority (#211).
+        event = event.or(Some(Reason::Backlog));
+    }
     let reason = if let Some(event) = event {
         event
+    } else if held || (inbox > 0 && at_cap) {
+        // Only Inbox items and the Proposals at their cap (#141): backfill does not start.
+        counts.push((words.proposals.as_str(), count(proposals)));
+        Reason::ProposalsExhausted
     } else if ready_all.len() > ready.len() {
         Reason::WipLimit
     } else if !in_progress.is_empty() {
@@ -193,7 +250,8 @@ fn observe(sources: &dyn Sources, project: &Project<'_>, issues: &[Issue], graph
     };
     let tasks = ready.into_iter().take(words.max_tasks).collect();
     let countable = reason.outcome() == super::Outcome::NewActivity;
-    Ok(Observation { id: project.id.clone(), reason, t: t_text, counts, tasks, countable })
+    let backlog = backlog.into_iter().take(words.max_tasks).collect();
+    Ok(Observation { id: project.id.clone(), reason, t: t_text, counts, tasks, backlog, countable })
 }
 
 /// The policy's source as the prototype names it: `file` or `default`, with `+locale` when an override
@@ -350,11 +408,11 @@ fn tick(sources: &dyn Sources, options: &Options, now: WallTime) -> Result<Verdi
     let tasks: Vec<Task> = issues.iter().map(|issue| issue.task.clone()).filter(|task| task.state == IssueState::Open).collect();
     let graph = graph_order(&tasks);
 
+    let policy = sources.policy();
     let mut observations = Vec::new();
     for (_, project) in &active {
-        observations.push(observe(sources, project, &issues, &graph, &leases)?);
+        observations.push(observe(sources, project, &issues, &graph, &leases, &policy)?);
     }
-    let policy = sources.policy();
     let max = options.budget_max.unwrap_or(policy.automatic_max_pct);
     let budget = budget_gate(sources, &mut observations, &policy, max, now)?;
     // #466: the series of each project and the stall it finds, which would come first.

@@ -1,0 +1,34 @@
+{
+  "_note": "Synthetic. The probe fails for hours: a valid reading of the same 5-hour window under the threshold is known and stale; above it, with the window expired or never opened, or with no valid reading at all, the budget is unknown and says why. A ready task waits.",
+  "transcribes": [
+    "test_precheck.py::TestBudgetStale::test_429_con_dato_della_stessa_finestra_sotto_soglia_e_noto_e_stale",
+    "test_precheck.py::TestBudgetStale::test_dato_stale_sopra_soglia_resta_sconosciuto_e_il_motivo_lo_dice",
+    "test_precheck.py::TestBudgetStale::test_finestra_scaduta_resta_sconosciuto_con_il_motivo",
+    "test_precheck.py::TestBudgetStale::test_reset_esattamente_adesso_e_scaduto",
+    "test_precheck.py::TestBudgetStale::test_nessun_dato_valido_e_sconosciuto_col_motivo_della_sonda",
+    "test_precheck.py::TestBudgetStale::test_dato_fresco_non_e_stale",
+    "test_precheck.py::TestEventi::test_budget (the unknown, the old and the empty readings)",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_solo_inbox_budget_sconosciuto_e_idle_budget",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_dato_stale_noto_e_sotto_soglia_vale_come_noto"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Approvato"}
+  ],
+  "runs": [
+    {"note": "429, the same window, under the threshold: known and stale", "usage": {"pct": 30.0, "age_s": 10800, "reset": "2026-01-10T11:00:00+00:00", "failed": "too many requests (HTTP 429)"}},
+    {"note": "429, the same window, above it: unknown", "usage": {"pct": 80.0, "age_s": 10800, "reset": "2026-01-10T10:00:00+00:00", "failed": "too many requests (HTTP 429)"}},
+    {"note": "429, the window expired", "usage": {"pct": 10.0, "age_s": 21600, "reset": "2026-01-10T08:59:00+00:00", "failed": "too many requests (HTTP 429)"}},
+    {"note": "a reset at this very instant has passed", "usage": {"pct": 10.0, "age_s": 7200, "reset": "2026-01-10T09:00:00+00:00"}},
+    {"note": "old, of a window never opened", "usage": {"pct": 0.0, "age_s": 7200, "not_open": true}},
+    {"note": "fresh, of a window not open yet", "usage": {"pct": 0.0, "age_s": 60, "not_open": true}},
+    {"note": "an hour old is still fresh", "usage": {"pct": 30.0, "age_s": 3600, "reset": "2026-01-10T11:00:00+00:00"}},
+    {"note": "an hour and a second is not, and no failure is told", "usage": {"pct": 5.0, "age_s": 3601, "reset": "2026-01-10T08:00:00+00:00"}},
+    {"note": "no valid reading, and the probe's reason", "usage": {"failed": "too many requests (HTTP 429)"}},
+    {"note": "no valid reading, and no reason", "usage": {}},
+    {"note": "the cache holds no provider", "usage": {"empty": true}},
+    {"note": "an Inbox item alone, with the budget unknown", "usage": {"failed": "timeout"}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "an Inbox item alone, stale and under the backfill's threshold", "usage": {"pct": 30.0, "age_s": 7200, "reset": "2026-01-10T10:00:00+00:00"}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Inbox", "maturity": ""}]},
+    {"note": "an Inbox item alone, stale and above it", "usage": {"pct": 60.0, "age_s": 7200, "reset": "2026-01-10T10:00:00+00:00"}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Inbox", "maturity": ""}]}
+  ]
+}

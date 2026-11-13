@@ -1,0 +1,58 @@
+[
+  {
+    "exit": 0,
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"pronti\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2],\"serie\":1}],\"budget\":{\"claude_5h_pct\":30.0,\"stale\":true,\"eta_s\":10800},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"sonda: too many requests (HTTP 429); dato della stessa finestra di 3.0 h fa, gi\\u00e0 sopra la soglia (80 %)\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"sonda: too many requests (HTTP 429); ultimo dato valido di 6.0 h fa, finestra di 5 h scaduta\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"ultimo dato valido di 2.0 h fa, finestra di 5 h scaduta\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"ultimo dato valido di 2.0 h fa, con la finestra di 5 h non ancora aperta\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 0,
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"pronti\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2],\"serie\":1}],\"budget\":{\"claude_5h_pct\":0.0,\"aperta\":false},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 0,
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"pronti\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2],\"serie\":1}],\"budget\":{\"claude_5h_pct\":30.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"ultimo dato valido di 1.0 h fa, finestra di 5 h scaduta\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"sonda: too many requests (HTTP 429)\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"nessun dato di budget in cache\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"nessun dato di budget in cache\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"arretrato\":1,\"arretrato_task\":[3]}],\"budget\":{\"claude_5h_pct\":null,\"motivo\":\"sonda: timeout\"},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 0,
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"inbox\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"inbox\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"arretrato\":1,\"arretrato_task\":[3],\"serie\":1}],\"budget\":{\"claude_5h_pct\":30.0,\"stale\":true,\"eta_s\":7200},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"budget\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"budget\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"arretrato\":1,\"arretrato_task\":[3]}],\"budget\":{\"claude_5h_pct\":60.0,\"stale\":true,\"eta_s\":7200},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  }
+]
