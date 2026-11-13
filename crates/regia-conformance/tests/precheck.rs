@@ -915,7 +915,9 @@ fn ticks_of(run: &RunSpec) -> Vec<TickSpec> {
     if run.ticks.is_empty() { vec![TickSpec::default()] } else { run.ticks.clone() }
 }
 
-/// What a side runs: each tick of a run at its instant on one state folder, after the tick's changes.
+/// What a side runs: each tick of a run at its instant on one state folder, after the tick's changes. The
+/// run's folders go after it: each holds a copy of the fake `gh`, and a few hundred of them fill a
+/// runner's disk; a difference is in the failure's message.
 fn run_ticks(case: &Case, index: usize, run: &RunSpec, side: &str, mut each: impl FnMut(&Path, &Path, &str, &TickSpec)) {
     let prepared = prepare(case, index, run, side);
     let (state, responses_path) = prepare_side(&prepared.label, &prepared.run, &prepared.responses, FIXTURE_NOW);
@@ -938,6 +940,9 @@ fn run_ticks(case: &Case, index: usize, run: &RunSpec, side: &str, mut each: imp
             put_rows(&state, &tick_rows(tick, &usage, &now));
         }
         each(&state, &responses_path, &now, tick);
+    }
+    for dir in [&state, &dossier] {
+        let _ = fs::remove_dir_all(dir);
     }
 }
 
