@@ -1,0 +1,25 @@
+{
+  "_note": "Synthetic. #8 has no item in the Project: the item is added first, then its status is written on the new item.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "8",
+    "proposal"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "8",
+    "Proposta"
+  ],
+  "gh": {
+    "nodes": {
+      "ISSUE_8": {
+        "projectItems": {
+          "nodes": []
+        }
+      }
+    }
+  }
+}

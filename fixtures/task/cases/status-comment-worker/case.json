@@ -1,0 +1,27 @@
+{
+  "_note": "Synthetic. #6 to decision with a worker's comment: signed worker with the session's id, the body in argv.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "6",
+    "decision",
+    "--comment",
+    "A report.",
+    "--role",
+    "worker"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "6",
+    "Decisione",
+    "--commento",
+    "A report.",
+    "--ruolo",
+    "worker"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-worker"
+  }
+}

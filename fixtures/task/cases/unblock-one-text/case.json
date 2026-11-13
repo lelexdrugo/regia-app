@@ -1,0 +1,56 @@
+{
+  "_note": "Synthetic. #5 is blocked by #3 and #4; only #3 is removed, then one comment with the reason, signed chat, after the removal. The text passes as it is.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "5",
+    "--by",
+    "3",
+    "--reason",
+    "the gate passed"
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "5",
+    "--da",
+    "3",
+    "--motivo",
+    "the gate passed"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "gh": {
+    "blocker_pages": {
+      "5": [
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "number": 3,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 4,
+                    "state": "OPEN"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9311\n"
+    }
+  }
+}

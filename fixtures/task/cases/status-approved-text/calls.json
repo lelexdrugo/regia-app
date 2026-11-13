@@ -1,0 +1,12 @@
+[
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_8",
+      "o": "opt-c3",
+      "p": "PROJECT_FIXTURE"
+    }
+  }
+]

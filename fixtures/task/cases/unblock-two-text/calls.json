@@ -1,0 +1,30 @@
+[
+  {
+    "arguments": "input:{issueId:$i,blockingIssueId:$b}",
+    "mutation": "removeBlockedBy",
+    "variables": {
+      "b": "ISSUE_3",
+      "i": "ISSUE_5"
+    }
+  },
+  {
+    "arguments": "input:{issueId:$i,blockingIssueId:$b}",
+    "mutation": "removeBlockedBy",
+    "variables": {
+      "b": "ISSUE_6",
+      "i": "ISSUE_5"
+    }
+  },
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "5",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "Sbloccato da #3, #6: fallback decided\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=- -->"
+  }
+]

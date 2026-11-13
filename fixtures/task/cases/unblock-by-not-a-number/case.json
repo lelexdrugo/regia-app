@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. A list with a piece that is not a number is an error before any call: exit 1; no tracker is read.",
+  "args": [
+    "task",
+    "unblock",
+    "4",
+    "--by",
+    "three",
+    "--reason",
+    "x"
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "4",
+    "--da",
+    "three",
+    "--motivo",
+    "x"
+  ],
+  "exit": 1
+}

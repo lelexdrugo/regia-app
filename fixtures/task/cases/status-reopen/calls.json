@@ -1,0 +1,19 @@
+[
+  {
+    "arguments": "input:{issueId:$i}",
+    "mutation": "reopenIssue",
+    "variables": {
+      "i": "ISSUE_7"
+    }
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_7",
+      "o": "opt-d4",
+      "p": "PROJECT_FIXTURE"
+    }
+  }
+]

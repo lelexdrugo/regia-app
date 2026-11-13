@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. #4 discarded (T10, T11): the open issue closes as not planned, then its status is written twice, three seconds apart, each time after reading its item; no labels are read.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "4",
+    "discarded"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "4",
+    "Scartato"
+  ]
+}

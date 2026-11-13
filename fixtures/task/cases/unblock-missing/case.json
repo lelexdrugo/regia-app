@@ -1,0 +1,34 @@
+{
+  "_note": "Synthetic. #77 is not in the tracker: its blockers read as no issue, an error, exit 1, no write.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "77",
+    "--by",
+    "3",
+    "--reason",
+    "x"
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "77",
+    "--da",
+    "3",
+    "--motivo",
+    "x"
+  ],
+  "exit": 1,
+  "gh": {
+    "blocker_pages": {
+      "77": [
+        {
+          "repository": {
+            "issue": null
+          }
+        }
+      ]
+    }
+  }
+}

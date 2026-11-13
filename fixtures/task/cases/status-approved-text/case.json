@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. #8 approved: an open issue and a status that does not close, so no close and no reopen, one write of the status, and no labels read without a comment.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "8",
+    "approved"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "8",
+    "Approvato"
+  ]
+}

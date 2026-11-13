@@ -101,12 +101,12 @@ fn body(args: &CommentArgs) -> Result<String, String> {
 }
 
 /// The id of the session the command runs in, if it has one.
-fn session() -> Option<String> {
+pub(crate) fn session() -> Option<String> {
     std::env::var(SESSION_VARIABLE).ok().filter(|id| !id.is_empty())
 }
 
 /// Whether the step open on `project` is this session's. In doubt, a state that cannot be read, it is not.
-fn is_this_session_s_step(clock: &Clock, project: &str, session: Option<&str>) -> bool {
+pub(crate) fn is_this_session_s_step(clock: &Clock, project: &str, session: Option<&str>) -> bool {
     let Some(session) = session else { return false };
     let Ok(project) = ProjectId::new(project) else { return false };
     let opened_by = clock.store().ok().and_then(|store| store.step_session(&project).ok().flatten());
@@ -115,7 +115,7 @@ fn is_this_session_s_step(clock: &Clock, project: &str, session: Option<&str>) -
 
 /// The comment's id among the comments of the step open on the issue's project (M4): nothing without a
 /// project or a step, an error when the labels or the state could not be read.
-fn record_own(clock: &Clock, id: u64, project: &Result<Option<String>, TrackerError>, session: Option<&str>) -> Result<(), String> {
+pub(crate) fn record_own(clock: &Clock, id: u64, project: &Result<Option<String>, TrackerError>, session: Option<&str>) -> Result<(), String> {
     let project = match project {
         Ok(Some(project)) => ProjectId::new(project.as_str()).map_err(|error| error.to_string())?,
         Ok(None) => return Ok(()),

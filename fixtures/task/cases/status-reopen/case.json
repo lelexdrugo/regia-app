@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. #7, done and closed, back in progress (T10): the issue reopens, then its status is written once.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "status",
+    "7",
+    "in_progress"
+  ],
+  "python": [
+    "task",
+    "stato",
+    "7",
+    "In corso"
+  ]
+}

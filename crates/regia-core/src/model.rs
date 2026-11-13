@@ -44,6 +44,23 @@ impl Status {
     pub fn is_approved_work(self) -> bool {
         matches!(self, Status::Approved | Status::InProgress | Status::Decision)
     }
+
+    /// Why an issue closes when its task takes this status: done and discarded close it, any other
+    /// status reopens it (T10 of the dossier's conformance study).
+    pub fn close_reason(self) -> Option<CloseReason> {
+        match self {
+            Status::Done => Some(CloseReason::Completed),
+            Status::Discarded => Some(CloseReason::NotPlanned),
+            _ => None,
+        }
+    }
+}
+
+/// Why an issue was closed, of the two the statuses close it with.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CloseReason {
+    Completed,
+    NotPlanned,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -54,10 +71,25 @@ pub enum Maturity {
 }
 
 impl Maturity {
+    pub const ALL: [Maturity; 2] = [Maturity::Draft, Maturity::Ready];
+
+    /// The maturity of a canonical id.
+    pub fn parse(id: &str) -> Option<Maturity> {
+        Maturity::ALL.into_iter().find(|maturity| maturity.id() == id)
+    }
+
     pub fn id(self) -> &'static str {
         match self {
             Maturity::Draft => "draft",
             Maturity::Ready => "ready",
+        }
+    }
+
+    /// The other one: a task has one maturity label, and setting one removes the other.
+    pub fn other(self) -> Maturity {
+        match self {
+            Maturity::Draft => Maturity::Ready,
+            Maturity::Ready => Maturity::Draft,
         }
     }
 }

@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. A blank reason is an error before any call: exit 1; no tracker is read.",
+  "args": [
+    "task",
+    "unblock",
+    "4",
+    "--by",
+    "3",
+    "--reason",
+    "  "
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "4",
+    "--da",
+    "3",
+    "--motivo",
+    "  "
+  ],
+  "exit": 1
+}

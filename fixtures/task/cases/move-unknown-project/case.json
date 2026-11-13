@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. No open Objective has the project gamma: an error after reading the open issues, exit 1, no write.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "move",
+    "4",
+    "--project",
+    "gamma"
+  ],
+  "python": [
+    "task",
+    "sposta",
+    "4",
+    "--progetto",
+    "gamma"
+  ],
+  "exit": 1
+}

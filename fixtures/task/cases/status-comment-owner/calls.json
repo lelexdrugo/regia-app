@@ -1,0 +1,24 @@
+[
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_5",
+      "o": "opt-c3",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "5",
+      "--repo",
+      "example/tracker",
+      "--body",
+      "Decisione: A.\n\n— il titolare, via chat\n<!-- regia:autore ruolo=titolare sessione=fixture-session -->"
+    ],
+    "stdin": null
+  }
+]

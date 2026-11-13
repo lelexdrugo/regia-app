@@ -1,0 +1,5 @@
+usage: regia task sblocca [-h] --da DA --motivo MOTIVO
+                          [--per-conto-del-titolare] [--ruolo {worker,chat}]
+                          [--json]
+                          numero
+regia task sblocca: error: the following arguments are required: --motivo

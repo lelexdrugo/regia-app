@@ -1,0 +1,43 @@
+{
+  "_note": "Synthetic. #8 has no blockers: #9 is not one, a warning, no write and no comment; the JSON has no comment.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "8",
+    "--by",
+    "9",
+    "--reason",
+    "x",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "sblocca",
+    "8",
+    "--da",
+    "9",
+    "--motivo",
+    "x"
+  ],
+  "gh": {
+    "blocker_pages": {
+      "8": [
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": []
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

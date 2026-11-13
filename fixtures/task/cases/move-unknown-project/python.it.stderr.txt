@@ -1,0 +1,1 @@
+errore: progetto 'gamma' sconosciuto: vedi 'regia progetti'

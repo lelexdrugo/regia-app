@@ -1,0 +1,97 @@
+{
+  "_note": "Synthetic. #5's blockers come in three pages of two: #7, on the last page, is found and removed.",
+  "scenario": "tracker",
+  "args": [
+    "task",
+    "unblock",
+    "5",
+    "--by",
+    "7",
+    "--reason",
+    "read past the first page"
+  ],
+  "python": [
+    "task",
+    "sblocca",
+    "5",
+    "--da",
+    "7",
+    "--motivo",
+    "read past the first page"
+  ],
+  "gh": {
+    "blocker_pages": {
+      "5": [
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "endCursor": "page-1"
+                },
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 2,
+                    "state": "OPEN"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "endCursor": "page-2"
+                },
+                "nodes": [
+                  {
+                    "number": 3,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 4,
+                    "state": "OPEN"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "repository": {
+            "issue": {
+              "blockedBy": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": null
+                },
+                "nodes": [
+                  {
+                    "number": 6,
+                    "state": "OPEN"
+                  },
+                  {
+                    "number": 7,
+                    "state": "OPEN"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9313\n"
+    }
+  }
+}

@@ -2,7 +2,7 @@ use std::collections::{BTreeSet, HashMap};
 
 use chrono::{DateTime, SecondsFormat, Utc};
 
-use crate::model::IssueState;
+use crate::model::{CloseReason, IssueState};
 
 /// What an adapter reads from the tracker, before labels and option ids get a meaning.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -54,6 +54,9 @@ pub enum TrackerError {
     Unavailable(String),
     #[error("unexpected tracker response: {0}")]
     BadResponse(String),
+    /// The tracker answered with errors: their messages, joined by `; ` (G1 of the dossier's study).
+    #[error("the tracker refused: {0}")]
+    Refused(String),
 }
 
 /// The port to the tracker.
@@ -89,6 +92,103 @@ pub trait Tracker {
         let _ = body;
         Err(TrackerError::Unavailable(format!("this tracker does not write comments on #{number}")))
     }
+
+    /// Writes `body` as a comment on the issue, passed as an argument, and reads nothing back: the form a
+    /// change of status with a comment uses (G4 of the dossier's conformance study).
+    fn add_comment_inline(&self, number: u64, body: &str) -> Result<(), TrackerError> {
+        let _ = body;
+        Err(not_written(format!("comments on #{number}")))
+    }
+
+    /// The node of issue `number`, its id and state, which the writes name it by; `None` if the tracker
+    /// has no such issue.
+    fn issue_node(&self, number: u64) -> Result<Option<IssueRef>, TrackerError> {
+        Err(TrackerError::Unavailable(format!("this tracker does not read the node of #{number}")))
+    }
+
+    /// The id of the issue's item in the configured Project. An issue that is not in the Project is
+    /// added to it first.
+    fn project_item(&self, issue: &str) -> Result<String, TrackerError> {
+        Err(not_written(format!("the Project's item of {issue}")))
+    }
+
+    /// Sets the status field of an item of the configured Project to the option `option`.
+    fn set_status_option(&self, item: &str, option: &str) -> Result<(), TrackerError> {
+        Err(not_written(format!("the status of {item} ({option})")))
+    }
+
+    fn close_issue(&self, issue: &str, reason: CloseReason) -> Result<(), TrackerError> {
+        Err(not_written(format!("the closing of {issue} ({reason:?})")))
+    }
+
+    fn reopen_issue(&self, issue: &str) -> Result<(), TrackerError> {
+        Err(not_written(format!("the reopening of {issue}")))
+    }
+
+    /// Makes `child` a sub-issue of `parent`; with `replace_parent`, leaving the parent it had.
+    fn add_sub_issue(&self, parent: &str, child: &str, replace_parent: bool) -> Result<(), TrackerError> {
+        let _ = replace_parent;
+        Err(not_written(format!("{child} under {parent}")))
+    }
+
+    /// Records that `blocker` blocks `issue`.
+    fn add_blocked_by(&self, issue: &str, blocker: &str) -> Result<(), TrackerError> {
+        Err(not_written(format!("{blocker} blocking {issue}")))
+    }
+
+    /// Removes `blocker` from the issues that block `issue`.
+    fn remove_blocked_by(&self, issue: &str, blocker: &str) -> Result<(), TrackerError> {
+        Err(not_written(format!("the removal of {blocker} blocking {issue}")))
+    }
+
+    /// The numbers of the issues that block `number`, every page of them, in the tracker's order; `None`
+    /// if the tracker has no such issue.
+    fn blocker_numbers(&self, number: u64) -> Result<Option<Vec<u64>>, TrackerError> {
+        Err(TrackerError::Unavailable(format!("this tracker does not read the blockers of #{number}")))
+    }
+
+    /// How many sub-issues `number` has, closed ones included, as the tracker's cap counts them; `None` if
+    /// the tracker has no such issue.
+    fn sub_issue_count(&self, number: u64) -> Result<Option<u64>, TrackerError> {
+        Err(TrackerError::Unavailable(format!("this tracker does not count the sub-issues of #{number}")))
+    }
+
+    /// Creates an issue with its labels, and returns what the tracker printed: the issue's URL, last.
+    fn create_issue(&self, title: &str, body: &str, labels: &[String]) -> Result<String, TrackerError> {
+        let _ = (body, labels);
+        Err(not_written(format!("an issue «{title}»")))
+    }
+
+    /// The page of issue `number` on the tracker's site, built, not read.
+    fn issue_url(&self, number: u64) -> Option<String> {
+        let _ = number;
+        None
+    }
+
+    /// Adds the label `add` to issue `number`, and takes `remove` off it.
+    fn edit_labels(&self, number: u64, add: &str, remove: Option<&str>) -> Result<(), TrackerError> {
+        let _ = remove;
+        Err(not_written(format!("the label {add} on #{number}")))
+    }
+}
+
+/// The node of an issue, as the tracker's writes name it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IssueRef {
+    pub id: String,
+    pub state: IssueState,
+}
+
+fn not_written(what: String) -> TrackerError {
+    TrackerError::Unavailable(format!("this tracker does not write {what}"))
+}
+
+/// The number of the issue whose URL the tracker printed when it created it: the last segment of the last
+/// line, as the prototype reads it (G2 of the dossier's conformance study).
+pub fn created_issue_number(printed: &str) -> Option<u64> {
+    let last = crate::pystr::strip(printed).lines().last()?;
+    let segment = last.trim_end_matches('/').rsplit('/').next()?;
+    segment.parse().ok()
 }
 
 /// Adds each issue to the sub-issues of its parent when the parent's list lacks it, in list order. The
@@ -139,6 +239,15 @@ mod tests {
         let numbers: Vec<u64> = issues[0].sub_issues.iter().map(|(n, _)| *n).collect();
         assert_eq!(numbers, [7, 3, 2], "7 was already there, closed, and stays as it was");
         assert_eq!(issues[0].sub_issues[1], (3, IssueState::Open));
+    }
+
+    /// G2: the number is the last segment of the last line `gh issue create` printed.
+    #[test]
+    fn a_created_issue_s_number_is_the_end_of_the_last_line() {
+        assert_eq!(created_issue_number("https://tracker.invalid/issues/9\n"), Some(9));
+        assert_eq!(created_issue_number("Creating issue in o/r\n\nhttps://tracker.invalid/issues/12/\n"), Some(12));
+        assert_eq!(created_issue_number("https://tracker.invalid/issues/x"), None);
+        assert_eq!(created_issue_number("  \n"), None);
     }
 
     #[test]

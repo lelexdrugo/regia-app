@@ -3,11 +3,15 @@
 
 mod history;
 mod issue;
+mod write;
 
 use std::path::PathBuf;
 
 use chrono::{DateTime, Utc};
-use regia_core::{IssueState, RawComment, RawIssue, StatusHistory, Tracker, TrackerConfigV1, TrackerError, add_children_from_parents};
+use regia_core::{
+    CloseReason, IssueRef, IssueState, RawComment, RawIssue, StatusHistory, Tracker, TrackerConfigV1, TrackerError,
+    add_children_from_parents,
+};
 use regia_exec::{Pin, Program};
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -252,6 +256,62 @@ impl Tracker for GhTracker {
 
     fn add_comment(&self, number: u64, body: &str) -> Result<String, TrackerError> {
         self.issue_comment(number, body)
+    }
+
+    fn add_comment_inline(&self, number: u64, body: &str) -> Result<(), TrackerError> {
+        self.issue_comment_inline(number, body)
+    }
+
+    fn issue_node(&self, number: u64) -> Result<Option<IssueRef>, TrackerError> {
+        self.node_of_issue(number)
+    }
+
+    fn project_item(&self, issue: &str) -> Result<String, TrackerError> {
+        self.item_of_issue(issue)
+    }
+
+    fn set_status_option(&self, item: &str, option: &str) -> Result<(), TrackerError> {
+        self.status_option(item, option)
+    }
+
+    fn close_issue(&self, issue: &str, reason: CloseReason) -> Result<(), TrackerError> {
+        self.close(issue, reason)
+    }
+
+    fn reopen_issue(&self, issue: &str) -> Result<(), TrackerError> {
+        self.reopen(issue)
+    }
+
+    fn add_sub_issue(&self, parent: &str, child: &str, replace_parent: bool) -> Result<(), TrackerError> {
+        self.sub_issue(parent, child, replace_parent)
+    }
+
+    fn add_blocked_by(&self, issue: &str, blocker: &str) -> Result<(), TrackerError> {
+        self.blocked_by(issue, blocker, true)
+    }
+
+    fn remove_blocked_by(&self, issue: &str, blocker: &str) -> Result<(), TrackerError> {
+        self.blocked_by(issue, blocker, false)
+    }
+
+    fn blocker_numbers(&self, number: u64) -> Result<Option<Vec<u64>>, TrackerError> {
+        self.blockers_of_issue(number)
+    }
+
+    fn sub_issue_count(&self, number: u64) -> Result<Option<u64>, TrackerError> {
+        self.sub_issues_of_issue(number)
+    }
+
+    fn create_issue(&self, title: &str, body: &str, labels: &[String]) -> Result<String, TrackerError> {
+        self.issue_create(title, body, labels)
+    }
+
+    fn edit_labels(&self, number: u64, add: &str, remove: Option<&str>) -> Result<(), TrackerError> {
+        self.issue_edit_labels(number, add, remove)
+    }
+
+    fn issue_url(&self, number: u64) -> Option<String> {
+        Some(format!("https://github.com/{}/{}/issues/{number}", self.owner, self.repo))
     }
 }
 
