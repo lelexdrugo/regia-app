@@ -1,5 +1,6 @@
 [
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"nessun-evento\",\"cursore\":[],\"payload\":{\"progetti\":[],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   }

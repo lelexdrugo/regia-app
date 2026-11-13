@@ -8,6 +8,7 @@ use regia_store::WallTime;
 
 use super::args::python_int;
 use super::budget::{self, BudgetSource, Streak};
+use super::series;
 use super::cursor::{self, Since};
 use super::line::{Json, Reason};
 use super::v1::format;
@@ -39,6 +40,12 @@ struct Observation {
     backlog: Vec<u64>,
     /// Whether the tick counts towards a stall: new activity, or a held lock (#466).
     countable: bool,
+    /// The digest of what a countable tick observed.
+    digest: Option<String>,
+    /// The Objective is in decision: a stall would be reported already.
+    objective_in_decision: bool,
+    /// The series after this tick.
+    accounted: series::Accounted,
 }
 
 impl Observation {
@@ -65,8 +72,14 @@ impl Observation {
         if !self.backlog.is_empty() {
             fields.push((words.backlog_tasks.clone(), numbers(&self.backlog)));
         }
-        // #466: the silent workers' tasks, the series of a stall, a postponement and the dossier's
-        // warnings follow here, each only when it applies.
+        // #466: the silent workers' tasks follow the backlog's, each only when it applies.
+        if self.accounted.count > 0 {
+            fields.push((format().series.key.clone(), Json::Int(self.accounted.count)));
+        }
+        if self.accounted.postponed {
+            fields.push((format().series.postponed.clone(), Json::Bool(true)));
+        }
+        // #466: the dossier's warnings follow here.
         Json::Object(fields)
     }
 }
@@ -120,10 +133,16 @@ fn observe(
     let value = sources.events_cursor(&project.id).map_err(Fault::runtime)?;
     let Since { t, own_comments } = cursor::since(&value)?;
     let t_text = t.map(WallTime::to_iso_seconds);
-    // #466: an Objective in decision tells the stall already reported.
+    let objective_in_decision = mine.iter().any(|task| task.objective && task.status == Some(Status::Decision));
 
-    if sources.lock_busy(&project.id).map_err(Fault::runtime)? {
-        // #466: a held lock is counted for a stall, by its digest.
+    if let Some(lock) = sources.lock(&project.id).map_err(Fault::runtime)? {
+        // A held lock counts for a stall, by its state and times: renewed, it is another digest.
+        let words = &format().series;
+        let state = if lock.contended { &words.contended } else { &words.held };
+        let facts = [Json::Str(words.lock.clone()), Json::Str(state.clone())]
+            .into_iter()
+            .chain([&lock.holder, &lock.taken_at, &lock.renewed_at, &lock.expires_at].map(json_of))
+            .collect();
         return Ok(Observation {
             id: project.id.clone(),
             reason: Reason::Busy,
@@ -132,6 +151,9 @@ fn observe(
             tasks: Vec::new(),
             backlog: Vec::new(),
             countable: true,
+            digest: Some(series::digest(&Json::List(facts))),
+            objective_in_decision,
+            accounted: series::Accounted::default(),
         });
     }
 
@@ -142,16 +164,20 @@ fn observe(
     ready_all.sort_by_key(|task| graph.sort_key(task.number));
     let free = usize::try_from((wip - i64::try_from(in_progress.len()).unwrap_or(i64::MAX)).max(0)).unwrap_or(usize::MAX);
     let ready: Vec<u64> = ready_all.iter().take(free).map(|task| task.number).collect();
-    let mut inbox = 0;
+    let mut inbox_items = Vec::new();
     for task in work.iter().filter(|task| task.status == Some(Status::Inbox)) {
         if created_after(task, t)? && drainable(task) {
-            inbox += 1;
+            inbox_items.push(task.number);
         }
     }
-    let expired = leases
+    let inbox = inbox_items.len();
+    let mut expired_tasks: Vec<u64> = leases
         .iter()
-        .filter(|lease| lease.project.as_deref() == Some(project.id.as_str()) && lease.task.is_some_and(|task| in_progress.contains(&task)))
-        .count();
+        .filter(|lease| lease.project.as_deref() == Some(project.id.as_str()))
+        .filter_map(|lease| lease.task.filter(|task| in_progress.contains(task)))
+        .collect();
+    expired_tasks.sort_unstable();
+    let expired = expired_tasks.len();
     // A report the step listed as processed is not new while its date is the one recorded; rewritten
     // after, it is (#406).
     let processed = cursor::processed_reports(&value)?;
@@ -159,12 +185,15 @@ fn observe(
         Some(folder) => sources.reports(folder).map_err(Fault::unreadable)?,
         None => Vec::new(),
     };
-    let reports = reports
+    let mut new_reports: Vec<&str> = reports
         .iter()
         .filter(|report| t.is_none_or(|t| report.modified > t) && !processed.get(&report.name).is_some_and(|date| report.modified <= *date))
-        .count();
+        .map(|report| report.name.as_str())
+        .collect();
+    new_reports.sort_unstable();
+    let reports = new_reports.len();
     let waiting: Vec<&Task> = mine.iter().copied().filter(|task| task.status.is_some_and(Status::waits_on_owner)).collect();
-    let mut answers = 0;
+    let mut answer_ids: Vec<i64> = Vec::new();
     for task in &waiting {
         for comment in sources.comments(task.number).map_err(Fault::tracker)? {
             // A comment the step wrote itself, then one the regia signed, is not an answer.
@@ -178,9 +207,13 @@ fn observe(
                     created.ok_or_else(|| Fault::unreadable(format!("not a valid instant in a comment: {:?}", comment.created_at)))? > t
                 }
             };
-            answers += usize::from(new);
+            if new {
+                answer_ids.push(comment.id.and_then(|id| i64::try_from(id).ok()).unwrap_or(i64::MIN));
+            }
         }
     }
+    answer_ids.sort_unstable();
+    let answers = answer_ids.len();
     // #466: the silent workers of the tasks in progress are read here, after the comments.
 
     let words = &format().project;
@@ -248,10 +281,41 @@ fn observe(
     } else {
         Reason::NoEvent
     };
-    let tasks = ready.into_iter().take(words.max_tasks).collect();
     let countable = reason.outcome() == super::Outcome::NewActivity;
+    // The digest holds the whole backlog: a step that drains one item changes it, and is no stall (#211).
+    // The cursor is not in it (W4): a step that only moves the cursor leaves it as it was.
+    let digest = countable.then(|| {
+        let numbers = |numbers: &[u64]| Json::List(numbers.iter().map(|number| Json::Int(i64::try_from(*number).unwrap_or(i64::MAX))).collect());
+        let series = &format().series;
+        let mut facts = vec![
+            Json::Str(series.events.clone()),
+            numbers(&ready),
+            Json::List(new_reports.iter().map(|name| Json::Str((*name).to_owned())).collect()),
+            Json::List(answer_ids.iter().map(|id| Json::Int(*id)).collect()),
+            numbers(&inbox_items),
+            numbers(&expired_tasks),
+        ];
+        if !backlog.is_empty() {
+            let mut sorted = backlog.clone();
+            sorted.sort_unstable();
+            facts.extend([Json::Str(series.backlog.clone()), numbers(&sorted)]);
+        }
+        series::digest(&Json::List(facts))
+    });
+    let tasks = ready.into_iter().take(words.max_tasks).collect();
     let backlog = backlog.into_iter().take(words.max_tasks).collect();
-    Ok(Observation { id: project.id.clone(), reason, t: t_text, counts, tasks, backlog, countable })
+    Ok(Observation {
+        id: project.id.clone(),
+        reason,
+        t: t_text,
+        counts,
+        tasks,
+        backlog,
+        countable,
+        digest,
+        objective_in_decision,
+        accounted: series::Accounted::default(),
+    })
 }
 
 /// The policy's source as the prototype names it: `file` or `default`, with `+locale` when an override
@@ -415,7 +479,17 @@ fn tick(sources: &dyn Sources, options: &Options, now: WallTime) -> Result<Verdi
     }
     let max = options.budget_max.unwrap_or(policy.automatic_max_pct);
     let budget = budget_gate(sources, &mut observations, &policy, max, now)?;
-    // #466: the series of each project and the stall it finds, which would come first.
+    // Then the series of each project, and the stall it finds, which comes first: it is rare, and nobody
+    // would see it otherwise.
+    for observation in &mut observations {
+        let accounted = series::account(sources, &observation.id, observation.countable, observation.digest.as_deref(), now)?;
+        if observation.countable && series::stalled(&accounted, options.stall_n, options.stall_s, now)? {
+            let digest = observation.digest.clone().unwrap_or_default();
+            let reported = series::reported(sources, &observation.id, observation.objective_in_decision, &digest, options.realert_s, now)?;
+            observation.reason = if reported { Reason::WaitingOnOwner } else { Reason::Stall };
+        }
+        observation.accounted = accounted;
+    }
 
     let cursor_words = &format().cursor;
     let cursor = observations
@@ -439,7 +513,8 @@ fn tick(sources: &dyn Sources, options: &Options, now: WallTime) -> Result<Verdi
         payload.push((payload_words.policy_local.clone(), local_json(local)));
     }
     let payload = Json::Object(payload);
-    let first_new = observations.iter().find(|observation| observation.reason.outcome() == super::Outcome::NewActivity);
+    let first = |outcome| observations.iter().find(|observation| observation.reason.outcome() == outcome);
+    let first_new = first(super::Outcome::TerminalState).or_else(|| first(super::Outcome::NewActivity));
     let reason = match first_new {
         Some(observation) => observation.reason,
         None => {
@@ -484,6 +559,8 @@ mod tests {
         /// How many times the cache was asked.
         asked: RefCell<usize>,
         detectors: RefCell<BTreeMap<String, Value>>,
+        /// The cursors of the controller and of the alerting step, by `<project>:<name>`.
+        signals: BTreeMap<String, Value>,
     }
 
     impl Default for Fake {
@@ -499,6 +576,7 @@ mod tests {
                 usage: Some(usage(10.0, 0)),
                 asked: RefCell::default(),
                 detectors: RefCell::default(),
+                signals: BTreeMap::new(),
             }
         }
     }
@@ -517,8 +595,12 @@ mod tests {
             Ok(self.cursors.get(project).cloned().unwrap_or(Value::Null))
         }
 
-        fn lock_busy(&self, project: &str) -> Result<bool, String> {
-            Ok(self.busy.iter().any(|busy| busy == project))
+        fn lock(&self, project: &str) -> Result<Option<crate::precheck::HeldLock>, String> {
+            Ok(self.busy.iter().any(|busy| busy == project).then(|| crate::precheck::HeldLock { contended: true, ..Default::default() }))
+        }
+
+        fn signal(&self, project: &str, name: &str) -> Result<Value, String> {
+            Ok(self.signals.get(&format!("{project}:{name}")).cloned().unwrap_or(Value::Null))
         }
 
         fn expired_leases(&self) -> Result<Vec<ExpiredLease>, String> {
@@ -667,7 +749,7 @@ mod tests {
         assert_eq!(line[&format().line.keys.reason], Reason::Busy.word());
         let ids: Vec<Value> = line[&format().line.keys.cursor].as_array().unwrap().iter().map(|entry| entry[&format().cursor.project].clone()).collect();
         assert_eq!(ids, [json!("a"), json!("b")], "by priority, then id");
-        assert_eq!(project_of(&line, "b").as_object().unwrap().len(), 4, "a held project has only its id, outcome, reason and events");
+        assert_eq!(project_of(&line, "b").as_object().unwrap().len(), 5, "a held project has only its id, outcome, reason, events and series");
         // `b` has a ready task: the tick's new activity, though `a` comes first.
         let fake = Fake { issues: issues(), ..Fake::default() };
         assert_eq!(super::tests::line(&fake)[&format().line.keys.reason], Reason::Ready.word());
@@ -702,7 +784,8 @@ mod tests {
         assert_eq!(line[&format().line.keys.reason], Reason::Ready.word());
         let budget = &line[&format().line.keys.payload][&format().payload.budget];
         assert_eq!(*budget, json!({format().budget.probe.as_str(): format().budget.probes_off.as_str()}));
-        assert_eq!((*fake.asked.borrow(), fake.detectors.borrow().len()), (0, 0), "no cache read, no count written");
+        assert_eq!(*fake.asked.borrow(), 0, "no cache read");
+        assert!(!fake.detectors.borrow().contains_key(&format().detector.global_project), "no count written");
         let backfill = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3"), inbox_item(2)], consent: ProbeConsent::Refused, ..Fake::default() };
         let line = super::tests::line(&backfill);
         assert_eq!((line[&format().line.keys.reason].clone(), project_reason(&line)), (json!(Reason::Budget.word()), json!(Reason::Budget.word())));
@@ -721,7 +804,8 @@ mod tests {
             let budget = &line[&format().line.keys.payload][&format().payload.budget];
             assert_eq!(*budget, json!({format().budget.probe.as_str(): format().budget.never_read.as_str()}));
         }
-        assert_eq!((*fake.asked.borrow(), fake.detectors.borrow().len()), (0, 0));
+        assert_eq!(*fake.asked.borrow(), 0);
+        assert!(!fake.detectors.borrow().contains_key(&format().detector.global_project));
     }
 
     /// Change 3 and Acceptance 3: a reading that fails, with the consent given, keeps every step from
@@ -761,6 +845,58 @@ mod tests {
         let line = super::tests::line(&fake);
         assert_eq!(line[&format().line.keys.reason], Reason::Budget.word(), "full and known");
         assert_eq!(Streak::from_row(&fake.detectors.borrow()[&format().detector.global_project]), None);
+    }
+
+    fn at(minutes: f64) -> WallTime {
+        now().checked_add_secs(minutes * 60.0).unwrap()
+    }
+
+    fn tick(fake: &Fake, minutes: f64) -> Value {
+        let (_, line) = evaluate(fake, &Options::default(), at(minutes)).line(at(minutes));
+        serde_json::from_str(&line).unwrap()
+    }
+
+    /// `TestStallo`: the same work three ticks in a row and an hour is a stall, and a reported one waits
+    /// for the owner; a postponement of the controller does not count, once.
+    #[test]
+    fn the_same_work_three_ticks_and_an_hour_is_a_stall() {
+        let issues = vec![objective(1, "p", Status::Approved, "2", "3"), issue(task(2, "p", Status::Approved))];
+        let fake = Fake { issues: issues.clone(), ..Fake::default() };
+        let reasons: Vec<Value> = [30.0, 60.0, 90.0].iter().map(|minutes| tick(&fake, *minutes)[&format().line.keys.reason].clone()).collect();
+        assert_eq!(reasons, [json!(Reason::Ready.word()), json!(Reason::Ready.word()), json!(Reason::Stall.word())]);
+        let line = tick(&fake, 120.0);
+        assert_eq!(project_of(&line, "p")[&format().series.key], 4);
+        // The Objective in decision: reported already, the stall waits for the owner.
+        let mut decided = issues.clone();
+        decided[0] = objective(1, "p", Status::Decision, "2", "3");
+        let fake = Fake { issues: decided, detectors: RefCell::new(fake.detectors.borrow().clone()), ..Fake::default() };
+        assert_eq!(tick(&fake, 150.0)[&format().line.keys.reason], Reason::WaitingOnOwner.word());
+        // Postponed by the controller after each tick: never a stall.
+        let words = &format().series;
+        let mut fake = Fake { issues, ..Fake::default() };
+        for round in 1..=5 {
+            let line = tick(&fake, f64::from(round) * 30.0);
+            assert_eq!(project_of(&line, "p")[&words.key], 1, "round {round}");
+            assert_eq!(project_of(&line, "p").get(&words.postponed).is_some(), round > 1, "round {round}");
+            let signal = json!({words.postponement_t.as_str(): at(f64::from(round) * 30.0).to_iso_seconds(), words.postponement_id.as_str(): format!("r{round}")});
+            fake.signals.insert(format!("p:{}", words.postponement), signal);
+        }
+    }
+
+    /// An idle tick that is not a held lock ends the series; budget held is no stall.
+    #[test]
+    fn a_tick_that_waits_ends_the_series() {
+        let mut fake = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3")], busy: vec!["p".to_owned()], ..Fake::default() };
+        assert_eq!(project_of(&tick(&fake, 0.0), "p")[&format().series.key], 1);
+        assert_eq!(project_of(&tick(&fake, 40.0), "p")[&format().series.key], 2);
+        fake.busy.clear();
+        assert!(project_of(&tick(&fake, 80.0), "p").get(&format().series.key).is_none());
+        let row = fake.detectors.borrow()["p"].clone();
+        assert_eq!(row, json!({format().detector.version.as_str(): 1, format().series.key.as_str(): null}));
+        let full = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3"), issue(task(2, "p", Status::Approved))], usage: Some(usage(90.0, 0)), ..Fake::default() };
+        for round in 0..5 {
+            assert_eq!(tick(&full, f64::from(round) * 40.0)[&format().line.keys.reason], Reason::Budget.word());
+        }
     }
 
     /// The prototype's `test_budget` and `TestBudgetDiRiempimento`: the threshold of the automatic work, the

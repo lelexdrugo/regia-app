@@ -46,9 +46,9 @@ use serde_json::{Value, json};
 
 /// The keys of the prototype's payload, and of each of its projects, that #466 has not ported yet.
 const LATER_PAYLOAD_KEYS: [&str; 0] = [];
-const LATER_PROJECT_KEYS: [&str; 5] = ["serie", "rinviato", "dossier", "silenti", "silenti_task"];
+const LATER_PROJECT_KEYS: [&str; 3] = ["dossier", "silenti", "silenti_task"];
 /// The reasons that only the parts not ported yet produce: a recorded run must end with none of them.
-const LATER_REASONS: [&str; 2] = ["stallo", "worker-silente"];
+const LATER_REASONS: [&str; 1] = ["worker-silente"];
 
 /// What the prototype's `t` reads as in a recording.
 const T_PLACEHOLDER: &str = "{precheck-t}";
@@ -197,6 +197,34 @@ struct RunSpec {
     policy_file: Option<String>,
     /// The machine's local override of the policy, as its file holds it.
     local_override: Option<Value>,
+    /// Ticks in a row on the run's state, each with its line: without them, the run is one tick.
+    #[serde(default)]
+    ticks: Vec<TickSpec>,
+}
+
+/// A tick of a run: how many minutes after the one before (the first after the fixtures' instant), and
+/// what changed in between, as a step or the controller would change it.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TickSpec {
+    #[serde(default)]
+    minutes: f64,
+    #[serde(default)]
+    note: Option<String>,
+    /// The issues from this tick on.
+    issues: Option<Vec<IssueSpec>>,
+    /// The events cursors written before it.
+    #[serde(default)]
+    cursor: BTreeMap<String, Value>,
+    /// The locks written before it, `none` to remove one.
+    #[serde(default)]
+    locks: BTreeMap<String, String>,
+    /// Other actors' cursors written before it, by `<project>:<name>`: the controller's `rinvio`, the
+    /// alerting step's `segnalazioni`.
+    #[serde(default)]
+    signals: BTreeMap<String, Value>,
+    /// Claude's reading from this tick on.
+    usage: Option<UsageSpec>,
 }
 
 /// Claude's reading as the cache stores it: the last valid one, with its 5-hour window, and the last
@@ -820,7 +848,6 @@ fn differences(run: &Ran, recorded: &Value) -> Vec<String> {
 struct Prepared {
     label: String,
     responses: Value,
-    args: Vec<String>,
     run: RunSpec,
 }
 
@@ -831,19 +858,97 @@ fn prepare(case: &Case, index: usize, run: &RunSpec, side: &str) -> Prepared {
     let issues = run.issues.clone().unwrap_or_else(|| case.file.issues.clone());
     let comments = run.comments.clone().unwrap_or_else(|| case.file.comments.clone());
     let responses = responses(&issues, &comments, run, &slashed(&dossier), FIXTURE_NOW);
-    Prepared { label, responses, args: run.args.clone(), run: run.clone() }
+    Prepared { label, responses, run: run.clone() }
 }
 
 /// The consent the product has in a recorded run: the prototype always probes.
 const GRANTED: &str = "granted";
+
+/// The fixtures' instant `minutes` later, as the clock and the cursors write it.
+fn later(minutes: f64) -> String {
+    regia_store::WallTime::parse_iso(FIXTURE_NOW).and_then(|now| now.checked_add_secs(minutes * 60.0)).expect("an instant").to_iso_seconds()
+}
+
+/// Writes rows over those of a state, removing those whose document is `null`.
+fn put_rows(state: &Path, rows: &[StateRow]) {
+    let format: toml::Table = toml::from_str(&fs::read_to_string(workspace_root().join("crates").join("regia-store").join("formats").join("store_v1.toml")).expect("the format")).expect("TOML");
+    let column = |name: &str| format["table"][name].as_str().expect("a column").to_owned();
+    let [table, kind, key, generation, document] = ["name", "kind", "key", "generation", "document"].map(column);
+    let connection = rusqlite::Connection::open(state.join(regia_store::database_name())).expect("the state database");
+    for row in rows {
+        connection.execute(&format!("DELETE FROM {table} WHERE {kind} = ?1 AND {key} = ?2"), (&row.kind, &row.key)).expect("a removal");
+        if !row.doc.is_null() {
+            connection
+                .execute(&format!("INSERT INTO {table} ({kind}, {key}, {generation}, {document}) VALUES (?1, ?2, 1, ?3)"), (&row.kind, &row.key, row.doc.to_string()))
+                .expect("a state row");
+        }
+    }
+}
+
+/// The rows a tick changes before it runs at `now`: cursors, locks, signals, and the cache asked again.
+fn tick_rows(tick: &TickSpec, usage: &UsageSpec, now: &str) -> Vec<StateRow> {
+    let partial = RunSpec { cursor: tick.cursor.clone(), locks: tick.locks.iter().filter(|(_, lock)| *lock != "none").map(|(p, l)| (p.clone(), l.clone())).collect(), usage: Some(usage.clone()), ..RunSpec::default() };
+    let mut out: Vec<StateRow> = rows(&partial, now);
+    for project in tick.locks.iter().filter(|(_, lock)| *lock == "none").map(|(project, _)| project) {
+        out.push(StateRow { kind: store_word("kinds", "lock"), key: project.clone(), doc: Value::Null });
+    }
+    let (value, updated) = (store_word("cursor", "value"), store_word("cursor", "updated"));
+    for (key, signal) in &tick.signals {
+        out.push(StateRow { kind: store_word("kinds", "cursor"), key: key.clone(), doc: json!({value.as_str(): signal, updated.as_str(): "2026-01-10T08:00:00.000+00:00"}) });
+    }
+    out
+}
+
+/// The detector's rows of the projects after a run, by key, the global one aside: the prototype has none.
+fn detector_rows(state: &Path) -> Value {
+    let (cursor, global) = (detector_word("cursor"), format!("{}:{}", detector_word("global_project"), detector_word("cursor")));
+    let value = store_word("cursor", "value");
+    let rows = state_rows(state);
+    let found = rows.as_array().expect("rows").iter().filter(|row| {
+        row["kind"] == store_word("kinds", "cursor") && row["key"].as_str().is_some_and(|key| key.ends_with(&format!(":{cursor}")) && key != global)
+    });
+    Value::Object(found.map(|row| (row["key"].as_str().unwrap_or_default().to_owned(), row["doc"][&value].clone())).collect())
+}
+
+/// The ticks of a run, one when it gives none.
+fn ticks_of(run: &RunSpec) -> Vec<TickSpec> {
+    if run.ticks.is_empty() { vec![TickSpec::default()] } else { run.ticks.clone() }
+}
+
+/// What a side runs: each tick of a run at its instant on one state folder, after the tick's changes.
+fn run_ticks(case: &Case, index: usize, run: &RunSpec, side: &str, mut each: impl FnMut(&Path, &Path, &str, &TickSpec)) {
+    let prepared = prepare(case, index, run, side);
+    let (state, responses_path) = prepare_side(&prepared.label, &prepared.run, &prepared.responses, FIXTURE_NOW);
+    let (mut minutes, mut issues, mut usage) = (0.0, run.issues.clone().unwrap_or_else(|| case.file.issues.clone()), run.usage.clone());
+    let comments = run.comments.clone().unwrap_or_else(|| case.file.comments.clone());
+    let dossier = bin_dir().join("conformance-state").join(format!("{}-dossier", prepared.label));
+    for tick in &ticks_of(run) {
+        minutes += tick.minutes;
+        let now = if run.ticks.is_empty() { FIXTURE_NOW.to_owned() } else { later(minutes) };
+        if let Some(changed) = &tick.issues {
+            issues = changed.clone();
+        }
+        if tick.usage.is_some() {
+            usage = tick.usage.clone();
+        }
+        if !run.ticks.is_empty() {
+            let answers = responses(&issues, &comments, run, &slashed(&dossier), &now);
+            fs::write(&responses_path, serde_json::to_string_pretty(&answers).expect("JSON")).expect("the responses");
+            let usage = usage.clone().unwrap_or(UsageSpec { pct: Some(DEFAULT_PCT), ..UsageSpec::default() });
+            put_rows(&state, &tick_rows(tick, &usage, &now));
+        }
+        each(&state, &responses_path, &now, tick);
+    }
+}
 
 fn recording(case: &Case) -> Vec<Value> {
     let path = case.dir.join("python.it.json");
     if path.is_file() { read_json(&path) } else { Vec::new() }
 }
 
-/// Acceptance 1, 2 and 3: on every run of every case the product prints the line the prototype printed, and
-/// writes nothing.
+/// Acceptance 1, 2 and 3: on every tick of every run of every case the product prints the line the
+/// prototype printed, and writes nothing but its detector's rows, which hold the same series and digests as
+/// the prototype's.
 #[test]
 fn every_precheck_case_natively_gives_the_prototype_s_line() {
     let cases = cases();
@@ -851,31 +956,44 @@ fn every_precheck_case_natively_gives_the_prototype_s_line() {
     let mut failures = Vec::new();
     for case in &cases {
         let recorded = recording(case);
-        assert_eq!(recorded.len(), case.file.runs.len(), "{}: one recorded line per run", case.name);
+        let ticks: usize = case.file.runs.iter().map(|run| ticks_of(run).len()).sum();
+        assert_eq!(recorded.len(), ticks, "{}: one recorded line per tick", case.name);
+        let mut next = 0;
         for (index, run) in case.file.runs.iter().enumerate() {
-            let prepared = prepare(case, index, run, "rust");
-            let (state, responses) = prepare_side(&prepared.label, &prepared.run, &prepared.responses, FIXTURE_NOW);
-            let before = (!run.database_garbage).then(|| rows_besides_the_detector(&state));
-            let ran = product(&state, &responses, &prepared.args, &prepared.run, FIXTURE_NOW, GRANTED);
-            let mut diff = differences(&ran, &recorded[index]);
-            if let Some(before) = before
-                && rows_besides_the_detector(&state) != before
-            {
-                diff.push("the product wrote the state besides its detector's rows, or a probe ran".to_owned());
-            }
-            if !writes_of_run(&state).is_empty() {
-                diff.push("the product wrote the tracker".to_owned());
-            }
-            if !diff.is_empty() {
-                failures.push(format!("{} run {index} ({}):\n{}", case.name, run.note.clone().unwrap_or_default(), diff.join("\n")));
-            }
+            run_ticks(case, index, run, "rust", |state, responses, now, tick| {
+                let before = (!run.database_garbage).then(|| rows_besides_the_detector(state));
+                let ran = product(state, responses, &run.args, run, now, GRANTED);
+                let mut diff = differences(&ran, &recorded[next]);
+                if let Some(before) = before
+                    && rows_besides_the_detector(state) != before
+                {
+                    diff.push("the product wrote the state besides its detector's rows, or a probe ran".to_owned());
+                }
+                if !run.database_garbage && recorded[next].get("detector").is_some_and(|rows| *rows != detector_rows(state)) {
+                    diff.push(format!("the detector's rows:
+  rust   {}
+  python {}", detector_rows(state), recorded[next]["detector"]));
+                }
+                if !writes_of_run(state).is_empty() {
+                    diff.push("the product wrote the tracker".to_owned());
+                }
+                if !diff.is_empty() {
+                    let note = tick.note.clone().or_else(|| run.note.clone()).unwrap_or_default();
+                    failures.push(format!("{} run {index} tick {next} ({note}):
+{}", case.name, diff.join("
+")));
+                }
+                next += 1;
+            });
         }
     }
-    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+    assert!(failures.is_empty(), "{}", failures.join("
+
+"));
 }
 
-/// The prototype prints the recorded line on every run; with the variable set, its lines become the
-/// recording.
+/// The prototype prints the recorded line on every tick, and writes the recorded detector's rows; with the
+/// variable set, its lines and rows become the recording.
 #[test]
 #[ignore = "needs a copy of the prototype in REGIA_HOME"]
 fn the_prototype_prints_the_recorded_lines() {
@@ -886,22 +1004,33 @@ fn the_prototype_prints_the_recorded_lines() {
         let recorded = recording(&case);
         let mut lines = Vec::new();
         for (index, run) in case.file.runs.iter().enumerate() {
-            let prepared = prepare(&case, index, run, "python");
-            let (state, responses) = prepare_side(&prepared.label, &prepared.run, &prepared.responses, FIXTURE_NOW);
-            let ran = prototype_side(&home, &state, &responses, &prepared.args, &prepared.run, FIXTURE_NOW);
-            let (last, _) = outcome_of(&ran.stdout);
-            let line = json!({"exit": ran.exit, "line": for_the_recording(&last)});
-            if !record && recorded.get(index).is_none_or(|recorded| comparable(recorded["line"].as_str().unwrap_or_default()) != comparable(line["line"].as_str().unwrap_or_default()) || recorded["exit"] != line["exit"]) {
-                failures.push(format!("{} run {index}: the prototype printed {line}, recorded {:?}", case.name, recorded.get(index)));
-            }
-            lines.push(line);
+            run_ticks(&case, index, run, "python", |state, responses, now, _| {
+                let ran = prototype_side(&home, state, responses, &run.args, run, now);
+                let (last, _) = outcome_of(&ran.stdout);
+                let mut line = json!({"exit": ran.exit, "line": for_the_recording(&last)});
+                if !run.database_garbage {
+                    line["detector"] = detector_rows(state);
+                }
+                let at = lines.len();
+                let same = |recorded: &Value| {
+                    comparable(recorded["line"].as_str().unwrap_or_default()) == comparable(line["line"].as_str().unwrap_or_default())
+                        && recorded["exit"] == line["exit"]
+                        && recorded.get("detector") == line.get("detector")
+                };
+                if !record && recorded.get(at).is_none_or(|recorded| !same(recorded)) {
+                    failures.push(format!("{} run {index} tick {at}: the prototype printed {line}, recorded {:?}", case.name, recorded.get(at)));
+                }
+                lines.push(line);
+            });
         }
         if record {
-            let text = serde_json::to_string_pretty(&lines).expect("JSON") + "\n";
+            let text = serde_json::to_string_pretty(&lines).expect("JSON") + "
+";
             fs::write(case.dir.join("python.it.json"), text).expect("the recording");
         }
     }
-    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    assert!(failures.is_empty(), "{}", failures.join("
+"));
 }
 
 /// The vocabulary of the format is the prototype's: each outcome's reasons and exit code, and the line's
@@ -947,13 +1076,14 @@ fn the_format_s_vocabulary_is_the_prototype_s() {
 #[test]
 fn the_comparison_notices_a_difference() {
     let line = r#"{"v":1,"outcome":"new-activity","exit":0,"motivo":"pronti","cursore":[{"progetto":"p","valore":null}],"payload":{"progetti":[{"id":"p","esito":"new-activity","motivo":"pronti","eventi":1,"pronti":1,"report":0,"gate":0,"inbox":0,"lease":0,"task":[2]}],"budget":{"claude_5h_pct":10.0},"politica":"file"},"t":"2026-01-10T09:00:00Z"}"#;
-    let recorded = json!({"exit": 0, "line": with_placeholder_t(&line.replace(r#""task":[2]"#, r#""task":[2],"serie":1"#))});
+    let recorded = json!({"exit": 0, "line": with_placeholder_t(&line.replace(r#""task":[2]"#, r#""task":[2],"dossier":[{"problema":"senza-remoto"}]"#))});
     let ran = |line: &str| Ran { exit: Some(0), stdout: format!("precheck: rust\n{line}\n"), stderr: String::new() };
     assert_eq!(differences(&ran(line), &recorded), Vec::<String>::new(), "the keys not ported yet are out of the prototype's side");
     for altered in [
         line.replace("\"pronti\":1", "\"pronti\":2"),
         line.replace(r#""report":0,"gate":0"#, r#""gate":0,"report":0"#),
-        line.replace(r#""task":[2]"#, r#""task":[2],"rinviato":true"#),
+        line.replace(r#""task":[2]"#, r#""task":[2],"silenti_task":[3]"#),
+        line.replace(r#""task":[2]"#, r#""task":[2],"serie":1"#),
         line.replace(r#""lease":0,"task""#, r#""lease":0,"arretrato":1,"task""#),
         line.replace("\"motivo\":\"pronti\",\"cursore\"", "\"motivo\":\"inbox\",\"cursore\""),
         line.replace("10.0", "10"),
@@ -962,7 +1092,7 @@ fn the_comparison_notices_a_difference() {
     ] {
         assert!(!differences(&ran(&altered), &recorded).is_empty(), "unnoticed: {altered}");
     }
-    let later = json!({"exit": 0, "line": line.replace("\"motivo\":\"pronti\",\"cursore\"", "\"motivo\":\"stallo\",\"cursore\"")});
+    let later = json!({"exit": 0, "line": line.replace("\"motivo\":\"pronti\",\"cursore\"", "\"motivo\":\"worker-silente\",\"cursore\"")});
     assert!(std::panic::catch_unwind(|| without_later(later["line"].as_str().unwrap())).is_err(), "a reason not ported yet cannot be recorded");
 }
 
@@ -1027,11 +1157,11 @@ fn with_the_probes_refused_the_command_starts_the_ready_and_holds_backfill() {
     let objective = json!({"n": 1, "status": "Approvato", "objective": true});
     let failed = json!({"usage": {"failed": "network unreachable"}});
     let (state, responses, run) = product_run("precheck-probes-off-ready", json!([objective, {"n": 2, "status": "Approvato"}]), failed.clone());
-    let before = state_rows(&state);
+    let before = rows_besides_the_detector(&state);
     let line = product_line(&state, &responses, &run, "refused");
     assert_eq!((line["motivo"].as_str(), line["exit"].as_i64()), (Some("pronti"), Some(0)), "{line}");
     assert_eq!(line["payload"]["budget"], json!({"sonda": "spenta"}), "{line}");
-    assert_eq!(state_rows(&state), before, "nothing read or written for the budget");
+    assert_eq!(rows_besides_the_detector(&state), before, "nothing read or written for the budget");
     let (state, responses, run) = product_run("precheck-probes-off-inbox", json!([objective, {"n": 2, "status": "Inbox", "maturity": ""}]), failed);
     let line = product_line(&state, &responses, &run, "refused");
     assert_eq!((line["motivo"].as_str(), line["exit"].as_i64()), (Some("budget"), Some(3)), "{line}");

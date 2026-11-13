@@ -12,11 +12,11 @@ use regia_core::policy::{file_path, local_file_name, read_local};
 use regia_core::{Policy, RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1};
 use regia_github::GhTracker;
 use regia_identity::{config_dir, env_var, prototype_env_var, state_dir};
-use regia_store::{CursorName, LeaseEntry, ManualClock, ProjectId, ProviderUsage, Store, WallTime, read_state_file, reports_folder};
+use regia_store::{CursorName, LeaseEntry, LockStatus, ManualClock, ProjectId, ProviderUsage, Store, ViewField, WallTime, read_state_file, reports_folder};
 use serde_json::Value;
 
 use super::v1::format;
-use super::{ExpiredLease, Issue, ObjectiveRegistry, Report, Sources};
+use super::{ExpiredLease, HeldLock, Issue, ObjectiveRegistry, Report, Sources};
 
 /// The variable that names the folder of the user's settings in place of the system's, for the harness:
 /// `REGIA_CONFIG_DIR`. The system's folder is not one a variable moves on every system, and the harness
@@ -163,9 +163,26 @@ impl Sources for LiveSources {
         self.store()?.cursor(&id, &CursorName::events()).map_err(|error| error.to_string())
     }
 
-    fn lock_busy(&self, project: &str) -> Result<bool, String> {
+    fn lock(&self, project: &str) -> Result<Option<HeldLock>, String> {
         let id = ProjectId::new(project).map_err(|error| error.to_string())?;
-        self.store()?.lock_status(&id).map(|status| status.is_busy()).map_err(|error| error.to_string())
+        let field = |view: &regia_store::LockView, field| view.field(field).cloned().unwrap_or(Value::Null);
+        Ok(match self.store()?.lock_status(&id).map_err(|error| error.to_string())? {
+            LockStatus::Held(view) => Some(HeldLock {
+                contended: false,
+                holder: field(&view, ViewField::Holder),
+                taken_at: field(&view, ViewField::TakenAt),
+                renewed_at: field(&view, ViewField::RenewedAt),
+                expires_at: field(&view, ViewField::ExpiresAt),
+            }),
+            LockStatus::Contended => Some(HeldLock { contended: true, ..HeldLock::default() }),
+            LockStatus::Free | LockStatus::Expired(_) | LockStatus::Unreadable => None,
+        })
+    }
+
+    fn signal(&self, project: &str, name: &str) -> Result<Value, String> {
+        let id = ProjectId::new(project).map_err(|error| error.to_string())?;
+        let name = CursorName::new(name).map_err(|error| error.to_string())?;
+        self.store()?.cursor(&id, &name).map_err(|error| error.to_string())
     }
 
     fn expired_leases(&self) -> Result<Vec<ExpiredLease>, String> {

@@ -1,0 +1,54 @@
+{
+  "_note": "Synthetic. Ticks in a row on one state: the series of a held lock and of the same work, what ends it, the stall after three ticks and an hour, the stall reported, and the controller's postponements. A lock renewed at every tick and an error that leaves the series are not built here.",
+  "transcribes": [
+    "test_precheck.py::TestStallo::test_lock_fermo_tre_tick_e_un_ora_diventa_stallo",
+    "test_precheck.py::TestStallo::test_un_tick_in_attesa_azzera",
+    "test_precheck.py::TestStallo::test_lavoro_che_non_cambia_dopo_tre_lanci_e_stallo",
+    "test_precheck.py::TestStallo::test_il_checkin_che_avanza_il_cursore_conta_per_la_guardia",
+    "test_precheck.py::TestStallo::test_budget_pieno_non_conta_come_stallo",
+    "test_precheck.py::TestStallo::test_stallo_gia_segnalato_torna_idle",
+    "test_precheck.py::TestRinvio::test_rinviato_per_molti_giri_non_arriva_a_stallo",
+    "test_precheck.py::TestRinvio::test_il_giro_senza_precheck_riparte_la_serie",
+    "test_scodare.py::TestStallo::test_una_voce_consumata_per_giro_non_e_mai_stallo",
+    "test_precheck_budget.py::TestBudgetDiRiempimento::test_budget_fermo_non_e_stallo"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true}
+  ],
+  "runs": [
+    {"note": "a lock held: three ticks are not an hour, the fourth is a stall", "locks": {"p": "held"}, "ticks": [{"minutes": 0}, {"minutes": 30}, {"minutes": 29}, {"minutes": 2}]},
+    {"note": "a held lock, then none, then held again", "locks": {"p": "held"}, "ticks": [{"minutes": 0}, {"minutes": 40}, {"minutes": 40, "locks": {"p": "none"}}, {"minutes": 40, "locks": {"p": "held"}}]},
+    {"note": "the same ready task three times, then another", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Approvato"}], "ticks": [{"minutes": 30}, {"minutes": 30}, {"minutes": 30}, {"minutes": 30, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 3, "status": "Approvato"}]}]},
+    {"note": "a step that only moves the cursor is no progress", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}], "ticks": [
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T09:30:00Z", "propri": {"commenti": []}}}},
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T10:00:00Z", "propri": {"commenti": []}}}},
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T10:30:00Z", "propri": {"commenti": []}}}}
+    ]},
+    {"note": "the budget full is no stall", "usage": {"pct": 90.0}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Approvato"}], "ticks": [{"minutes": 40}, {"minutes": 40}, {"minutes": 40}, {"minutes": 40}, {"minutes": 40}]},
+    {"note": "backfill held by the budget is no stall either", "usage": {"pct": 60.0}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Inbox", "maturity": ""}], "ticks": [{"minutes": 30}, {"minutes": 30}, {"minutes": 30}, {"minutes": 30}]},
+    {"note": "a stall reported waits for the owner, then alerts again after a day", "locks": {"p": "held"}, "ticks": [
+      {"minutes": 0}, {"minutes": 30}, {"minutes": 30},
+      {"minutes": 30, "note": "the Objective in decision", "issues": [{"n": 1, "status": "Decisione", "project": "p", "objective": true}]},
+      {"minutes": 1, "note": "back to approved", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}]},
+      {"minutes": 60, "note": "the alerting step wrote it", "signals": {"p:segnalazioni": {"stallo:4ad94eaaa517": "2026-01-10T10:31:00Z"}}},
+      {"minutes": 1440, "note": "a day later"}
+    ]},
+    {"note": "postponed by the controller after every tick: never a stall", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Approvato"}], "ticks": [
+      {"minutes": 30},
+      {"minutes": 30, "signals": {"p:rinvio": {"v": 1, "t": "2026-01-10T09:30:00Z", "id": "r0", "motivo": "rinviato-limite-giro"}}},
+      {"minutes": 30, "signals": {"p:rinvio": {"v": 1, "t": "2026-01-10T10:00:00Z", "id": "r1", "motivo": "rinviato-limite-giro"}}},
+      {"minutes": 30, "signals": {"p:rinvio": {"v": 1, "t": "2026-01-10T10:30:00Z", "id": "r2", "motivo": "rinviato-limite-giro"}}},
+      {"minutes": 30, "note": "no signal since: it counts again"}
+    ]},
+    {"note": "a tick without the precheck, for a suspended session: the series starts again", "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}, {"n": 2, "status": "Approvato"}], "ticks": [
+      {"minutes": 30}, {"minutes": 30},
+      {"minutes": 305, "signals": {"controller:rinvio": {"v": 1, "t": "2026-01-10T15:00:00Z", "id": "attesa", "motivo": "attesa-da-riprendere"}}},
+      {"minutes": 30}
+    ]},
+    {"note": "a step that drains one item a tick is never stalled", "ticks": [
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T09:30:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 5\npriorita: 3"}, {"n": 2, "status": "Approvato", "maturity": "abbozzo"}, {"n": 3, "status": "Approvato", "maturity": "abbozzo"}, {"n": 4, "status": "Approvato", "maturity": "abbozzo"}]},
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T10:00:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 5\npriorita: 3"}, {"n": 3, "status": "Approvato", "maturity": "abbozzo"}, {"n": 4, "status": "Approvato", "maturity": "abbozzo"}]},
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T10:30:00Z", "propri": {"commenti": []}}}, "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 5\npriorita: 3"}, {"n": 4, "status": "Approvato", "maturity": "abbozzo"}]}
+    ]}
+  ]
+}

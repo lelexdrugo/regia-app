@@ -19,6 +19,7 @@ pub(crate) struct Format {
     pub(crate) budget: BudgetWords,
     pub(crate) policy: PolicyWords,
     pub(crate) detector: DetectorWords,
+    pub(crate) series: SeriesWords,
     pub(crate) options: OptionWords,
 }
 
@@ -220,6 +221,31 @@ pub(crate) struct LeverWords {
     pub(crate) new_per_week: String,
     pub(crate) proposal_caps: String,
     pub(crate) backfill: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct SeriesWords {
+    pub(crate) key: String,
+    pub(crate) digest: String,
+    pub(crate) count: String,
+    pub(crate) since: String,
+    pub(crate) last: String,
+    pub(crate) seen: String,
+    pub(crate) seen_project: String,
+    pub(crate) seen_global: String,
+    pub(crate) postponed: String,
+    pub(crate) postponement: String,
+    pub(crate) postponement_t: String,
+    pub(crate) postponement_id: String,
+    pub(crate) reports: String,
+    pub(crate) reported: String,
+    pub(crate) lock: String,
+    pub(crate) held: String,
+    pub(crate) contended: String,
+    pub(crate) events: String,
+    pub(crate) backlog: String,
+    pub(crate) digest_length: usize,
 }
 
 #[derive(Debug, Deserialize)]

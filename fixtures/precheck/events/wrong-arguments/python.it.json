@@ -1,33 +1,41 @@
 [
   {
+    "detector": {},
     "exit": 1,
     "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"interno\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 1,
     "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"interno\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 1,
     "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"interno\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 1,
     "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"interno\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 1,
     "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"interno\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 1,
     "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"interno\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 1,
     "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"interno\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"nessun-evento\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"nessun-evento\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   }

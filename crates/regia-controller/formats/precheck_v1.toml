@@ -191,6 +191,33 @@ version = "v"
 global_project = "controller"
 budget = "budget"
 
+# The series of a stall (§6.3): the ticks in a row that observed the same facts, by their digest, from
+# when, and the controller's postponements already seen, the project's and the global one. A stall is at
+# least `--stallo-n` ticks and `--stallo-s` seconds; reported, it waits for the owner until `--rialert-s`
+# has passed since the report the alerting step wrote in its own cursor, or while the Objective is in
+# decision. The digest's tags name what it holds: a held lock, or the events with the backlog.
+[series]
+key = "serie"
+digest = "digest"
+count = "n"
+since = "da"
+last = "ultimo"
+seen = "visti"
+seen_project = "p"
+seen_global = "g"
+postponed = "rinviato"
+postponement = "rinvio"
+postponement_t = "t"
+postponement_id = "id"
+reports = "segnalazioni"
+reported = "stallo:{digest}"
+lock = "lock"
+held = "occupato"
+contended = "illeggibile"
+events = "ev"
+backlog = "arretrato"
+digest_length = 12
+
 # The arguments of the prototype's command line, and their defaults. A wrong argument is an error of the
 # precheck, exit 1, never the parser's 2.
 [options]

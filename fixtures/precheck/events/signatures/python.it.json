@@ -1,45 +1,111 @@
 [
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"attesa-del-titolare\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"attesa-del-titolare\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "383d7c29d543",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"risposta-a-gate\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"risposta-a-gate\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":1,\"inbox\":0,\"lease\":0,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"attesa-del-titolare\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"attesa-del-titolare\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "82b0af499644",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"risposta-a-gate\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"risposta-a-gate\",\"eventi\":2,\"pronti\":0,\"report\":0,\"gate\":2,\"inbox\":0,\"lease\":0,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "e0f960f1ce15",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"risposta-a-gate\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"risposta-a-gate\",\"eventi\":3,\"pronti\":0,\"report\":0,\"gate\":3,\"inbox\":0,\"lease\":0,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"attesa-del-titolare\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"attesa-del-titolare\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"attesa-del-titolare\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:20:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"attesa-del-titolare\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"attesa-del-titolare\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"attesa-del-titolare\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "74d06b94dabc",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"risposta-a-gate\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"risposta-a-gate\",\"eventi\":6,\"pronti\":0,\"report\":0,\"gate\":6,\"inbox\":0,\"lease\":0,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"attesa-del-titolare\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"attesa-del-titolare\",\"eventi\":0,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "383d7c29d543",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"risposta-a-gate\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"risposta-a-gate\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":1,\"inbox\":0,\"lease\":0,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   }

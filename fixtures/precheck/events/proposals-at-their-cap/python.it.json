@@ -1,37 +1,123 @@
 [
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "952df0a55305",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"inbox\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"inbox\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"arretrato\":1,\"arretrato_task\":[2],\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
     "exit": 3,
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":1}],\"politica\":\"file+locale\",\"politica_locale\":{\"stato\":\"attivo\",\"fino\":null,\"valori\":{\"aperte_per_progetto\":1},\"nota\":null,\"impostato\":null}},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "dfa4c83281f6",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"inbox\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"inbox\",\"eventi\":2,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":2,\"lease\":0,\"arretrato\":2,\"arretrato_task\":[2,33],\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "269288e0027c",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"pronti\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":2,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"task\":[3],\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "7de3ee1f0193",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"report-nuovi\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"report-nuovi\",\"eventi\":2,\"pronti\":0,\"report\":1,\"gate\":0,\"inbox\":1,\"lease\":0,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "4fd0d5ae56e7",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"risposta-a-gate\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"risposta-a-gate\",\"eventi\":2,\"pronti\":0,\"report\":0,\"gate\":1,\"inbox\":1,\"lease\":0,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "d7da72d4aa45",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"lease-scadute\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"lease-scadute\",\"eventi\":2,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":1,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {
+      "q:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:00:00Z",
+          "digest": "de8c0363aa91",
+          "n": 1,
+          "ultimo": "2026-01-10T09:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
     "exit": 0,
     "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"pronti\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null},{\"progetto\":\"q\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3},{\"id\":\"q\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[51],\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   }

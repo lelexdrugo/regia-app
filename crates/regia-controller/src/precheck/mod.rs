@@ -20,20 +20,26 @@
 //!
 //! The tick's outcome is the first project's new activity, or the strongest reason to stay idle; any
 //! fault of a source or of a project fails the whole tick closed, with exit 1. The only thing the precheck
-//! writes is its detector's own accounting: the count of the budget's failed readings.
+//! writes is its detector's own accounting: the series of each project, and the count of the budget's
+//! failed readings.
 //!
 //! Each project also counts its **backlog to formulate** (#211): every Inbox item and every approved draft
 //! that can be drained, the last event in priority (`da-formulare`). The **cap of the open Proposals**
 //! holds back the Inbox part of it, and a new Inbox item (`proposte-esaurite`).
 //!
-//! **Not here yet (#466):** the series that finds a stall, the silent workers and the dossier's warnings.
-//! Each has its place below, marked, and none of their reasons or keys is produced.
+//! Last, the **series of a stall** of each project ([`series`]): the ticks in a row that observed the same
+//! facts, by their digest, in the detector's own row. Three ticks and an hour of them is a stall, the
+//! tick's outcome before any new activity, unless it was reported already.
+//!
+//! **Not here yet (#466):** the silent workers and the dossier's warnings. Each has its place below,
+//! marked, and none of their reasons or keys is produced.
 
 mod args;
 mod budget;
 mod cursor;
 mod line;
 mod observe;
+mod series;
 mod sources;
 mod v1;
 
@@ -64,6 +70,18 @@ pub struct ObjectiveRegistry {
     pub priority: Option<String>,
     /// The project's folder, `None` when the registry names none or an empty one.
     pub folder: Option<String>,
+}
+
+/// A lock someone may hold, as the digest of a stall reads it: whether the state was held by another
+/// process past the wait, else the lock's holder, when it was taken and renewed and when it expires, as
+/// they were stored (`null` when absent).
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct HeldLock {
+    pub contended: bool,
+    pub holder: Value,
+    pub taken_at: Value,
+    pub renewed_at: Value,
+    pub expires_at: Value,
 }
 
 /// An expired lease, as the state lists it: the task's number when its key reads as one, and the project
@@ -106,13 +124,21 @@ pub trait Sources {
     /// When the state cannot be read, or the project's id is not one.
     fn events_cursor(&self, project: &str) -> Result<Value, String>;
 
-    /// Whether someone may hold the project's lock: held and not expired, or the state held by another
-    /// process past the wait.
+    /// The project's lock when someone may hold it: held and not expired, or the state held by another
+    /// process past the wait; `None` when nobody may.
     ///
     /// # Errors
     ///
     /// When the state cannot be read.
-    fn lock_busy(&self, project: &str) -> Result<bool, String>;
+    fn lock(&self, project: &str) -> Result<Option<HeldLock>, String>;
+
+    /// A cursor another actor writes and the precheck only reads: the controller's postponement of
+    /// `project`, or the report of its stall by the alerting step. `null` without one.
+    ///
+    /// # Errors
+    ///
+    /// When the state cannot be read, or the project's id is not one.
+    fn signal(&self, project: &str, name: &str) -> Result<Value, String>;
 
     /// Every expired lease, and every row of a lease that does not read.
     ///

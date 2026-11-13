@@ -21,4 +21,6 @@ regia-identity.workspace = true
 regia-store.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+# The digest of a stall's series is the prototype's SHA-256: the version the workspace's graph already locks.
+sha2 = "0.10.9"
 toml.workspace = true
