@@ -232,6 +232,8 @@ export class Stage {
     if (this.pending) return;
     this.pending = requestAnimationFrame(() => {
       this.pending = 0;
+      // A new density that no event announced (Chromium 156 does not, for one emulated) is caught by the frame.
+      if ((devicePixelRatio || 1) !== this.dpr) this.resize();
       if (!this.frame) return;
       this.drawNow();
       const { cx, cy, z } = this.camera;
@@ -255,7 +257,8 @@ export class Stage {
     this.render();
   }
 
-  /** A screen of another density moves the pixels under the canvas: the backing store follows. */
+  /** A screen of another density moves the pixels under the canvas: the backing store follows, at once where the
+   * engine says so, otherwise at the next frame. */
   private watchDensity(): void {
     const query = matchMedia(`(resolution: ${devicePixelRatio || 1}dppx)`);
     const changed = () => {

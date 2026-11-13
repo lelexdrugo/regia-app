@@ -86,11 +86,15 @@ export const stage = {
     // Density.
     const backing = await page.evaluate(`[${CANVAS}.width, ${CANVAS}.clientWidth]`);
     check("the backing store is the box at density 1", backing[0] === backing[1], JSON.stringify(backing));
+    // Chromium 156 announces an emulated density to no listener: the next frame, which a still wheel asks for, finds it.
+    const nudge = () => mouse(page, "mouseWheel", at.left + at.w / 2, at.top + at.h / 2, { deltaX: 0, deltaY: 0, buttons: 0 });
     await page.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 2, mobile: false });
+    await nudge();
     await page.waitFor(`${CANVAS}.width === 2 * ${CANVAS}.clientWidth`, 5_000).catch(() => {});
     const doubled = await page.evaluate(`[${CANVAS}.width, ${CANVAS}.clientWidth, devicePixelRatio]`);
-    check("at density 2 the backing store doubles, without a reload", doubled[0] === 2 * doubled[1], JSON.stringify(doubled));
+    check("at density 2 the backing store doubles by the next frame, without a reload", doubled[0] === 2 * doubled[1], JSON.stringify(doubled));
     await page.resize(1440, 900);
+    await nudge();
     await page.waitFor(`${CANVAS}.width === ${CANVAS}.clientWidth`, 5_000).catch(() => {});
 
     // The directions: each one redraws the background and the marks in its tokens, with no reload.
