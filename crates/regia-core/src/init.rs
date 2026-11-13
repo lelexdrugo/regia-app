@@ -997,6 +997,17 @@ mod tests {
         let plan = plan(&writing, &mut reads).unwrap();
         let expected = Detail::GhScopesMissing { login: "me".into(), missing: vec![vec!["project".into()]], scopes: vec!["read:project".into(), "repo".into()], add: vec!["project".into()] };
         assert_eq!(plan.items[0].detail, expected);
+        // Neither scope: both are named, each by its alternatives, and the last alternative of each is added.
+        let mut reads = ready();
+        reads.user = Some(Ok(GhUser { login: "me".into(), scopes: Some(["gist".to_owned()].into()) }));
+        let plan = super::plan(&options(Path::new("no-home")), &mut reads).unwrap();
+        let missing = vec![vec!["repo".to_owned()], vec!["project".to_owned(), "read:project".to_owned()]];
+        let expected = Detail::GhScopesMissing { login: "me".into(), missing, scopes: vec!["gist".into()], add: vec!["repo".into(), "read:project".into()] };
+        assert_eq!(plan.items[0].detail, expected);
+        // Signed out, a command that writes is told to sign in with the scope to write.
+        let mut reads = Memory { user: Some(Err(InitError::Gh { said: GhSaid::Exit(4), not_found: false })), ..Memory::default() };
+        let plan = super::plan(&writing, &mut reads).unwrap();
+        assert_eq!(plan.items[0].detail, Detail::GhSignedOut { said: GhSaid::Exit(4), scopes: vec!["repo".into(), "project".into()] });
     }
 
     #[test]
