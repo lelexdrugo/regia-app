@@ -14,6 +14,7 @@ import type { Done } from "../src/lib/brief";
 import DocumentView from "../src/lib/content/Document.svelte";
 import { type Catalog, catalog } from "../src/lib/i18n";
 import { DENSITIES, DIRECTIONS, draw } from "../src/lib/look";
+import type { MoviolaSource, ProjectSummary, Timeline } from "../src/lib/moviola/types";
 import { SECTIONS } from "../src/lib/route";
 import { appRenderer, type Check, type CorpusCase, loadFonts, type Renderer, v07 } from "../src/lib/v07";
 import App from "../src/App.svelte";
@@ -21,6 +22,7 @@ import briefs from "./brief.json";
 import Control from "./Control.svelte";
 import corpusFile from "./corpus.json";
 import documentsFile from "./documents.json";
+import moviolaFile from "./moviola.json";
 import { pseudo } from "./pseudo";
 import Stopped from "./Stopped.svelte";
 
@@ -118,6 +120,37 @@ function brief(data: string, params: URLSearchParams): () => Promise<BriefView> 
   return () => Promise.resolve(answer);
 }
 
+// The moviola's fixtures, recorded by prove/moviola-record.mjs: fixtures/moviola's portfolio and timelines as the
+// core gives them, and the case of the dossier's test_moviola_viewer.py. JSON widens their kinds to strings.
+const moviolaFixtures = moviolaFile as unknown as { portfolio: ProjectSummary[]; cases: { name: string; timeline: Timeline }[] };
+
+/**
+ * The moviola's answers for the address: `demo` is the portfolio and its timelines (gamma has no moviola, so its
+ * timeline is empty, as the core's is), `empty` no project, `loading` an answer that never comes, `error` the
+ * command's rejection. An unknown project is refused as the app's command refuses it.
+ */
+function moviolaOf(data: string): MoviolaSource {
+  const timelines = new Map(moviolaFixtures.cases.map((c) => [c.name, c.timeline]));
+  const alpha = timelines.get("alpha");
+  if (alpha) {
+    timelines.set("gamma", { ...alpha, project: "gamma", milestones: [], directions: [], aggregates: [] });
+  }
+  const pending = () => new Promise<never>(() => {});
+  if (data === "loading") {
+    return { projects: pending, timeline: pending };
+  }
+  if (data === "error") {
+    return { projects: () => Promise.reject(fixtures.error), timeline: () => Promise.reject(fixtures.error) };
+  }
+  return {
+    projects: () => Promise.resolve(data === "empty" ? [] : moviolaFixtures.portfolio),
+    timeline: (project) => {
+      const found = timelines.get(project);
+      return found ? Promise.resolve(found) : Promise.reject(`unknown project: ${project}`);
+    },
+  };
+}
+
 function documentOf(data: string): Document {
   if (data === "huge") {
     // A document past the core's cap of 256 KiB arrives cut, and flagged.
@@ -163,7 +196,7 @@ let mounts = 0;
 function parts(route: string) {
   const [path = "", query = ""] = route.replace(/^#\/?/, "").split("?");
   const params = new URLSearchParams(query);
-  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota", "sort", "ported"].map((name) => params.get(name)).join("&");
+  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota", "sort", "ported", "theme"].map((name) => params.get(name)).join("&");
   return { view: path.split("/")[0] ?? "", query, params, fixture };
 }
 
@@ -216,9 +249,23 @@ async function show(): Promise<void> {
     const quota = used === null ? null : { service: "claude", used: Number(used) };
     // What the app decided today: none in the app yet (#477), some in the demo's and the worst case's fixtures.
     const done = fixtures.done[data] ?? [];
-    const props = { strings: catalogOf, catalogFor, product: tauri.productName, load: brief(data, params), done, ...settingsOf(params), quota, onsettled };
+    // theme=fixed: the negative control of the moviola's redraw on a new direction (prove/moviola-canvas.js).
+    const observeTheme = params.get("theme") !== "fixed";
+    const props = {
+      strings: catalogOf,
+      catalogFor,
+      product: tauri.productName,
+      load: brief(data, params),
+      done,
+      ...settingsOf(params),
+      quota,
+      moviola: moviolaOf(data),
+      observeTheme,
+      onsettled,
+    };
     mounted.push(mount(App, { target: root, props }));
-    if (view === "brief" && data === "loading") {
+    // A screen whose answer never comes has drawn its waiting state.
+    if ((view === "brief" || view === "moviola") && data === "loading") {
       await tick();
       drawn();
     }

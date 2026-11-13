@@ -104,6 +104,13 @@ export type ProjectSummary = {
 
 export type Deviation = { plan: string | null; deviation: string | null; reason: string | null; impact: string | null };
 
+/** Where the moviola's screens read from: the app's commands (ipc.ts), or the harness's fixtures. Both reject with
+ * the core's error, as text. */
+export interface MoviolaSource {
+  projects(): Promise<ProjectSummary[]>;
+  timeline(project: string): Promise<Timeline>;
+}
+
 /** `get_snapshot`: a milestone's sidecar. */
 export type Snapshot = {
   id: string | null;

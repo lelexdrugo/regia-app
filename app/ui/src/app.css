@@ -847,6 +847,211 @@ h1 {
   min-height: var(--lh-body);
 }
 
+/* The moviola: the portfolio's reels, then a project's stage, its transport and the moment chosen. The stage is
+   a canvas the size of its box, never wider: the camera moves inside it. */
+.pill.positive {
+  background: var(--pill-positive-bg);
+  color: var(--pill-positive-ink);
+}
+
+.reels {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 880px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: var(--card-pad);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.reel-none {
+  background: none;
+  border-style: dashed;
+}
+
+.reel-head,
+.reel-last {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.reel-name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--fs-section);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.reel-name {
+  text-decoration: none;
+}
+
+a.reel-name:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.reel-id {
+  flex: none;
+  color: var(--faint);
+}
+
+.reel-head .pill {
+  margin-left: auto;
+}
+
+.reel-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--muted);
+}
+
+.reel-kind {
+  flex: none;
+  color: var(--muted);
+}
+
+.reel-title,
+.stage-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reel-last .mono,
+.stage-status .mono {
+  flex: none;
+  margin-left: auto;
+}
+
+.crumb {
+  font-size: var(--fs-small);
+  color: var(--faint);
+}
+
+.screen > .stage-panel {
+  flex: 1 1 auto;
+}
+
+.stage-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 180px;
+  overflow: hidden;
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.stage canvas:focus-visible {
+  outline-offset: -2px;
+}
+
+.stage canvas.panning {
+  cursor: grabbing;
+}
+
+.stage canvas.on-node {
+  cursor: pointer;
+}
+
+.stage canvas.on-playhead {
+  cursor: ew-resize;
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border);
+}
+
+.icon-btn {
+  padding: 3px 6px;
+}
+
+.timecode {
+  flex: none;
+  min-width: 12ch;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.scrub {
+  flex: 1 1 auto;
+  min-width: 60px;
+  accent-color: var(--accent);
+}
+
+.screen .stage-status {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  max-width: none;
+  padding: 2px 10px 8px;
+}
+
+.icon-prev {
+  -webkit-mask-image: url("./icons/prev.svg");
+  mask-image: url("./icons/prev.svg");
+}
+
+.icon-next {
+  -webkit-mask-image: url("./icons/next.svg");
+  mask-image: url("./icons/next.svg");
+}
+
+.icon-minus {
+  -webkit-mask-image: url("./icons/minus.svg");
+  mask-image: url("./icons/minus.svg");
+}
+
+.icon-plus {
+  -webkit-mask-image: url("./icons/plus.svg");
+  mask-image: url("./icons/plus.svg");
+}
+
+.icon-fit {
+  -webkit-mask-image: url("./icons/fit.svg");
+  mask-image: url("./icons/fit.svg");
+}
+
 /* Under the minimum window, or at 200 % zoom: nothing is lost, the sidebar folds to its icons. */
 @media (max-width: 900px) {
   :root {

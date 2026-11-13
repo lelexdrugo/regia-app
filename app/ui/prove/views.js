@@ -3,6 +3,9 @@
 export const VIEWS = [
   ...["demo", "worst", "empty", "one", "huge", "loading", "error"].map((data) => `#/brief?data=${data}`),
   ...["daily", "moviola", "console", "settings"].map((section) => `#/${section}?data=demo`),
+  // The moviola: the portfolio in each state, then each project's lanes, one with no milestone, one unknown.
+  ...["empty", "error", "loading"].map((data) => `#/moviola?data=${data}`),
+  ...["alpha", "beta", "gamma", "viewer", "nowhere"].map((project) => `#/moviola/${project}?data=demo`),
   // The comfortable density is larger in every measure, and the setup may choose it (#483).
   "#/brief?data=worst&density=comfortable",
   "#/settings?data=demo&density=comfortable&dir=nero",

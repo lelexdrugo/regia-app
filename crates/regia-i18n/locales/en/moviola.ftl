@@ -58,3 +58,39 @@ type-abandoned = Abandoned
 health-healthy = healthy
 health-at-risk = at risk
 health-waiting = waiting for you
+
+## The moviola of #486: the projects (L0), then a project's lanes by direction, the playhead and the tape.
+
+moviola-projects-sub = { $n ->
+        [one] One project with a folder on this machine.
+       *[other] { $n } projects with a folder on this machine.
+    }
+moviola-projects-empty = No project has a folder on this machine yet.
+moviola-projects-note = Open a project to see its story: one lane for each direction it took.
+moviola-error-lead = The moviola could not be read:
+moviola-project-none = no moments yet
+moviola-project-counts = { $milestones ->
+        [one] one moment
+       *[other] { $milestones } moments
+    } · { $directions ->
+        [one] one direction
+       *[other] { $directions } directions
+    }
+moviola-project-span = { $from } → { $to }
+moviola-project-last = Last
+moviola-back = All projects
+moviola-timeline-sub = { $n ->
+        [one] One moment
+       *[other] { $n } moments
+    } on { $lanes ->
+        [one] one lane
+       *[other] { $lanes } lanes
+    }, read only.
+moviola-lanes-directions = Lanes by direction
+moviola-stage = The project's lanes: drag to move them, scroll to zoom, the arrow keys go from moment to moment.
+moviola-stage-hint = Pick a moment: click a mark, or use the arrow keys.
+moviola-fit = Show the whole story
+moviola-lane-main = main
+moviola-lane-active = active
+moviola-lane-abandoned = abandoned
+moviola-lane-rejoined = rejoined

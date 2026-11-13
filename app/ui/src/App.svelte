@@ -7,9 +7,11 @@
   import type { Done } from "./lib/brief";
   import type { Catalog } from "./lib/i18n";
   import { draw, type Look, type Saving } from "./lib/look";
+  import type { MoviolaSource } from "./lib/moviola/types";
   import { href, parse, type Route, same, type Section } from "./lib/route";
   import Brief from "./screens/Brief.svelte";
   import Later from "./screens/Later.svelte";
+  import Moviola from "./screens/Moviola.svelte";
   import Settings from "./screens/Settings.svelte";
   import Help from "./shell/Help.svelte";
   import type { Quota } from "./shell/Quota.svelte";
@@ -30,11 +32,16 @@
     save: (change: SettingsChange) => Promise<Saved>;
     /** The principal service's quota for the sidebar, or none: no command of this version gives it. */
     quota?: Quota | null;
+    /** The moviola's portfolio and timelines: the app's commands, or the harness's fixtures. */
+    moviola: MoviolaSource;
+    /** Off only for the harness's negative control: a moviola that does not redraw on a new direction. */
+    observeTheme?: boolean;
     /** Called each time the screen the address names has drawn: the brief once its data or error is in the DOM. */
     onsettled?: () => void;
   }
 
-  let { strings, catalogFor, product, load, done = [], settings, save, quota = null, onsettled }: Props = $props();
+  let { strings, catalogFor, product, load, done = [], settings, save, quota = null, moviola, observeTheme = true, onsettled }: Props =
+    $props();
 
   let route: Route = $state(parse(location.hash));
   let main: HTMLElement | undefined = $state();
@@ -81,7 +88,10 @@
     draw(look);
   }
 
-  const LATER: Record<string, string> = { daily: "nav-daily", moviola: "nav-moviola", console: "nav-console" };
+  const LATER: Record<string, string> = { daily: "nav-daily", console: "nav-console" };
+
+  /** The screens that say themselves when they have drawn: their data comes later than the frame. */
+  const SELF_SETTLING: readonly Section[] = ["brief", "moviola"];
 
   function heading(): HTMLElement | null {
     return main?.querySelector<HTMLElement>("h1") ?? null;
@@ -98,7 +108,7 @@
     await tick();
     // Focus follows navigation, and only navigation: the keyboard and a screen reader land on the new screen.
     heading()?.focus({ preventScroll: true });
-    if (route.section !== "brief") {
+    if (!SELF_SETTLING.includes(route.section)) {
       onsettled?.();
     }
   }
@@ -161,7 +171,7 @@
 
   onMount(() => {
     addEventListener("hashchange", follow);
-    if (route.section !== "brief") {
+    if (!SELF_SETTLING.includes(route.section)) {
       void tick().then(() => onsettled?.());
     }
     return () => removeEventListener("hashchange", follow);
@@ -185,6 +195,8 @@
   <main id="main" tabindex="-1" bind:this={main}>
     {#if route.section === "brief"}
       <Brief strings={words} {load} {done} {...onsettled ? { onsettled } : {}} />
+    {:else if route.section === "moviola"}
+      <Moviola strings={words} source={moviola} project={route.project} {observeTheme} {...onsettled ? { onsettled } : {}} />
     {:else if route.section === "settings"}
       <Settings strings={words} {catalogFor} {look} {saving} onlook={changeLook} onlanguage={changeLanguage} />
     {:else}

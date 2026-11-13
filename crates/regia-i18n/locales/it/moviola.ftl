@@ -58,3 +58,39 @@ type-abandoned = Abbandono
 health-healthy = in salute
 health-at-risk = a rischio
 health-waiting = aspetta te
+
+## The moviola of #486: the projects (L0), then a project's lanes by direction, the playhead and the tape.
+
+moviola-projects-sub = { $n ->
+        [one] Un progetto con una cartella su questo computer.
+       *[other] { $n } progetti con una cartella su questo computer.
+    }
+moviola-projects-empty = Nessun progetto ha ancora una cartella su questo computer.
+moviola-projects-note = Apri un progetto per vederne la storia: una corsia per ogni direzione presa.
+moviola-error-lead = Non riesco a leggere la moviola:
+moviola-project-none = ancora nessun momento
+moviola-project-counts = { $milestones ->
+        [one] un momento
+       *[other] { $milestones } momenti
+    } · { $directions ->
+        [one] una direzione
+       *[other] { $directions } direzioni
+    }
+moviola-project-span = { $from } → { $to }
+moviola-project-last = Ultimo
+moviola-back = Tutti i progetti
+moviola-timeline-sub = { $n ->
+        [one] Un momento
+       *[other] { $n } momenti
+    } su { $lanes ->
+        [one] una corsia
+       *[other] { $lanes } corsie
+    }, in sola lettura.
+moviola-lanes-directions = Corsie per direzione
+moviola-stage = Le corsie del progetto: trascina per spostarle, scorri per avvicinare, le frecce vanno da un momento all'altro.
+moviola-stage-hint = Scegli un momento: clicca un segno, o usa le frecce.
+moviola-fit = Mostra tutta la storia
+moviola-lane-main = principale
+moviola-lane-active = attiva
+moviola-lane-abandoned = abbandonata
+moviola-lane-rejoined = rientrata

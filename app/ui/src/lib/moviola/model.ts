@@ -249,6 +249,35 @@ export type Layout = {
   clip: [number, number] | null;
 };
 
+/** A lane as `disegnaPalco` draws it: a line at `y` from `x0` to `x1`, and around it an envelope through `points`,
+ * each node's half thickness for its rings, thin at the two ends. A lane with no node has neither. */
+export type Envelope = { lane: number; y: number; x0: number; x1: number; points: { x: number; w: number }[] };
+
+export function laneEnvelope(model: Model, layout: Layout, lane: Lane): Envelope | null {
+  const nodes = lane.nodes.map((i) => ({ x: layout.x[i] as number, w: halfThickness((model.nodes[i] as Node).rings.length) }));
+  const first = nodes[0];
+  const last = nodes[nodes.length - 1];
+  if (!first || !last) return null;
+  // The main lane starts before the first column, under its name; a closed one ends where it closed.
+  const x0 = lane.id === model.timeline.main_direction ? Math.min(layout.left - 14, first.x) : first.x;
+  const x1 = lane.closed !== null ? layout.xAt(lane.closed) : Math.max(layout.width - 20, last.x);
+  const points = [{ x: x0, w: 3 }, ...nodes, { x: x1, w: 3 }].sort((a, b) => a.x - b.x);
+  return { lane: lane.index, y: layout.laneY[lane.index] as number, x0, x1, points };
+}
+
+/** The axis of `disegnaPalco` and `disegnaNastro`: the first node of each day, as `key` tells the days apart. */
+export function dayStarts(model: Model, key: (t: number) => string): number[] {
+  const seen = new Set<string>();
+  const out: number[] = [];
+  for (const node of model.nodes) {
+    const k = key(node.t);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(node.index);
+  }
+  return out;
+}
+
 /** `layoutA`: one column per milestone, lanes as rows; with a window, the milestones inside fill the stage. */
 export function layout(model: Model, width: number, height: number, window: TimeWindow | null = null): Layout {
   const left = 150;
