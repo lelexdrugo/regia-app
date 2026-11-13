@@ -1,0 +1,65 @@
+{
+  "_note": "Synthetic. The controller's postponements against the series, and the backlog that a step does or does not drain, tick after tick. The unreadable signals are English nonsense in place of the prototype's.",
+  "transcribes": [
+    "test_precheck.py::TestRinvio::test_un_passo_lanciato_davvero_e_sempre_fermo_va_in_stallo",
+    "test_precheck.py::TestRinvio::test_il_segnale_si_applica_una_volta_sola",
+    "test_precheck.py::TestRinvio::test_un_segnale_anteriore_alla_serie_non_vale",
+    "test_precheck.py::TestRinvio::test_un_segnale_illeggibile_si_ignora (four runs)",
+    "test_precheck.py::TestRinvio::test_il_rinvio_di_un_progetto_non_tocca_gli_altri",
+    "test_precheck.py::TestRinvio::test_senza_il_segnale_globale_l_attesa_darebbe_uno_stallo_falso",
+    "test_scodare.py::TestStallo::test_nessun_consumo_tre_giri_e_un_ora_e_stallo",
+    "test_scodare.py::TestStallo::test_un_passo_che_porta_a_pronto_cambia_il_motivo"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Approvato"}
+  ],
+  "runs": [
+    {"note": "postponed three times, then launched for real and always still: a stall", "ticks": [
+      {"minutes": 30},
+      {"minutes": 30, "signals": {"p:rinvio": {"v": 1, "t": "2026-01-10T09:30:00Z", "id": "r0", "motivo": "rinviato-limite-giro"}}},
+      {"minutes": 30, "signals": {"p:rinvio": {"v": 1, "t": "2026-01-10T10:00:00Z", "id": "r1", "motivo": "rinviato-limite-giro"}}},
+      {"minutes": 30, "signals": {"p:rinvio": {"v": 1, "t": "2026-01-10T10:30:00Z", "id": "r2", "motivo": "rinviato-limite-giro"}}},
+      {"minutes": 30}, {"minutes": 30}
+    ]},
+    {"note": "a signal applies once", "ticks": [
+      {"minutes": 30},
+      {"minutes": 30, "signals": {"p:rinvio": {"v": 1, "t": "2026-01-10T09:30:00Z", "id": "only", "motivo": "rinviato-limite-giro"}}},
+      {"minutes": 30}, {"minutes": 30}
+    ]},
+    {"note": "a signal older than the series does not count", "ticks": [
+      {"minutes": 30, "signals": {"p:rinvio": {"v": 1, "t": "2026-01-09T09:00:00Z", "id": "old", "motivo": "x"}}},
+      {"minutes": 30}, {"minutes": 30}
+    ]},
+    {"note": "an unreadable signal is ignored: a string", "ticks": [{"minutes": 30, "signals": {"p:rinvio": "nonsense"}}, {"minutes": 30}, {"minutes": 30}]},
+    {"note": "an unreadable signal is ignored: no id", "ticks": [{"minutes": 30, "signals": {"p:rinvio": {"t": "no"}}}, {"minutes": 30}, {"minutes": 30}]},
+    {"note": "an unreadable signal is ignored: an instant that does not read", "ticks": [{"minutes": 30, "signals": {"p:rinvio": {"id": "x", "t": "not-a-date"}}}, {"minutes": 30}, {"minutes": 30}]},
+    {"note": "an unreadable signal is ignored: a list", "ticks": [{"minutes": 30, "signals": {"p:rinvio": [1]}}, {"minutes": 30}, {"minutes": 30}]},
+    {"note": "one project's postponement leaves the other alone", "issues": [
+      {"n": 1, "status": "Approvato", "project": "a", "objective": true}, {"n": 2, "status": "Approvato", "project": "a"},
+      {"n": 3, "status": "Approvato", "project": "b", "objective": true}, {"n": 4, "status": "Approvato", "project": "b"}
+    ], "ticks": [
+      {"minutes": 30},
+      {"minutes": 30, "signals": {"b:rinvio": {"v": 1, "t": "2026-01-10T09:30:00Z", "id": "r", "motivo": "rinviato-limite-giro"}}}
+    ]},
+    {"note": "five hours of waiting without the global signal give a false stall", "ticks": [{"minutes": 30}, {"minutes": 30}, {"minutes": 305}]},
+    {"note": "a backlog nobody drains: three ticks and an hour are a stall", "issues": [
+      {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 5\npriorita: 3"},
+      {"n": 2, "status": "Approvato", "maturity": "abbozzo"}, {"n": 3, "status": "Inbox", "maturity": "", "created": "2026-01-01T09:00:00Z"}
+    ], "ticks": [
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T09:30:00Z", "propri": {"commenti": []}}}},
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T10:00:00Z", "propri": {"commenti": []}}}},
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T10:30:00Z", "propri": {"commenti": []}}}}
+    ]},
+    {"note": "a step that makes the draft ready changes the reason", "issues": [
+      {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 5\npriorita: 3"},
+      {"n": 2, "status": "Approvato", "maturity": "abbozzo"}
+    ], "ticks": [
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T09:30:00Z", "propri": {"commenti": []}}}},
+      {"minutes": 30, "cursor": {"p": {"v": 1, "t": "2026-01-10T10:00:00Z", "propri": {"commenti": []}}}, "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 5\npriorita: 3"},
+        {"n": 2, "status": "Approvato", "maturity": "pronto"}
+      ]}
+    ]}
+  ]
+}
