@@ -1,0 +1,20 @@
+/* The bench's page: the stage at the top left, at its fixed size (harness.js sets it), and one line of status. */
+body.moviola-bench {
+  margin: 0;
+  overflow: hidden;
+  background: var(--ground);
+}
+
+body.moviola-bench #root {
+  position: relative;
+}
+
+body.moviola-bench #status {
+  position: fixed;
+  left: 8px;
+  bottom: 6px;
+  margin: 0;
+  font: 11px var(--font-mono);
+  color: var(--muted);
+  pointer-events: none;
+}

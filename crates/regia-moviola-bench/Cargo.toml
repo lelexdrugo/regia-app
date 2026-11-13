@@ -1,0 +1,22 @@
+[package]
+name = "regia-moviola-bench"
+description = "Dev only. The window the moviola's bench runs in: the product's Tauri and webview, opening the page that `npm run bench` serves."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# No unit tests: a test build would link a second Tauri binary on every CI run, for a window with no logic
+# of its own. The bench's tests are `npm test`, beside this file.
+[[bin]]
+name = "regia-moviola-bench"
+path = "src/main.rs"
+test = false
+
+[build-dependencies]
+tauri-build.workspace = true
+
+# The app's own Tauri, with the workspace's features and nothing more: a feature turned on here would reach
+# the app in every `cargo build --workspace`.
+[dependencies]
+tauri.workspace = true
