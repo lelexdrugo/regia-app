@@ -118,6 +118,18 @@ function glyph(ctx: CanvasRenderingContext2D, kind: MilestoneKind, x: number, y:
   }
 }
 
+/** First index of `points`, ascending in x, with `x >= v`. */
+function lowerBoundBy(points: readonly { x: number }[], v: number): number {
+  let lo = 0;
+  let hi = points.length;
+  while (lo < hi) {
+    const m = (lo + hi) >> 1;
+    if ((points[m] as { x: number }).x < v) lo = m + 1;
+    else hi = m;
+  }
+  return lo;
+}
+
 /** The scene's indices by kind, each ascending. */
 export function bucketByKind(scene: Scene): Uint32Array[] {
   const lists: number[][] = KINDS.map(() => []);
@@ -172,10 +184,15 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
   const y1 = cam.cy + H / 2 / z + 60;
   ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * (W / 2 - cam.cx * z), dpr * (H / 2 - cam.cy * z));
 
-  // Lanes: the envelope of their rings, then the line, dashed once abandoned, dotted once rejoined.
+  // Lanes: the envelope of their rings, then the line, dashed once abandoned, dotted once rejoined. Only the part
+  // in view is a path: a dash is laid along the whole of one, in view or not.
   for (const e of f.envelopes) {
     const lane = model.lanes[e.lane] as Lane;
-    const pts = e.points;
+    if (e.x1 < x0 || e.x0 > x1) continue;
+    const all = e.points;
+    const from = Math.max(0, lowerBoundBy(all, x0) - 1);
+    const to = Math.min(all.length, lowerBoundBy(all, x1) + 1);
+    const pts = all.slice(from, to);
     const a = pts[0] as { x: number; w: number };
     const b = pts[pts.length - 1] as { x: number; w: number };
     ctx.beginPath();
@@ -201,12 +218,16 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
     ctx.lineWidth = 0.8 / z;
     ctx.stroke();
     ctx.globalAlpha = 1;
+    const start = Math.max(e.x0, x0);
     ctx.setLineDash(lane.status === "abandoned" ? [5 / z, 4 / z] : lane.status === "rejoined" ? [1 / z, 4 / z] : []);
+    // The dashes stay where they are on the lane while the camera moves.
+    ctx.lineDashOffset = start - e.x0;
     ctx.lineWidth = 1 / z;
     ctx.beginPath();
-    ctx.moveTo(e.x0, e.y);
-    ctx.lineTo(e.x1, e.y);
+    ctx.moveTo(start, e.y);
+    ctx.lineTo(Math.min(e.x1, x1), e.y);
     ctx.stroke();
+    ctx.lineDashOffset = 0;
     ctx.setLineDash([]);
   }
 
@@ -466,15 +487,17 @@ function drawTape(ctx: CanvasRenderingContext2D, f: Frame, left: number, right: 
   ctx.textAlign = "center";
   for (const joint of scale.joints) ctx.fillText("✂", joint.x, top + 37);
   ctx.textAlign = "start";
-  // A tick per milestone, in its kind's colour.
-  for (const node of model.nodes) {
-    const kind = node.milestone.kind;
+  // A tick per milestone, in its kind's colour: one path per kind.
+  for (const kind of KINDS) {
     ctx.strokeStyle = p[TICK[kind]];
     ctx.lineWidth = kind === "milestone" ? 1 : 2;
     ctx.beginPath();
-    const x = scale.x(node.t);
-    ctx.moveTo(x, top + 23);
-    ctx.lineTo(x, top + TAPE - 9);
+    for (const node of model.nodes) {
+      if (node.milestone.kind !== kind) continue;
+      const x = scale.x(node.t);
+      ctx.moveTo(x, top + 23);
+      ctx.lineTo(x, top + TAPE - 9);
+    }
     ctx.stroke();
   }
   const x = scale.x(f.t);

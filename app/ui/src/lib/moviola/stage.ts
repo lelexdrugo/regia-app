@@ -136,6 +136,16 @@ export class Stage {
     return this.scene;
   }
 
+  get currentLayout(): Layout | null {
+    return this.lay;
+  }
+
+  /** The node under a screen point, for this camera, becomes the one under the pointer: the bench's hover. */
+  hoverAt(x: number, y: number, camera: Camera): void {
+    this.camera = camera;
+    this.hover = this.nodeAt(x, y);
+  }
+
   /** The tape's scale and its two ends. */
   get tape(): Tape | null {
     return this.frame?.tape ?? null;

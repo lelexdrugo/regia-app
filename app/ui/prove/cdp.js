@@ -55,18 +55,18 @@ async function devtoolsPort(file, chrome, stderr) {
 
 /**
  * A headless browser with one page. `profiles` holds its throwaway profile. `CHROME_FLAGS` adds flags, for a
- * machine that needs one.
+ * machine that needs one. `headed` opens a window with the GPU instead, at its own size, and `binary` picks the
+ * browser: prove/bench.mjs measures time per frame there, never headless.
  */
-export async function launch({ width, height, profiles }) {
+export async function launch({ width, height, profiles, binary = findChrome(), headed = false }) {
   const profile = join(profiles, `chrome-${process.pid}`);
   rmSync(profile, { recursive: true, force: true });
   mkdirSync(profile, { recursive: true });
   const flags = (process.env.CHROME_FLAGS ?? "").split(" ").filter(Boolean);
-  const binary = findChrome();
   const chrome = spawn(
     binary,
     [
-      "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--hide-scrollbars",
+      ...(headed ? [] : ["--headless=new", "--disable-gpu"]), "--no-first-run", "--no-default-browser-check", "--hide-scrollbars",
       "--disable-extensions", "--disable-background-networking", "--disable-component-update", "--disable-sync",
       // The proofs move the harness more than 200 times in 10 s, and Chrome then ignores further changes of the
       // address without a word (crbug.com/1038223): a view would never arrive.
@@ -80,7 +80,23 @@ export async function launch({ width, height, profiles }) {
     stderr = (stderr + chunk).slice(-4000);
   });
   const port = await devtoolsPort(join(profile, "DevToolsActivePort"), chrome, () => stderr);
+  const close = async () => {
+    // On Windows the profile stays locked until the process has really gone.
+    const exited = chrome.exitCode === null ? new Promise((resolve) => chrome.once("exit", resolve)) : Promise.resolve();
+    chrome.kill();
+    await Promise.race([exited, sleep(10_000)]);
+    await sleep(300);
+    rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+  };
+  const page = await attach(port, { browser: binary, close });
+  if (!headed) {
+    await page.resize(width, height);
+  }
+  return page;
+}
 
+/** The first page of a browser whose DevTools listen on `port`; `close` ends that browser. */
+export async function attach(port, { browser, close }) {
   let target;
   for (let tries = 0; tries < 100 && !target; tries++) {
     const list = await (await fetch(`http://127.0.0.1:${port}/json`)).json();
@@ -129,7 +145,7 @@ export async function launch({ width, height, profiles }) {
     });
 
   const page = {
-    browser: binary,
+    browser,
     consoleErrors,
     send,
     on(method, listener) {
@@ -179,16 +195,10 @@ export async function launch({ width, height, profiles }) {
       } catch {
         // Already closed.
       }
-      // On Windows the profile stays locked until the process has really gone.
-      const exited = chrome.exitCode === null ? new Promise((resolve) => chrome.once("exit", resolve)) : Promise.resolve();
-      chrome.kill();
-      await Promise.race([exited, sleep(10_000)]);
-      await sleep(300);
-      rmSync(profile, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+      await close();
     },
   };
   await send("Page.enable");
   await send("Runtime.enable");
-  await page.resize(width, height);
   return page;
 }

@@ -15,6 +15,7 @@ import DocumentView from "../src/lib/content/Document.svelte";
 import { type Catalog, catalog } from "../src/lib/i18n";
 import { DENSITIES, DIRECTIONS, draw } from "../src/lib/look";
 import type { MoviolaSource, ProjectSummary, Timeline } from "../src/lib/moviola/types";
+import { bench, type BenchResult } from "./bench";
 import { SECTIONS } from "../src/lib/route";
 import { appRenderer, type Check, type CorpusCase, loadFonts, type Renderer, v07 } from "../src/lib/v07";
 import App from "../src/App.svelte";
@@ -32,6 +33,8 @@ declare global {
     harnessChecks?: Check[];
     /** Every change the shell asked to save, in order, for the proofs of the settings. */
     harnessSaved?: SettingsChange[];
+    /** What the moviola's quick check of the time per frame measured, for prove/bench.mjs. */
+    benchResult?: BenchResult;
   }
 }
 
@@ -289,6 +292,11 @@ async function show(): Promise<void> {
       break;
     case "stopped":
       mounted.push(mount(Stopped, { target: root, props: { brief: fixtureOf(data) } }));
+      break;
+    case "bench":
+      // #/bench?scale=1: the moviola's stage on a synthetic timeline, measured (harness/bench.ts).
+      settingsOf(params);
+      window.benchResult = await bench(root, Number(params.get("scale") ?? "1"), catalogOf);
       break;
     case "v07":
       window.harnessChecks = await v07(corpus, params.get("renderer") === "unsafe" ? unsafe : appRenderer(catalogOf));
