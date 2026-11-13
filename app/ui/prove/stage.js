@@ -3,9 +3,11 @@
 // direction's tokens, and a new direction on <html> redraws them without a reload, the page's own marker and
 // origin unchanged (Acceptance 3); the timecode in the DOM is the catalog's date-day-time of its instant
 // (#474/V3), not the prototype's format; the arrows, Home and End go from moment to moment and move the playhead;
-// a click selects the node under it; the wheel zooms, a drag pans, 0 brings the camera home; a click on the tape
-// moves the playhead. The negative controls: a stage that does not hear the direction (`theme=fixed`) must be
-// caught keeping the old colours, and the prototype's timecode must not pass for the catalog's.
+// a click selects the node under it; the wheel zooms, a drag pans, 0 brings the camera home; the playhead follows
+// a drag on the stage, and a click on the tape. Then the portfolio: every project of the fixture with its health and
+// its last milestone, and a link only for a project with a story (Acceptance 2). The negative controls: a stage that
+// does not hear the direction (`theme=fixed`) must be caught keeping the old colours, and the prototype's timecode
+// must not pass for the catalog's.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -169,12 +171,39 @@ export const stage = {
     check("a drag moves the camera", Math.abs(panned[0] - zoomed[0] - 200 / zoomed[2]) < 1, JSON.stringify(panned));
     check("0 brings it home", home[2] === 1, JSON.stringify(home));
 
+    // The playhead, dragged on the stage from where it stands, at the last milestone once at home.
+    await page.evaluate(`${CANVAS}.focus()`);
+    await key(page, "End", "End", 35);
+    await page.press("0");
+    await sleep(60);
+    const headX = at.left + lay.xAt(model.t1);
+    await mouse(page, "mousePressed", headX, at.top + at.h / 2);
+    await mouse(page, "mouseMoved", headX - 120, at.top + at.h / 2);
+    await mouse(page, "mouseMoved", headX - 240, at.top + at.h / 2);
+    await mouse(page, "mouseReleased", headX - 240, at.top + at.h / 2);
+    await sleep(60);
+    const tDragged = await page.evaluate(`Number(document.querySelector("output.timecode").dataset.t)`);
+    check("the playhead follows a drag on the stage", Math.abs(tDragged - lay.tAt(lay.xAt(model.t1) - 240)) < 1000, new Date(tDragged).toISOString());
+
     // The tape: a click at its left end takes the playhead to the start of the story.
     await mouse(page, "mousePressed", at.left + 12, at.top + at.h + 30);
     await mouse(page, "mouseReleased", at.left + 12, at.top + at.h + 30);
     await sleep(60);
     const tTape = await page.evaluate(`Number(document.querySelector("output.timecode").dataset.t)`);
     check("a click on the tape moves the playhead", tTape < model.t0, new Date(tTape).toISOString());
+
+    // The portfolio (Acceptance 2): each project of the fixture with its health and its last milestone.
+    await open(page, harness, "#/moviola?data=demo&lang=en");
+    const rows = await page.evaluate(`[...document.querySelectorAll("li[data-project]")].map((li) => ({
+      id: li.dataset.project,
+      health: li.querySelector("[data-health]")?.dataset.health,
+      last: li.querySelector("[data-last]")?.dataset.last ?? null,
+      title: li.querySelector("[data-last] .reel-title")?.textContent ?? null,
+      link: !!li.querySelector("a.reel-name"),
+    }))`);
+    const portfolio = fixture.portfolio.map((p) => ({ id: p.id, health: p.health ?? "none", last: p.last?.id ?? null, title: p.last?.title ?? null, link: p.milestones > 0 }));
+    const byId = (list) => JSON.stringify([...list].sort((a, b) => a.id.localeCompare(b.id)));
+    check("the portfolio: every project, its health and its last milestone; only a story opens", byId(rows) === byId(portfolio), JSON.stringify(rows.map((r) => `${r.id} ${r.health} ${r.last ?? "-"}`)));
 
     // The control: a stage that does not hear the direction keeps the old colours.
     await page.evaluate(`document.documentElement.dataset.dir = "montaggio"`);
