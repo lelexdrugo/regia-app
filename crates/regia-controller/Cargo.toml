@@ -13,6 +13,8 @@ name = "precheck"
 path = "src/bin/precheck.rs"
 
 [dependencies]
+chrono.workspace = true
+regia-agents.workspace = true
 regia-core.workspace = true
 regia-github.workspace = true
 regia-identity.workspace = true

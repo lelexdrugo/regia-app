@@ -1,8 +1,9 @@
 //! The precheck as a command, for the conformance harness: a line of diagnostics, then the outcome line,
-//! and the outcome's exit code. It takes the prototype's arguments and prints its line's events and
-//! decision; the budget and the series of a stall join the line with #466, and only then can it stand in
-//! for the prototype's precheck. It never reads its standard input. The clock is `REGIA_NOW` when set,
-//! which also fixes the state's.
+//! and the outcome's exit code. It takes the prototype's arguments and prints its line's events, the
+//! budget's gate and the decision; the series of a stall joins the line with #466, and only then can it
+//! stand in for the prototype's precheck. It never reads its standard input. The clock is `REGIA_NOW`
+//! when set, which also fixes the state's and the probes'; the user's settings are in the folder
+//! `REGIA_CONFIG_DIR` names, when set, else in the system's.
 
 use std::process::ExitCode;
 
@@ -19,14 +20,14 @@ fn clock() -> Result<Option<WallTime>, String> {
     }
 }
 
-fn run(argv: &[String], fixed: Result<Option<WallTime>, String>) -> Verdict {
+fn run(argv: &[String], fixed: Result<Option<WallTime>, String>, now: WallTime) -> Verdict {
     let options = match parse_options(argv) {
         Ok(options) => options,
         Err(fault) => return Verdict::of_fault(&fault),
     };
     let sources = fixed.and_then(|fixed| live_sources(options.deadline_s, fixed));
     match sources {
-        Ok(sources) => evaluate(&sources, &options),
+        Ok(sources) => evaluate(&sources, &options, now),
         Err(detail) => Verdict::of_fault(&Fault::internal(detail)),
     }
 }
@@ -43,7 +44,7 @@ fn main() -> ExitCode {
     );
     let fixed = clock();
     let now = fixed.clone().ok().flatten().unwrap_or_else(WallTime::now);
-    let (exit, line) = run(&argv, fixed).line(now);
+    let (exit, line) = run(&argv, fixed, now).line(now);
     println!("{line}");
     ExitCode::from(exit)
 }

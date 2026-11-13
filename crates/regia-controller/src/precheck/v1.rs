@@ -15,6 +15,9 @@ pub(crate) struct Format {
     pub(crate) project: ProjectWords,
     pub(crate) cursor: CursorWords,
     pub(crate) events: EventsWords,
+    pub(crate) budget: BudgetWords,
+    pub(crate) policy: PolicyWords,
+    pub(crate) detector: DetectorWords,
     pub(crate) options: OptionWords,
 }
 
@@ -103,6 +106,10 @@ pub(crate) struct PayloadWords {
     pub(crate) projects: String,
     pub(crate) truncated: String,
     pub(crate) detail: String,
+    pub(crate) budget: String,
+    pub(crate) policy: String,
+    pub(crate) policy_reason: String,
+    pub(crate) policy_local: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -139,6 +146,79 @@ pub(crate) struct EventsWords {
     pub(crate) own: String,
     pub(crate) comments: String,
     pub(crate) reports: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct BudgetWords {
+    pub(crate) provider: String,
+    pub(crate) window: String,
+    pub(crate) pct: String,
+    pub(crate) not_open: String,
+    pub(crate) stale: String,
+    pub(crate) age: String,
+    pub(crate) reason: String,
+    pub(crate) fresh_s: i64,
+    pub(crate) reason_length: usize,
+    pub(crate) no_data: String,
+    pub(crate) probe_failed: String,
+    pub(crate) joined: String,
+    pub(crate) same_window_above: String,
+    pub(crate) window_not_open: String,
+    pub(crate) window_expired: String,
+    pub(crate) probe: String,
+    pub(crate) probes_off: String,
+    pub(crate) never_read: String,
+    pub(crate) rounds: String,
+    pub(crate) since: String,
+    pub(crate) alarm: String,
+    pub(crate) alarm_rounds: i64,
+    pub(crate) alarm_text: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct PolicyWords {
+    pub(crate) file: String,
+    pub(crate) default: String,
+    pub(crate) with_local: String,
+    pub(crate) status: String,
+    pub(crate) until: String,
+    pub(crate) values: String,
+    pub(crate) note: String,
+    pub(crate) set_at: String,
+    pub(crate) reason: String,
+    pub(crate) statuses: PolicyStatuses,
+    pub(crate) levers: LeverWords,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct PolicyStatuses {
+    pub(crate) active: String,
+    pub(crate) expired: String,
+    pub(crate) unreadable: String,
+    pub(crate) ignored: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct LeverWords {
+    pub(crate) automatic_max_pct: String,
+    pub(crate) backfill_max_pct: String,
+    pub(crate) open_per_project: String,
+    pub(crate) new_per_week: String,
+    pub(crate) proposal_caps: String,
+    pub(crate) backfill: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct DetectorWords {
+    pub(crate) cursor: String,
+    pub(crate) version: String,
+    pub(crate) global_project: String,
+    pub(crate) budget: String,
 }
 
 #[derive(Debug, Deserialize)]

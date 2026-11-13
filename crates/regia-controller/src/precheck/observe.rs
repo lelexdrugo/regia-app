@@ -3,10 +3,11 @@
 
 use std::collections::BTreeSet;
 
-use regia_core::{GraphOrder, IssueState, Status, Task, graph_order, signature_role};
+use regia_core::{GraphOrder, IssueState, Lever, LeverValue, Local, LocalStatus, Origin, Policy, Status, Task, graph_order, signature_role};
 use regia_store::WallTime;
 
 use super::args::python_int;
+use super::budget::{self, BudgetSource, Streak};
 use super::cursor::{self, Since};
 use super::line::{Json, Reason};
 use super::v1::format;
@@ -34,6 +35,8 @@ struct Observation {
     t: Option<String>,
     counts: Vec<(&'static str, i64)>,
     tasks: Vec<u64>,
+    /// Whether the tick counts towards a stall: new activity, or a held lock (#466).
+    countable: bool,
 }
 
 impl Observation {
@@ -99,7 +102,7 @@ fn observe(sources: &dyn Sources, project: &Project<'_>, issues: &[Issue], graph
 
     if sources.lock_busy(&project.id).map_err(Fault::runtime)? {
         // #466: a held lock is counted for a stall, by its digest.
-        return Ok(Observation { id: project.id.clone(), reason: Reason::Busy, t: t_text, counts: Vec::new(), tasks: Vec::new() });
+        return Ok(Observation { id: project.id.clone(), reason: Reason::Busy, t: t_text, counts: Vec::new(), tasks: Vec::new(), countable: true });
     }
 
     let in_progress: BTreeSet<u64> = work.iter().filter(|task| task.status == Some(Status::InProgress)).map(|task| task.number).collect();
@@ -189,20 +192,135 @@ fn observe(sources: &dyn Sources, project: &Project<'_>, issues: &[Issue], graph
         Reason::NoEvent
     };
     let tasks = ready.into_iter().take(words.max_tasks).collect();
-    Ok(Observation { id: project.id.clone(), reason, t: t_text, counts, tasks })
+    let countable = reason.outcome() == super::Outcome::NewActivity;
+    Ok(Observation { id: project.id.clone(), reason, t: t_text, counts, tasks, countable })
 }
 
-/// The tick: the outcome of every active project, in the order of their priority and then of their ids,
-/// and the verdict among them. A fault anywhere is the tick's error.
+/// The policy's source as the prototype names it: `file` or `default`, with `+locale` when an override
+/// applies.
+fn policy_source(policy: &Policy) -> String {
+    let words = &format().policy;
+    let origin = match policy.origin {
+        Origin::File => &words.file,
+        Origin::Default => &words.default,
+    };
+    if policy.with_local { format!("{origin}{}", words.with_local) } else { origin.clone() }
+}
+
+/// A value of the override's file, as it was: data.
+fn json_of(value: &serde_json::Value) -> Json {
+    match value {
+        serde_json::Value::Null => Json::Null,
+        serde_json::Value::Bool(flag) => Json::Bool(*flag),
+        serde_json::Value::Number(number) => match number.as_i64() {
+            Some(whole) if !number.is_f64() => Json::Int(whole),
+            _ => Json::Float(number.as_f64().unwrap_or(f64::NAN)),
+        },
+        serde_json::Value::String(text) => Json::Str(text.clone()),
+        serde_json::Value::Array(items) => Json::List(items.iter().map(json_of).collect()),
+        serde_json::Value::Object(fields) => Json::Object(fields.iter().map(|(key, value)| (key.clone(), json_of(value))).collect()),
+    }
+}
+
+/// The local override as the prototype's `leggi_locale` describes it, in its keys and order: its status,
+/// then what the file said, then why it was not applied.
+fn local_json(local: &Local) -> Json {
+    let words = &format().policy;
+    let statuses = &words.statuses;
+    let status = match local.status {
+        LocalStatus::Active => &statuses.active,
+        LocalStatus::Expired => &statuses.expired,
+        LocalStatus::Unreadable => &statuses.unreadable,
+        LocalStatus::Ignored => &statuses.ignored,
+    };
+    let mut fields = vec![(words.status.clone(), Json::Str(status.clone()))];
+    if let Some(until) = &local.until {
+        fields.push((words.until.clone(), json_of(until)));
+    }
+    if let Some(values) = &local.values {
+        let levers = &words.levers;
+        let values = values
+            .iter()
+            .map(|(lever, value)| {
+                let key = match lever {
+                    Lever::AutomaticMaxPct => &levers.automatic_max_pct,
+                    Lever::BackfillMaxPct => &levers.backfill_max_pct,
+                    Lever::OpenPerProject => &levers.open_per_project,
+                    Lever::NewPerWeek => &levers.new_per_week,
+                    Lever::ProposalCaps => &levers.proposal_caps,
+                    Lever::Backfill => &levers.backfill,
+                };
+                let value = match value {
+                    LeverValue::Pct(pct) => Json::Float(pct),
+                    LeverValue::Count(count) => Json::Int(i64::try_from(count).unwrap_or(i64::MAX)),
+                    LeverValue::Switch(on) => Json::Bool(on),
+                };
+                (key.clone(), value)
+            })
+            .collect();
+        fields.push((words.values.clone(), Json::Object(values)));
+    }
+    for (key, value) in [(&words.note, &local.note), (&words.set_at, &local.set_at)] {
+        if let Some(value) = value {
+            fields.push((key.clone(), json_of(value)));
+        }
+    }
+    if let Some(reason) = &local.reason {
+        fields.push((words.reason.clone(), Json::Str(reason.clone())));
+    }
+    Json::Object(fields)
+}
+
+/// The budget's gate on the projects with new activity, once a tick: unknown or full, none starts; known
+/// and under the lower threshold of backfill, backfill starts too. Neither counts towards a stall. The
+/// count of the failed readings lives in the detector's row of the project reserved for all of them.
+/// `payload.budget` as the gate decided it, `None` when nothing asked for it.
+fn budget_gate(sources: &dyn Sources, observations: &mut [Observation], policy: &Policy, max: f64, now: WallTime) -> Result<Option<Json>, Fault> {
+    let candidates: Vec<usize> = (0..observations.len()).filter(|at| observations[*at].reason.outcome() == super::Outcome::NewActivity).collect();
+    if candidates.is_empty() {
+        return Ok(None);
+    }
+    let consent = sources.probe_consent().map_err(Fault::unreadable)?;
+    let source = match BudgetSource::before_reading(consent, sources.platform()) {
+        Some(source) => source,
+        None => BudgetSource::Read(sources.claude_usage().map_err(Fault::runtime)?.map(Box::new)),
+    };
+    let check = budget::check(&source, max, now);
+    let all = &format().detector.global_project;
+    let previous = Streak::from_row(&sources.detector(all).map_err(Fault::runtime)?);
+    let streak = Streak::after(previous.as_ref(), &check.kind, &now.to_iso_seconds());
+    if streak != previous {
+        let reason = match &check.kind {
+            budget::Kind::Unknown(reason) => Some(reason.as_str()),
+            budget::Kind::Known | budget::Kind::NotProbed => None,
+        };
+        sources.write_detector(all, Streak::row(streak.as_ref(), reason)).map_err(Fault::runtime)?;
+    }
+    for at in candidates {
+        let observation = &mut observations[at];
+        let backfill = matches!(observation.reason, Reason::Inbox | Reason::Backlog);
+        if !check.open || (backfill && !check.pct.is_some_and(|pct| pct < policy.backfill_max_pct)) {
+            (observation.reason, observation.countable) = (Reason::Budget, false);
+        }
+    }
+    let mut detail = check.detail;
+    if let Some(streak) = streak.filter(Streak::alarms) {
+        detail.extend(streak.alarm_detail());
+    }
+    Ok(Some(Json::Object(detail)))
+}
+
+/// The tick at `now`: the outcome of every active project, in the order of their priority and then of
+/// their ids, and the verdict among them. A fault anywhere is the tick's error.
 #[must_use]
-pub fn evaluate(sources: &dyn Sources, options: &Options) -> Verdict {
-    match tick(sources, options) {
+pub fn evaluate(sources: &dyn Sources, options: &Options, now: WallTime) -> Verdict {
+    match tick(sources, options, now) {
         Ok(verdict) => verdict,
         Err(fault) => Verdict::of_fault(&fault),
     }
 }
 
-fn tick(sources: &dyn Sources, options: &Options) -> Result<Verdict, Fault> {
+fn tick(sources: &dyn Sources, options: &Options, now: WallTime) -> Result<Verdict, Fault> {
     let issues = sources.issues().map_err(Fault::tracker)?;
     // The registry is in the body of each Objective; one without a project fails the tick, even when it
     // is not active.
@@ -236,8 +354,10 @@ fn tick(sources: &dyn Sources, options: &Options) -> Result<Verdict, Fault> {
     for (_, project) in &active {
         observations.push(observe(sources, project, &issues, &graph, &leases)?);
     }
-    // #466: the budget's gate on the projects with new activity, then the series of each project and the
-    // stall it finds, which would come first.
+    let policy = sources.policy();
+    let max = options.budget_max.unwrap_or(policy.automatic_max_pct);
+    let budget = budget_gate(sources, &mut observations, &policy, max, now)?;
+    // #466: the series of each project and the stall it finds, which would come first.
 
     let cursor_words = &format().cursor;
     let cursor = observations
@@ -248,8 +368,19 @@ fn tick(sources: &dyn Sources, options: &Options) -> Result<Verdict, Fault> {
         })
         .collect();
     let projects = observations.iter().map(Observation::to_json).collect();
-    // #466: the budget, the policy's source and its local override follow the projects.
-    let payload = Json::Object(vec![(format().payload.projects.clone(), Json::List(projects))]);
+    let payload_words = &format().payload;
+    let mut payload = vec![(payload_words.projects.clone(), Json::List(projects))];
+    if let Some(budget) = budget {
+        payload.push((payload_words.budget.clone(), budget));
+    }
+    payload.push((payload_words.policy.clone(), Json::Str(policy_source(&policy))));
+    if let Some(reason) = policy.reason.as_ref().filter(|reason| !reason.is_empty()) {
+        payload.push((payload_words.policy_reason.clone(), Json::Str(reason.clone())));
+    }
+    if let Some(local) = &policy.local {
+        payload.push((payload_words.policy_local.clone(), local_json(local)));
+    }
+    let payload = Json::Object(payload);
     let first_new = observations.iter().find(|observation| observation.reason.outcome() == super::Outcome::NewActivity);
     let reason = match first_new {
         Some(observation) => observation.reason,
@@ -266,20 +397,52 @@ mod tests {
     use std::cell::RefCell;
     use std::collections::BTreeMap;
 
+    use regia_agents::{Platform, ProbeConsent};
     use regia_core::{Maturity, RawComment, SignatureRole, sign};
+    use regia_store::{ProviderUsage, Served, Window};
     use serde_json::{Value, json};
 
     use super::*;
     use crate::precheck::{ExpiredLease, ObjectiveRegistry, Report};
 
-    /// Sources that answer from memory, and remember which comments were read.
-    #[derive(Default)]
+    /// Claude's reading as the cache gives it: `pct` of the 5-hour window, read `age_s` ago.
+    fn usage(pct: f64, age_s: i64) -> ProviderUsage {
+        let window = Window::read(pct, Some(("2026-01-10T11:00:00+00:00".to_owned(), 7200)));
+        let mut usage = ProviderUsage::new("claude", None, vec![(format().budget.window.clone(), window)], None, None);
+        usage.served = Some(Served { age_s: Some(age_s), from_cache: true, update_failed: None });
+        usage
+    }
+
+    /// Sources that answer from memory, and remember which comments were read and what was written.
     struct Fake {
         issues: Vec<Issue>,
         comments: BTreeMap<u64, Vec<RawComment>>,
         cursors: BTreeMap<String, Value>,
         busy: Vec<String>,
         read: RefCell<Vec<u64>>,
+        consent: ProbeConsent,
+        platform: Platform,
+        usage: Option<ProviderUsage>,
+        /// How many times the cache was asked.
+        asked: RefCell<usize>,
+        detectors: RefCell<BTreeMap<String, Value>>,
+    }
+
+    impl Default for Fake {
+        fn default() -> Fake {
+            Fake {
+                issues: Vec::new(),
+                comments: BTreeMap::new(),
+                cursors: BTreeMap::new(),
+                busy: Vec::new(),
+                read: RefCell::default(),
+                consent: ProbeConsent::Granted,
+                platform: Platform::Other,
+                usage: Some(usage(10.0, 0)),
+                asked: RefCell::default(),
+                detectors: RefCell::default(),
+            }
+        }
     }
 
     impl Sources for Fake {
@@ -306,6 +469,32 @@ mod tests {
 
         fn reports(&self, _folder: &str) -> Result<Vec<Report>, String> {
             Ok(Vec::new())
+        }
+
+        fn policy(&self) -> Policy {
+            Policy::defaults()
+        }
+
+        fn probe_consent(&self) -> Result<ProbeConsent, String> {
+            Ok(self.consent)
+        }
+
+        fn platform(&self) -> Platform {
+            self.platform
+        }
+
+        fn claude_usage(&self) -> Result<Option<ProviderUsage>, String> {
+            *self.asked.borrow_mut() += 1;
+            Ok(self.usage.clone())
+        }
+
+        fn detector(&self, project: &str) -> Result<Value, String> {
+            Ok(self.detectors.borrow().get(project).cloned().unwrap_or(Value::Null))
+        }
+
+        fn write_detector(&self, project: &str, value: Value) -> Result<(), String> {
+            self.detectors.borrow_mut().insert(project.to_owned(), value);
+            Ok(())
         }
     }
 
@@ -344,8 +533,12 @@ mod tests {
         Issue { task, registry: Some(registry) }
     }
 
+    fn now() -> WallTime {
+        WallTime::parse_iso("2026-01-10T09:00:00Z").unwrap()
+    }
+
     fn line(fake: &Fake) -> Value {
-        let (_, line) = evaluate(fake, &Options::default()).line(WallTime::parse_iso("2026-01-10T09:00:00Z").unwrap());
+        let (_, line) = evaluate(fake, &Options::default(), now()).line(now());
         serde_json::from_str(&line).unwrap()
     }
 
@@ -427,7 +620,110 @@ mod tests {
         let issues = vec![objective(1, "a", Status::Proposal, "2", "high"), objective(2, "b", Status::Approved, "2", "")];
         assert_eq!(line(&Fake { issues, ..Fake::default() })[&format().line.keys.reason], Reason::NoEvent.word());
         let issues = vec![objective(1, "a", Status::Approved, "2", "high")];
-        let verdict = evaluate(&Fake { issues, ..Fake::default() }, &Options::default());
+        let verdict = evaluate(&Fake { issues, ..Fake::default() }, &Options::default(), now());
         assert_eq!((verdict.reason, verdict.cursor), (Reason::Unreadable, Json::Null));
+    }
+
+    fn project_reason(line: &Value) -> Value {
+        project_of(line, "p")[&format().project.reason].clone()
+    }
+
+    fn inbox_item(number: u64) -> Issue {
+        let mut item = task(number, "p", Status::Inbox);
+        item.maturity = None;
+        issue(item)
+    }
+
+    /// S1 of the dossier's `da-decidere.md`, Acceptance 2: with the probes refused the candidates start,
+    /// backfill does not, nothing is read and nothing counts towards an alarm.
+    #[test]
+    fn with_the_probes_off_the_ready_start_and_backfill_waits_without_an_alarm() {
+        let ready = || vec![objective(1, "p", Status::Approved, "2", "3"), issue(task(2, "p", Status::Approved))];
+        let fake = Fake { issues: ready(), consent: ProbeConsent::Refused, usage: None, ..Fake::default() };
+        let line = line(&fake);
+        assert_eq!(line[&format().line.keys.reason], Reason::Ready.word());
+        let budget = &line[&format().line.keys.payload][&format().payload.budget];
+        assert_eq!(*budget, json!({format().budget.probe.as_str(): format().budget.probes_off.as_str()}));
+        assert_eq!((*fake.asked.borrow(), fake.detectors.borrow().len()), (0, 0), "no cache read, no count written");
+        let backfill = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3"), inbox_item(2)], consent: ProbeConsent::Refused, ..Fake::default() };
+        let line = super::tests::line(&backfill);
+        assert_eq!((line[&format().line.keys.reason].clone(), project_reason(&line)), (json!(Reason::Budget.word()), json!(Reason::Budget.word())));
+        assert!(line[&format().line.keys.payload][&format().payload.budget].get(&format().budget.alarm).is_none());
+    }
+
+    /// #463/V11, decided on #466: on macOS, with the consent, Claude reads unknown by design. It goes as
+    /// the refused probes go, without reading the cache, however many ticks in a row.
+    #[test]
+    fn claude_never_read_on_this_system_goes_as_the_probes_off() {
+        let issues = vec![objective(1, "p", Status::Approved, "2", "3"), issue(task(2, "p", Status::Approved))];
+        let fake = Fake { issues, platform: Platform::MacOs, usage: None, ..Fake::default() };
+        for _ in 0..6 {
+            let line = line(&fake);
+            assert_eq!(line[&format().line.keys.reason], Reason::Ready.word());
+            let budget = &line[&format().line.keys.payload][&format().payload.budget];
+            assert_eq!(*budget, json!({format().budget.probe.as_str(): format().budget.never_read.as_str()}));
+        }
+        assert_eq!((*fake.asked.borrow(), fake.detectors.borrow().len()), (0, 0));
+    }
+
+    /// Change 3 and Acceptance 3: a reading that fails, with the consent given, keeps every step from
+    /// starting; from the fourth tick in a row the alarm names the setting. With the probes then turned
+    /// off, the candidates start and the count goes.
+    #[test]
+    fn a_failed_reading_four_ticks_in_a_row_raises_the_alarm_until_the_probes_are_off() {
+        let words = &format().budget;
+        let issues = vec![objective(1, "p", Status::Approved, "2", "3"), issue(task(2, "p", Status::Approved))];
+        let failed = ProviderUsage::unknown("claude", None, "network unreachable", None);
+        let mut fake = Fake { issues, usage: Some(failed), ..Fake::default() };
+        for round in 1..=5 {
+            let line = line(&fake);
+            assert_eq!((line[&format().line.keys.reason].clone(), line[&format().line.keys.exit].clone()), (json!(Reason::Budget.word()), json!(3)), "tick {round}");
+            let budget = &line[&format().line.keys.payload][&format().payload.budget];
+            assert_eq!(budget[&words.pct], Value::Null);
+            match budget.get(&words.alarm) {
+                Some(Value::String(text)) => {
+                    assert!(round >= 4 && text.contains("agents.toml") && text.contains("refused"), "tick {round}: {text}");
+                    assert_eq!(budget[&words.rounds], json!(round));
+                }
+                _ => assert!(round < 4, "tick {round}: no alarm"),
+            }
+        }
+        fake.consent = ProbeConsent::Refused;
+        let line = line(&fake);
+        assert_eq!(line[&format().line.keys.reason], Reason::Ready.word());
+        assert_eq!(Streak::from_row(&fake.detectors.borrow()[&format().detector.global_project]), None, "the count went");
+        // A known reading ends the count too, and a tick without candidates leaves it.
+        fake.consent = ProbeConsent::Granted;
+        fake.usage = Some(ProviderUsage::unknown("claude", None, "timeout", None));
+        let _ = super::tests::line(&fake);
+        let idle = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3")], detectors: RefCell::new(fake.detectors.borrow().clone()), ..Fake::default() };
+        let _ = super::tests::line(&idle);
+        assert_eq!(Streak::from_row(&idle.detectors.borrow()[&format().detector.global_project]).map(|streak| streak.rounds), Some(1));
+        fake.usage = Some(usage(80.0, 0));
+        let line = super::tests::line(&fake);
+        assert_eq!(line[&format().line.keys.reason], Reason::Budget.word(), "full and known");
+        assert_eq!(Streak::from_row(&fake.detectors.borrow()[&format().detector.global_project]), None);
+    }
+
+    /// The prototype's `test_budget` and `TestBudgetDiRiempimento`: the threshold of the automatic work, the
+    /// lower one of backfill, and the flag over the policy.
+    #[test]
+    fn the_thresholds_of_the_automatic_work_and_of_backfill() {
+        let ready = || vec![objective(1, "p", Status::Approved, "2", "3"), issue(task(2, "p", Status::Approved))];
+        let inbox = || vec![objective(1, "p", Status::Approved, "2", "3"), inbox_item(2)];
+        for (issues, pct, reason) in [
+            (ready(), 74.9, Reason::Ready),
+            (ready(), 75.0, Reason::Budget),
+            (inbox(), 49.9, Reason::Inbox),
+            (inbox(), 50.0, Reason::Budget),
+            (inbox(), 74.9, Reason::Budget),
+        ] {
+            let line = line(&Fake { issues, usage: Some(usage(pct, 0)), ..Fake::default() });
+            assert_eq!(line[&format().line.keys.reason], reason.word(), "{pct}");
+        }
+        let fake = Fake { issues: ready(), usage: Some(usage(40.0, 0)), ..Fake::default() };
+        let options = Options { budget_max: Some(30.0), ..Options::default() };
+        let (exit, _) = evaluate(&fake, &options, now()).line(now());
+        assert_eq!(exit, 3, "--budget-max over the policy");
     }
 }

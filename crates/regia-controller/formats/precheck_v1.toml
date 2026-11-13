@@ -67,11 +67,16 @@ unreadable = "illeggibile"
 internal = "interno"
 
 # The payload: the projects, each with its outcome and counts; the detail of an error; the counts alone
-# when the line would be too long.
+# when the line would be too long. After the projects: how the budget was decided, when it was asked, and
+# the policy's source, why its file did not read, and its local override.
 [payload]
 projects = "progetti"
 truncated = "troncato"
 detail = "dettaglio"
+budget = "budget"
+policy = "politica"
+policy_reason = "politica_motivo"
+policy_local = "politica_locale"
 
 # An entry of `projects`, in the order of its keys. The counts after `events` are written in this order,
 # the optional ones only when they apply; `tasks` holds the first ready tasks.
@@ -104,6 +109,78 @@ t = "t"
 own = "propri"
 comments = "commenti"
 reports = "report"
+
+# The budget's gate (§6.4 point 6 of the dossier's design note): Claude's 5-hour window, from the cache of
+# the usage probes, asked only when a project has new activity. A reading younger than `fresh_s` is known;
+# an older one of the same window, below the threshold, is known and stale; anything else is unknown, with
+# its reason cut to `reason_length` characters. The reasons are the prototype's sentences: `{reason}` is
+# what the probe said, `{hours}` an age in hours to one decimal, `{pct}` a share as Python's `:g` writes it.
+[budget]
+provider = "claude"
+window = "5h"
+pct = "claude_5h_pct"
+not_open = "aperta"
+stale = "stale"
+age = "eta_s"
+reason = "motivo"
+fresh_s = 3600
+reason_length = 160
+no_data = "nessun dato di budget in cache"
+probe_failed = "sonda: {reason}"
+joined = "{reason}; {old}"
+same_window_above = "dato della stessa finestra di {hours} h fa, già sopra la soglia ({pct} %)"
+window_not_open = "ultimo dato valido di {hours} h fa, con la finestra di 5 h non ancora aperta"
+window_expired = "ultimo dato valido di {hours} h fa, finestra di 5 h scaduta"
+# #466, names of the product that the prototype does not have (provisional, for the gate of names, #223).
+# The probes the user refused, and a provider the probes never read on this system (Claude on macOS,
+# #463): the gate is open, backfill is held, and nothing counts towards the alarm. A reading that failed
+# `alarm_rounds` ticks in a row, each with work waiting, raises the alarm: still no launch, and the text
+# names the setting that turns the probes off.
+probe = "sonda"
+probes_off = "spenta"
+never_read = "non-letta"
+rounds = "giri"
+since = "da"
+alarm = "allarme"
+alarm_rounds = 4
+alarm_text = "the usage probes have not read Claude's budget for {rounds} ticks in a row, and no step starts without it: to start steps with no budget, turn the probes off in the settings (probes = \"refused\" in agents.toml)"
+
+# The policy's source as the prototype names it, and its local override's description, in the prototype's
+# keys and words (`tools/politica_budget.py` of the dossier).
+[policy]
+file = "file"
+default = "default"
+with_local = "+locale"
+status = "stato"
+until = "fino"
+values = "valori"
+note = "nota"
+set_at = "impostato"
+reason = "motivo"
+
+[policy.statuses]
+active = "attivo"
+expired = "scaduto"
+unreadable = "illeggibile"
+ignored = "ignorato"
+
+# The keys of the override's values, by the contract's name of each.
+[policy.levers]
+automatic_max_pct = "automatico_max_pct"
+backfill_max_pct = "riempimento_max_pct"
+open_per_project = "aperte_per_progetto"
+new_per_week = "nuove_per_settimana"
+proposal_caps = "tetti_proposte"
+backfill = "riempimento"
+
+# The detector's own accounting (§6.3 of the design note): one row a project, under this cursor's name,
+# which is the only thing the precheck writes. The budget's alarm keeps its count in the row of the
+# project the controller reserves for every project (#466, provisional).
+[detector]
+cursor = "rilevatore"
+version = "v"
+global_project = "controller"
+budget = "budget"
 
 # The arguments of the prototype's command line, and their defaults. A wrong argument is an error of the
 # precheck, exit 1, never the parser's 2.

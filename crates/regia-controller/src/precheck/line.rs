@@ -187,6 +187,8 @@ pub enum Json {
     Null,
     Bool(bool),
     Int(i64),
+    /// A float, written as Python's `repr` writes it: `10.0`, `74.9`, `1e-05`.
+    Float(f64),
     Str(String),
     List(Vec<Json>),
     Object(Vec<(String, Json)>),
@@ -207,6 +209,7 @@ impl Json {
             Json::Null => out.push_str("null"),
             Json::Bool(value) => out.push_str(if *value { "true" } else { "false" }),
             Json::Int(value) => out.push_str(&value.to_string()),
+            Json::Float(value) => out.push_str(&python_repr(*value)),
             Json::Str(text) => write_str(text, out),
             Json::List(items) => {
                 out.push('[');
@@ -232,6 +235,51 @@ impl Json {
             }
         }
     }
+}
+
+/// The shortest digits that read back as `value`, and the place of the decimal point after the first of
+/// them: `74.9` is `("749", 2)`, `0.001` is `("1", -2)`.
+fn shortest_digits(value: f64) -> (String, i32) {
+    let scientific = format!("{:e}", value.abs());
+    let (mantissa, exponent) = scientific.split_once('e').unwrap_or((&scientific, "0"));
+    let digits: String = mantissa.chars().filter(char::is_ascii_digit).collect();
+    let digits = digits.trim_end_matches('0');
+    let digits = if digits.is_empty() { "0".to_owned() } else { digits.to_owned() };
+    (digits, exponent.parse::<i32>().unwrap_or(0) + 1)
+}
+
+/// A float as Python's `repr` writes it, which is what its `json` writes: the shortest digits that read
+/// back, fixed from 1e-4 up to 1e16 with at least one decimal, else in exponent form with a sign and at
+/// least two digits of exponent. Python's `json` writes `NaN` and `Infinity` for the values outside.
+#[must_use]
+pub fn python_repr(value: f64) -> String {
+    if value.is_nan() {
+        return "NaN".to_owned();
+    }
+    if value.is_infinite() {
+        return if value > 0.0 { "Infinity".to_owned() } else { "-Infinity".to_owned() };
+    }
+    let sign = if value.is_sign_negative() { "-" } else { "" };
+    if value == 0.0 {
+        return format!("{sign}0.0");
+    }
+    let (digits, point) = shortest_digits(value);
+    let count = i32::try_from(digits.len()).unwrap_or(i32::MAX);
+    if -4 < point && point <= 16 {
+        let body = if point <= 0 {
+            format!("0.{}{digits}", "0".repeat(usize::try_from(-point).unwrap_or(0)))
+        } else if point >= count {
+            format!("{digits}{}.0", "0".repeat(usize::try_from(point - count).unwrap_or(0)))
+        } else {
+            let (whole, fraction) = digits.split_at(usize::try_from(point).unwrap_or(0));
+            format!("{whole}.{fraction}")
+        };
+        return format!("{sign}{body}");
+    }
+    let (first, rest) = digits.split_at(1);
+    let mantissa = if rest.is_empty() { first.to_owned() } else { format!("{first}.{rest}") };
+    let exponent = point - 1;
+    format!("{sign}{mantissa}e{}{:02}", if exponent < 0 { '-' } else { '+' }, exponent.abs())
 }
 
 /// A string as Python's `json` writes it in ASCII: the five short escapes, and `\uXXXX` in lower case for
@@ -378,6 +426,28 @@ mod tests {
         assert_eq!(value[&keys.cursor], serde_json::Value::Null, "the cursors go with the projects");
         assert_eq!(value[&keys.payload], serde_json::json!({format().payload.truncated.as_str(): true, format().payload.projects.as_str(): 200}));
         assert_eq!(value[&keys.outcome], Outcome::NewActivity.word());
+    }
+
+    /// `repr` of Python 3.12 on the floats a line carries: shares, and the forms at the edges.
+    #[test]
+    fn a_float_is_written_as_python_writes_it() {
+        for (value, python) in [
+            (10.0, "10.0"),
+            (74.9, "74.9"),
+            (0.1, "0.1"),
+            (100.0, "100.0"),
+            (-2.5, "-2.5"),
+            (0.0, "0.0"),
+            (0.0001, "0.0001"),
+            (0.000_01, "1e-05"),
+            (1e15, "1000000000000000.0"),
+            (1e16, "1e+16"),
+            (123_456_789.125, "123456789.125"),
+            (1.5e-7, "1.5e-07"),
+            (f64::NAN, "NaN"),
+        ] {
+            assert_eq!(python_repr(value), python, "{value}");
+        }
     }
 
     #[test]

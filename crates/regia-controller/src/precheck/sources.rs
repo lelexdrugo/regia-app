@@ -1,16 +1,30 @@
-//! The precheck's sources on the machine: the user's `gh` for the tracker, the state database, and the
-//! reports on disk. The tick has a deadline, checked before each read of the tracker.
+//! The precheck's sources on the machine: the user's `gh` for the tracker, the state database, the
+//! reports on disk, the budget policy, the user's consent to the usage probes and their cache. The tick
+//! has a deadline, checked before each read of the tracker.
 
+use std::convert::Infallible;
 use std::path::{Path, PathBuf};
 use std::time::{Instant, UNIX_EPOCH};
 
-use regia_core::{RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1};
+use chrono::{DateTime, Utc};
+use regia_agents::{Env, Https, Platform, ProbeConsent, Settings, UsageProbes};
+use regia_core::policy::{file_path, local_file_name, read_local};
+use regia_core::{Policy, RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1};
 use regia_github::GhTracker;
-use regia_identity::{prototype_env_var, state_dir};
-use regia_store::{CursorName, LeaseEntry, ManualClock, ProjectId, Store, WallTime, reports_folder};
+use regia_identity::{config_dir, env_var, prototype_env_var, state_dir};
+use regia_store::{CursorName, LeaseEntry, ManualClock, ProjectId, ProviderUsage, Store, WallTime, read_state_file, reports_folder};
 use serde_json::Value;
 
+use super::v1::format;
 use super::{ExpiredLease, Issue, ObjectiveRegistry, Report, Sources};
+
+/// The variable that names the folder of the user's settings in place of the system's, for the harness:
+/// `REGIA_CONFIG_DIR`. The system's folder is not one a variable moves on every system, and the harness
+/// must never read the machine's. Provisional, for the gate of names (#223).
+pub const SETTINGS_DIR_SUFFIX: &str = "CONFIG_DIR";
+
+/// How often the cache asks the probes, at most: the prototype's `BUDGET_MIN_INTERVALLO_S`.
+const PROBE_INTERVAL_S: u64 = regia_store::MIN_INTERVAL_S;
 
 /// How many of an issue's comments the precheck reads: its last ones, as the prototype's query asks.
 const LAST_COMMENTS: usize = 100;
@@ -25,11 +39,19 @@ pub struct LiveSources {
     store: Result<Store, String>,
     started: Instant,
     deadline_s: f64,
+    /// The clock, when the run fixes it.
+    fixed: Option<WallTime>,
 }
 
-/// The dossier of the prototype, while the prototype exists: a second place for `tracker.json`.
+/// The dossier of the prototype, while the prototype exists: a second place for `tracker.json`, and the
+/// home of the budget policy's file.
 fn dossier_dir() -> Option<PathBuf> {
     std::env::var_os(prototype_env_var("HOME")).filter(|value| !value.is_empty()).map(PathBuf::from)
+}
+
+/// The folder of the user's settings: the variable's, else the system's.
+fn settings_dir() -> Option<PathBuf> {
+    std::env::var_os(env_var(SETTINGS_DIR_SUFFIX)).filter(|value| !value.is_empty()).map(PathBuf::from).or_else(config_dir)
 }
 
 /// The sources of a tick that may take `deadline_s` seconds, with the state's clock fixed at `fixed` when
@@ -46,7 +68,7 @@ pub fn live_sources(deadline_s: f64, fixed: Option<WallTime>) -> Result<LiveSour
         Some(at) => store.with_clock(ManualClock::fixed(at)),
         None => store,
     });
-    Ok(LiveSources { tracker: GhTracker::new(&config), binding, store, started: Instant::now(), deadline_s })
+    Ok(LiveSources { tracker: GhTracker::new(&config), binding, store, started: Instant::now(), deadline_s, fixed })
 }
 
 impl LiveSources {
@@ -58,6 +80,21 @@ impl LiveSources {
     fn store(&self) -> Result<&Store, String> {
         self.store.as_ref().map_err(Clone::clone)
     }
+
+    fn now(&self) -> WallTime {
+        self.fixed.unwrap_or_else(WallTime::now)
+    }
+
+    fn detector_cursor(project: &str) -> Result<(ProjectId, CursorName), String> {
+        let id = ProjectId::new(project).map_err(|error| error.to_string())?;
+        let name = CursorName::new(format().detector.cursor.clone()).map_err(|error| error.to_string())?;
+        Ok((id, name))
+    }
+}
+
+/// An instant of the store's clock for the policy's override, which reads its expiry in chrono.
+fn utc(at: WallTime) -> DateTime<Utc> {
+    DateTime::from_timestamp_micros(at.unix_micros()).unwrap_or_default()
 }
 
 /// A lease's task as a number, when it is one: `3.0` is `3`, as Python's `in` finds it.
@@ -158,6 +195,47 @@ impl Sources for LiveSources {
         }
         reports.sort_by(|a, b| a.name.cmp(&b.name));
         Ok(reports)
+    }
+
+    /// The prototype's `carica`: the dossier's file, else the defaults, and the override of the state
+    /// folder, in the machine's time zone. A state folder that does not resolve has no override.
+    fn policy(&self) -> Policy {
+        let file = match dossier_dir() {
+            Some(dossier) => Policy::from_file(std::fs::read(dossier.join(file_path()))),
+            None => Policy::defaults(),
+        };
+        let Ok(folder) = regia_store::default_folder() else { return file };
+        file.with_local(read_local(read_state_file(&folder, local_file_name()), utc(self.now()), &chrono::Local))
+    }
+
+    fn probe_consent(&self) -> Result<ProbeConsent, String> {
+        let Some(dir) = settings_dir() else { return Ok(ProbeConsent::Refused) };
+        Settings::load(&dir).map(|settings| settings.probe_consent()).map_err(|error| error.to_string())
+    }
+
+    fn platform(&self) -> Platform {
+        Platform::current()
+    }
+
+    fn claude_usage(&self) -> Result<Option<ProviderUsage>, String> {
+        let store = self.store()?;
+        let probes = UsageProbes::new(self.probe_consent()?, Env::of_this_process(), Https::new());
+        let probes = match self.fixed {
+            Some(at) => probes.with_clock(ManualClock::fixed(at)),
+            None => probes,
+        };
+        let reading = store.budget(PROBE_INTERVAL_S, false, || Ok::<_, Infallible>(probes.read())).map_err(|error| error.to_string())?;
+        Ok(reading.provider(&format().budget.provider).cloned())
+    }
+
+    fn detector(&self, project: &str) -> Result<Value, String> {
+        let (id, name) = Self::detector_cursor(project)?;
+        self.store()?.cursor(&id, &name).map_err(|error| error.to_string())
+    }
+
+    fn write_detector(&self, project: &str, value: Value) -> Result<(), String> {
+        let (id, name) = Self::detector_cursor(project)?;
+        self.store()?.write_cursor(&id, &name, value).map_err(|error| error.to_string())
     }
 }
 

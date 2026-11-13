@@ -2893,6 +2893,8 @@ dependencies = [
 name = "regia-controller"
 version = "0.0.1"
 dependencies = [
+ "chrono",
+ "regia-agents",
  "regia-core",
  "regia-github",
  "regia-identity",
