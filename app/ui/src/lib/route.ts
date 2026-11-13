@@ -14,24 +14,28 @@ export interface Route {
   area: SettingsArea | null;
   /** Only for the moviola: the project whose lanes are shown, or none for the portfolio. */
   project: string | null;
+  /** Only for a project's moviola: the moment open at first, or none. */
+  moment: string | null;
 }
 
-/** A project's id as the app's commands accept one (app/src-tauri/src/moviola.rs); anything else is no project. */
+/** A project's id, or a milestone's, as the app's commands accept one (app/src-tauri/src/moviola.rs); anything else
+ * is none. */
 const PROJECT = /^[A-Za-z0-9._-]{1,64}$/;
 
 function known<T extends string>(list: readonly T[], value: string | undefined): value is T {
   return value !== undefined && (list as readonly string[]).includes(value);
 }
 
-/** `#/settings/general?x=1` is the settings' general area, `#/moviola/alpha` the lanes of the project alpha. An
- * address the app does not know is the brief. */
+/** `#/settings/general?x=1` is the settings' general area, `#/moviola/alpha` the lanes of the project alpha,
+ * `#/moviola/alpha/<id>` the same with that moment open. An address the app does not know is the brief. */
 export function parse(hash: string): Route {
   const [path = ""] = hash.replace(/^#\/?/, "").split("?");
-  const [first, second] = path.split("/");
+  const [first, second, third] = path.split("/");
   const section: Section = known(SECTIONS, first) ? first : "brief";
   const area = section === "settings" ? (known(SETTINGS_AREAS, second) ? second : SETTINGS_AREAS[0]) : null;
   const project = section === "moviola" && second !== undefined && PROJECT.test(second) ? second : null;
-  return { section, area, project };
+  const moment = project !== null && third !== undefined && PROJECT.test(third) ? third : null;
+  return { section, area, project, moment };
 }
 
 export function href(section: Section): string {
@@ -43,5 +47,5 @@ export function projectHref(project: string): string {
 }
 
 export function same(a: Route, b: Route): boolean {
-  return a.section === b.section && a.area === b.area && a.project === b.project;
+  return a.section === b.section && a.area === b.area && a.project === b.project && a.moment === b.moment;
 }

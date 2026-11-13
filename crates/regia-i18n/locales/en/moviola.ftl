@@ -94,3 +94,52 @@ moviola-lane-main = main
 moviola-lane-active = active
 moviola-lane-abandoned = abandoned
 moviola-lane-rejoined = rejoined
+
+## The frame of a moment (#487): its summary first, the why, what changed, how it got there, the references.
+
+moviola-frame-close = Close the moment
+moviola-in-brief = In brief
+moviola-changed = What changed
+moviola-open-decisions = Open decisions
+moviola-risks = Risks
+moviola-next-step = Next step
+moviola-claims = Claims that changed
+moviola-deviations = Deviations from the plan
+moviola-deviation = { $plan } → { $deviation }: { $reason } ({ $impact })
+moviola-none = nothing written
+moviola-not-declared = not declared
+moviola-opens-lane = Opens the lane «{ $lane }». { $reason }
+moviola-closes-lane = Closes the lane «{ $lane }» ({ $status }). { $reason }
+moviola-process = Process
+moviola-checks = Checks
+moviola-found = Defects found
+moviola-closed = Closed
+moviola-work = How it got here
+moviola-work-sub = Who worked, by task, from the moviola's aggregates.
+moviola-no-tasks = The moment names no task.
+moviola-no-aggregate = No aggregate for this task: its process is not declared.
+moviola-task-head = #{ $task } · round { $round } · subagents { $subagents }
+moviola-model-use = { $agent } · { $model } · effort { $effort } · { $sessions ->
+        [one] one dispatch
+       *[other] { $sessions } dispatches
+    }
+moviola-model-cited = { $agent } · { $model } · effort { $effort } · { $sessions ->
+        [one] one session cited by the report, work done in session
+       *[other] { $sessions } sessions cited by the report, work done in session
+    }
+moviola-no-session = No session recorded here: who worked is not known on this machine.
+moviola-check = check { $kind }: { $outcome }
+moviola-check-model = check { $kind }: { $outcome } · { $model }
+moviola-task-defects = defects found { $found } · closed { $closed }
+moviola-task-closes = closes { $refs }
+moviola-tokens = tokens: in { $input } · out { $output } · cache read { $read } · cache written { $written }
+moviola-no-tokens = Tokens not recorded here: they come from the sessions this machine reads.
+moviola-issues = Issues
+moviola-commits = Commits
+moviola-reports = Reports
+moviola-not-here = not on this machine
+moviola-tracker-project = The tracker's Project
+moviola-notes-loading = Reading the moment's notes…
+moviola-notes-failed = The moment's notes could not be read:
+moviola-notes-none = The chronicler wrote no notes for this moment.
+moviola-link-note = This version does not open the browser yet. The address:

@@ -3,20 +3,26 @@
   // timecode, and the transport: previous and next moment, the playhead as a range, zoom and home. The timecode is
   // the catalog's date-day-time (#439/D30) and is also in the DOM, with its instant in `data-t`, for the proofs.
   // Titles and directions' ids are text from others: in the DOM they sit in data-raw, on the Canvas they are drawn.
+  // Beside the stage, the frame of the moment chosen (Frame.svelte, #487): it follows the stage's selection, and
+  // reads the moment's sidecar with `get_snapshot`, keeping only the answer for the moment still chosen.
   import { onMount, tick, untrack } from "svelte";
 
   import type { Catalog } from "../../lib/i18n";
   import type { CanvasText } from "../../lib/moviola/canvas2d";
+  import { frame as frameOf, type Notes } from "../../lib/moviola/frame";
   import { type Model, prepare } from "../../lib/moviola/model";
   import { Stage } from "../../lib/moviola/stage";
   import { day, dayKey, KIND_ID, LANE_ID, laneName, timecode } from "../../lib/moviola/text";
-  import type { MoviolaSource } from "../../lib/moviola/types";
+  import type { MoviolaSource, Snapshot } from "../../lib/moviola/types";
   import { href } from "../../lib/route";
+  import Frame from "./Frame.svelte";
 
   interface Props {
     strings: Catalog;
     source: MoviolaSource;
     project: string;
+    /** The moment the address opens, if any. */
+    moment?: string | null;
     /** The project's name, when the portfolio was read: otherwise its id. */
     name: string;
     /** Off only for the harness's negative control of the themes. */
@@ -24,7 +30,7 @@
     onsettled?: () => void;
   }
 
-  let { strings, source, project, name, observeTheme = true, onsettled }: Props = $props();
+  let { strings, source, project, moment = null, name, observeTheme = true, onsettled }: Props = $props();
 
   type State = { kind: "loading" } | { kind: "ready"; model: Model } | { kind: "failed"; reason: string };
   let view: State = $state({ kind: "loading" });
@@ -35,6 +41,65 @@
   let t = $state(0);
   let range = $state(0);
   let selected = $state(-1);
+  // The sidecar of the moment chosen: only the answer for the one still chosen counts.
+  let notes: Notes = $state({ kind: "loading" });
+  let snapshot: Snapshot | null = $state.raw(null);
+  let asked = "";
+  let reading: Promise<void> = Promise.resolve();
+  let drawn = $state(false);
+
+  async function readNotes(id: string): Promise<void> {
+    asked = id;
+    notes = { kind: "loading" };
+    snapshot = null;
+    try {
+      const answer = await source.snapshot(project, id);
+      if (asked !== id) return;
+      snapshot = answer;
+      notes = answer ? { kind: "ready" } : { kind: "none" };
+    } catch (error) {
+      if (asked === id) notes = { kind: "failed", reason: String(error) };
+    }
+  }
+
+  $effect(() => {
+    const node = view.kind === "ready" ? view.model.nodes[selected] : undefined;
+    if (node) {
+      const id = node.milestone.id;
+      untrack(() => {
+        if (id !== asked) reading = readNotes(id);
+      });
+    } else {
+      asked = "";
+    }
+  });
+
+  const current = $derived.by(() => (view.kind === "ready" && selected >= 0 ? frameOf(view.model, selected, snapshot) : null));
+
+  /** The moment an address names: chosen on the stage, its notes read. */
+  async function open(made: Stage, model: Model, id: string | null): Promise<void> {
+    const node = id ? model.byId.get(id) : undefined;
+    if (!node) return;
+    made.select(node.index);
+    await tick();
+    await reading;
+    await tick();
+  }
+
+  // Another moment in the address, once the stage is drawn: the screen has drawn when its notes are in.
+  $effect(() => {
+    const id = moment;
+    if (drawn && stage && view.kind === "ready") {
+      const made = stage;
+      const model = view.model;
+      untrack(() => void open(made, model, id).then(() => onsettled?.()));
+    }
+  });
+
+  function close(): void {
+    stage?.select(-1);
+    canvas?.focus();
+  }
 
   function words(catalog: Catalog, model: Model): CanvasText {
     return {
@@ -77,13 +142,16 @@
       },
     });
     stage = made;
-    void made.ready.then(() => {
+    void made.ready.then(async () => {
       range = made.rangeValue();
+      await open(made, model, untrack(() => moment));
+      drawn = true;
       onsettled?.();
     });
     return () => {
       made.destroy();
       stage = null;
+      drawn = false;
     };
   });
 
@@ -132,6 +200,7 @@
   {:else}
     {@const model = view.model}
     {@const node = model.nodes[selected]}
+    <div class="moviola-body">
     <section class="stage-panel" aria-label={strings.message("moviola-lanes-directions")}>
       <div class="stage" bind:this={host}>
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -181,5 +250,14 @@
         {/if}
       </p>
     </section>
+    {#if current}
+      <Frame {strings} {model} frame={current} {notes} onselect={(index) => stage?.select(index)} onclose={close} />
+    {:else}
+      <aside class="frame frame-empty" aria-labelledby="moviola-frame-none">
+        <h2 id="moviola-frame-none">{strings.message("moviola-nothing-title")}</h2>
+        <p class="faint">{strings.message("moviola-nothing-body")}</p>
+      </aside>
+    {/if}
+    </div>
   {/if}
 </div>

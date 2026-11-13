@@ -109,6 +109,8 @@ export type Deviation = { plan: string | null; deviation: string | null; reason:
 export interface MoviolaSource {
   projects(): Promise<ProjectSummary[]>;
   timeline(project: string): Promise<Timeline>;
+  /** A milestone's sidecar, `null` when it has none. */
+  snapshot(project: string, milestone: string): Promise<Snapshot | null>;
 }
 
 /** `get_snapshot`: a milestone's sidecar. */

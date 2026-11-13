@@ -8,7 +8,7 @@ import { mount } from "svelte";
 
 import App from "./App.svelte";
 import { catalog } from "./lib/i18n";
-import { getAppInfo, getBrief, getSettings, getTimeline, listProjects, setSettings } from "./lib/ipc";
+import { getAppInfo, getBrief, getSettings, getSnapshot, getTimeline, listProjects, setSettings } from "./lib/ipc";
 import { draw } from "./lib/look";
 
 async function start(): Promise<void> {
@@ -35,7 +35,7 @@ async function start(): Promise<void> {
       load: getBrief,
       settings,
       save: setSettings,
-      moviola: { projects: listProjects, timeline: (project: string) => getTimeline(project) },
+      moviola: { projects: listProjects, timeline: (project: string) => getTimeline(project), snapshot: getSnapshot },
       onsettled: () => {
         // The first screen drawn is the brief: what app-smoke compares with the CLI.
         if (info.smoke && !smoked) {

@@ -120,9 +120,93 @@ export const moviola = {
     console.log(`negative control, a column moved by one pixel: ${caughtMoved ? "caught" : "NOT CAUGHT"}`);
 
     const parts = await renderer(ui, m, s, fixture);
-    return ok && caughtOrder && caughtMoved && parts;
+    const frames = await frameChecks(m, fixture);
+    return ok && caughtOrder && caughtMoved && parts && frames;
   },
 };
+
+/** The product's frame in the recording's shape: the prototype's L3, read back by its sections. */
+function neutral(fr) {
+  const runs = (list) => list.map((line) => line.map((r) => (r.url === null ? { text: r.text } : { text: r.text, url: r.url })));
+  const event = (e) => ({ title: e.title, status: e.status, reason: e.reason });
+  const ids = (nodes) => nodes.map((n) => n.milestone.id);
+  return {
+    id: fr.node.milestone.id,
+    title: fr.node.milestone.title,
+    lane: fr.lane.id,
+    health: fr.node.milestone.health,
+    inBrief: fr.inBrief,
+    why: {
+      direction: fr.why.direction,
+      opens: fr.why.opens && { title: fr.why.opens.title, reason: fr.why.opens.reason },
+      closes: fr.why.closes.map(event),
+    },
+    changed: runs(fr.changed),
+    openDecisions: runs(fr.openDecisions),
+    risks: runs(fr.risks),
+    nextStep: fr.next,
+    claims: fr.claims,
+    deviations: fr.deviations.map((d) => [d.plan, d.deviation, d.reason, d.impact]),
+    process: fr.process,
+    work: fr.work.map((w) => ({ task: w.task, aggregate: w.aggregate !== null })),
+    refs: {
+      issue: fr.links.issue.map((x) => ({ text: x.text, url: x.url })),
+      commit: fr.links.commit.map((x) => ({ text: x.url ? x.text : x.hash || x.text, url: x.url })),
+      report: fr.links.report.map((x) => ({ text: x.text, path: x.path, exists: x.exists })),
+      projectUrl: fr.projectUrl,
+    },
+    parents: ids(fr.parents),
+    children: ids(fr.children),
+    previous: fr.previous ? fr.previous.milestone.id : null,
+    following: fr.following ? fr.following.milestone.id : null,
+  };
+}
+
+/**
+ * The frame (L3, #487) against the prototype's: for every milestone of every case, the product's `frame` over the
+ * core's timeline and sidecar says what the prototype's `disegnaL3` drew, section by section, with every `#N` of
+ * the three linked sections at the same address. The negative controls: a frame read with the next milestone's
+ * sidecar, and a `#N` split without the prototype's look-ahead (so `#14a` links), must both be caught.
+ */
+async function frameChecks(m, fixture) {
+  const f = await import("../src/lib/moviola/frame.ts");
+  const recordedKeys = (frame) => Object.fromEntries(Object.entries(frame).filter(([key]) => key !== "pack"));
+  let ok = true;
+  let compared = 0;
+  for (const c of fixture.cases) {
+    const model = m.prepare(c.timeline, 0);
+    const found = [];
+    c.frames.forEach((expected, i) => {
+      const fr = f.frame(model, i, c.snapshots[expected.id] ?? null);
+      differences(recordedKeys(expected), fr ? neutral(fr) : null, `${c.name}/${expected.id}`, found);
+      compared += 1;
+    });
+    const linked = c.frames.reduce((sum, fr) => sum + [...fr.changed, ...fr.openDecisions, ...fr.risks].flat().filter((r) => r.url).length, 0);
+    console.log(`${c.name}: ${c.frames.length} frames, ${linked} #N links: ${found.length ? "DIFFERENT" : "the prototype's"}`);
+    for (const line of found.slice(0, 12)) console.log(`  ${line}`);
+    ok &&= found.length === 0 && c.frames.length === c.timeline.milestones.length;
+  }
+  const frameCase = fixture.cases.find((c) => c.name === "frame");
+  const sections = ["changed", "openDecisions", "risks"].every((key) => frameCase.frames.some((fr) => fr[key].flat().some((r) => r.url)));
+  console.log(`frames compared: ${compared}; a #N link in each of the three sections: ${sections ? "yes" : "NO"}`);
+
+  // Negative controls.
+  const model = m.prepare(frameCase.timeline, 0);
+  const first = frameCase.frames[0];
+  const swapped = f.frame(model, 0, frameCase.snapshots[frameCase.frames[1].id]);
+  const caughtSidecar = differences(recordedKeys(first), neutral(swapped), "frame", []).length > 0;
+  const naive = (text, issues) => text.split(/(#\d+)/).filter(Boolean).map((piece) => {
+    const hit = issues.find((x) => x.text === piece);
+    return hit && hit.url ? { text: piece, url: hit.url } : { text: piece, url: null };
+  });
+  const loose = neutral(f.frame(model, 0, frameCase.snapshots[first.id]));
+  loose.risks = frameCase.snapshots[first.id].risks.map((text) => naive(text, model.nodes[0].milestone.links.issue))
+    .map((line) => line.map((r) => (r.url === null ? { text: r.text } : r)));
+  const caughtNaive = differences(first.risks, loose.risks, "frame", []).length > 0;
+  console.log(`negative control, a frame with the next milestone's sidecar: ${caughtSidecar ? "caught" : "NOT CAUGHT"}`);
+  console.log(`negative control, #N split without the look-ahead: ${caughtNaive ? "caught" : "NOT CAUGHT"}`);
+  return ok && sections && caughtSidecar && caughtNaive;
+}
 
 /** A timeline of `n` moments on the main lane, ten minutes apart, two in three of them decisions: the crowded
  * lane of the labels' check. */

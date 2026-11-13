@@ -94,3 +94,52 @@ moviola-lane-main = principale
 moviola-lane-active = attiva
 moviola-lane-abandoned = abbandonata
 moviola-lane-rejoined = rientrata
+
+## Il fotogramma di un momento (#487): prima la sintesi, poi il perché, che cosa è cambiato, come ci si è arrivati, i riferimenti.
+
+moviola-frame-close = Chiudi il momento
+moviola-in-brief = In breve
+moviola-changed = Che cosa è cambiato
+moviola-open-decisions = Decisioni aperte
+moviola-risks = Rischi
+moviola-next-step = Prossimo passo
+moviola-claims = Claim cambiati
+moviola-deviations = Deviazioni dal piano
+moviola-deviation = { $plan } → { $deviation }: { $reason } ({ $impact })
+moviola-none = nessuna voce
+moviola-not-declared = non dichiarato
+moviola-opens-lane = Apre la corsia «{ $lane }». { $reason }
+moviola-closes-lane = Chiude la corsia «{ $lane }» ({ $status }). { $reason }
+moviola-process = Processo
+moviola-checks = Controlli
+moviola-found = Difetti trovati
+moviola-closed = Chiusi
+moviola-work = Come ci si è arrivati
+moviola-work-sub = Chi ha lavorato, per task, dagli aggregati della moviola.
+moviola-no-tasks = Il momento non cita nessun task.
+moviola-no-aggregate = Nessun aggregato per questo task: il suo processo non è dichiarato.
+moviola-task-head = #{ $task } · round { $round } · sottoagenti { $subagents }
+moviola-model-use = { $agent } · { $model } · effort { $effort } · { $sessions ->
+        [one] un dispatch
+       *[other] { $sessions } dispatch
+    }
+moviola-model-cited = { $agent } · { $model } · effort { $effort } · { $sessions ->
+        [one] una sessione citata dal report, lavoro in sessione
+       *[other] { $sessions } sessioni citate dal report, lavoro in sessione
+    }
+moviola-no-session = Nessuna sessione registrata qui: chi ha lavorato non si sa su questa macchina.
+moviola-check = controllo { $kind }: { $outcome }
+moviola-check-model = controllo { $kind }: { $outcome } · { $model }
+moviola-task-defects = difetti trovati { $found } · chiusi { $closed }
+moviola-task-closes = chiude { $refs }
+moviola-tokens = token: in { $input } · out { $output } · cache letta { $read } · cache scritta { $written }
+moviola-no-tokens = Token non registrati qui: vengono dalle sessioni che questa macchina legge.
+moviola-issues = Issue
+moviola-commits = Commit
+moviola-reports = Report
+moviola-not-here = non presente su questa macchina
+moviola-tracker-project = Il Project del tracker
+moviola-notes-loading = Leggo le note del momento…
+moviola-notes-failed = Le note del momento non si leggono:
+moviola-notes-none = Il cronista non ha scritto note per questo momento.
+moviola-link-note = Questa versione non apre ancora il browser. L'indirizzo:

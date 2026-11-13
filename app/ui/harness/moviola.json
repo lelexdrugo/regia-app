@@ -238,6 +238,13 @@
      }
     ]
    },
+   "snapshots": {
+    "M0": null,
+    "M1": null,
+    "M2": null,
+    "M3": null,
+    "M4": null
+   },
    "expected": {
     "lanes": [
      {
@@ -764,7 +771,219 @@
       }
      ]
     }
-   }
+   },
+   "frames": [
+    {
+     "id": "M0",
+     "title": "node 0",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [],
+     "children": [
+      "M1"
+     ],
+     "previous": null,
+     "following": "M1",
+     "pack": "regia · p · nodo M0 (milestone, 2026-10-14)\nSto guardando: node 0.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "M1",
+     "title": "node 1",
+     "lane": "x",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": {
+       "title": "X",
+       "reason": "because"
+      },
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [
+      "M0"
+     ],
+     "children": [
+      "M2"
+     ],
+     "previous": "M0",
+     "following": "M2",
+     "pack": "regia · p · nodo M1 (esplorazione, 2026-10-15)\nSto guardando: node 1.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "M2",
+     "title": "node 2",
+     "lane": "x",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": 3,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [
+      "M1"
+     ],
+     "children": [
+      "M3"
+     ],
+     "previous": "M1",
+     "following": "M3",
+     "pack": "regia · p · nodo M2 (milestone, 2026-10-15)\nSto guardando: node 2.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "M3",
+     "title": "node 3",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": [
+       {
+        "title": "X",
+        "status": "rejoined",
+        "reason": "because"
+       }
+      ]
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [
+      "M2"
+     ],
+     "children": [
+      "M4"
+     ],
+     "previous": "M2",
+     "following": "M4",
+     "pack": "regia · p · nodo M3 (rientro, 2026-10-19)\nSto guardando: node 3.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "M4",
+     "title": "node 4",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 7,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [
+      "M3"
+     ],
+     "children": [],
+     "previous": "M3",
+     "following": null,
+     "pack": "regia · p · nodo M4 (decisione, 2026-10-20)\nSto guardando: node 4.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    }
+   ]
   },
   {
    "name": "alpha",
@@ -1261,6 +1480,174 @@
       "task": 27
      }
     ]
+   },
+   "snapshots": {
+    "01JCM100000000000000000000": {
+     "id": "01JCM100000000000000000000",
+     "ts": "2026-10-14T10:00:00Z",
+     "in_brief": "The project starts. Nothing is late.",
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": 1,
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null
+      }
+     }
+    },
+    "01JCM200000000000000000000": {
+     "id": "01JCM200000000000000000000",
+     "ts": "2026-10-15T12:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [
+       "test"
+      ],
+      "defects": {
+       "found": 0,
+       "closed": 0
+      }
+     }
+    },
+    "01JCM300000000000000000000": {
+     "id": "01JCM300000000000000000000",
+     "ts": "2026-10-16T09:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [
+      "C1 is weaker."
+     ],
+     "deviations": [
+      {
+       "plan": "Run A",
+       "deviation": "Ran B",
+       "reason": "A broke",
+       "impact": "One day"
+      }
+     ],
+     "process": {
+      "round": 2,
+      "checks": [
+       "revisione-avversaria"
+      ],
+      "defects": {
+       "found": 3,
+       "closed": null
+      }
+     }
+    },
+    "01JCM400000000000000000000": null,
+    "01JCM5A0000000000000000000": {
+     "id": "01JCM5A0000000000000000000",
+     "ts": "2026-10-20T09:00:00Z",
+     "in_brief": "A gate is open.",
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": 3,
+      "checks": [
+       "test"
+      ],
+      "defects": {
+       "found": 1,
+       "closed": 1
+      }
+     }
+    },
+    "01JCM5B0000000000000000000": {
+     "id": "01JCM5B0000000000000000000",
+     "ts": "2026-10-20T09:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null
+      }
+     }
+    },
+    "01JCM600000000000000000000": {
+     "id": "01JCM600000000000000000000",
+     "ts": "2026-10-21T07:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null
+      }
+     }
+    }
    },
    "expected": {
     "lanes": [
@@ -2005,7 +2392,564 @@
       }
      ]
     }
-   }
+   },
+   "frames": [
+    {
+     "id": "01JCM100000000000000000000",
+     "title": "First synthetic step",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": "The project starts. Nothing is late.",
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": 1,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 12,
+       "aggregate": true
+      },
+      {
+       "task": 27,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "#27",
+        "url": "https://github.com/acme/tasks/issues/27"
+       }
+      ],
+      "commit": [],
+      "report": [
+       {
+        "text": ".regia/report/2026-10-19-12-present.md",
+        "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "exists": true
+       },
+       {
+        "text": ".regia/report/2026-10-20-13-absent.md",
+        "path": "<root>/projects/alpha/.regia/report/2026-10-20-13-absent.md",
+        "exists": false
+       }
+      ],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [],
+     "children": [
+      "01JCM200000000000000000000"
+     ],
+     "previous": null,
+     "following": "01JCM200000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM100000000000000000000 (milestone, 2026-10-14)\nSto guardando: First synthetic step. The project starts. Nothing is late.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/tasks/issues/27, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, .regia/report/2026-10-20-13-absent.md, https://origin.invalid/p/alpha/snapshot/01JCM100000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "01JCM200000000000000000000",
+     "title": "A choice waits for the owner",
+     "lane": "principale",
+     "health": "waiting_on_owner",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with #12."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [
+       "test",
+       "rilettura"
+      ],
+      "found": 0,
+      "closed": 0
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [
+       {
+        "text": "abc1234",
+        "url": "https://github.com/acme/alpha/commit/abc1234"
+       }
+      ],
+      "report": [
+       {
+        "text": "{dati}/EXP-1/results.md",
+        "path": null,
+        "exists": false
+       },
+       {
+        "text": "C:\\Users\\someone\\x.md",
+        "path": null,
+        "exists": false
+       },
+       {
+        "text": "/home/someone/x.md",
+        "path": null,
+        "exists": false
+       },
+       {
+        "text": "../outside.md",
+        "path": null,
+        "exists": false
+       },
+       {
+        "text": ".regia\\report\\2026-10-19-12-present.md",
+        "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "exists": true
+       }
+      ],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM100000000000000000000"
+     ],
+     "children": [
+      "01JCM300000000000000000000",
+      "01JCM400000000000000000000"
+     ],
+     "previous": "01JCM100000000000000000000",
+     "following": "01JCM300000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM200000000000000000000 (decisione, 2026-10-15)\nSto guardando: A choice waits for the owner. Keep the main line.\nRiferimenti: https://github.com/acme/alpha/commit/abc1234, {dati}/EXP-1/results.md, C:\\Users\\someone\\x.md, /home/someone/x.md, ../outside.md, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, https://origin.invalid/p/alpha/snapshot/01JCM200000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "01JCM300000000000000000000",
+     "title": "#14 probe B opens",
+     "lane": "probe-b",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": {
+       "title": "Probe B",
+       "reason": "It worked and came back."
+      },
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [
+      "C1 is weaker."
+     ],
+     "deviations": [
+      [
+       "Run A",
+       "Ran B",
+       "A broke",
+       "One day"
+      ]
+     ],
+     "process": {
+      "round": 2,
+      "checks": [
+       "revisione-avversaria"
+      ],
+      "found": 3,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 14,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       }
+      ],
+      "commit": [
+       {
+        "text": "0123456",
+        "url": "https://github.com/acme/alpha/commit/0123456789abcdef0123456789abcdef01234567"
+       }
+      ],
+      "report": [
+       {
+        "text": ".regia/report/2026-10-19-12-present.md",
+        "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "exists": true
+       }
+      ],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM200000000000000000000"
+     ],
+     "children": [
+      "01JCM400000000000000000000"
+     ],
+     "previous": "01JCM200000000000000000000",
+     "following": "01JCM400000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM300000000000000000000 (esplorazione, 2026-10-16)\nSto guardando: #14 probe B opens. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/14, https://github.com/acme/alpha/commit/0123456789abcdef0123456789abcdef01234567, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, https://origin.invalid/p/alpha/snapshot/01JCM300000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "01JCM400000000000000000000",
+     "title": "Probe B comes back",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": [
+       {
+        "title": "Probe B",
+        "status": "rejoined",
+        "reason": "It worked and came back."
+       }
+      ]
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM300000000000000000000",
+      "01JCM200000000000000000000"
+     ],
+     "children": [
+      "01JCM5A0000000000000000000",
+      "01JCM5B0000000000000000000"
+     ],
+     "previous": "01JCM300000000000000000000",
+     "following": "01JCM5A0000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM400000000000000000000 (rientro, 2026-10-19)\nSto guardando: Probe B comes back.\nRiferimenti: https://origin.invalid/p/alpha/snapshot/01JCM400000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "01JCM5A0000000000000000000",
+     "title": "A gate on the same instant",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": "A gate is open.",
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": 3,
+      "checks": [
+       "test"
+      ],
+      "found": 1,
+      "closed": 1
+     },
+     "work": [
+      {
+       "task": 12,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       }
+      ],
+      "commit": [
+       {
+        "text": "fedcba9",
+        "url": "https://github.com/acme/alpha/commit/fedcba9876543210"
+       }
+      ],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM400000000000000000000"
+     ],
+     "children": [
+      "01JCM600000000000000000000"
+     ],
+     "previous": "01JCM400000000000000000000",
+     "following": "01JCM5B0000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM5A0000000000000000000 (gate, 2026-10-20)\nSto guardando: A gate on the same instant. A gate is open.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/alpha/commit/fedcba9876543210, https://origin.invalid/p/alpha/snapshot/01JCM5A0000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "01JCM5B0000000000000000000",
+     "title": "Probe D is dropped",
+     "lane": "probe-d",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 27,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#27",
+        "url": "https://github.com/acme/tasks/issues/27"
+       }
+      ],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM400000000000000000000"
+     ],
+     "children": [],
+     "previous": "01JCM5A0000000000000000000",
+     "following": "01JCM600000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM5B0000000000000000000 (abbandono, 2026-10-20)\nSto guardando: Probe D is dropped. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/27, https://origin.invalid/p/alpha/snapshot/01JCM5B0000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "01JCM600000000000000000000",
+     "title": "Over budget on a lane with no record",
+     "lane": "probe-c",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 99,
+       "aggregate": false
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#99",
+        "url": "https://github.com/acme/tasks/issues/99"
+       }
+      ],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM5A0000000000000000000"
+     ],
+     "children": [],
+     "previous": "01JCM5B0000000000000000000",
+     "following": null,
+     "pack": "regia · alpha · nodo 01JCM600000000000000000000 (eccezione, 2026-10-21)\nSto guardando: Over budget on a lane with no record. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/99, https://origin.invalid/p/alpha/snapshot/01JCM600000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    }
+   ]
   },
   {
    "name": "beta",
@@ -2075,6 +3019,26 @@
     ],
     "directions": [],
     "aggregates": []
+   },
+   "snapshots": {
+    "01JCB100000000000000000000": {
+     "id": "01JCB100000000000000000000",
+     "ts": "2026-10-18T08:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": null
+    }
    },
    "expected": {
     "lanes": [
@@ -2271,7 +3235,998 @@
      ],
      "joints": []
     }
-   }
+   },
+   "frames": [
+    {
+     "id": "01JCB100000000000000000000",
+     "title": "Beta's only milestone",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with #12."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": 1,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 5,
+       "aggregate": false
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#5",
+        "url": null
+       }
+      ],
+      "commit": [
+       {
+        "text": "1111111",
+        "url": null
+       }
+      ],
+      "report": [
+       {
+        "text": ".regia/report/none.md",
+        "path": "<root>/projects/beta/.regia/report/none.md",
+        "exists": false
+       }
+      ],
+      "projectUrl": null
+     },
+     "parents": [],
+     "children": [],
+     "previous": null,
+     "following": null,
+     "pack": "regia · beta · nodo 01JCB100000000000000000000 (milestone, 2026-10-18)\nSto guardando: Beta's only milestone. Keep the main line.\nRiferimenti: #5, 1111111, .regia/report/none.md, https://origin.invalid/p/beta/snapshot/01JCB100000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    }
+   ]
+  },
+  {
+   "name": "frame",
+   "timeline": {
+    "project": "frame",
+    "project_url": "https://github.com/users/acme/projects/7",
+    "main_direction": "principale",
+    "milestones": [
+     {
+      "opens_direction": null,
+      "process": {
+       "round": 2,
+       "checks": [
+        "revisione-avversaria",
+        "test"
+       ],
+       "defects": {
+        "found": 2,
+        "closed": 2
+       }
+      },
+      "author": null,
+      "id": "01JCF000000000000000000000",
+      "ts": "2026-10-14T10:00:00Z",
+      "kind": "milestone",
+      "title": "#12 merged after review",
+      "direction": "principale",
+      "health": "healthy",
+      "parents": [],
+      "refs": {
+       "issue": [
+        12,
+        14
+       ],
+       "commit": [
+        "abc1234"
+       ],
+       "report": [
+        ".regia/report/2026-10-14-12-review.md",
+        ".regia/report/gone.md"
+       ]
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#12",
+         "url": "https://github.com/acme/tasks/issues/12"
+        },
+        {
+         "text": "#14",
+         "url": "https://github.com/acme/tasks/issues/14"
+        }
+       ],
+       "commit": [
+        {
+         "text": "abc1234",
+         "url": "https://github.com/acme/frame/commit/abc1234",
+         "hash": "abc1234"
+        }
+       ],
+       "report": [
+        {
+         "text": ".regia/report/2026-10-14-12-review.md",
+         "path": "<root>/projects/frame/.regia/report/2026-10-14-12-review.md",
+         "kind": "relative",
+         "exists": true
+        },
+        {
+         "text": ".regia/report/gone.md",
+         "path": "<root>/projects/frame/.regia/report/gone.md",
+         "kind": "relative",
+         "exists": false
+        }
+       ]
+      }
+     },
+     {
+      "opens_direction": "probe",
+      "process": null,
+      "author": null,
+      "id": "01JCF100000000000000000000",
+      "ts": "2026-10-15T09:00:00Z",
+      "kind": "exploration",
+      "title": "A probe opens its lane",
+      "direction": "probe",
+      "health": "at_risk",
+      "parents": [
+       "01JCF000000000000000000000"
+      ],
+      "refs": {
+       "issue": [
+        14
+       ],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#14",
+         "url": "https://github.com/acme/tasks/issues/14"
+        }
+       ],
+       "commit": [
+        {
+         "text": "fedcba9",
+         "url": null,
+         "hash": "fedcba9876543210"
+        }
+       ],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "01JCF200000000000000000000",
+      "ts": "2026-10-16T09:00:00Z",
+      "kind": "abandonment",
+      "title": "The probe is dropped",
+      "direction": "principale",
+      "health": "waiting_on_owner",
+      "parents": [
+       "01JCF100000000000000000000"
+      ],
+      "refs": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      }
+     }
+    ],
+    "directions": [
+     {
+      "opened_by": "01JCF100000000000000000000",
+      "reason": "To try the other road.",
+      "id": "probe",
+      "title": "A probe",
+      "status": "abandoned"
+     }
+    ],
+    "aggregates": [
+     {
+      "project": null,
+      "window": [
+       "2026-10-14T08:00:00Z",
+       "2026-10-14T10:00:00Z"
+      ],
+      "round": 2,
+      "declared_subagents": 1,
+      "models": [
+       {
+        "agent": "claude",
+        "model": "claude-opus-5-5",
+        "effort": "max",
+        "sessions": 1,
+        "via": null
+       },
+       {
+        "agent": "codex",
+        "model": "gpt-5.5-codex",
+        "effort": "high",
+        "sessions": 1,
+        "via": null
+       },
+       {
+        "agent": "claude",
+        "model": "claude-opus-5-5",
+        "effort": null,
+        "sessions": 1,
+        "via": "report"
+       }
+      ],
+      "checks": [
+       {
+        "kind": "revisione-avversaria",
+        "outcome": "difetti",
+        "defects": [
+         "D1",
+         "D2"
+        ],
+        "model": "gpt-5.5-codex"
+       },
+       {
+        "kind": "test",
+        "outcome": "ok",
+        "defects": [],
+        "model": null
+       }
+      ],
+      "defects": {
+       "found": 2,
+       "closed": 2,
+       "closes": [
+        "#9/D3"
+       ]
+      },
+      "tokens": {
+       "input": 120000,
+       "output": 8000,
+       "cache_read": 900000,
+       "cache_write": 40000
+      },
+      "task": 12
+     },
+     {
+      "project": null,
+      "window": [],
+      "round": 1,
+      "declared_subagents": null,
+      "models": [],
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null,
+       "closes": []
+      },
+      "tokens": null,
+      "task": 14
+     }
+    ]
+   },
+   "snapshots": {
+    "01JCF000000000000000000000": {
+     "id": null,
+     "ts": null,
+     "in_brief": "The review is done. The project is on time.",
+     "changed": [
+      "Merged #12 after two rounds.",
+      "A text with <script>alert(1)</script> & a < b stays text."
+     ],
+     "direction": "The review of #12 closed both defects.",
+     "open_decisions": [
+      "Pick the probe: #13 or #14."
+     ],
+     "risks": [
+      "#14 may slip; #14a and x#14 are not the same."
+     ],
+     "next": "Open the probe of #14.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": null
+    },
+    "01JCF100000000000000000000": {
+     "id": null,
+     "ts": null,
+     "in_brief": null,
+     "changed": [],
+     "direction": "Try the other road.",
+     "open_decisions": [],
+     "risks": [
+      "No #N here."
+     ],
+     "next": "",
+     "changed_claims": [],
+     "deviations": [],
+     "process": null
+    },
+    "01JCF200000000000000000000": null
+   },
+   "expected": {
+    "lanes": [
+     {
+      "id": "principale",
+      "index": 0,
+      "status": "active",
+      "recorded": false,
+      "opened": 1791972000000,
+      "closed": null,
+      "closedBy": null,
+      "tone": {
+       "kind": "main"
+      },
+      "nodes": [
+       "01JCF000000000000000000000",
+       "01JCF200000000000000000000"
+      ]
+     },
+     {
+      "id": "probe",
+      "index": 1,
+      "status": "abandoned",
+      "recorded": true,
+      "opened": 1792054800000,
+      "closed": 1792141200000,
+      "closedBy": "01JCF200000000000000000000",
+      "tone": {
+       "kind": "abandoned"
+      },
+      "nodes": [
+       "01JCF100000000000000000000"
+      ]
+     }
+    ],
+    "nodes": [
+     {
+      "id": "01JCF000000000000000000000",
+      "lane": 0,
+      "t": 1791972000000,
+      "children": [
+       "01JCF100000000000000000000"
+      ],
+      "rings": [
+       {
+        "declared": true,
+        "model": "claude-opus-5-5"
+       },
+       {
+        "declared": true,
+        "model": "gpt-5.5-codex"
+       },
+       {
+        "declared": true,
+        "model": null
+       }
+      ],
+      "badges": [
+       "✓",
+       "2/2"
+      ],
+      "declared": true
+     },
+     {
+      "id": "01JCF100000000000000000000",
+      "lane": 1,
+      "t": 1792054800000,
+      "children": [
+       "01JCF200000000000000000000"
+      ],
+      "rings": [
+       {
+        "declared": true,
+        "model": null
+       }
+      ],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "01JCF200000000000000000000",
+      "lane": 0,
+      "t": 1792141200000,
+      "children": [],
+      "rings": [],
+      "badges": [],
+      "declared": false
+     }
+    ],
+    "layouts": [
+     {
+      "width": 800,
+      "height": 400,
+      "window": null,
+      "x": [
+       150,
+       462,
+       774
+      ],
+      "y": [
+       106,
+       192,
+       106
+      ],
+      "laneY": [
+       106,
+       192
+      ],
+      "step": 312,
+      "left": 150,
+      "i0": 0,
+      "i1": 2,
+      "clip": null,
+      "stageWidth": 800,
+      "stageHeight": 400,
+      "xAt": [
+       [
+        1791946800000,
+        -6
+       ],
+       [
+        1791961200000,
+        72
+       ],
+       [
+        1791972000000,
+        150
+       ],
+       [
+        1792054800000,
+        462
+       ],
+       [
+        1792141200000,
+        774
+       ],
+       [
+        1792013400000,
+        306
+       ],
+       [
+        1792098000000,
+        618
+       ],
+       [
+        1792152000000,
+        852
+       ],
+       [
+        1792166400000,
+        930
+       ]
+      ],
+      "tAt": [
+       [
+        145,
+        1791972000000
+       ],
+       [
+        157,
+        1791973857692.3076
+       ],
+       [
+        469,
+        1792056738461.5386
+       ],
+       [
+        781,
+        1792141200000
+       ],
+       [
+        779,
+        1792141200000
+       ]
+      ]
+     },
+     {
+      "width": 1280,
+      "height": 720,
+      "window": null,
+      "x": [
+       150,
+       702,
+       1254
+      ],
+      "y": [
+       106,
+       192,
+       106
+      ],
+      "laneY": [
+       106,
+       192
+      ],
+      "step": 552,
+      "left": 150,
+      "i0": 0,
+      "i1": 2,
+      "clip": null,
+      "stageWidth": 1280,
+      "stageHeight": 720,
+      "xAt": [
+       [
+        1791946800000,
+        -126
+       ],
+       [
+        1791961200000,
+        12
+       ],
+       [
+        1791972000000,
+        150
+       ],
+       [
+        1792054800000,
+        702
+       ],
+       [
+        1792141200000,
+        1254
+       ],
+       [
+        1792013400000,
+        426
+       ],
+       [
+        1792098000000,
+        978
+       ],
+       [
+        1792152000000,
+        1392
+       ],
+       [
+        1792166400000,
+        1530
+       ]
+      ],
+      "tAt": [
+       [
+        145,
+        1791972000000
+       ],
+       [
+        157,
+        1791973050000
+       ],
+       [
+        709,
+        1792055895652.1738
+       ],
+       [
+        1261,
+        1792141200000
+       ],
+       [
+        1259,
+        1792141200000
+       ]
+      ]
+     },
+     {
+      "width": 800,
+      "height": 400,
+      "window": {
+       "from": 1792054800000,
+       "to": 1792144800000
+      },
+      "x": [
+       -342,
+       194,
+       730
+      ],
+      "y": [
+       106,
+       192,
+       106
+      ],
+      "laneY": [
+       106,
+       192
+      ],
+      "step": 536,
+      "left": 150,
+      "i0": 1,
+      "i1": 2,
+      "clip": [
+       128,
+       800
+      ],
+      "stageWidth": 800,
+      "stageHeight": 400,
+      "xAt": [
+       [
+        1791946800000,
+        -610
+       ],
+       [
+        1791961200000,
+        -476
+       ],
+       [
+        1791972000000,
+        -342
+       ],
+       [
+        1792054800000,
+        194
+       ],
+       [
+        1792141200000,
+        730
+       ],
+       [
+        1792013400000,
+        -74
+       ],
+       [
+        1792098000000,
+        462
+       ],
+       [
+        1792152000000,
+        864
+       ],
+       [
+        1792166400000,
+        998
+       ]
+      ],
+      "tAt": [
+       [
+        -347,
+        1791972000000
+       ],
+       [
+        -335,
+        1791973081343.2837
+       ],
+       [
+        201,
+        1792055928358.209
+       ],
+       [
+        737,
+        1792141200000
+       ],
+       [
+        735,
+        1792141200000
+       ]
+      ]
+     }
+    ],
+    "scale": {
+     "x0": 0,
+     "x1": 800,
+     "x": [
+      [
+       1791946800000,
+       0
+      ],
+      [
+       1791961200000,
+       0
+      ],
+      [
+       1791972000000,
+       366
+      ],
+      [
+       1792054800000,
+       400
+      ],
+      [
+       1792141200000,
+       434
+      ],
+      [
+       1792013400000,
+       383
+      ],
+      [
+       1792098000000,
+       417
+      ],
+      [
+       1792152000000,
+       800
+      ],
+      [
+       1792166400000,
+       800
+      ]
+     ],
+     "joints": [
+      {
+       "x": 383,
+       "from": 1791972000000,
+       "to": 1792054800000
+      },
+      {
+       "x": 417,
+       "from": 1792054800000,
+       "to": 1792141200000
+      }
+     ]
+    }
+   },
+   "frames": [
+    {
+     "id": "01JCF000000000000000000000",
+     "title": "#12 merged after review",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": "The review is done. The project is on time.",
+     "why": {
+      "direction": "The review of #12 closed both defects.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "Merged "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": " after two rounds."
+       }
+      ],
+      [
+       {
+        "text": "A text with <script>alert(1)</script> & a < b stays text."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Pick the probe: "
+       },
+       {
+        "text": "#13",
+        "url": "https://github.com/acme/tasks/issues/13"
+       },
+       {
+        "text": " or "
+       },
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "risks": [
+      [
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       },
+       {
+        "text": " may slip; #14a and x"
+       },
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       },
+       {
+        "text": " are not the same."
+       }
+      ]
+     ],
+     "nextStep": "Open the probe of #14.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": 2,
+      "checks": [
+       "revisione-avversaria",
+       "test"
+      ],
+      "found": 2,
+      "closed": 2
+     },
+     "work": [
+      {
+       "task": 12,
+       "aggregate": true
+      },
+      {
+       "task": 14,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       }
+      ],
+      "commit": [
+       {
+        "text": "abc1234",
+        "url": "https://github.com/acme/frame/commit/abc1234"
+       }
+      ],
+      "report": [
+       {
+        "text": ".regia/report/2026-10-14-12-review.md",
+        "path": "<root>/projects/frame/.regia/report/2026-10-14-12-review.md",
+        "exists": true
+       },
+       {
+        "text": ".regia/report/gone.md",
+        "path": "<root>/projects/frame/.regia/report/gone.md",
+        "exists": false
+       }
+      ],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [],
+     "children": [
+      "01JCF100000000000000000000"
+     ],
+     "previous": null,
+     "following": "01JCF100000000000000000000",
+     "pack": "regia · frame · nodo 01JCF000000000000000000000 (milestone, 2026-10-14)\nSto guardando: #12 merged after review. The review is done. The project is on time.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/tasks/issues/14, https://github.com/acme/frame/commit/abc1234, <root>/projects/frame/.regia/report/2026-10-14-12-review.md, .regia/report/gone.md\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "01JCF100000000000000000000",
+     "title": "A probe opens its lane",
+     "lane": "probe",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": "Try the other road.",
+      "opens": {
+       "title": "A probe",
+       "reason": "To try the other road."
+      },
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [
+      [
+       {
+        "text": "No #N here."
+       }
+      ]
+     ],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 14,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       }
+      ],
+      "commit": [
+       {
+        "text": "fedcba9876543210",
+        "url": null
+       }
+      ],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCF000000000000000000000"
+     ],
+     "children": [
+      "01JCF200000000000000000000"
+     ],
+     "previous": "01JCF000000000000000000000",
+     "following": "01JCF200000000000000000000",
+     "pack": "regia · frame · nodo 01JCF100000000000000000000 (esplorazione, 2026-10-15)\nSto guardando: A probe opens its lane. Try the other road.\nRiferimenti: https://github.com/acme/tasks/issues/14, fedcba9\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    },
+    {
+     "id": "01JCF200000000000000000000",
+     "title": "The probe is dropped",
+     "lane": "principale",
+     "health": "waiting_on_owner",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": [
+       {
+        "title": "A probe",
+        "status": "abandoned",
+        "reason": "To try the other road."
+       }
+      ]
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCF100000000000000000000"
+     ],
+     "children": [],
+     "previous": "01JCF100000000000000000000",
+     "following": null,
+     "pack": "regia · frame · nodo 01JCF200000000000000000000 (abbandono, 2026-10-16)\nSto guardando: The probe is dropped.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+    }
+   ]
   }
  ]
 }
