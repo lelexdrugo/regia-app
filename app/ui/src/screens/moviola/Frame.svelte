@@ -128,7 +128,8 @@
   data-frame={notes.kind}
   data-moment={frame.node.milestone.id}
   onkeydown={(event) => {
-    if (event.key === "Escape") {
+    // Esc in the package only leaves it, as Esc leaves a field elsewhere.
+    if (event.key === "Escape" && !(event.target instanceof HTMLTextAreaElement)) {
       event.preventDefault();
       onclose();
     }

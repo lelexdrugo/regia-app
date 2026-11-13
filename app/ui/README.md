@@ -28,7 +28,7 @@ Titles, documents, comments and transcripts are written by people and by agents,
 
 ## The harness and the proofs
 
-`npm run prove` builds the harness and runs ten proofs: two in Node, the others in one headless Chrome. Each checks the app, then a negative control of its own, and fails if the app fails or if the control passes. They run in CI, in the Linux job, with the runner's Chrome.
+`npm run prove` builds the harness and runs ten proofs: one in Node, the others in one headless Chrome. Each checks the app, then a negative control of its own, and fails if the app fails or if the control passes. They run in CI, in the Linux job, with the runner's Chrome.
 
 - The **harness** (`harness/`, built by `vite.harness.config.ts` into the workspace's `target/ui-harness`, never into `dist/`) mounts the app's own components on fixtures: `#/<view>?data=<state>&lang=<it|en|xx>`. `prove/serve.js` serves it with `tauri.conf.json`'s policy, with `connect-src 'none'` for the IPC it does not have. `xx` is a pseudo-locale (`harness/pseudo.ts`): each message wrapped in ⟦ ⟧ and 40% longer.
 - **contrast** (`prove/contrast.js`): first, `src/tokens.css` is still the dossier's file, by its SHA-256; then the 30 pairs of the UX prototype, in the design system's three directions. Controls: one digit changed in the copy, one token made fainter.

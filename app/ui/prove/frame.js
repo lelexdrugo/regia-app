@@ -12,7 +12,6 @@ import { join } from "node:path";
 import { open, show } from "./views.js";
 
 const FRAME = "aside.frame";
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** The frame as the DOM holds it: the moment, its state, its sections by heading, and what is visible. */
 const READ = `(() => {
@@ -101,7 +100,7 @@ export const frame = {
     const PACK = `(() => { const a = document.querySelector(".frame-pack textarea");
       return a ? { text: a.value, focused: document.activeElement === a, all: a.selectionStart === 0 && a.selectionEnd === a.value.length } : null; })()`;
     await click(page, `${FRAME} .frame-copy`);
-    await sleep(100);
+    await page.waitFor(`document.querySelector(".frame-pack textarea")?.value.length > 0`, 5_000).catch(() => {});
     const packed = await page.evaluate(PACK);
     const lines = packed?.text.split("\n") ?? [];
     check("Copy for chat: the package, selected, five lines under 1,500 characters", packed?.focused && packed.all && lines.length === 5 && packed.text.length <= 1500, `${lines.length} lines, ${packed?.text.length} characters`);
@@ -111,7 +110,7 @@ export const frame = {
     await show(page, `#/moviola/frame/${long}?data=demo&lang=en`);
     await waitFrame(page, long);
     await click(page, `${FRAME} .frame-copy`);
-    await sleep(100);
+    await page.waitFor(`document.querySelector(".frame-pack textarea")?.value.length > 0`, 5_000).catch(() => {});
     const longPack = await page.evaluate(PACK);
     check("… a long one shortened, its references counted", longPack !== null && longPack.text.length <= 1500 && /… and \d+ more/.test(longPack.text), `${longPack?.text.length} characters`);
     await show(page, `#/moviola/frame/${first}?data=demo&lang=en`);
@@ -149,7 +148,7 @@ export const frame = {
     const back = await waitFrame(page, first);
     check("the previous step goes back", back.moment === first && back.status === first);
     await click(page, `${FRAME} .frame-close`);
-    await sleep(100);
+    await page.waitFor(`document.querySelector("aside.frame-empty") !== null`, 5_000).catch(() => {});
     const closed = await read(page);
     check("the close button lets the moment go", closed?.moment === null && closed?.status === "", JSON.stringify(closed?.status));
 
