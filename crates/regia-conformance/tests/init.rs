@@ -149,6 +149,9 @@ fn every_plan_and_derive_case_natively_gives_the_prototype_s_outcome() {
         let run = native(&format!("native-{}", case.name), case);
         let diff = differences(case, &run, case.written().as_ref());
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
+        // Each state folder holds a copy of the fake gh, and the runners' disk is short: a run that compared equal
+        // leaves nothing behind; one that did not keeps its folder, to be read.
+        let _ = fs::remove_dir_all(&run.state);
     }
 }
 
@@ -187,7 +190,9 @@ fn ready_plan(label: &str, prepare: impl FnOnce(&Path)) -> Value {
         native_env(state)
     });
     assert_eq!(run.exit, Some(0), "{}", run.stderr);
-    native_json(&run).unwrap()
+    let plan = native_json(&run).unwrap();
+    let _ = fs::remove_dir_all(&run.state);
+    plan
 }
 
 fn item<'a>(plan: &'a Value, name: &str) -> &'a Value {
@@ -341,7 +346,11 @@ fn without_a_destination_the_file_is_the_state_folder_s() {
 #[test]
 fn init_alone_is_the_plan() {
     let responses = responses_of("init-unauthenticated");
-    let run = |label: &str, args: &[&str]| run_with(label, args, &responses, |_| Vec::new()).0;
+    let run = |label: &str, args: &[&str]| {
+        let (output, state) = run_with(label, args, &responses, |_| Vec::new());
+        let _ = fs::remove_dir_all(state);
+        output
+    };
     let alone = run("native-alone-json", &["init", "--json"]);
     let plan = run("native-alone-plan-json", &["init", "plan", "--json"]);
     assert_eq!((alone.status.code(), &alone.stdout), (Some(0), &plan.stdout));
