@@ -1,0 +1,221 @@
+{
+  "_note": "Synthetic. The destination says something else and --overwrite is given: the file is the derived one, exit 0.",
+  "args": [
+    "init",
+    "derive",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--project-title",
+    "Fixture",
+    "--destination",
+    "{dossier}/tracker.json",
+    "--overwrite",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "init",
+    "ricava",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--progetto-titolo",
+    "Fixture",
+    "--destinazione",
+    "{dossier}/tracker.json",
+    "--sovrascrivi"
+  ],
+  "dossier": {
+    "git": false,
+    "files": {
+      "tracker.json": "{\"owner\": \"someone\"}\n"
+    }
+  },
+  "written": [
+    "tracker.json"
+  ],
+  "gh": {
+    "rest": {
+      "GET user": {
+        "body": {
+          "login": "example"
+        },
+        "headers": {
+          "X-Oauth-Scopes": "project, repo"
+        }
+      },
+      "GET repos/example/tracker": {
+        "body": {
+          "node_id": "R_FIXTURE",
+          "private": true,
+          "owner": {
+            "node_id": "U_FIXTURE"
+          }
+        }
+      },
+      "GET repos/example/tracker/labels?per_page=100&page=1": {
+        "body": [
+          {
+            "name": "tipo:obiettivo"
+          },
+          {
+            "name": "maturità:abbozzo"
+          },
+          {
+            "name": "maturità:pronto"
+          },
+          {
+            "name": "parcheggiato"
+          },
+          {
+            "name": "sessione"
+          },
+          {
+            "name": "progetto:alpha"
+          }
+        ]
+      }
+    },
+    "owner": {
+      "repositoryOwner": {
+        "projectsV2": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": [
+            {
+              "number": 1,
+              "id": "PROJECT_FIXTURE",
+              "title": "Fixture",
+              "url": "https://tracker.invalid/projects/1",
+              "field": {
+                "__typename": "ProjectV2SingleSelectField",
+                "id": "FIELD_FIXTURE",
+                "name": "Status",
+                "options": [
+                  {
+                    "id": "opt-a1",
+                    "name": "Inbox",
+                    "color": "GRAY",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-b2",
+                    "name": "Proposta",
+                    "color": "YELLOW",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-c3",
+                    "name": "Approvato",
+                    "color": "BLUE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-d4",
+                    "name": "In corso",
+                    "color": "ORANGE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-e5",
+                    "name": "Decisione",
+                    "color": "PURPLE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-f6",
+                    "name": "Fatto",
+                    "color": "GREEN",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-g7",
+                    "name": "Scartato",
+                    "color": "RED",
+                    "description": ""
+                  }
+                ]
+              },
+              "fields": {
+                "nodes": [
+                  {
+                    "__typename": "ProjectV2Field",
+                    "id": "FIELD_TITLE",
+                    "name": "Title"
+                  },
+                  {
+                    "__typename": "ProjectV2SingleSelectField",
+                    "id": "FIELD_FIXTURE",
+                    "name": "Status",
+                    "options": [
+                      {
+                        "id": "opt-a1",
+                        "name": "Inbox",
+                        "color": "GRAY",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-b2",
+                        "name": "Proposta",
+                        "color": "YELLOW",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-c3",
+                        "name": "Approvato",
+                        "color": "BLUE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-d4",
+                        "name": "In corso",
+                        "color": "ORANGE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-e5",
+                        "name": "Decisione",
+                        "color": "PURPLE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-f6",
+                        "name": "Fatto",
+                        "color": "GREEN",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-g7",
+                        "name": "Scartato",
+                        "color": "RED",
+                        "description": ""
+                      }
+                    ]
+                  },
+                  {
+                    "__typename": "ProjectV2SingleSelectField",
+                    "id": "FIELD_PROJECT_FIXTURE",
+                    "name": "Progetto",
+                    "options": [
+                      {
+                        "id": "opt-project-alpha",
+                        "name": "alpha",
+                        "color": "BLUE",
+                        "description": ""
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

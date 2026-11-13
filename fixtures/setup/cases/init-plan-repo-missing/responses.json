@@ -1,0 +1,31 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "owner": {
+    "repositoryOwner": {
+      "projectsV2": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      }
+    }
+  },
+  "rest": {
+    "GET repos/example/tracker": {
+      "error": "gh: Not Found (HTTP 404)\n",
+      "exit": 1
+    },
+    "GET user": {
+      "body": {
+        "login": "example"
+      },
+      "headers": {
+        "X-Oauth-Scopes": "project, repo"
+      }
+    }
+  }
+}

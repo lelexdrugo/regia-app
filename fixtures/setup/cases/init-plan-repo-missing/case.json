@@ -1,0 +1,52 @@
+{
+  "_note": "Synthetic. The repo is not there (404): it would be created private, and its labels with it. The owner has no Project with the title: it would be created, the field Status with it, and the field «Progetto» is born with the first project. Exit 0.",
+  "args": [
+    "init",
+    "plan",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--project-title",
+    "Fixture",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "init",
+    "piano",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--progetto-titolo",
+    "Fixture"
+  ],
+  "gh": {
+    "rest": {
+      "GET user": {
+        "body": {
+          "login": "example"
+        },
+        "headers": {
+          "X-Oauth-Scopes": "project, repo"
+        }
+      },
+      "GET repos/example/tracker": {
+        "error": "gh: Not Found (HTTP 404)\n",
+        "exit": 1
+      }
+    },
+    "owner": {
+      "repositoryOwner": {
+        "projectsV2": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": []
+        }
+      }
+    }
+  }
+}

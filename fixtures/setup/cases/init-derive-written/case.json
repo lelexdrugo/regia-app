@@ -29,6 +29,7 @@
   "dossier": {
     "git": false
   },
+  "written": ["tracker.json"],
   "gh": {
     "rest": {
       "GET user": {

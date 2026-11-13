@@ -1,0 +1,4 @@
+niente da ricavare: il tracker non è tutto presente.
+piano di init: example/tracker, Project «Fixture»
+  [mancante] etichetta:maturità:pronto  (azione: crea)
+             Spec completa: eseguibile se Approvato e sbloccato (colore 1d76db)

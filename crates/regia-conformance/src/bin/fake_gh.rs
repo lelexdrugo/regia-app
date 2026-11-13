@@ -22,7 +22,7 @@
 //! For `init` it answers the REST calls of `gh api <path>` from the fixture's `rest`, by method and
 //! path, and the Projects of an owner from its `owner`. A method other than GET is a write, logged by
 //! its argv. An answer of the fixture can be a failure, which it prints as `gh` would, with its exit
-//! code.
+//! code; the Projects can also be refused by GraphQL, with `errors`.
 
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
@@ -263,8 +263,19 @@ fn answer(args: &[String]) -> Result<Reply, String> {
         let number = number.ok_or("issue query without n")?;
         (format!("issue {number}"), json!({"repository": {"issue": responses["issues"][&number].clone()}}))
     } else if query.contains("repositoryOwner(login:$o)") {
-        // The owner's Projects, for `init`: one page, whatever the cursor.
-        ("owner".to_owned(), responses["owner"].clone())
+        // The owner's Projects, for `init`: one page, whatever the cursor; or the failure the fixture gives there,
+        // of `gh` with its exit code, or of GraphQL with its `errors`.
+        let owner = &responses["owner"];
+        if let Some(error) = owner["error"].as_str() {
+            append(fixture.log.as_ref(), "owner")?;
+            let code = owner["exit"].as_u64().and_then(|code| u8::try_from(code).ok()).unwrap_or(1);
+            return Ok(Reply::Fail(error.to_owned(), code));
+        }
+        if owner["errors"].is_array() {
+            append(fixture.log.as_ref(), "owner")?;
+            return Ok(Reply::Out(json!({"data": null, "errors": owner["errors"]}).to_string()));
+        }
+        ("owner".to_owned(), owner.clone())
     } else if let Some(id) = node {
         (format!("node {id}"), json!({"node": responses["nodes"][&id].clone()}))
     } else {

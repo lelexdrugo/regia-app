@@ -1,0 +1,95 @@
+{
+  "chiamate_gh": [
+    "gh api -i user"
+  ],
+  "owner": "example",
+  "progetto_titolo": "Fixture",
+  "pronto": false,
+  "repo": "tracker",
+  "voci": [
+    {
+      "ambito": "ambiente",
+      "azione": "manuale",
+      "dettaglio": "gh non è autenticato o non risponde: gh esce con 1. Esegui `gh auth login -s repo,read:project`.",
+      "esito": "errore",
+      "voce": "gh"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "repo"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "project"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "status"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "progetto"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "etichetta:tipo:obiettivo"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "etichetta:maturità:abbozzo"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "etichetta:maturità:pronto"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "etichetta:parcheggiato"
+    },
+    {
+      "ambito": "tracker",
+      "azione": "manuale",
+      "dettaglio": "non verificabile: gh non è autenticato",
+      "esito": "errore",
+      "voce": "etichetta:sessione"
+    },
+    {
+      "ambito": "locale",
+      "azione": "installa",
+      "dettaglio": "~/.claude/skills/regia: mancante, ~/.agents/skills/regia: mancante. Esegui `python tools/install_skills.py`.",
+      "esito": "mancante",
+      "voce": "skill:regia"
+    },
+    {
+      "ambito": "manuale",
+      "azione": "manuale",
+      "dettaglio": "Le viste del Project non si creano né si leggono via API (ADR 0013 §3): apri il Project su GitHub e crea a mano le viste che usi (per esempio una tabella raggruppata per Status e una bacheca).",
+      "esito": "mancante",
+      "voce": "manuale:viste-del-project"
+    }
+  ]
+}

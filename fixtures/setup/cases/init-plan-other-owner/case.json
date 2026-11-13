@@ -1,0 +1,209 @@
+{
+  "_note": "Synthetic. Another owner, repo and title than the user's: the calls name them, and the plan finds them. Ready, exit 0.",
+  "args": [
+    "init",
+    "plan",
+    "--owner",
+    "acme",
+    "--repo",
+    "board",
+    "--project-title",
+    "Board",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "init",
+    "piano",
+    "--owner",
+    "acme",
+    "--repo",
+    "board",
+    "--progetto-titolo",
+    "Board"
+  ],
+  "gh": {
+    "expect": {
+      "o": "acme"
+    },
+    "rest": {
+      "GET user": {
+        "body": {
+          "login": "example"
+        },
+        "headers": {
+          "X-Oauth-Scopes": "project, repo"
+        }
+      },
+      "GET repos/acme/board": {
+        "body": {
+          "node_id": "R_FIXTURE",
+          "private": true,
+          "owner": {
+            "node_id": "U_FIXTURE"
+          }
+        }
+      },
+      "GET repos/acme/board/labels?per_page=100&page=1": {
+        "body": [
+          {
+            "name": "tipo:obiettivo"
+          },
+          {
+            "name": "maturità:abbozzo"
+          },
+          {
+            "name": "maturità:pronto"
+          },
+          {
+            "name": "parcheggiato"
+          },
+          {
+            "name": "sessione"
+          },
+          {
+            "name": "progetto:alpha"
+          }
+        ]
+      }
+    },
+    "owner": {
+      "repositoryOwner": {
+        "projectsV2": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": [
+            {
+              "number": 1,
+              "id": "PROJECT_FIXTURE",
+              "title": "Board",
+              "url": "https://tracker.invalid/projects/1",
+              "field": {
+                "__typename": "ProjectV2SingleSelectField",
+                "id": "FIELD_FIXTURE",
+                "name": "Status",
+                "options": [
+                  {
+                    "id": "opt-a1",
+                    "name": "Inbox",
+                    "color": "GRAY",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-b2",
+                    "name": "Proposta",
+                    "color": "YELLOW",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-c3",
+                    "name": "Approvato",
+                    "color": "BLUE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-d4",
+                    "name": "In corso",
+                    "color": "ORANGE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-e5",
+                    "name": "Decisione",
+                    "color": "PURPLE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-f6",
+                    "name": "Fatto",
+                    "color": "GREEN",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-g7",
+                    "name": "Scartato",
+                    "color": "RED",
+                    "description": ""
+                  }
+                ]
+              },
+              "fields": {
+                "nodes": [
+                  {
+                    "__typename": "ProjectV2Field",
+                    "id": "FIELD_TITLE",
+                    "name": "Title"
+                  },
+                  {
+                    "__typename": "ProjectV2SingleSelectField",
+                    "id": "FIELD_FIXTURE",
+                    "name": "Status",
+                    "options": [
+                      {
+                        "id": "opt-a1",
+                        "name": "Inbox",
+                        "color": "GRAY",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-b2",
+                        "name": "Proposta",
+                        "color": "YELLOW",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-c3",
+                        "name": "Approvato",
+                        "color": "BLUE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-d4",
+                        "name": "In corso",
+                        "color": "ORANGE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-e5",
+                        "name": "Decisione",
+                        "color": "PURPLE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-f6",
+                        "name": "Fatto",
+                        "color": "GREEN",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-g7",
+                        "name": "Scartato",
+                        "color": "RED",
+                        "description": ""
+                      }
+                    ]
+                  },
+                  {
+                    "__typename": "ProjectV2SingleSelectField",
+                    "id": "FIELD_PROJECT_FIXTURE",
+                    "name": "Progetto",
+                    "options": [
+                      {
+                        "id": "opt-project-alpha",
+                        "name": "alpha",
+                        "color": "BLUE",
+                        "description": ""
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

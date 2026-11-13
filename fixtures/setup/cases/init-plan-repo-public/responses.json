@@ -1,0 +1,190 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "owner": {
+    "repositoryOwner": {
+      "projectsV2": {
+        "nodes": [
+          {
+            "field": {
+              "__typename": "ProjectV2SingleSelectField",
+              "id": "FIELD_FIXTURE",
+              "name": "Status",
+              "options": [
+                {
+                  "color": "GRAY",
+                  "description": "",
+                  "id": "opt-a1",
+                  "name": "Inbox"
+                },
+                {
+                  "color": "YELLOW",
+                  "description": "",
+                  "id": "opt-b2",
+                  "name": "Proposta"
+                },
+                {
+                  "color": "BLUE",
+                  "description": "",
+                  "id": "opt-c3",
+                  "name": "Approvato"
+                },
+                {
+                  "color": "ORANGE",
+                  "description": "",
+                  "id": "opt-d4",
+                  "name": "In lavorazione"
+                },
+                {
+                  "color": "PURPLE",
+                  "description": "",
+                  "id": "opt-e5",
+                  "name": "Decisione"
+                },
+                {
+                  "color": "GREEN",
+                  "description": "",
+                  "id": "opt-f6",
+                  "name": "Fatto"
+                },
+                {
+                  "color": "RED",
+                  "description": "",
+                  "id": "opt-g7",
+                  "name": "Scartato"
+                },
+                {
+                  "color": "PINK",
+                  "description": "",
+                  "id": "opt-later",
+                  "name": "Later"
+                }
+              ]
+            },
+            "fields": {
+              "nodes": [
+                {
+                  "__typename": "ProjectV2Field",
+                  "id": "FIELD_TITLE",
+                  "name": "Title"
+                },
+                {
+                  "__typename": "ProjectV2SingleSelectField",
+                  "id": "FIELD_FIXTURE",
+                  "name": "Status",
+                  "options": [
+                    {
+                      "color": "GRAY",
+                      "description": "",
+                      "id": "opt-a1",
+                      "name": "Inbox"
+                    },
+                    {
+                      "color": "YELLOW",
+                      "description": "",
+                      "id": "opt-b2",
+                      "name": "Proposta"
+                    },
+                    {
+                      "color": "BLUE",
+                      "description": "",
+                      "id": "opt-c3",
+                      "name": "Approvato"
+                    },
+                    {
+                      "color": "ORANGE",
+                      "description": "",
+                      "id": "opt-d4",
+                      "name": "In lavorazione"
+                    },
+                    {
+                      "color": "PURPLE",
+                      "description": "",
+                      "id": "opt-e5",
+                      "name": "Decisione"
+                    },
+                    {
+                      "color": "GREEN",
+                      "description": "",
+                      "id": "opt-f6",
+                      "name": "Fatto"
+                    },
+                    {
+                      "color": "RED",
+                      "description": "",
+                      "id": "opt-g7",
+                      "name": "Scartato"
+                    },
+                    {
+                      "color": "PINK",
+                      "description": "",
+                      "id": "opt-later",
+                      "name": "Later"
+                    }
+                  ]
+                }
+              ]
+            },
+            "id": "PROJECT_FIXTURE",
+            "number": 1,
+            "title": "Fixture",
+            "url": "https://tracker.invalid/projects/1"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      }
+    }
+  },
+  "rest": {
+    "GET repos/example/tracker": {
+      "body": {
+        "node_id": "R_FIXTURE",
+        "owner": {
+          "node_id": "U_FIXTURE"
+        },
+        "private": false
+      }
+    },
+    "GET repos/example/tracker/labels?per_page=100&page=1": {
+      "body": [
+        {
+          "name": "tipo:obiettivo"
+        },
+        {
+          "name": "maturità:abbozzo"
+        },
+        {
+          "name": "maturità:pronto"
+        },
+        {
+          "name": "parcheggiato"
+        },
+        {
+          "name": "sessione"
+        },
+        {
+          "name": "progetto:beta"
+        },
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "progetto:"
+        }
+      ]
+    },
+    "GET user": {
+      "body": {
+        "login": "example"
+      },
+      "headers": {
+        "X-Oauth-Scopes": "project, repo"
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "_note": "Synthetic. gh fails on the user and prints nothing: the item gh names only its exit code. The tracker cannot be checked. Exit 0.",
+  "args": [
+    "init",
+    "plan",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--project-title",
+    "Fixture",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "init",
+    "piano",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--progetto-titolo",
+    "Fixture"
+  ],
+  "gh": {
+    "rest": {
+      "GET user": {
+        "error": "",
+        "exit": 1
+      }
+    }
+  }
+}
