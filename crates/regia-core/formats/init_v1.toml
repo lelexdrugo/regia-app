@@ -1,0 +1,40 @@
+# Format v1 of `init` (`tools/inizializza.py` of the dossier): the names of the items of its plan, which the facade
+# passes as they are, and the local `tracker.json` it derives. They are data, not identifiers, so they stay out of
+# the Rust sources.
+
+# The items of the plan. A label is named by its prefix and its name, a skill by its prefix and its folder, a step
+# by hand by its prefix and its name; `skills` is the one item when there is no skill to compare.
+[items]
+gh = "gh"
+repo = "repo"
+project = "project"
+status = "status"
+project_field = "progetto"
+label_prefix = "etichetta:"
+skill_prefix = "skill:"
+skills = "skill"
+manual_prefix = "manuale:"
+
+# The steps by hand: the Project's views can neither be created nor read through the API (ADR 0013 §3 of the
+# dossier).
+[manual]
+views = "viste-del-project"
+
+# The prototype's defaults, when the command names no repo or no title: its tracker's repo, its Project's title.
+[defaults]
+repo = "regia-tasks"
+project_title = "Regia"
+
+# The command an item of a skill names to install the skills.
+[skills]
+install = "python tools/install_skills.py"
+
+# `tracker.json` as `derive` writes it (`configurazione` of the prototype): the note first, then the keys of the
+# format, the two of the field that mirrors the project label when the Project has that field, and last who wrote it.
+[local_file]
+note_key = "_nota"
+note = "Generato da `regia init` (python -m tools.inizializza ricava). ID del Project GitHub: non sono segreti. Il token resta in 'gh auth'. Rigenerare se si ricrea il Project."
+project_field_key = "progetto_field_id"
+project_options_key = "progetto_options"
+generator_key = "generato_da"
+generator = "regia init"
