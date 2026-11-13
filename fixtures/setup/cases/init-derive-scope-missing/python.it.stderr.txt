@@ -1,0 +1,4 @@
+niente da ricavare: il tracker non è tutto presente.
+piano di init: example/tracker, Project «Fixture»
+  [errore  ] gh  (azione: manuale)
+             autenticato come example, manca lo scope project o read:project (scope: repo). Esegui `gh auth refresh -s read:project`.

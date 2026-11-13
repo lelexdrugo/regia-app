@@ -1,0 +1,71 @@
+{
+  "_note": "Synthetic. GitHub knows no such owner: the Project would be created, with its field Status. Exit 0.",
+  "args": [
+    "init",
+    "plan",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--project-title",
+    "Fixture",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "init",
+    "piano",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--progetto-titolo",
+    "Fixture"
+  ],
+  "gh": {
+    "rest": {
+      "GET user": {
+        "body": {
+          "login": "example"
+        },
+        "headers": {
+          "X-Oauth-Scopes": "project, repo"
+        }
+      },
+      "GET repos/example/tracker": {
+        "body": {
+          "node_id": "R_FIXTURE",
+          "private": true,
+          "owner": {
+            "node_id": "U_FIXTURE"
+          }
+        }
+      },
+      "GET repos/example/tracker/labels?per_page=100&page=1": {
+        "body": [
+          {
+            "name": "tipo:obiettivo"
+          },
+          {
+            "name": "maturità:abbozzo"
+          },
+          {
+            "name": "maturità:pronto"
+          },
+          {
+            "name": "parcheggiato"
+          },
+          {
+            "name": "sessione"
+          },
+          {
+            "name": "progetto:alpha"
+          }
+        ]
+      }
+    },
+    "owner": {
+      "repositoryOwner": null
+    }
+  }
+}

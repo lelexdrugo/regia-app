@@ -1,0 +1,145 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "owner": {
+    "repositoryOwner": {
+      "projectsV2": {
+        "nodes": [
+          {
+            "field": {
+              "__typename": "ProjectV2SingleSelectField",
+              "id": "FIELD_FIXTURE",
+              "name": "Status",
+              "options": [
+                {
+                  "color": "GRAY",
+                  "description": "",
+                  "id": "opt-a1",
+                  "name": "Inbox"
+                },
+                {
+                  "color": "YELLOW",
+                  "description": "",
+                  "id": "opt-b2",
+                  "name": "Proposta"
+                },
+                {
+                  "color": "BLUE",
+                  "description": "",
+                  "id": "opt-c3",
+                  "name": "Approvato"
+                },
+                {
+                  "color": "ORANGE",
+                  "description": "",
+                  "id": "opt-d4",
+                  "name": "In corso"
+                },
+                {
+                  "color": "PURPLE",
+                  "description": "",
+                  "id": "opt-e5",
+                  "name": "Decisione"
+                },
+                {
+                  "color": "GREEN",
+                  "description": "",
+                  "id": "opt-f6",
+                  "name": "Fatto"
+                },
+                {
+                  "color": "RED",
+                  "description": "",
+                  "id": "opt-g7",
+                  "name": "Scartato"
+                }
+              ]
+            },
+            "fields": {
+              "nodes": [
+                {
+                  "__typename": "ProjectV2Field",
+                  "id": "FIELD_TITLE",
+                  "name": "Title"
+                },
+                {
+                  "__typename": "ProjectV2SingleSelectField",
+                  "id": "FIELD_FIXTURE",
+                  "name": "Status",
+                  "options": [
+                    {
+                      "color": "GRAY",
+                      "description": "",
+                      "id": "opt-a1",
+                      "name": "Inbox"
+                    },
+                    {
+                      "color": "YELLOW",
+                      "description": "",
+                      "id": "opt-b2",
+                      "name": "Proposta"
+                    },
+                    {
+                      "color": "BLUE",
+                      "description": "",
+                      "id": "opt-c3",
+                      "name": "Approvato"
+                    },
+                    {
+                      "color": "ORANGE",
+                      "description": "",
+                      "id": "opt-d4",
+                      "name": "In corso"
+                    },
+                    {
+                      "color": "PURPLE",
+                      "description": "",
+                      "id": "opt-e5",
+                      "name": "Decisione"
+                    },
+                    {
+                      "color": "GREEN",
+                      "description": "",
+                      "id": "opt-f6",
+                      "name": "Fatto"
+                    },
+                    {
+                      "color": "RED",
+                      "description": "",
+                      "id": "opt-g7",
+                      "name": "Scartato"
+                    }
+                  ]
+                }
+              ]
+            },
+            "id": "PROJECT_FIXTURE",
+            "number": 1,
+            "title": "Fixture",
+            "url": "https://tracker.invalid/projects/1"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      }
+    }
+  },
+  "rest": {
+    "GET repos/example/tracker": {
+      "error": "gh: Server Error (HTTP 500)\nretry later\n",
+      "exit": 1
+    },
+    "GET user": {
+      "body": {
+        "login": "example"
+      },
+      "headers": {
+        "X-Oauth-Scopes": "project, repo"
+      }
+    }
+  }
+}

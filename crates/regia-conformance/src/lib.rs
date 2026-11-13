@@ -145,6 +145,10 @@ pub struct CaseSpec {
     /// `mutations`), merged over those `record` builds: the URL a comment gets, for one.
     #[serde(default)]
     pub gh: serde_json::Map<String, Value>,
+    /// Files of the case's dossier, by their path in it, whose bytes after the run are part of the case: `record`
+    /// stores them in `written.json`, and a native run must leave the same (the `tracker.json` of `init derive`).
+    #[serde(default)]
+    pub written: Vec<String>,
 }
 
 /// A case's dossier: a folder of files, by default a git repo whose `files` are committed and pushed to
@@ -391,6 +395,17 @@ pub fn dossier_after(state: &Path, spec: &DossierSpec) -> Option<Value> {
     })
 }
 
+/// The files `paths` of `dossier` after a run: each one's text, kept whole inside a JSON string so that no checkout
+/// changes its line breaks, or null for one that is not there.
+pub fn written_files(dossier: &Path, paths: &[String]) -> Value {
+    let text = |path: &String| match fs::read(dossier.join(path)) {
+        Ok(bytes) => Value::String(String::from_utf8(bytes).unwrap_or_else(|_| panic!("{path} is not UTF-8"))),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Value::Null,
+        Err(error) => panic!("{path}: {error}"),
+    };
+    Value::Object(paths.iter().map(|path| (path.clone(), text(path))).collect())
+}
+
 /// `args` with the dossier's folder in place of [`DOSSIER_PLACEHOLDER`].
 pub fn place_args(args: &[String], dossier: &Path) -> Vec<String> {
     args.iter().map(|arg| arg.replace(DOSSIER_PLACEHOLDER, &dossier.display().to_string())).collect()
@@ -541,6 +556,13 @@ impl Case {
     /// reads them; `None` for a case without [`CaseSpec::state_after`].
     pub fn state_after(&self) -> Option<Value> {
         let path = self.dir.join("state.json");
+        path.is_file().then(|| read_json(&path))
+    }
+
+    /// The files of [`CaseSpec::written`] as the prototype's run left them, from `written.json`, as
+    /// [`written_files`] reads them; `None` for a case without such files.
+    pub fn written(&self) -> Option<Value> {
+        let path = self.dir.join("written.json");
         path.is_file().then(|| read_json(&path))
     }
 

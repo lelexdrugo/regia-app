@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 
 use regia_conformance::{
     Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
-    place_args, prepare_case_state, prepare_dossier, read_json, state_rows, unplace_json, unplace_text, writes_of_run,
+    place_args, prepare_case_state, prepare_dossier, read_json, state_rows, unplace_json, unplace_text, writes_of_run, written_files,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
 use regia_exec::git::{self, CommitField};
@@ -498,6 +498,13 @@ fn main() {
         replace(&case.dir.join("calls.json"), (!writes.is_empty()).then(|| Value::Array(writes.clone())));
         replace(&case.dir.join("dossier.json"), case.spec.dossier.as_ref().and_then(|spec| dossier_after(&state, spec)));
         replace(&case.dir.join("state.json"), case.spec.state_after.then(|| state_rows(&state)));
+        let written = (!case.spec.written.is_empty()).then(|| {
+            let folder = folder.as_ref().unwrap_or_else(|| panic!("{}: written files need a dossier", case.name));
+            let files = written_files(folder, &case.spec.written);
+            assert!(!files.to_string().contains(&folder.display().to_string()), "{}: a written file names the machine's folder", case.name);
+            files
+        });
+        replace(&case.dir.join("written.json"), written);
         println!(
             "{}/{}: exit {}, {} calls to the fake gh, {} writes, {urls} URLs, all synthetic",
             case.family,
