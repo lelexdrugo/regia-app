@@ -3,6 +3,7 @@ mod clock;
 mod comment;
 mod declare;
 mod dossier;
+mod init;
 mod policy;
 mod reads;
 mod state;
@@ -118,10 +119,13 @@ struct BudgetArgs {
 }
 
 /// The commands of the table this binary implements besides its own subcommands.
-const NATIVE_THROUGH_THE_TABLE: [&str; 20] = [
+const NATIVE_THROUGH_THE_TABLE: [&str; 23] = [
     "checkpoint",
     "comment",
     "declare",
+    "init",
+    "init plan",
+    "init derive",
     "projects",
     "task show",
     "task list",
@@ -254,6 +258,9 @@ fn native_command(command: &str, args: &[String], catalog: &Catalog) -> Result<u
         return outcome;
     }
     if let Some(outcome) = task::run(command, args, catalog) {
+        return outcome;
+    }
+    if let Some(outcome) = init::run(command, args, catalog) {
         return outcome;
     }
     match command {

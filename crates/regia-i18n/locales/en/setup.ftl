@@ -86,3 +86,80 @@ setup-finish-views-open = Open the Project
 setup-finish-go = Open the control room
 setup-tools-found = { $version }: found
 setup-tools-signed-in = { $version }: found, signed in
+
+## `init plan` and `init derive` in the terminal: the detail of each item of the plan, in the prototype's words, and
+## the lines of the text. A message takes one variable at most: the code joins the parts of a detail. A repo is
+## `owner/repo`. A part that starts with a blank starts with `{" "}`, which Fluent keeps.
+
+init-gh-signed-out = gh is not signed in or does not answer: { $said }
+init-gh-sign-in = . Run `gh auth login -s { $scopes }`.
+init-gh-unreadable = the answer of `gh api user` does not read: { $error }
+init-gh-signed-in-as = signed in as { $login }
+init-gh-scopes-hidden = ; the token does not show its scopes (a fine-grained one?): not checked
+init-gh-scopes = , scopes { $scopes }
+init-gh-scope-missing = , missing the scope { $scopes }
+init-gh-scope-or = or
+init-gh-scopes-seen = { " " }(scopes: { $scopes })
+init-gh-refresh = . Run `gh auth refresh -s { $scopes }`.
+init-gh-exit = gh exited with { $code }
+init-unchecked-signed-out = cannot be checked: gh is not signed in
+init-repo-missing = { $repo } does not exist; it would be created private
+init-repo-public = { $repo } exists but is public: { -product } does not make it private by itself; the owner decides (Settings → Danger Zone → Change visibility) or picks another name with --repo
+init-repo-private = { $repo }, private
+init-project-named = Project «{ $title }»
+init-of-owner = { " " }of { $owner }
+init-unchecked-project-unread = cannot be checked: the Project could not be read
+init-project-none = no Project «{ $title }»
+init-owner-unknown = owner { $owner } unknown
+init-would-create = ; it would be created
+init-status-needs-project = depends on the Project, which is missing
+init-project-field-born = the field «{ $field }» comes with the first project (a single-select field needs at least one option)
+init-projects-titled = more than one Project titled «{ $title }»
+init-projects-rename = : rename or delete the extra ones
+init-unchecked-ambiguous = cannot be checked: the Project is ambiguous
+init-status-field-missing = the Project has no Status field; it would be created
+init-status-field-kind = the Status field is a { $kind }, not a single select
+init-status-options-missing = missing or named otherwise: { $names }
+init-status-options-found = { " " }(found: { $names })
+init-status-options-extra = ; extra options, left alone: { $names }
+init-field-options = { $count } option(s)
+init-field-named = the field «{ $field }»
+init-field-kind = { " " }is a { $kind }, not a single select
+init-project-field-missing = the Project has no field «{ $field }»
+init-would-create-with = ; it would be created with { $options }
+init-unchecked-repo-unread = cannot be checked: the repo could not be read
+init-label-needs-repo = depends on the repo, which is missing
+init-labels-of = labels of { $repo }
+init-label-color = { " " }(color { $color })
+init-no-skills = no skill in { $folder }
+init-no-skills-folder = no skill to compare: no dossier names their folder
+init-skill-copies-same = same copies in ~/.claude/skills and ~/.agents/skills
+init-copy-missing = missing
+init-copy-same = same
+init-copy-different = different
+init-skill-install = . Run `{ $command }`.
+init-project-views = The Project's views can neither be created nor read through the API (ADR 0013 §3): open the Project on GitHub and create by hand the views you use (for example a table grouped by Status and a board).
+
+## The plan in text: `init plan: <owner>/<repo>, Project «<title>»`, then per item
+## `  [<outcome>] <item>  (action: <action>)` and its detail on the next line.
+
+init-plan-header = init plan: { $tracker }
+init-plan-project = , Project «{ $title }»
+init-plan-action = (action: { $action })
+init-outcome-present = present
+init-outcome-missing = missing
+init-outcome-different = different
+init-outcome-error = error
+init-action-none = none
+init-action-create = create
+init-action-update = update
+init-action-manual = manual
+init-action-install = install
+
+## `init derive`: what happened to the local configuration, on stdout, or on stderr with `--json`; the refusals
+## always on stderr.
+
+init-derive-not-ready = nothing to derive: the tracker is not all present.
+init-derive-same = { $path }: already the same, left alone
+init-derive-different = error: { $path } exists and differs; use --overwrite to replace it
+init-derive-written = { $path }: written
