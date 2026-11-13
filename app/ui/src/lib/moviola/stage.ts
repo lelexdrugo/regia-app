@@ -3,8 +3,8 @@
 // double click and 0 bring it home), the selection (a click finds the node with the grid's hitTest; the arrows go
 // from moment to moment), the playhead (dragged on the stage or on the tape, moved by a selection, as the UX
 // prototype does) and the colours, read again from the tokens when the direction on <html> changes: a new theme is
-// a redraw, not a reload. The canvas carries what the proofs wait on: `data-frames`, the frames drawn, and
-// `data-dir`, the direction of the last one.
+// a redraw, not a reload. The canvas carries what the proofs wait on: `data-frames`, the frames drawn, `data-dir`,
+// the direction of the last one, `data-camera`, its camera, and `data-view`, the stage above the tape.
 import { clampCamera, type Extent, homeCamera, panBy, reveal, zoomAround } from "./camera";
 import { AXIS, bucketByKind, type CanvasText, cut, drawFrame, type Frame, TAPE, type Tape } from "./canvas2d";
 import { dayStarts, HOUR, laneEnvelope, type Layout, layout, type Model, timeScale } from "./model";
@@ -224,8 +224,11 @@ export class Stage {
       this.pending = 0;
       if (!this.frame) return;
       this.drawNow();
+      const { cx, cy, z } = this.camera;
       this.canvas.dataset["frames"] = String(this.frames);
       this.canvas.dataset["dir"] = this.palette.direction;
+      this.canvas.dataset["camera"] = `${cx.toFixed(1)} ${cy.toFixed(1)} ${z.toFixed(3)}`;
+      this.canvas.dataset["view"] = `${this.view.w} ${this.view.h}`;
       if (this.fonts) this.settle();
     });
   }

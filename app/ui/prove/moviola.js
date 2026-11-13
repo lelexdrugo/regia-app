@@ -6,6 +6,14 @@
 // each found by the grid where it is drawn, one edge per parent. The negative controls: the lanes in the order
 // of the directions' file, which the prototype's static graph uses, and the columns moved by one pixel, must
 // both be caught. No browser: Node runs the TypeScript as it is, its types stripped.
+//
+// Then what the renderer stands on, against the prototype where it has an answer and by invariants where it has
+// none: the rings' places (`yAnello`) and a lane's half thickness (`semiSpessore`) as the prototype computes them;
+// the spike's labels (`pickLabels`), which the prototype does not have, by what they must hold on a crowded lane:
+// only turning points, no two on one cell, none below the zoom of labels, at most the cap; with a control that
+// labels every turning point and must be caught overlapping. The camera keeps the stage in view and the point
+// under the pointer where it is; the lanes' envelopes and the days' first nodes; the portfolio's order and names,
+// and a catalog id for every kind and health of the core.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -110,6 +118,131 @@ export const moviola = {
     moved.layouts[0].x[2] += 1;
     const caughtMoved = differences(moved, answers(m, viewer, viewer.timeline).recorded, "viewer", []).length > 0;
     console.log(`negative control, a column moved by one pixel: ${caughtMoved ? "caught" : "NOT CAUGHT"}`);
-    return ok && caughtOrder && caughtMoved;
+
+    const parts = await renderer(ui, m, s, fixture);
+    return ok && caughtOrder && caughtMoved && parts;
   },
 };
+
+/** A timeline of `n` moments on the main lane, ten minutes apart, two in three of them decisions: the crowded
+ * lane of the labels' check. */
+function crowded(n) {
+  const id = (i) => `01CROWD${String(i).padStart(19, "0")}`;
+  const milestones = Array.from({ length: n }, (_, i) => ({
+    id: id(i),
+    ts: new Date(Date.UTC(2026, 9, 1, 9, 10 * i)).toISOString(),
+    kind: i % 3 === 0 ? "milestone" : "decision",
+    title: `A synthetic turning point with a long title, number ${i}`,
+    direction: "main",
+    parents: i ? [id(i - 1)] : [],
+    health: "healthy",
+    opens_direction: null,
+    refs: { issue: [], commit: [], report: [] },
+    process: null,
+    author: null,
+    links: { issue: [], commit: [], report: [] },
+  }));
+  return { project: "crowd", project_url: null, main_direction: "main", milestones, directions: [], aggregates: [] };
+}
+
+/** What a set of labels must hold: the spike's 8x16 cells, each taken once, turning points only, at most the cap. */
+function labelProblems(s, scene, labels, width, cam) {
+  const problems = [];
+  if (labels.n > s.MAX_LABELS) problems.push(`${labels.n} labels over the cap of ${s.MAX_LABELS}`);
+  if (cam.z < s.LABEL_ZOOM && labels.n > 0) problems.push(`${labels.n} labels below the zoom of labels`);
+  const taken = new Set();
+  for (let k = 0; k < labels.n; k++) {
+    const i = labels.id[k];
+    if (scene.kind[i] === 0) problems.push(`a label on node ${i}, which is not a turning point`);
+    const row = Math.floor((labels.sy[k] - 8) / 16);
+    for (let c = Math.max(0, Math.floor(labels.sx[k] / 8)); c <= Math.floor((labels.sx[k] + width(i)) / 8); c++) {
+      const cell = `${row}:${c}`;
+      if (taken.has(cell)) {
+        problems.push(`two labels on the cell ${cell}`);
+        break;
+      }
+      taken.add(cell);
+    }
+  }
+  return problems;
+}
+
+async function renderer(ui, m, s, fixture) {
+  const c = await import("../src/lib/moviola/camera.ts");
+  const t = await import("../src/lib/moviola/text.ts");
+  const checks = [];
+  const check = (name, ok, detail = "") => checks.push([name, ok, detail]);
+
+  // The rings, against the prototype.
+  const offsets = fixture.rings.offsets.map((_, i) => m.ringOffset(i));
+  const halves = fixture.rings.halfThickness.map((_, i) => m.halfThickness(i));
+  check("rings above and below the glyph, as yAnello", JSON.stringify(offsets) === JSON.stringify(fixture.rings.offsets), JSON.stringify(offsets));
+  check("a lane's half thickness, as semiSpessore", JSON.stringify(halves) === JSON.stringify(fixture.rings.halfThickness), JSON.stringify(halves));
+
+  // The labels, on a crowded lane, and the control that labels every turning point in view.
+  const model = m.prepare(crowded(120), 0);
+  const lay = m.layout(model, 1280, 720, null);
+  const scene = s.buildScene(model, lay);
+  const view = { w: 1280, h: 720 };
+  const width = (i) => model.nodes[scene.node[i]].milestone.title.length * 6.4;
+  const cam = { cx: 640, cy: 360, z: 1 };
+  const labels = s.pickLabels(scene, cam, view, width, s.newLabels());
+  const found = labelProblems(s, scene, labels, width, cam);
+  check("labels on a crowded lane: turning points only, one per cell, at most the cap", labels.n > 0 && found.length === 0, `${labels.n} labels${found.length ? `; ${found.slice(0, 3).join("; ")}` : ""}`);
+  const far = s.pickLabels(scene, { ...cam, z: s.LABEL_ZOOM / 2 }, view, width, s.newLabels());
+  check("no label below the zoom of labels", far.n === 0, `${far.n}`);
+  const every = s.newLabels();
+  for (const i of scene.labeled) {
+    if (every.n >= s.MAX_LABELS || scene.x[i] > cam.cx + view.w / 2) break;
+    every.id[every.n] = i;
+    every.sx[every.n] = s.toScreenX(cam, view, scene.x[i]) + 12;
+    every.sy[every.n] = s.toScreenY(cam, view, scene.y[i]);
+    every.n += 1;
+  }
+  const caught = labelProblems(s, scene, every, width, cam).length > 0;
+
+  // The camera.
+  const extent = { w: 3000, h: 600 };
+  const box = { w: 1000, h: 500 };
+  const home = c.homeCamera(extent, box);
+  check("home: zoom 1, the stage's left and top edges on the view's", home.z === 1 && home.cx === 500 && home.cy === 250, JSON.stringify(home));
+  const zoomed = c.zoomAround(home, 700, 200, 1.5, extent, box);
+  const still = [s.toWorldX(zoomed, box, 700), s.toWorldY(zoomed, box, 200)];
+  check("a zoom keeps the point under the pointer", Math.abs(still[0] - 700) < 1e-9 && Math.abs(still[1] - 200) < 1e-9, JSON.stringify(still));
+  const out = c.zoomAround(home, 500, 250, 0.01, extent, box);
+  check("zooming out stops where the whole stage is in view", Math.abs(out.z - 1 / 3) < 1e-9 && out.cx === 1500, JSON.stringify(out));
+  const dragged = c.panBy(home, 5000, -5000, extent, box);
+  check("a drag past an edge stops at it", dragged.cx === 500 && dragged.cy === 350, JSON.stringify(dragged));
+  const shown = c.reveal(home, 2900, 300, 48, extent, box);
+  check("the camera moves to show a node out of view", s.toScreenX(shown, box, 2900) <= box.w - 48 + 1e-9, JSON.stringify(shown));
+
+  // Lanes and days, on alpha.
+  const alpha = fixture.cases.find((x) => x.name === "alpha");
+  const am = m.prepare(alpha.timeline, 0);
+  const al = m.layout(am, 1280, 720, null);
+  const shapes = am.lanes.every((lane) => {
+    const e = m.laneEnvelope(am, al, lane);
+    if (!e) return lane.nodes.length === 0;
+    const xs = e.points.map((p) => p.x);
+    const sorted = xs.every((x, i) => i === 0 || x >= xs[i - 1]);
+    const start = e.x0 <= al.x[lane.nodes[0]];
+    const end = lane.closed !== null ? e.x1 === al.xAt(lane.closed) : e.x1 >= al.x[lane.nodes.at(-1)];
+    return sorted && start && end && e.points.length === lane.nodes.length + 2;
+  });
+  check("each lane's envelope runs from its opening to its close, through its nodes", shapes);
+  const days = m.dayStarts(am, (ms) => new Date(ms).toISOString().slice(0, 10));
+  check("one day label per day with a milestone", days.length === 6 && days[0] === 0, JSON.stringify(days));
+
+  // The portfolio and the catalog.
+  const order = t.portfolioOrder([...fixture.portfolio].reverse()).map((p) => p.id);
+  check("the projects with a story first", JSON.stringify(order) === JSON.stringify(["beta", "alpha", "gamma"]), JSON.stringify(order));
+  check("a registry title loses its [id] prefix", t.projectName({ id: "x", title: "[x] A title" }) === "A title" && t.projectName({ id: "x", title: null }) === "x");
+  const catalog = readFileSync(join(ui, "../../crates/regia-i18n/locales/en/moviola.ftl"), "utf8");
+  const ids = [...Object.values(t.KIND_ID), ...Object.values(t.HEALTH_ID), ...Object.values(t.LANE_ID)];
+  const missing = ids.filter((id) => !new RegExp(`^${id} =`, "m").test(catalog));
+  check("a catalog id for every kind, health and lane state of the core", missing.length === 0, JSON.stringify(missing));
+
+  for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
+  console.log(`negative control, a label on every turning point in view: ${caught ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caught;
+}

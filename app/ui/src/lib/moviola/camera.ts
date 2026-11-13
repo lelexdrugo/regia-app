@@ -1,7 +1,11 @@
 // The camera over the stage: the spike's `{cx, cy, z}` (scene.ts), kept so the stage never leaves the view. It
 // replaces the prototype's time window (`impostaFinestra`, `zoomAttorno`): zooming is the camera's, and the layout
 // of the stage is the prototype's at the view's size. Pure, so the proofs run it in Node.
-import { type Camera, toWorldX, toWorldY, type View } from "./scene";
+import type { Camera, View } from "./scene";
+
+// scene.ts's toWorldX and toWorldY: types are all this file imports, so the proofs' Node runs it as it is.
+const toWorldX = (cam: Camera, view: View, sx: number): number => (sx - view.w / 2) / cam.z + cam.cx;
+const toWorldY = (cam: Camera, view: View, sy: number): number => (sy - view.h / 2) / cam.z + cam.cy;
 
 export const Z_MAX = 4;
 

@@ -163,6 +163,8 @@ const cases = [
 ].map(({ name, view }) => ({ name, timeline: product(view), expected: expected(view, sizes) }));
 const portfolio = oracle.portfolio.map((entry) => filled({ title: null }, translated(entry)));
 
-const out = { recorded: "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js", portfolio, cases };
+// The rings' places above and below a glyph, and a lane's half thickness, for the first rings.
+const rings = { offsets: run("[0, 1, 2, 3, 4, 5, 6, 7].map(yAnello)"), halfThickness: run("[0, 1, 2, 3, 4, 5].map(semiSpessore)") };
+const out = { recorded: "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js", portfolio, rings, cases };
 writeFileSync(join(UI, "harness/moviola.json"), JSON.stringify(out, null, 1) + "\n");
 console.log(`harness/moviola.json: ${cases.map((c) => `${c.name} ${c.timeline.milestones.length}`).join(", ")}`);
