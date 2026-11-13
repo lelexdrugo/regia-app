@@ -143,3 +143,13 @@ moviola-notes-loading = Reading the moment's notes…
 moviola-notes-failed = The moment's notes could not be read:
 moviola-notes-none = The chronicler wrote no notes for this moment.
 moviola-link-note = This version does not open the browser yet. The address:
+
+## The search of a moment (#487): a word, a #number; Esc empties it, Enter opens the first found.
+
+moviola-search-count = { $n ->
+        [one] one moment of { $total }
+       *[other] { $n } moments of { $total }
+    }
+moviola-results = Moments found
+moviola-search-none = No moment matches «{ $query }». The search wants each word in a moment's title, kind or lane, and each #number among the tasks it names.
+moviola-search-none-task = No moment names task #{ $task }.

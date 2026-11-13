@@ -16,6 +16,8 @@ export interface Route {
   project: string | null;
   /** Only for a project's moviola: the moment open at first, or none. */
   moment: string | null;
+  /** Only for a project's moviola: the search the address asks for (`?q=`), or none. */
+  query: string | null;
 }
 
 /** A project's id, or a milestone's, as the app's commands accept one (app/src-tauri/src/moviola.rs); anything else
@@ -27,15 +29,17 @@ function known<T extends string>(list: readonly T[], value: string | undefined):
 }
 
 /** `#/settings/general?x=1` is the settings' general area, `#/moviola/alpha` the lanes of the project alpha,
- * `#/moviola/alpha/<id>` the same with that moment open. An address the app does not know is the brief. */
+ * `#/moviola/alpha/<id>` the same with that moment open, `#/moviola/alpha?q=probe` with a search. An address the
+ * app does not know is the brief. */
 export function parse(hash: string): Route {
-  const [path = ""] = hash.replace(/^#\/?/, "").split("?");
+  const [path = "", search = ""] = hash.replace(/^#\/?/, "").split("?");
   const [first, second, third] = path.split("/");
   const section: Section = known(SECTIONS, first) ? first : "brief";
   const area = section === "settings" ? (known(SETTINGS_AREAS, second) ? second : SETTINGS_AREAS[0]) : null;
   const project = section === "moviola" && second !== undefined && PROJECT.test(second) ? second : null;
   const moment = project !== null && third !== undefined && PROJECT.test(third) ? third : null;
-  return { section, area, project, moment };
+  const query = project !== null ? (new URLSearchParams(search).get("q")?.slice(0, 200) ?? null) : null;
+  return { section, area, project, moment, query };
 }
 
 export function href(section: Section): string {
@@ -47,5 +51,5 @@ export function projectHref(project: string): string {
 }
 
 export function same(a: Route, b: Route): boolean {
-  return a.section === b.section && a.area === b.area && a.project === b.project && a.moment === b.moment;
+  return a.section === b.section && a.area === b.area && a.project === b.project && a.moment === b.moment && a.query === b.query;
 }

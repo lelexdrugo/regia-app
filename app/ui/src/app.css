@@ -1057,6 +1057,130 @@ a.reel-name:hover {
   mask-image: url("./icons/close.svg");
 }
 
+.icon-search {
+  -webkit-mask-image: url("./icons/search.svg");
+  mask-image: url("./icons/search.svg");
+}
+
+/* The search of a moment (#487): the field above the stage, the moments found under it. */
+.moviola-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.search-wrap {
+  display: flex;
+  flex: 0 1 420px;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 4px 0 8px;
+  background: var(--surface);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-control);
+}
+
+.search-wrap:focus-within {
+  border-color: var(--accent);
+}
+
+.search-wrap .icon {
+  color: var(--faint);
+}
+
+.search-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--control);
+  padding: 0;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: 0;
+  outline: none;
+}
+
+.search-field::-webkit-search-cancel-button {
+  display: none;
+}
+
+.moviola-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.moviola-main > .stage-panel {
+  flex: 1 1 auto;
+}
+
+.results {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 32vh;
+  overflow: auto;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.results h2 {
+  margin: 0;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.result {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 3px 6px;
+  font: inherit;
+  color: var(--text);
+  text-align: start;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.result:hover,
+.result[aria-current="true"] {
+  background: var(--raised);
+}
+
+.result-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noresult {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
 /* A project's moviola with its frame (#487): the stage, and beside it the moment chosen; one under the other when
    the window is narrow, where the screen scrolls and the stage keeps its height. */
 .screen > .moviola-body {
@@ -1070,7 +1194,7 @@ a.reel-name:hover {
   min-height: 0;
 }
 
-.moviola-body > .stage-panel {
+.moviola-main > .stage-panel {
   min-height: 320px;
 }
 
@@ -1258,7 +1382,8 @@ a.reel-name:hover {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .moviola-body > .stage-panel {
+  .moviola-main > .stage-panel {
+    flex: none;
     height: clamp(300px, 56vh, 560px);
   }
 

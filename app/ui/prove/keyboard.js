@@ -4,9 +4,10 @@
 // heading, and nothing with a modifier or a letter too late; the help on ? and away on Esc, with the focus back
 // where it was; the help's words, those #439/D31 asked for among them, in both languages; the Tab order from the
 // skip link, with a ring on every stop; the skip link; the settings changed with the arrow keys and saved; no
-// transition under prefers-reduced-motion; the sidebar's quota in words, used and left (#439/D29). The negative
-// control: the same checks on the harness's control page, which has none of it, must fail, and so must the
-// prototype's glossary against #439/D31's words and its "claude 6 %" against #439/D29.
+// transition under prefers-reduced-motion; the sidebar's quota in words, used and left (#439/D29); the moviola's
+// search and moments (#487). The negative control: the same checks on the harness's control page, which has none
+// of it, must fail, and so must the prototype's glossary against #439/D31's words and its "claude 6 %" against
+// #439/D29, and / on the moviola's portfolio, which has no search.
 import { format, messages } from "./messages.js";
 import { all, find, focus, focused, named } from "./roles.js";
 
@@ -175,6 +176,68 @@ export const keyboard = {
     }
     const prototypeQuota = says("claude 6 %", "en");
 
+    // The moviola's search and moments (#487), the UX prototype's cases: / finds, typing filters, Enter opens the
+    // first found, `,` walks back within the search, Esc empties it; a search with no moment says why and offers to
+    // clear the filters; leaving the screen forgets the search; ← on the range moves the playhead.
+    const moviola = catalogs.en;
+    const frameMoment = `document.querySelector("aside.frame")?.dataset.moment ?? null`;
+    const value = `document.getElementById("search")?.value ?? null`;
+    const rows = `[...document.querySelectorAll(".results-list .result")].map((b) => b.dataset.id)`;
+    await fresh(page, harness, "#/moviola/alpha?data=demo&lang=en");
+    await page.press("/");
+    await sleep(100);
+    const searchbox = await focused(page);
+    check("/ goes to the search", searchbox?.role === "searchbox" && searchbox.name === moviola["moviola-search"], named(searchbox));
+    await page.send("Input.insertText", { text: "probe" });
+    await sleep(150);
+    const hits = await page.evaluate(rows);
+    check("typing filters the moments", hits.length > 0 && hits.length < 7, `${hits.length} of 7`);
+    await page.press("Enter");
+    await sleep(200);
+    const newest = await page.evaluate(frameMoment);
+    check("Enter opens the first moment found, the newest", newest === hits[0] && (await focused(page))?.role !== "searchbox", `${newest}`);
+    await page.press(",");
+    await sleep(200);
+    const before = await page.evaluate(frameMoment);
+    check(", goes to the moment before, within the search", before !== newest && hits.includes(before), `${newest} → ${before}`);
+    await page.evaluate(`document.getElementById("search").focus(), true`);
+    await page.press("Escape");
+    await sleep(100);
+    check("Esc empties the search", (await page.evaluate(value)) === "" && (await page.evaluate(rows)).length === 0);
+    await page.send("Input.insertText", { text: "zzzz" });
+    await sleep(150);
+    const nothing = await page.evaluate(`document.querySelector(".noresult")?.textContent.trim() ?? ""`);
+    check("a search with no moment says why", nothing.includes("«zzzz»") && nothing.includes(moviola["moviola-filter-clear"]), nothing.slice(0, 90));
+    await page.press("Tab");
+    await page.press("Tab");
+    const clearing = await focused(page);
+    await page.press("Enter");
+    await sleep(100);
+    check("«Clear the filters» from the keyboard empties the search", clearing?.name === moviola["moviola-filter-clear"] && (await page.evaluate(value)) === "", named(clearing));
+    await page.send("Input.insertText", { text: "#99" });
+    await sleep(150);
+    await page.press("Enter");
+    await sleep(200);
+    check("a #number finds the moment that names the task", (await page.evaluate(frameMoment)) === "01JCM600000000000000000000", await page.evaluate(frameMoment));
+    await page.evaluate(`document.getElementById("search").focus(), true`);
+    await page.send("Input.insertText", { text: " probe" });
+    await page.evaluate(`document.querySelector(".stage canvas").focus(), true`);
+    await go(page, "b");
+    await page.evaluate(`location.hash = "#/moviola/alpha"`);
+    await page.waitFor(`document.documentElement.dataset.settled === "#/moviola/alpha"`, 5_000);
+    check("leaving the screen forgets the search", (await page.evaluate(value)) === "", await page.evaluate(value));
+    await page.evaluate(`document.querySelector(".scrub").focus(), true`);
+    const t1 = await page.evaluate(`document.querySelector(".timecode").dataset.t`);
+    await page.press("ArrowLeft");
+    await sleep(150);
+    const t2 = await page.evaluate(`document.querySelector(".timecode").dataset.t`);
+    check("← on the range moves the playhead", Number(t2) < Number(t1), `${t1} → ${t2}`);
+    // The portfolio has no search: / finds nothing there.
+    await fresh(page, harness, "#/moviola?data=demo&lang=en");
+    await page.press("/");
+    await sleep(100);
+    const nowhere = (await focused(page))?.role !== "searchbox";
+
     // The control: a page with none of it.
     await fresh(page, harness, "#/control?data=planted&lang=en");
     const control = [];
@@ -182,7 +245,7 @@ export const keyboard = {
     if ((await help(page)).dialog) control.push("? opened a help");
     const first = (await tabs(page, 1))[0];
     if (named(first.node) === 'link "Skip to content"') control.push("Tab found a skip link");
-    const caught = control.length === 0 && missing(PROTOTYPE, "en").length > 0 && !prototypeQuota;
+    const caught = control.length === 0 && missing(PROTOTYPE, "en").length > 0 && !prototypeQuota && nowhere;
 
     for (const [name, ok, detail] of results) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
     const failed = results.filter(([, ok]) => !ok).length;

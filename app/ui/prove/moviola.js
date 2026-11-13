@@ -121,9 +121,57 @@ export const moviola = {
 
     const parts = await renderer(ui, m, s, fixture);
     const frames = await frameChecks(m, fixture);
-    return ok && caughtOrder && caughtMoved && parts && frames;
+    const found = await searchChecks(m, fixture);
+    return ok && caughtOrder && caughtMoved && parts && frames && found;
   },
 };
+
+/**
+ * The search (#487), which the prototype viewer does not have: by what it must hold on every case. Every moment
+ * found has every word and every #number of the query, every moment left out lacks one; the moments found come
+ * newest first; a #number is the task a moment names or a `#N` of its title, never a longer number; case and
+ * accents do not count; `,` and `.` walk the moments found in time. The negative control: a #number looked for as
+ * a substring of the title, the mistake that finds #12 for #1, must be caught.
+ */
+async function searchChecks(m, fixture) {
+  const q = await import("../src/lib/moviola/search.ts");
+  const checks = [];
+  const check = (name, ok, detail = "") => checks.push([name, ok, detail]);
+  const names = { kind: (node) => node.milestone.kind, lane: () => "" };
+  const queries = ["probe", "PROBE b", "#12", "#14", "#1", "#99 over", "gate", "zzzz", "#12 merged", "probé"];
+  let consistent = true;
+  for (const c of fixture.cases) {
+    const model = m.prepare(c.timeline, 0);
+    for (const text of queries) {
+      const query = q.parseQuery(text);
+      const found = q.search(model, query, names);
+      const ids = new Set(found.map((n) => n.index));
+      const newestFirst = found.every((n, i) => i === 0 || found[i - 1].t >= n.t);
+      const words = (n) => query.words.every((w) => q.fold(`${n.milestone.title} ${n.milestone.kind}`).includes(w));
+      const tasks = (n) => query.tasks.every((t) => n.milestone.refs.issue.includes(t) || new RegExp(`#${t}(?!\\d)`).test(n.milestone.title));
+      const exact = model.nodes.every((n) => ids.has(n.index) === (words(n) && tasks(n)));
+      if (!newestFirst || !exact) {
+        consistent = false;
+        console.log(`  ${c.name} «${text}»: ${newestFirst ? "" : "not newest first; "}${exact ? "" : "not exactly the moments that match"}`);
+      }
+    }
+  }
+  check("every case and query: exactly the moments that match, newest first", consistent);
+  const frameModel = m.prepare(fixture.cases.find((c) => c.name === "frame").timeline, 0);
+  const ids = (text) => q.search(frameModel, q.parseQuery(text), names).map((n) => n.milestone.id);
+  check("#12 finds the moment that names it, #1 none", ids("#12").length === 1 && ids("#1").length === 0, `${ids("#12")} / ${ids("#1")}`);
+  check("case and accents do not count", q.fold("Perché PROBE") === "perche probe" && ids("MERGED").length === 1);
+  check("an empty query is no search", q.isEmpty(q.parseQuery("   ")) && q.search(frameModel, q.parseQuery(""), names).length === 0);
+  const all = q.search(frameModel, q.parseQuery("probe"), names);
+  const [early, late] = [...all].sort((a, b) => a.t - b.t);
+  check("`.` and `,` walk the moments found in time", q.stepWithin(all, -1, 1) === early && q.stepWithin(all, early.index, 1) === late
+    && q.stepWithin(all, late.index, 1) === late && q.stepWithin(all, -1, -1) === late);
+  const naive = frameModel.nodes.filter((n) => n.milestone.title.includes("#1")).length;
+  const caught = naive > 0 && ids("#1").length === 0;
+  for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
+  console.log(`negative control, #1 as a substring of the title: ${caught ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caught;
+}
 
 /** The product's frame in the recording's shape: the prototype's L3, read back by its sections. */
 function neutral(fr) {

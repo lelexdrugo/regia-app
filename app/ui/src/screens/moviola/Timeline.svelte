@@ -11,6 +11,7 @@
   import type { CanvasText } from "../../lib/moviola/canvas2d";
   import { frame as frameOf, type Notes } from "../../lib/moviola/frame";
   import { type Model, prepare } from "../../lib/moviola/model";
+  import { isEmpty, type Names, parseQuery, search, stepWithin } from "../../lib/moviola/search";
   import { Stage } from "../../lib/moviola/stage";
   import { day, dayKey, KIND_ID, LANE_ID, laneName, timecode } from "../../lib/moviola/text";
   import type { MoviolaSource, Snapshot } from "../../lib/moviola/types";
@@ -23,6 +24,8 @@
     project: string;
     /** The moment the address opens, if any. */
     moment?: string | null;
+    /** The search the address asks for, if any. */
+    query?: string | null;
     /** The project's name, when the portfolio was read: otherwise its id. */
     name: string;
     /** Off only for the harness's negative control of the themes. */
@@ -30,7 +33,7 @@
     onsettled?: () => void;
   }
 
-  let { strings, source, project, moment = null, name, observeTheme = true, onsettled }: Props = $props();
+  let { strings, source, project, moment = null, query = null, name, observeTheme = true, onsettled }: Props = $props();
 
   type State = { kind: "loading" } | { kind: "ready"; model: Model } | { kind: "failed"; reason: string };
   let view: State = $state({ kind: "loading" });
@@ -86,19 +89,88 @@
     await tick();
   }
 
-  // Another moment in the address, once the stage is drawn: the screen has drawn when its notes are in.
+  // Another moment or search in the address, once the stage is drawn: the screen has drawn when its notes are in.
   $effect(() => {
     const id = moment;
+    const wanted = query;
     if (drawn && stage && view.kind === "ready") {
       const made = stage;
       const model = view.model;
-      untrack(() => void open(made, model, id).then(() => onsettled?.()));
+      untrack(() => {
+        text = wanted ?? "";
+        void open(made, model, id).then(() => onsettled?.());
+      });
     }
   });
 
   function close(): void {
     stage?.select(-1);
     canvas?.focus();
+  }
+
+  // The search (#397/D12): a word or a #number; Esc empties it, Enter opens the first moment found, «Clear the
+  // filters» empties it from the list. It lives with the screen: leaving the project forgets it.
+  let text = $state(untrack(() => query ?? ""));
+  let field: HTMLInputElement | undefined = $state();
+  const parsed = $derived(parseQuery(text));
+  const searching = $derived(!isEmpty(parsed));
+  const found = $derived.by(() => (view.kind === "ready" ? search(view.model, parsed, names(strings, view.model)) : []));
+
+  function names(catalog: Catalog, model: Model): Names {
+    return {
+      kind: (node) => catalog.message(KIND_ID[node.milestone.kind]),
+      lane: (node) => laneName(catalog, model, model.lanes[node.lane] as Model["lanes"][number]),
+    };
+  }
+
+  /** Why nothing is found: the one task no moment names, or what the search looks at. */
+  function none(): string {
+    const only = parsed.words.length === 0 && parsed.tasks.length === 1 ? parsed.tasks[0] : undefined;
+    return only !== undefined ? strings.message("moviola-search-none-task", { task: String(only) }) : strings.message("moviola-search-none", { query: text.trim() });
+  }
+
+  function choose(index: number): void {
+    stage?.select(index);
+    canvas?.focus();
+  }
+
+  function searchKeys(event: KeyboardEvent): void {
+    if (event.key === "Escape" && text) {
+      event.preventDefault();
+      event.stopPropagation();
+      text = "";
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      const first = found[0];
+      if (first) choose(first.index);
+    }
+  }
+
+  function clear(): void {
+    text = "";
+    field?.focus();
+  }
+
+  // `/` finds a moment, `,` and `.` walk the moments, within the search when there is one. Only when no field holds
+  // the focus, no modifier is held and no dialog is open, as the shell's own letters.
+  function keys(event: KeyboardEvent): void {
+    const target = event.target instanceof HTMLElement ? event.target : null;
+    if (event.ctrlKey || event.metaKey || event.altKey || document.querySelector("dialog[open]")) return;
+    if (target?.matches("textarea, select, [contenteditable], input:not([type=radio], [type=checkbox], [type=range])")) return;
+    if (event.key === "/") {
+      event.preventDefault();
+      field?.focus();
+      field?.select();
+    } else if ((event.key === "," || event.key === ".") && stage) {
+      event.preventDefault();
+      const direction = event.key === "." ? 1 : -1;
+      if (searching) {
+        const next = stepWithin(found, stage.selected, direction);
+        if (next) stage.select(next.index);
+      } else {
+        stage.step(direction);
+      }
+    }
   }
 
   function words(catalog: Catalog, model: Model): CanvasText {
@@ -173,6 +245,8 @@
   onMount(read);
 </script>
 
+<svelte:window onkeydown={keys} />
+
 <div class="screen moviola" data-moviola={view.kind} aria-busy={view.kind === "loading"}>
   <header class="titlerow">
     <div class="titlerow-main">
@@ -200,7 +274,59 @@
   {:else}
     {@const model = view.model}
     {@const node = model.nodes[selected]}
+    <div class="moviola-tools" role="search">
+      <span class="search-wrap">
+        <span class="icon icon-search" aria-hidden="true"></span>
+        <input
+          bind:this={field}
+          bind:value={text}
+          id="search"
+          class="search-field"
+          type="search"
+          maxlength="200"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label={strings.message("moviola-search")}
+          aria-describedby={searching ? "moviola-found" : undefined}
+          placeholder={strings.message("moviola-search-placeholder")}
+          onkeydown={searchKeys}
+        />
+        {#if text}
+          <button type="button" class="btn icon-btn" aria-label={strings.message("moviola-search-clear")} title={strings.message("moviola-search-clear")} onclick={clear}>
+            <span class="icon icon-close" aria-hidden="true"></span>
+          </button>
+        {/if}
+      </span>
+      {#if searching}
+        <span class="faint" id="moviola-found" aria-live="polite">{strings.message("moviola-search-count", { n: found.length, total: model.nodes.length })}</span>
+      {/if}
+    </div>
     <div class="moviola-body">
+    <div class="moviola-main">
+    <!-- The moments found come right after the field: Tab goes from the search to them, then to the stage. -->
+    {#if searching}
+      <section class="results" aria-labelledby="moviola-results">
+        <h2 id="moviola-results">{strings.message("moviola-results")}</h2>
+        {#if found.length}
+          <ol class="results-list">
+            {#each found as hit (hit.index)}
+              <li>
+                <button type="button" class="result" aria-current={hit.index === selected ? "true" : undefined} data-id={hit.milestone.id} onclick={() => choose(hit.index)}>
+                  <span class="mono faint">{timecode(strings, hit.t)}</span>
+                  <span class="reel-kind">{strings.message(KIND_ID[hit.milestone.kind])}</span>
+                  <span class="result-title" data-raw>{hit.milestone.title}</span>
+                </button>
+              </li>
+            {/each}
+          </ol>
+        {:else}
+          <div class="noresult" role="status">
+            <p>{none()}</p>
+            <button type="button" class="btn" onclick={clear}>{strings.message("moviola-filter-clear")}</button>
+          </div>
+        {/if}
+      </section>
+    {/if}
     <section class="stage-panel" aria-label={strings.message("moviola-lanes-directions")}>
       <div class="stage" bind:this={host}>
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -250,6 +376,7 @@
         {/if}
       </p>
     </section>
+    </div>
     {#if current}
       <Frame {strings} {model} frame={current} {notes} onselect={(index) => stage?.select(index)} onclose={close} />
     {:else}

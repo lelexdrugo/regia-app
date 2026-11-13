@@ -12,6 +12,8 @@ export const VIEWS = [
   ...["frame/01JCF000000000000000000000", "frame/01JCF200000000000000000000", "alpha/01JCM300000000000000000000", "alpha/01JCM5B0000000000000000000"]
     .map((moment) => `#/moviola/${moment}?data=demo`),
   "#/moviola/frame/01JCF100000000000000000000?data=demo&notes=fail",
+  // The search (#487): moments found by a word, by a #number, and none, which says why.
+  ...["probe", "%2399", "zzzz", "%23404"].map((q) => `#/moviola/alpha?data=demo&q=${q}`),
   // The comfortable density is larger in every measure, and the setup may choose it (#483).
   "#/brief?data=worst&density=comfortable",
   "#/settings?data=demo&density=comfortable&dir=nero",

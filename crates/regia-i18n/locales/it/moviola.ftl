@@ -143,3 +143,13 @@ moviola-notes-loading = Leggo le note del momento…
 moviola-notes-failed = Le note del momento non si leggono:
 moviola-notes-none = Il cronista non ha scritto note per questo momento.
 moviola-link-note = Questa versione non apre ancora il browser. L'indirizzo:
+
+## La ricerca di un momento (#487): una parola, un #numero; Esc la svuota, Invio apre il primo trovato.
+
+moviola-search-count = { $n ->
+        [one] un momento su { $total }
+       *[other] { $n } momenti su { $total }
+    }
+moviola-results = Momenti trovati
+moviola-search-none = Nessun momento corrisponde a «{ $query }». La ricerca vuole ogni parola nel titolo, nel tipo o nella corsia di un momento, e ogni #numero fra i task che cita.
+moviola-search-none-task = Nessun momento cita il task #{ $task }.
