@@ -153,3 +153,41 @@ moviola-search-count = { $n ->
 moviola-results = Momenti trovati
 moviola-search-none = Nessun momento corrisponde a «{ $query }». La ricerca vuole ogni parola nel titolo, nel tipo o nella corsia di un momento, e ogni #numero fra i task che cita.
 moviola-search-none-task = Nessun momento cita il task #{ $task }.
+
+## «Copia per la chat» nel fotogramma (#487): cinque righe, solo puntatori, sotto i 1.500 caratteri.
+
+moviola-pack-head = { -product } · { $project } · nodo { $id } ({ $kind }, { $day })
+moviola-pack-looking = Sto guardando: { $what }
+moviola-pack-references = Riferimenti: { $list }
+moviola-pack-none = nessuno
+moviola-pack-more = … e altri { $n }
+moviola-pack-question = Domanda: <da completare>
+moviola-pack-skill = Carica la skill { -product } e leggi i riferimenti prima di rispondere.
+moviola-pack-label = Il pacchetto per la chat
+moviola-pack-note = Il pacchetto è selezionato: copialo e incollalo in una chat. L'app non scrive ancora negli appunti.
+
+## La parte della moviola nell'aiuto su ? (#487): i suoi tasti e i segni del palco, come li aveva la guida del prototipo.
+
+moviola-help-title = La moviola
+moviola-keys-arrows = Sul palco: il momento prima o dopo
+moviola-keys-lanes = Sul palco: il momento più vicino nella corsia sopra o sotto
+moviola-keys-ends = Sul palco: il primo o l'ultimo momento
+moviola-keys-zoom = Sul palco: avvicina, allontana, tutta la storia
+moviola-keys-enter = Nella ricerca: apre il primo momento trovato
+moviola-keys-escape = Svuota la ricerca; sul palco o nel fotogramma, lascia il momento
+moviola-word-kinds-term = I sette tipi
+moviola-word-kinds = Un cerchio pieno è un traguardo, un rombo una decisione presa, un quadrato ambra una decisione che aspetta te, un triangolo rosso un'eccezione, un cerchio tratteggiato un'esplorazione, una punta di freccia un rientro nella linea principale, una croce una strada abbandonata.
+moviola-word-health-term = Salute
+moviola-word-health = Un alone attorno a un momento a rischio, o che aspetta te. Un momento in salute non ne ha: il colore segnala, non decora.
+moviola-word-rings-term = Anelli
+moviola-word-rings = Un anello per ogni round di ciascun task che il momento cita, sopra e sotto il segno; tratteggiato quando il task non dichiara il round. Il lavoro in parallelo allarga la corsia.
+moviola-word-badges-term = Badge
+moviola-word-badges = ✓ un controllo riuscito, ? un controllo non concluso, D3 tre difetti trovati, 1/3 uno chiuso su tre.
+moviola-word-undeclared-term = Non dichiarato
+moviola-word-undeclared = Un valore che nessuno ha scritto. Il palco non disegna nulla, il fotogramma dice «non dichiarato»: non vuol dire mai zero.
+moviola-word-lanes-term = Corsie
+moviola-word-lanes = Una per ogni direzione che il progetto ha preso. Una linea piena è ancora aperta, una tratteggiata è stata abbandonata, una punteggiata è rientrata nella linea principale.
+moviola-word-playhead-term = Testina
+moviola-word-playhead = La linea ambra con la sua ora: la data che stai leggendo. Trascinala sul palco o sul nastro.
+moviola-word-joint-term = Giunta
+moviola-word-joint = ✂ sul nastro: giorni senza momenti, tagliati come in un montaggio.

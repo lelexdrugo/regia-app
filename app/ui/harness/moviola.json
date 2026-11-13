@@ -64,6 +64,15 @@
    39
   ]
  },
+ "packWords": {
+  "node": "nodo",
+  "looking": "Sto guardando: ",
+  "references": "Riferimenti: ",
+  "none": "nessuno",
+  "more": "… e altri ",
+  "question": "Domanda: <da completare>",
+  "skill": "Carica la skill regia e leggi i riferimenti prima di rispondere."
+ },
  "cases": [
   {
    "name": "viewer",
@@ -809,7 +818,12 @@
      ],
      "previous": null,
      "following": "M1",
-     "pack": "regia · p · nodo M0 (milestone, 2026-10-14)\nSto guardando: node 0.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · p · nodo M0 (milestone, 2026-10-14)\nSto guardando: node 0.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-14",
+      "page": null
+     }
     },
     {
      "id": "M1",
@@ -852,7 +866,12 @@
      ],
      "previous": "M0",
      "following": "M2",
-     "pack": "regia · p · nodo M1 (esplorazione, 2026-10-15)\nSto guardando: node 1.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · p · nodo M1 (esplorazione, 2026-10-15)\nSto guardando: node 1.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "esplorazione",
+      "day": "2026-10-15",
+      "page": null
+     }
     },
     {
      "id": "M2",
@@ -892,7 +911,12 @@
      ],
      "previous": "M1",
      "following": "M3",
-     "pack": "regia · p · nodo M2 (milestone, 2026-10-15)\nSto guardando: node 2.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · p · nodo M2 (milestone, 2026-10-15)\nSto guardando: node 2.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-15",
+      "page": null
+     }
     },
     {
      "id": "M3",
@@ -938,7 +962,12 @@
      ],
      "previous": "M2",
      "following": "M4",
-     "pack": "regia · p · nodo M3 (rientro, 2026-10-19)\nSto guardando: node 3.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · p · nodo M3 (rientro, 2026-10-19)\nSto guardando: node 3.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "rientro",
+      "day": "2026-10-19",
+      "page": null
+     }
     },
     {
      "id": "M4",
@@ -981,7 +1010,12 @@
      "children": [],
      "previous": "M3",
      "following": null,
-     "pack": "regia · p · nodo M4 (decisione, 2026-10-20)\nSto guardando: node 4.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · p · nodo M4 (decisione, 2026-10-20)\nSto guardando: node 4.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "decisione",
+      "day": "2026-10-20",
+      "page": null
+     }
     }
    ]
   },
@@ -2483,7 +2517,12 @@
      ],
      "previous": null,
      "following": "01JCM200000000000000000000",
-     "pack": "regia · alpha · nodo 01JCM100000000000000000000 (milestone, 2026-10-14)\nSto guardando: First synthetic step. The project starts. Nothing is late.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/tasks/issues/27, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, .regia/report/2026-10-20-13-absent.md, https://origin.invalid/p/alpha/snapshot/01JCM100000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · alpha · nodo 01JCM100000000000000000000 (milestone, 2026-10-14)\nSto guardando: First synthetic step. The project starts. Nothing is late.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/tasks/issues/27, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, .regia/report/2026-10-20-13-absent.md, https://origin.invalid/p/alpha/snapshot/01JCM100000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-14",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM100000000000000000000.html"
+     }
     },
     {
      "id": "01JCM200000000000000000000",
@@ -2575,7 +2614,12 @@
      ],
      "previous": "01JCM100000000000000000000",
      "following": "01JCM300000000000000000000",
-     "pack": "regia · alpha · nodo 01JCM200000000000000000000 (decisione, 2026-10-15)\nSto guardando: A choice waits for the owner. Keep the main line.\nRiferimenti: https://github.com/acme/alpha/commit/abc1234, {dati}/EXP-1/results.md, C:\\Users\\someone\\x.md, /home/someone/x.md, ../outside.md, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, https://origin.invalid/p/alpha/snapshot/01JCM200000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · alpha · nodo 01JCM200000000000000000000 (decisione, 2026-10-15)\nSto guardando: A choice waits for the owner. Keep the main line.\nRiferimenti: https://github.com/acme/alpha/commit/abc1234, {dati}/EXP-1/results.md, C:\\Users\\someone\\x.md, /home/someone/x.md, ../outside.md, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, https://origin.invalid/p/alpha/snapshot/01JCM200000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "decisione",
+      "day": "2026-10-15",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM200000000000000000000.html"
+     }
     },
     {
      "id": "01JCM300000000000000000000",
@@ -2674,7 +2718,12 @@
      ],
      "previous": "01JCM200000000000000000000",
      "following": "01JCM400000000000000000000",
-     "pack": "regia · alpha · nodo 01JCM300000000000000000000 (esplorazione, 2026-10-16)\nSto guardando: #14 probe B opens. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/14, https://github.com/acme/alpha/commit/0123456789abcdef0123456789abcdef01234567, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, https://origin.invalid/p/alpha/snapshot/01JCM300000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · alpha · nodo 01JCM300000000000000000000 (esplorazione, 2026-10-16)\nSto guardando: #14 probe B opens. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/14, https://github.com/acme/alpha/commit/0123456789abcdef0123456789abcdef01234567, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, https://origin.invalid/p/alpha/snapshot/01JCM300000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "esplorazione",
+      "day": "2026-10-16",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM300000000000000000000.html"
+     }
     },
     {
      "id": "01JCM400000000000000000000",
@@ -2722,7 +2771,12 @@
      ],
      "previous": "01JCM300000000000000000000",
      "following": "01JCM5A0000000000000000000",
-     "pack": "regia · alpha · nodo 01JCM400000000000000000000 (rientro, 2026-10-19)\nSto guardando: Probe B comes back.\nRiferimenti: https://origin.invalid/p/alpha/snapshot/01JCM400000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · alpha · nodo 01JCM400000000000000000000 (rientro, 2026-10-19)\nSto guardando: Probe B comes back.\nRiferimenti: https://origin.invalid/p/alpha/snapshot/01JCM400000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "rientro",
+      "day": "2026-10-19",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM400000000000000000000.html"
+     }
     },
     {
      "id": "01JCM5A0000000000000000000",
@@ -2803,7 +2857,12 @@
      ],
      "previous": "01JCM400000000000000000000",
      "following": "01JCM5B0000000000000000000",
-     "pack": "regia · alpha · nodo 01JCM5A0000000000000000000 (gate, 2026-10-20)\nSto guardando: A gate on the same instant. A gate is open.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/alpha/commit/fedcba9876543210, https://origin.invalid/p/alpha/snapshot/01JCM5A0000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · alpha · nodo 01JCM5A0000000000000000000 (gate, 2026-10-20)\nSto guardando: A gate on the same instant. A gate is open.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/alpha/commit/fedcba9876543210, https://origin.invalid/p/alpha/snapshot/01JCM5A0000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "gate",
+      "day": "2026-10-20",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM5A0000000000000000000.html"
+     }
     },
     {
      "id": "01JCM5B0000000000000000000",
@@ -2875,7 +2934,12 @@
      "children": [],
      "previous": "01JCM5A0000000000000000000",
      "following": "01JCM600000000000000000000",
-     "pack": "regia · alpha · nodo 01JCM5B0000000000000000000 (abbandono, 2026-10-20)\nSto guardando: Probe D is dropped. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/27, https://origin.invalid/p/alpha/snapshot/01JCM5B0000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · alpha · nodo 01JCM5B0000000000000000000 (abbandono, 2026-10-20)\nSto guardando: Probe D is dropped. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/27, https://origin.invalid/p/alpha/snapshot/01JCM5B0000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "abbandono",
+      "day": "2026-10-20",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM5B0000000000000000000.html"
+     }
     },
     {
      "id": "01JCM600000000000000000000",
@@ -2947,7 +3011,12 @@
      "children": [],
      "previous": "01JCM5B0000000000000000000",
      "following": null,
-     "pack": "regia · alpha · nodo 01JCM600000000000000000000 (eccezione, 2026-10-21)\nSto guardando: Over budget on a lane with no record. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/99, https://origin.invalid/p/alpha/snapshot/01JCM600000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · alpha · nodo 01JCM600000000000000000000 (eccezione, 2026-10-21)\nSto guardando: Over budget on a lane with no record. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/99, https://origin.invalid/p/alpha/snapshot/01JCM600000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "eccezione",
+      "day": "2026-10-21",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM600000000000000000000.html"
+     }
     }
    ]
   },
@@ -3309,7 +3378,12 @@
      "children": [],
      "previous": null,
      "following": null,
-     "pack": "regia · beta · nodo 01JCB100000000000000000000 (milestone, 2026-10-18)\nSto guardando: Beta's only milestone. Keep the main line.\nRiferimenti: #5, 1111111, .regia/report/none.md, https://origin.invalid/p/beta/snapshot/01JCB100000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · beta · nodo 01JCB100000000000000000000 (milestone, 2026-10-18)\nSto guardando: Beta's only milestone. Keep the main line.\nRiferimenti: #5, 1111111, .regia/report/none.md, https://origin.invalid/p/beta/snapshot/01JCB100000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-18",
+      "page": "https://origin.invalid/p/beta/snapshot/01JCB100000000000000000000.html"
+     }
     }
    ]
   },
@@ -3448,6 +3522,182 @@
        "commit": [],
        "report": []
       }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "01JCF300000000000000000000",
+      "ts": "2026-10-17T09:00:00Z",
+      "kind": "decision",
+      "direction": "principale",
+      "title": "A long decision about0 about1 about2 about3 about4 about5 about6 about7 about8 about9 about10 about11 about12 about13 about14 about15 about16 about17 about18 about19 about20 about21 about22 about23 about24 about25 about26 about27 about28 about29 about30 about31 about32 about33 about34 about35 about36 about37 about38 about39",
+      "health": "healthy",
+      "parents": [
+       "01JCF200000000000000000000"
+      ],
+      "refs": {
+       "issue": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129
+       ],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#100",
+         "url": "https://github.com/acme/tasks/issues/100"
+        },
+        {
+         "text": "#101",
+         "url": "https://github.com/acme/tasks/issues/101"
+        },
+        {
+         "text": "#102",
+         "url": "https://github.com/acme/tasks/issues/102"
+        },
+        {
+         "text": "#103",
+         "url": "https://github.com/acme/tasks/issues/103"
+        },
+        {
+         "text": "#104",
+         "url": "https://github.com/acme/tasks/issues/104"
+        },
+        {
+         "text": "#105",
+         "url": "https://github.com/acme/tasks/issues/105"
+        },
+        {
+         "text": "#106",
+         "url": "https://github.com/acme/tasks/issues/106"
+        },
+        {
+         "text": "#107",
+         "url": "https://github.com/acme/tasks/issues/107"
+        },
+        {
+         "text": "#108",
+         "url": "https://github.com/acme/tasks/issues/108"
+        },
+        {
+         "text": "#109",
+         "url": "https://github.com/acme/tasks/issues/109"
+        },
+        {
+         "text": "#110",
+         "url": "https://github.com/acme/tasks/issues/110"
+        },
+        {
+         "text": "#111",
+         "url": "https://github.com/acme/tasks/issues/111"
+        },
+        {
+         "text": "#112",
+         "url": "https://github.com/acme/tasks/issues/112"
+        },
+        {
+         "text": "#113",
+         "url": "https://github.com/acme/tasks/issues/113"
+        },
+        {
+         "text": "#114",
+         "url": "https://github.com/acme/tasks/issues/114"
+        },
+        {
+         "text": "#115",
+         "url": "https://github.com/acme/tasks/issues/115"
+        },
+        {
+         "text": "#116",
+         "url": "https://github.com/acme/tasks/issues/116"
+        },
+        {
+         "text": "#117",
+         "url": "https://github.com/acme/tasks/issues/117"
+        },
+        {
+         "text": "#118",
+         "url": "https://github.com/acme/tasks/issues/118"
+        },
+        {
+         "text": "#119",
+         "url": "https://github.com/acme/tasks/issues/119"
+        },
+        {
+         "text": "#120",
+         "url": "https://github.com/acme/tasks/issues/120"
+        },
+        {
+         "text": "#121",
+         "url": "https://github.com/acme/tasks/issues/121"
+        },
+        {
+         "text": "#122",
+         "url": "https://github.com/acme/tasks/issues/122"
+        },
+        {
+         "text": "#123",
+         "url": "https://github.com/acme/tasks/issues/123"
+        },
+        {
+         "text": "#124",
+         "url": "https://github.com/acme/tasks/issues/124"
+        },
+        {
+         "text": "#125",
+         "url": "https://github.com/acme/tasks/issues/125"
+        },
+        {
+         "text": "#126",
+         "url": "https://github.com/acme/tasks/issues/126"
+        },
+        {
+         "text": "#127",
+         "url": "https://github.com/acme/tasks/issues/127"
+        },
+        {
+         "text": "#128",
+         "url": "https://github.com/acme/tasks/issues/128"
+        },
+        {
+         "text": "#129",
+         "url": "https://github.com/acme/tasks/issues/129"
+        }
+       ],
+       "commit": [],
+       "report": []
+      }
      }
     ],
     "directions": [
@@ -3576,7 +3826,20 @@
      "deviations": [],
      "process": null
     },
-    "01JCF200000000000000000000": null
+    "01JCF200000000000000000000": null,
+    "01JCF300000000000000000000": {
+     "id": null,
+     "ts": null,
+     "in_brief": "summary0 summary1 summary2 summary3 summary4 summary5 summary6 summary7 summary8 summary9 summary10 summary11 summary12 summary13 summary14 summary15 summary16 summary17 summary18 summary19 summary20 summary21 summary22 summary23 summary24 summary25 summary26 summary27 summary28 summary29 summary30 summary31 summary32 summary33 summary34 summary35 summary36 summary37 summary38 summary39 summary40 summary41 summary42 summary43 summary44 summary45 summary46 summary47 summary48 summary49 summary50 summary51 summary52 summary53 summary54 summary55 summary56 summary57 summary58 summary59 summary60 summary61 summary62 summary63 summary64 summary65 summary66 summary67 summary68 summary69 summary70 summary71 summary72 summary73 summary74 summary75 summary76 summary77 summary78 summary79 summary80 summary81 summary82 summary83 summary84 summary85 summary86 summary87 summary88 summary89 summary90 summary91 summary92 summary93 summary94 summary95 summary96 summary97 summary98 summary99 summary100 summary101 summary102 summary103 summary104 summary105 summary106 summary107 summary108 summary109 summary110 summary111 summary112 summary113 summary114 summary115 summary116 summary117 summary118 summary119",
+     "changed": [],
+     "direction": "because0 because1 because2 because3 because4 because5 because6 because7 because8 because9 because10 because11 because12 because13 because14 because15 because16 because17 because18 because19 because20 because21 because22 because23 because24 because25 because26 because27 because28 because29 because30 because31 because32 because33 because34 because35 because36 because37 because38 because39 because40 because41 because42 because43 because44 because45 because46 because47 because48 because49 because50 because51 because52 because53 because54 because55 because56 because57 because58 because59 because60 because61 because62 because63 because64 because65 because66 because67 because68 because69 because70 because71 because72 because73 because74 because75 because76 because77 because78 because79",
+     "open_decisions": [],
+     "risks": [],
+     "next": "",
+     "changed_claims": [],
+     "deviations": [],
+     "process": null
+    }
    },
    "expected": {
     "lanes": [
@@ -3593,7 +3856,8 @@
       },
       "nodes": [
        "01JCF000000000000000000000",
-       "01JCF200000000000000000000"
+       "01JCF200000000000000000000",
+       "01JCF300000000000000000000"
       ]
      },
      {
@@ -3660,8 +3924,140 @@
       "id": "01JCF200000000000000000000",
       "lane": 0,
       "t": 1792141200000,
-      "children": [],
+      "children": [
+       "01JCF300000000000000000000"
+      ],
       "rings": [],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "01JCF300000000000000000000",
+      "lane": 0,
+      "t": 1792227600000,
+      "children": [],
+      "rings": [
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       }
+      ],
       "badges": [],
       "declared": false
      }
@@ -3673,33 +4069,35 @@
       "window": null,
       "x": [
        150,
-       462,
+       358,
+       566,
        774
       ],
       "y": [
-       106,
-       192,
-       106
+       217,
+       409,
+       217,
+       217
       ],
       "laneY": [
-       106,
-       192
+       217,
+       409
       ],
-      "step": 312,
+      "step": 208,
       "left": 150,
       "i0": 0,
-      "i1": 2,
+      "i1": 3,
       "clip": null,
       "stageWidth": 800,
-      "stageHeight": 400,
+      "stageHeight": 450,
       "xAt": [
        [
         1791946800000,
-        -6
+        46
        ],
        [
         1791961200000,
-        72
+        98
        ],
        [
         1791972000000,
@@ -3707,27 +4105,35 @@
        ],
        [
         1792054800000,
-        462
+        358
        ],
        [
         1792141200000,
+        566
+       ],
+       [
+        1792227600000,
         774
        ],
        [
         1792013400000,
-        306
+        254
        ],
        [
         1792098000000,
-        618
+        462
        ],
        [
-        1792152000000,
-        852
+        1792184400000,
+        670
        ],
        [
-        1792166400000,
-        930
+        1792238400000,
+        826
+       ],
+       [
+        1792252800000,
+        878
        ]
       ],
       "tAt": [
@@ -3737,19 +4143,23 @@
        ],
        [
         157,
-        1791973857692.3076
+        1791974786538.4614
        ],
        [
-        469,
-        1792056738461.5386
+        365,
+        1792057707692.3076
+       ],
+       [
+        573,
+        1792144107692.3076
        ],
        [
         781,
-        1792141200000
+        1792227600000
        ],
        [
         779,
-        1792141200000
+        1792227600000
        ]
       ]
      },
@@ -3759,33 +4169,35 @@
       "window": null,
       "x": [
        150,
-       702,
+       518,
+       886,
        1254
       ],
       "y": [
-       106,
-       192,
-       106
+       236,
+       452,
+       236,
+       236
       ],
       "laneY": [
-       106,
-       192
+       236,
+       452
       ],
-      "step": 552,
+      "step": 368,
       "left": 150,
       "i0": 0,
-      "i1": 2,
+      "i1": 3,
       "clip": null,
       "stageWidth": 1280,
       "stageHeight": 720,
       "xAt": [
        [
         1791946800000,
-        -126
+        -34
        ],
        [
         1791961200000,
-        12
+        58
        ],
        [
         1791972000000,
@@ -3793,27 +4205,35 @@
        ],
        [
         1792054800000,
-        702
+        518
        ],
        [
         1792141200000,
+        886
+       ],
+       [
+        1792227600000,
         1254
        ],
        [
         1792013400000,
-        426
+        334
        ],
        [
         1792098000000,
-        978
+        702
        ],
        [
-        1792152000000,
-        1392
+        1792184400000,
+        1070
        ],
        [
-        1792166400000,
-        1530
+        1792238400000,
+        1346
+       ],
+       [
+        1792252800000,
+        1438
        ]
       ],
       "tAt": [
@@ -3823,19 +4243,23 @@
        ],
        [
         157,
-        1791973050000
+        1791973575000
        ],
        [
-        709,
-        1792055895652.1738
+        525,
+        1792056443478.261
+       ],
+       [
+        893,
+        1792142843478.261
        ],
        [
         1261,
-        1792141200000
+        1792227600000
        ],
        [
         1259,
-        1792141200000
+        1792227600000
        ]
       ]
      },
@@ -3844,44 +4268,46 @@
       "height": 400,
       "window": {
        "from": 1792054800000,
-       "to": 1792144800000
+       "to": 1792231200000
       },
       "x": [
-       -342,
+       -74,
        194,
+       462,
        730
       ],
       "y": [
-       106,
-       192,
-       106
+       217,
+       409,
+       217,
+       217
       ],
       "laneY": [
-       106,
-       192
+       217,
+       409
       ],
-      "step": 536,
+      "step": 268,
       "left": 150,
       "i0": 1,
-      "i1": 2,
+      "i1": 3,
       "clip": [
        128,
        800
       ],
       "stageWidth": 800,
-      "stageHeight": 400,
+      "stageHeight": 450,
       "xAt": [
        [
         1791946800000,
-        -610
+        -208
        ],
        [
         1791961200000,
-        -476
+        -141
        ],
        [
         1791972000000,
-        -342
+        -74
        ],
        [
         1792054800000,
@@ -3889,45 +4315,57 @@
        ],
        [
         1792141200000,
+        462
+       ],
+       [
+        1792227600000,
         730
        ],
        [
         1792013400000,
-        -74
+        60
        ],
        [
         1792098000000,
-        462
+        328
        ],
        [
-        1792152000000,
+        1792184400000,
+        596
+       ],
+       [
+        1792238400000,
+        797
+       ],
+       [
+        1792252800000,
         864
-       ],
-       [
-        1792166400000,
-        998
        ]
       ],
       "tAt": [
        [
-        -347,
+        -79,
         1791972000000
        ],
        [
-        -335,
-        1791973081343.2837
+        -67,
+        1791974162686.5671
        ],
        [
         201,
-        1792055928358.209
+        1792057056716.418
+       ],
+       [
+        469,
+        1792143456716.418
        ],
        [
         737,
-        1792141200000
+        1792227600000
        ],
        [
         735,
-        1792141200000
+        1792227600000
        ]
       ]
      }
@@ -3946,43 +4384,56 @@
       ],
       [
        1791972000000,
-       366
+       349
       ],
       [
        1792054800000,
-       400
-      ],
-      [
-       1792141200000,
-       434
-      ],
-      [
-       1792013400000,
        383
       ],
       [
-       1792098000000,
+       1792141200000,
        417
       ],
       [
-       1792152000000,
+       1792227600000,
+       451
+      ],
+      [
+       1792013400000,
+       366
+      ],
+      [
+       1792098000000,
+       400
+      ],
+      [
+       1792184400000,
+       434
+      ],
+      [
+       1792238400000,
        800
       ],
       [
-       1792166400000,
+       1792252800000,
        800
       ]
      ],
      "joints": [
       {
-       "x": 383,
+       "x": 366,
        "from": 1791972000000,
        "to": 1792054800000
       },
       {
-       "x": 417,
+       "x": 400,
        "from": 1792054800000,
        "to": 1792141200000
+      },
+      {
+       "x": 434,
+       "from": 1792141200000,
+       "to": 1792227600000
       }
      ]
     }
@@ -4116,7 +4567,12 @@
      ],
      "previous": null,
      "following": "01JCF100000000000000000000",
-     "pack": "regia · frame · nodo 01JCF000000000000000000000 (milestone, 2026-10-14)\nSto guardando: #12 merged after review. The review is done. The project is on time.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/tasks/issues/14, https://github.com/acme/frame/commit/abc1234, <root>/projects/frame/.regia/report/2026-10-14-12-review.md, .regia/report/gone.md\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · frame · nodo 01JCF000000000000000000000 (milestone, 2026-10-14)\nSto guardando: #12 merged after review. The review is done. The project is on time.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/tasks/issues/14, https://github.com/acme/frame/commit/abc1234, <root>/projects/frame/.regia/report/2026-10-14-12-review.md, .regia/report/gone.md\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-14",
+      "page": null
+     }
     },
     {
      "id": "01JCF100000000000000000000",
@@ -4180,7 +4636,12 @@
      ],
      "previous": "01JCF000000000000000000000",
      "following": "01JCF200000000000000000000",
-     "pack": "regia · frame · nodo 01JCF100000000000000000000 (esplorazione, 2026-10-15)\nSto guardando: A probe opens its lane. Try the other road.\nRiferimenti: https://github.com/acme/tasks/issues/14, fedcba9\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · frame · nodo 01JCF100000000000000000000 (esplorazione, 2026-10-15)\nSto guardando: A probe opens its lane. Try the other road.\nRiferimenti: https://github.com/acme/tasks/issues/14, fedcba9\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "esplorazione",
+      "day": "2026-10-15",
+      "page": null
+     }
     },
     {
      "id": "01JCF200000000000000000000",
@@ -4221,10 +4682,302 @@
      "parents": [
       "01JCF100000000000000000000"
      ],
-     "children": [],
+     "children": [
+      "01JCF300000000000000000000"
+     ],
      "previous": "01JCF100000000000000000000",
+     "following": "01JCF300000000000000000000",
+     "pack": "regia · frame · nodo 01JCF200000000000000000000 (abbandono, 2026-10-16)\nSto guardando: The probe is dropped.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "abbandono",
+      "day": "2026-10-16",
+      "page": null
+     }
+    },
+    {
+     "id": "01JCF300000000000000000000",
+     "title": "A long decision about0 about1 about2 about3 about4 about5 about6 about7 about8 about9 about10 about11 about12 about13 about14 about15 about16 about17 about18 about19 about20 about21 about22 about23 about24 about25 about26 about27 about28 about29 about30 about31 about32 about33 about34 about35 about36 about37 about38 about39",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": "summary0 summary1 summary2 summary3 summary4 summary5 summary6 summary7 summary8 summary9 summary10 summary11 summary12 summary13 summary14 summary15 summary16 summary17 summary18 summary19 summary20 summary21 summary22 summary23 summary24 summary25 summary26 summary27 summary28 summary29 summary30 summary31 summary32 summary33 summary34 summary35 summary36 summary37 summary38 summary39 summary40 summary41 summary42 summary43 summary44 summary45 summary46 summary47 summary48 summary49 summary50 summary51 summary52 summary53 summary54 summary55 summary56 summary57 summary58 summary59 summary60 summary61 summary62 summary63 summary64 summary65 summary66 summary67 summary68 summary69 summary70 summary71 summary72 summary73 summary74 summary75 summary76 summary77 summary78 summary79 summary80 summary81 summary82 summary83 summary84 summary85 summary86 summary87 summary88 summary89 summary90 summary91 summary92 summary93 summary94 summary95 summary96 summary97 summary98 summary99 summary100 summary101 summary102 summary103 summary104 summary105 summary106 summary107 summary108 summary109 summary110 summary111 summary112 summary113 summary114 summary115 summary116 summary117 summary118 summary119",
+     "why": {
+      "direction": "because0 because1 because2 because3 because4 because5 because6 because7 because8 because9 because10 because11 because12 because13 because14 because15 because16 because17 because18 because19 because20 because21 because22 because23 because24 because25 because26 because27 because28 because29 because30 because31 because32 because33 because34 because35 because36 because37 because38 because39 because40 because41 because42 because43 because44 because45 because46 because47 because48 because49 because50 because51 because52 because53 because54 because55 because56 because57 because58 because59 because60 because61 because62 because63 because64 because65 because66 because67 because68 because69 because70 because71 because72 because73 because74 because75 because76 because77 because78 because79",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 100,
+       "aggregate": false
+      },
+      {
+       "task": 101,
+       "aggregate": false
+      },
+      {
+       "task": 102,
+       "aggregate": false
+      },
+      {
+       "task": 103,
+       "aggregate": false
+      },
+      {
+       "task": 104,
+       "aggregate": false
+      },
+      {
+       "task": 105,
+       "aggregate": false
+      },
+      {
+       "task": 106,
+       "aggregate": false
+      },
+      {
+       "task": 107,
+       "aggregate": false
+      },
+      {
+       "task": 108,
+       "aggregate": false
+      },
+      {
+       "task": 109,
+       "aggregate": false
+      },
+      {
+       "task": 110,
+       "aggregate": false
+      },
+      {
+       "task": 111,
+       "aggregate": false
+      },
+      {
+       "task": 112,
+       "aggregate": false
+      },
+      {
+       "task": 113,
+       "aggregate": false
+      },
+      {
+       "task": 114,
+       "aggregate": false
+      },
+      {
+       "task": 115,
+       "aggregate": false
+      },
+      {
+       "task": 116,
+       "aggregate": false
+      },
+      {
+       "task": 117,
+       "aggregate": false
+      },
+      {
+       "task": 118,
+       "aggregate": false
+      },
+      {
+       "task": 119,
+       "aggregate": false
+      },
+      {
+       "task": 120,
+       "aggregate": false
+      },
+      {
+       "task": 121,
+       "aggregate": false
+      },
+      {
+       "task": 122,
+       "aggregate": false
+      },
+      {
+       "task": 123,
+       "aggregate": false
+      },
+      {
+       "task": 124,
+       "aggregate": false
+      },
+      {
+       "task": 125,
+       "aggregate": false
+      },
+      {
+       "task": 126,
+       "aggregate": false
+      },
+      {
+       "task": 127,
+       "aggregate": false
+      },
+      {
+       "task": 128,
+       "aggregate": false
+      },
+      {
+       "task": 129,
+       "aggregate": false
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#100",
+        "url": "https://github.com/acme/tasks/issues/100"
+       },
+       {
+        "text": "#101",
+        "url": "https://github.com/acme/tasks/issues/101"
+       },
+       {
+        "text": "#102",
+        "url": "https://github.com/acme/tasks/issues/102"
+       },
+       {
+        "text": "#103",
+        "url": "https://github.com/acme/tasks/issues/103"
+       },
+       {
+        "text": "#104",
+        "url": "https://github.com/acme/tasks/issues/104"
+       },
+       {
+        "text": "#105",
+        "url": "https://github.com/acme/tasks/issues/105"
+       },
+       {
+        "text": "#106",
+        "url": "https://github.com/acme/tasks/issues/106"
+       },
+       {
+        "text": "#107",
+        "url": "https://github.com/acme/tasks/issues/107"
+       },
+       {
+        "text": "#108",
+        "url": "https://github.com/acme/tasks/issues/108"
+       },
+       {
+        "text": "#109",
+        "url": "https://github.com/acme/tasks/issues/109"
+       },
+       {
+        "text": "#110",
+        "url": "https://github.com/acme/tasks/issues/110"
+       },
+       {
+        "text": "#111",
+        "url": "https://github.com/acme/tasks/issues/111"
+       },
+       {
+        "text": "#112",
+        "url": "https://github.com/acme/tasks/issues/112"
+       },
+       {
+        "text": "#113",
+        "url": "https://github.com/acme/tasks/issues/113"
+       },
+       {
+        "text": "#114",
+        "url": "https://github.com/acme/tasks/issues/114"
+       },
+       {
+        "text": "#115",
+        "url": "https://github.com/acme/tasks/issues/115"
+       },
+       {
+        "text": "#116",
+        "url": "https://github.com/acme/tasks/issues/116"
+       },
+       {
+        "text": "#117",
+        "url": "https://github.com/acme/tasks/issues/117"
+       },
+       {
+        "text": "#118",
+        "url": "https://github.com/acme/tasks/issues/118"
+       },
+       {
+        "text": "#119",
+        "url": "https://github.com/acme/tasks/issues/119"
+       },
+       {
+        "text": "#120",
+        "url": "https://github.com/acme/tasks/issues/120"
+       },
+       {
+        "text": "#121",
+        "url": "https://github.com/acme/tasks/issues/121"
+       },
+       {
+        "text": "#122",
+        "url": "https://github.com/acme/tasks/issues/122"
+       },
+       {
+        "text": "#123",
+        "url": "https://github.com/acme/tasks/issues/123"
+       },
+       {
+        "text": "#124",
+        "url": "https://github.com/acme/tasks/issues/124"
+       },
+       {
+        "text": "#125",
+        "url": "https://github.com/acme/tasks/issues/125"
+       },
+       {
+        "text": "#126",
+        "url": "https://github.com/acme/tasks/issues/126"
+       },
+       {
+        "text": "#127",
+        "url": "https://github.com/acme/tasks/issues/127"
+       },
+       {
+        "text": "#128",
+        "url": "https://github.com/acme/tasks/issues/128"
+       },
+       {
+        "text": "#129",
+        "url": "https://github.com/acme/tasks/issues/129"
+       }
+      ],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCF200000000000000000000"
+     ],
+     "children": [],
+     "previous": "01JCF200000000000000000000",
      "following": null,
-     "pack": "regia · frame · nodo 01JCF200000000000000000000 (abbandono, 2026-10-16)\nSto guardando: The probe is dropped.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere."
+     "pack": "regia · frame · nodo 01JCF300000000000000000000 (decisione, 2026-10-17)\nSto guardando: A long decision about0 about1 about2 about3 about4 about5 about6 about7 about8 about9 about10 about11 about12 about13 about14 about15 about16 about17 about18 about19 about20 about21 about22 about23… summary0 summary1 summary2 summary3 summary4 summary5 summary6 summary7 summary8 summary9…\nRiferimenti: https://github.com/acme/tasks/issues/100, https://github.com/acme/tasks/issues/101, https://github.com/acme/tasks/issues/102, https://github.com/acme/tasks/issues/103, https://github.com/acme/tasks/issues/104, https://github.com/acme/tasks/issues/105, https://github.com/acme/tasks/issues/106, https://github.com/acme/tasks/issues/107, https://github.com/acme/tasks/issues/108, https://github.com/acme/tasks/issues/109, https://github.com/acme/tasks/issues/110, https://github.com/acme/tasks/issues/111, https://github.com/acme/tasks/issues/112, https://github.com/acme/tasks/issues/113, https://github.com/acme/tasks/issues/114, https://github.com/acme/tasks/issues/115, https://github.com/acme/tasks/issues/116, https://github.com/acme/tasks/issues/117, https://github.com/acme/tasks/issues/118, https://github.com/acme/tasks/issues/119, https://github.com/acme/tasks/issues/120, https://github.com/acme/tasks/issues/121, https://github.com/acme/tasks/issues/122, https://github.com/acme/tasks/issues/123, … e altri 6\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "decisione",
+      "day": "2026-10-17",
+      "page": null
+     }
     }
    ]
   }

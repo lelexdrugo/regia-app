@@ -6,33 +6,65 @@
   // the DOM as text, in data-raw, and a `<` stays a character. A `#N`, an issue, a commit or the Project is a button,
   // never an <a href> (threat model §3.7); the app has no command yet that opens the browser
   // (`open_external_link`), so the button shows the address the core resolved, to copy.
+  import { tick } from "svelte";
+
   import type { Catalog } from "../../lib/i18n";
   import type { Frame, Notes, Run } from "../../lib/moviola/frame";
   import type { Model } from "../../lib/moviola/model";
+  import { localDay, pack, packReferences, packSummary, type PackWords, sidecarPath } from "../../lib/moviola/pack";
   import { HEALTH_ID, KIND_ID, LANE_ID, laneName, timecode } from "../../lib/moviola/text";
-  import type { Check, ModelUse, Tokens } from "../../lib/moviola/types";
+  import type { Check, ModelUse, Snapshot, Tokens } from "../../lib/moviola/types";
 
   interface Props {
     strings: Catalog;
     model: Model;
     frame: Frame;
     notes: Notes;
+    /** The moment's sidecar, for the chat package's summary. */
+    snapshot: Snapshot | null;
     /** Another moment: a node's index in the model. */
     onselect: (index: number) => void;
     onclose: () => void;
   }
 
-  let { strings, model, frame, notes, onselect, onclose }: Props = $props();
+  let { strings, model, frame, notes, snapshot, onselect, onclose }: Props = $props();
 
-  // The address of the last link pressed, until another moment opens.
+  // The address of the last link pressed, and the chat package asked for, until another moment opens.
   let opened: string | null = $state(null);
+  let packText: string | null = $state(null);
+  let packArea: HTMLTextAreaElement | undefined = $state();
   let shown = "";
   $effect.pre(() => {
     if (frame.node.milestone.id !== shown) {
       shown = frame.node.milestone.id;
       opened = null;
+      packText = null;
     }
   });
+
+  function packWords(): PackWords {
+    return {
+      head: (args) => strings.message("moviola-pack-head", args),
+      looking: (what) => strings.message("moviola-pack-looking", { what }),
+      references: (list) => strings.message("moviola-pack-references", { list }),
+      none: strings.message("moviola-pack-none"),
+      more: (n) => strings.message("moviola-pack-more", { n }),
+      question: strings.message("moviola-pack-question"),
+      skill: strings.message("moviola-pack-skill"),
+    };
+  }
+
+  /** «Copy for chat»: the package, selected for the system's copy. The app has no clipboard of its own yet: the
+   * threat model has the core write it (`copy_context_pack`), so the webview never touches the clipboard. */
+  async function copyPack(): Promise<void> {
+    const m = frame.node.milestone;
+    const moment = { project: model.timeline.project, id: m.id, kind: m.kind, day: localDay(frame.node.t), title: m.title };
+    const refs = packReferences(m.links, notes.kind === "ready" ? sidecarPath(m.id) : null);
+    packText = pack(moment, packSummary(notes.kind === "ready" ? snapshot : null), refs, packWords());
+    await tick();
+    packArea?.focus();
+    packArea?.select();
+  }
 
   const TONE = { healthy: "positive", at_risk: "negative", waiting_on_owner: "accent" } as const;
 
@@ -105,6 +137,7 @@
   <div class="frame-meta">
     <span class="reel-kind">{strings.message(KIND_ID[frame.node.milestone.kind])}</span>
     <span class="mono faint">{timecode(strings, frame.node.t)}</span>
+    <button type="button" class="btn frame-copy" onclick={copyPack}>{strings.message("moviola-copy")}</button>
     <button type="button" class="btn icon-btn frame-close" aria-label={strings.message("moviola-frame-close")} title={strings.message("moviola-frame-close")} onclick={onclose}>
       <span class="icon icon-close" aria-hidden="true"></span>
     </button>
@@ -114,6 +147,12 @@
     <span class="pill neutral" data-raw>{laneName(strings, model, frame.lane)}</span>
     <span class="pill {TONE[frame.node.milestone.health]}">{strings.message(HEALTH_ID[frame.node.milestone.health])}</span>
   </p>
+  {#if packText !== null}
+    <div class="frame-pack">
+      <p class="faint" role="status">{strings.message("moviola-pack-note")}</p>
+      <textarea bind:this={packArea} readonly rows="7" aria-label={strings.message("moviola-pack-label")} value={packText}></textarea>
+    </div>
+  {/if}
 
   {#if notes.kind === "loading"}
     <p class="faint" role="status">{strings.message("moviola-notes-loading")}</p>

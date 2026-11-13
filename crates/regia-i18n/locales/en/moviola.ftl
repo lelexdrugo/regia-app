@@ -153,3 +153,41 @@ moviola-search-count = { $n ->
 moviola-results = Moments found
 moviola-search-none = No moment matches «{ $query }». The search wants each word in a moment's title, kind or lane, and each #number among the tasks it names.
 moviola-search-none-task = No moment names task #{ $task }.
+
+## «Copy for chat» in the frame (#487): five lines, pointers only, under 1,500 characters.
+
+moviola-pack-head = { -product } · { $project } · node { $id } ({ $kind }, { $day })
+moviola-pack-looking = I'm looking at: { $what }
+moviola-pack-references = References: { $list }
+moviola-pack-none = none
+moviola-pack-more = … and { $n } more
+moviola-pack-question = Question: <to complete>
+moviola-pack-skill = Load the { -product } skill and read the references before answering.
+moviola-pack-label = The package for the chat
+moviola-pack-note = The package is selected: copy it and paste it into a chat. The app does not write to the clipboard yet.
+
+## The moviola's part of the help on ? (#487): its keys and the signs of its stage, as the prototype's guide had them.
+
+moviola-help-title = The moviola
+moviola-keys-arrows = On the stage: the moment before or after
+moviola-keys-lanes = On the stage: the nearest moment in the lane above or below
+moviola-keys-ends = On the stage: the first or the last moment
+moviola-keys-zoom = On the stage: zoom in, zoom out, the whole story
+moviola-keys-enter = In the search: open the first moment found
+moviola-keys-escape = Empty the search; on the stage or in the frame, let the moment go
+moviola-word-kinds-term = The seven kinds
+moviola-word-kinds = A filled circle is a milestone, a diamond a decision made, an amber square a decision that waits for you, a red triangle an exception, a dashed circle an exploration, an arrowhead a return to the main lane, a cross a road abandoned.
+moviola-word-health-term = Health
+moviola-word-health = A halo around a moment at risk, or one that waits for you. A healthy moment has none: the colour signals, it does not decorate.
+moviola-word-rings-term = Rings
+moviola-word-rings = One ring per round of each task the moment names, above and below it; dashed when the task does not declare its round. Work in parallel makes the lane wider.
+moviola-word-badges-term = Badges
+moviola-word-badges = ✓ a check passed, ? a check did not conclude, D3 three defects found, 1/3 one of three closed.
+moviola-word-undeclared-term = Not declared
+moviola-word-undeclared = A value nobody wrote. The stage draws nothing for it, the frame says «not declared»: it never means zero.
+moviola-word-lanes-term = Lanes
+moviola-word-lanes = One for each direction the project took. A solid line is still open, a dashed one was abandoned, a dotted one came back into the main lane.
+moviola-word-playhead-term = Playhead
+moviola-word-playhead = The amber line with its time: the date you are reading. Drag it on the stage or on the tape.
+moviola-word-joint-term = Joint
+moviola-word-joint = ✂ on the tape: days with no moment, cut out as in an edit.

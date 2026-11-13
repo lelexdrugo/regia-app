@@ -378,7 +378,7 @@
     </section>
     </div>
     {#if current}
-      <Frame {strings} {model} frame={current} {notes} onselect={(index) => stage?.select(index)} onclose={close} />
+      <Frame {strings} {model} frame={current} {notes} {snapshot} onselect={(index) => stage?.select(index)} onclose={close} />
     {:else}
       <aside class="frame frame-empty" aria-labelledby="moviola-frame-none">
         <h2 id="moviola-frame-none">{strings.message("moviola-nothing-title")}</h2>

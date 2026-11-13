@@ -3,7 +3,7 @@
   // stays inside while it is open; the shell puts the focus back where it was.
   import { onMount } from "svelte";
 
-  import { GLOSSARY, KEYS } from "../lib/glossary";
+  import { GLOSSARY, KEYS, MOVIOLA_KEYS, MOVIOLA_WORDS } from "../lib/glossary";
   import type { Catalog } from "../lib/i18n";
 
   interface Props {
@@ -32,6 +32,23 @@
   <h2 class="spaced">{strings.message("words-title")}</h2>
   <dl class="words">
     {#each GLOSSARY as [term, meaning] (term)}
+      <dt>{strings.message(term)}</dt>
+      <dd>{strings.message(meaning)}</dd>
+    {/each}
+  </dl>
+  <h2 class="spaced" id="help-moviola">{strings.message("moviola-help-title")}</h2>
+  <table class="keys" aria-labelledby="help-moviola">
+    <tbody>
+      {#each MOVIOLA_KEYS as [description, keys] (description)}
+        <tr>
+          <td>{strings.message(description)}</td>
+          <td class="keys-col"><kbd data-raw>{keys}</kbd></td>
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+  <dl class="words">
+    {#each MOVIOLA_WORDS as [term, meaning] (term)}
       <dt>{strings.message(term)}</dt>
       <dd>{strings.message(meaning)}</dd>
     {/each}

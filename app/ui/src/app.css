@@ -1243,8 +1243,25 @@ a.reel-name:hover {
   gap: 6px 8px;
 }
 
-.frame-meta .frame-close {
+.frame-meta .frame-copy {
   margin-left: auto;
+}
+
+.frame-pack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.frame-pack textarea {
+  width: 100%;
+  padding: 6px 8px;
+  font: var(--fs-small) / 1.45 var(--font-mono);
+  color: var(--text);
+  background: var(--raised);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius-control);
+  resize: vertical;
 }
 
 .frame-brief {

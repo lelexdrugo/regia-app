@@ -122,7 +122,8 @@ export const moviola = {
     const parts = await renderer(ui, m, s, fixture);
     const frames = await frameChecks(m, fixture);
     const found = await searchChecks(m, fixture);
-    return ok && caughtOrder && caughtMoved && parts && frames && found;
+    const packs = await packChecks(m, fixture);
+    return ok && caughtOrder && caughtMoved && parts && frames && found && packs;
   },
 };
 
@@ -173,6 +174,51 @@ async function searchChecks(m, fixture) {
   return checks.every(([, ok]) => ok) && caught;
 }
 
+/**
+ * «Copy for chat» (#487) against the prototype's `pacchetto`: given the prototype's words, its kind and day, and its
+ * page of the snapshot in place of the sidecar's path, the product's `pack` writes the same text, byte for byte, on
+ * every milestone, the long one whose summary is shortened and whose references go included. The negative control:
+ * a package that drops the references before it shortens the summary must be caught on the long one.
+ */
+async function packChecks(m, fixture) {
+  const p = await import("../src/lib/moviola/pack.ts");
+  const w = fixture.packWords;
+  const words = {
+    head: (a) => `regia · ${a.project} · ${w.node} ${a.id} (${a.kind}, ${a.day})`,
+    looking: (what) => w.looking + what,
+    references: (list) => w.references + list,
+    none: w.none,
+    more: (n) => `${w.more}${n}`,
+    question: w.question,
+    skill: w.skill,
+  };
+  const different = [];
+  let longest = null;
+  for (const c of fixture.cases) {
+    const model = m.prepare(c.timeline, 0);
+    c.frames.forEach((f, i) => {
+      const node = model.nodes[i];
+      const moment = { project: c.timeline.project, id: node.milestone.id, kind: f.said.kind, day: f.said.day, title: node.milestone.title };
+      const refs = p.packReferences(node.milestone.links, f.said.page);
+      const text = p.pack(moment, p.packSummary(c.snapshots[node.milestone.id] ?? null), refs, words);
+      if (text !== f.pack) different.push(`${c.name}/${node.milestone.id}`);
+      if (!longest || f.pack.length > longest.f.pack.length) longest = { f, moment, refs, summary: p.packSummary(c.snapshots[node.milestone.id] ?? null) };
+    });
+  }
+  const shortened = longest.f.pack.length <= p.PACK_LIMIT && longest.f.pack.includes(w.more);
+  console.log(`chat packages: ${fixture.cases.reduce((n, c) => n + c.frames.length, 0)}, the prototype's byte for byte: ${different.length ? `NO (${different.join(", ")})` : "yes"}`);
+  console.log(`the longest, ${longest.f.pack.length} characters, shortened with its references counted: ${shortened ? "yes" : "NO"}`);
+  // The control: the references go before the summary is shortened.
+  let naive = "";
+  for (let n = longest.refs.length; n >= 0 && !naive; n--) {
+    const text = p.pack({ ...longest.moment }, longest.summary, longest.refs.slice(0, n), { ...words, more: () => "" });
+    if (text.length <= p.PACK_LIMIT) naive = text;
+  }
+  const caught = naive !== longest.f.pack;
+  console.log(`negative control, the references dropped before the summary is shortened: ${caught ? "caught" : "NOT CAUGHT"}`);
+  return different.length === 0 && shortened && caught;
+}
+
 /** The product's frame in the recording's shape: the prototype's L3, read back by its sections. */
 function neutral(fr) {
   const runs = (list) => list.map((line) => line.map((r) => (r.url === null ? { text: r.text } : { text: r.text, url: r.url })));
@@ -218,7 +264,7 @@ function neutral(fr) {
  */
 async function frameChecks(m, fixture) {
   const f = await import("../src/lib/moviola/frame.ts");
-  const recordedKeys = (frame) => Object.fromEntries(Object.entries(frame).filter(([key]) => key !== "pack"));
+  const recordedKeys = (frame) => Object.fromEntries(Object.entries(frame).filter(([key]) => key !== "pack" && key !== "said"));
   let ok = true;
   let compared = 0;
   for (const c of fixture.cases) {

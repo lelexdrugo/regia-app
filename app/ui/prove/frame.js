@@ -97,6 +97,26 @@ export const frame = {
     check("a text with < stays text", f0.elements === 0 && hostile.text.includes("<script>alert(1)</script> & a < b"), `${f0.elements} elements`);
     check("#14a is not a link, x#14 is", !f0.sections.some((s) => s.links.some((l) => l.text === "#14a")) && hostile !== undefined);
 
+    // «Copy for chat» (Change 5): the package selected, five lines under 1,500 characters, pointers only.
+    const PACK = `(() => { const a = document.querySelector(".frame-pack textarea");
+      return a ? { text: a.value, focused: document.activeElement === a, all: a.selectionStart === 0 && a.selectionEnd === a.value.length } : null; })()`;
+    await click(page, `${FRAME} .frame-copy`);
+    await sleep(100);
+    const packed = await page.evaluate(PACK);
+    const lines = packed?.text.split("\n") ?? [];
+    check("Copy for chat: the package, selected, five lines under 1,500 characters", packed?.focused && packed.all && lines.length === 5 && packed.text.length <= 1500, `${lines.length} lines, ${packed?.text.length} characters`);
+    check("… the moment, its summary, its issues and its sidecar's path", lines[0] === `regia · frame · node ${first} (milestone, 2026-10-14)` && lines[1]?.includes(expected.inBrief)
+      && lines[2]?.includes("https://github.com/acme/tasks/issues/12") && lines[2]?.includes(`.regia/moviola/snapshot/${first}.json`), lines.slice(0, 3).join(" | ").slice(0, 160));
+    const long = "01JCF300000000000000000000";
+    await show(page, `#/moviola/frame/${long}?data=demo&lang=en`);
+    await waitFrame(page, long);
+    await click(page, `${FRAME} .frame-copy`);
+    await sleep(100);
+    const longPack = await page.evaluate(PACK);
+    check("… a long one shortened, its references counted", longPack !== null && longPack.text.length <= 1500 && /… and \d+ more/.test(longPack.text), `${longPack?.text.length} characters`);
+    await show(page, `#/moviola/frame/${first}?data=demo&lang=en`);
+    await waitFrame(page, first);
+
     // Reviews, and the task of a colleague without sync.
     const reviewed = "01JCM300000000000000000000";
     await show(page, `#/moviola/alpha/${reviewed}?data=demo&lang=en`);

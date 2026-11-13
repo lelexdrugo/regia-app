@@ -211,6 +211,14 @@ snapshot: {
   "01JCF100000000000000000000": { cambiato: [], direzione: "Try the other road.", decisioni_aperte: [], rischi: ["No #N here."], prossimo: "" },
   "01JCF200000000000000000000": null,
 } };
+// A moment too long for the chat package (`pacchetto`): its title, its summary and its thirty references do not fit
+// in 1,500 characters, so the summary is shortened and then the references go, from the last.
+const words = (n, w) => Array.from({ length: n }, (_, i) => `${w}${i}`).join(" ");
+frame.milestones.push({ id: "01JCF300000000000000000000", ts: "2026-10-17T09:00:00Z", tipo: "decisione", direzione: "principale",
+  titolo: `A long decision ${words(40, "about")}`, salute: "in salute", genitori: ["01JCF200000000000000000000"],
+  rif: { issue: Array.from({ length: 30 }, (_, i) => 100 + i) }, link: { issue: Array.from({ length: 30 }, (_, i) => issue(100 + i)), commit: [], report: [] } });
+frame.snapshot["01JCF300000000000000000000"] = { cambiato: [], direzione: words(80, "because"), decisioni_aperte: [], rischi: [], prossimo: "",
+  in_breve: words(120, "summary") };
 
 // The sidecars as the core sends them (records.rs, Snapshot): every key, `null` or `[]` for none.
 function sidecar(raw) {
@@ -325,9 +333,16 @@ function frames(view) {
   return P.ms.map((m) => {
     run(`S.rotta.nodo = ${JSON.stringify(m.id)}; disegnaL3();`);
     const pack = run(`pacchetto(S.P.perId[${JSON.stringify(m.id)}], S.P.progetto, S.P.snapshot[${JSON.stringify(m.id)}], location.origin)`);
-    return { ...frameOf(m, P), pack };
+    // What the package says that the product names otherwise: the contract's word for the kind, the day in
+    // Europe/Rome, and the server's page of the snapshot, which the product replaces with the sidecar's path.
+    const said = { kind: m.tipo, day: run(`chiaveGiorno(${m.t})`), page: m.link && m.link.pagina ? context.location.origin + m.link.pagina : null };
+    return { ...frameOf(m, P), pack, said };
   });
 }
+
+// The package's fixed words, as the prototype writes them (`pacchetto`), for the product's `pack` in the proofs.
+const packWords = { node: "nodo", looking: "Sto guardando: ", references: "Riferimenti: ", none: "nessuno", more: "… e altri ",
+  question: "Domanda: <da completare>", skill: "Carica la skill regia e leggi i riferimenti prima di rispondere." };
 
 const oracle = JSON.parse(readFileSync(join(ROOT, "fixtures/moviola/oracle.json"), "utf8"));
 const sizes = [[800, 400, null], [1280, 720, null], [800, 400, ["2026-10-15T09:00:00Z", "2026-10-19T10:00:00Z"]]];
@@ -347,6 +362,6 @@ const portfolio = oracle.portfolio.map((entry) => filled({ title: null }, transl
 
 // The rings' places above and below a glyph, and a lane's half thickness, for the first rings.
 const rings = { offsets: run("[0, 1, 2, 3, 4, 5, 6, 7].map(yAnello)"), halfThickness: run("[0, 1, 2, 3, 4, 5].map(semiSpessore)") };
-const out = { recorded: "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js", portfolio, rings, cases };
+const out = { recorded: "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js", portfolio, rings, packWords, cases };
 writeFileSync(join(UI, "harness/moviola.json"), JSON.stringify(out, null, 1) + "\n");
 console.log(`harness/moviola.json: ${cases.map((c) => `${c.name} ${c.timeline.milestones.length}`).join(", ")}`);

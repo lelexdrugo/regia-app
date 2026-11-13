@@ -118,6 +118,12 @@ export const keyboard = {
     check("the focus is inside the help", opened.focus?.role === "button" && opened.focus.name === "Close", named(opened.focus));
     check("the help's words have their meanings", opened.terms.length > 0 && opened.terms.length === opened.definitions, `${opened.terms.length} terms, ${opened.definitions} definitions`);
     check("the help has #439/D31's words, in English", missing(opened.terms, "en").length === 0, JSON.stringify(missing(opened.terms, "en")));
+    // The moviola's part (#487): the prototype's guide in the page, made again as the help's section.
+    const signs = ["kinds", "health", "rings", "badges", "undeclared", "lanes", "playhead", "joint"].map((w) => catalogs.en[`moviola-word-${w}-term`]);
+    const moviolaKeys = await page.evaluate(`[...document.querySelectorAll("dialog kbd")].map((k) => k.textContent)`);
+    const partOk = signs.every((term) => opened.terms.includes(term)) && ["/", ", .", "← →", "Esc"].every((k) => moviolaKeys.includes(k))
+      && (await all(page, "heading")).some((h) => h.name === catalogs.en["moviola-help-title"]);
+    check("the help has the moviola's part: its keys and the signs of its stage", partOk, signs.filter((term) => !opened.terms.includes(term)).join(", "));
     await page.press("Escape");
     await sleep(150);
     const back = await focused(page);
