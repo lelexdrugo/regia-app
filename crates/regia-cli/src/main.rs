@@ -119,7 +119,7 @@ struct BudgetArgs {
 }
 
 /// The commands of the table this binary implements besides its own subcommands.
-const NATIVE_THROUGH_THE_TABLE: [&str; 23] = [
+const NATIVE_THROUGH_THE_TABLE: [&str; 27] = [
     "checkpoint",
     "comment",
     "declare",
@@ -136,6 +136,10 @@ const NATIVE_THROUGH_THE_TABLE: [&str; 23] = [
     "task block",
     "task parent",
     "task move",
+    "lock acquire",
+    "lock renew",
+    "lock release",
+    "lock status",
     "lease acquire",
     "lease heartbeat",
     "lease release",
