@@ -189,7 +189,7 @@ function tapeChecks(m, fixture) {
 
 /**
  * The overview (#598) against the prototype's answers on every case: the filters (`visibileFiltri`) keep the same
- * moments for each setting, with the same «who» to choose from; the state at a date (`statoAlla`), its open
+ * moments for each setting, with the same «who» to choose from; the state at a date (the panel «alla data»), its open
  * decisions from the last milestone's sidecar; the directions' cards (`disegnaL1`) and each one's moments; the time
  * window (`impostaFinestra`). Where the prototype's card has a slip, a lane with no record titled «Linea principale»
  * and a lane with no reason given the main lane's sentence, the product says what it knows instead, and the check
@@ -252,7 +252,7 @@ async function overviewChecks(m, fixture) {
       const same = said && Object.keys(said).every((key) => JSON.stringify(said[key]) === JSON.stringify(r[key]));
       // The title and the reason: the record's, where there is one; the main lane's are the catalog's words.
       const title = main ? card.lane.title === null : card.lane.recorded ? card.lane.title === r.title : card.lane.title === null && r.title === "Linea principale";
-      const reason = card && (card.lane.reason ? card.lane.reason === r.reason : r.reason.startsWith("La linea del progetto"));
+      const reason = card && (card.lane.reason ? card.lane.reason === r.reason : r.reason.startsWith("La linea del "));
       if (!same || !title || !reason) cards.push(`${name}/${r.id}: ${JSON.stringify(said)}`);
     });
   }

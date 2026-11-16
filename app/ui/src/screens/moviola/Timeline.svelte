@@ -421,7 +421,6 @@
     <section class="stage-panel" aria-label={strings.message("moviola-lanes-directions")}>
       <div class="strip-row">
         <span class="strip-label" id="moviola-window">{strings.message("moviola-window")}</span>
-        <canvas bind:this={strip} class="strip" aria-hidden="true" title={strings.message("moviola-window-hint")}></canvas>
         <output
           class="strip-range mono"
           aria-labelledby="moviola-window"
@@ -429,6 +428,7 @@
           data-from={shown ? shown.from : model.t0}
           data-to={shown ? shown.to : model.t1}>{windowText(model, shown)}</output
         >
+        <canvas bind:this={strip} class="strip" aria-hidden="true" title={strings.message("moviola-window-hint")}></canvas>
       </div>
       <div class="stage" bind:this={host}>
         <!-- svelte-ignore a11y_no_noninteractive_tabindex -->

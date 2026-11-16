@@ -4,7 +4,7 @@
 </script>
 
 <script lang="ts">
-  // The project at the playhead (#598): the prototype viewer's panel «alla data» (`statoAlla`). The health of the last
+  // The project at the playhead (#598): the prototype viewer's panel «alla data». The health of the last
   // moment up to the playhead, how many before and after it, that moment, the directions open then (derived: the
   // records have no closing date) and the open decisions of that moment's notes, which the screen reads one moment at
   // a time. It changes only when the playhead passes a moment.
@@ -61,11 +61,11 @@
     <dt title={strings.message("moviola-at-open-hint")}>{strings.message("moviola-at-open")}</dt>
     <dd>
       {#each state.open as lane, i (lane.id)}
-        {#if i > 0},{/if}
+        {@const comma = i < state.open.length - 1 ? "," : ""}
         {#if lane.id === main}
-          <span>{laneName(strings, model, lane)}</span>
+          <span>{laneName(strings, model, lane)}{comma}</span>
         {:else}
-          <span data-raw>{lane.id}</span>
+          <span data-raw>{lane.id}{comma}</span>
         {/if}
       {:else}
         <span class="faint">{strings.message("moviola-at-open-none")}</span>

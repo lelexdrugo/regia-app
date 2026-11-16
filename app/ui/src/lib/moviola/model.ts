@@ -249,7 +249,8 @@ export function tapeScale(times: readonly number[], x0: number, x1: number, thre
   return { x: (t) => interpolate(knots, xs, t), t: (x) => interpolate(xs, knots, x), joints };
 }
 
-/** What the project was at an instant: `statoAlla` without the sidecar, which the screen reads for `last`. */
+/** What the project was at an instant, as the prototype viewer's panel «alla data» says it, without the sidecar,
+ * which the screen reads for `last`. */
 export type AtDate = {
   /** The milestones up to the instant, and those after it. */
   before: number;
@@ -261,7 +262,7 @@ export type AtDate = {
   open: Lane[];
 };
 
-/** `statoAlla`: the project at the instant `t`. */
+/** The panel «alla data» of the prototype's viewer: the project at the instant `t`. */
 export function stateAt(model: Model, t: number): AtDate {
   const before = model.nodes.filter((node) => node.t <= t);
   const main = model.timeline.main_direction;

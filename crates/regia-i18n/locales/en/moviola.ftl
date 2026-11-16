@@ -221,8 +221,8 @@ moviola-at-open-hint = Derived: a direction closes at the first abandonment or r
 moviola-at-open-none = none
 moviola-at-decisions = Open decisions in its notes
 moviola-at-decisions-count = { $n ->
-        [one] one: { $first }
-       *[other] { $n }, the first: { $first }
+        [one] { $first }
+       *[other] { $n } · the first: { $first }
     }
 moviola-at-decisions-none = none in its notes
 moviola-at-decisions-reading = reading its notes…

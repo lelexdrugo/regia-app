@@ -34,6 +34,8 @@ type Drag =
   | { kind: "playhead" }
   | { kind: "tape" };
 
+const sameCamera = (a: Camera, b: Camera): boolean => Math.abs(a.cx - b.cx) < 1e-6 && Math.abs(a.cy - b.cy) < 1e-6 && Math.abs(a.z - b.z) < 1e-9;
+
 /** A hand on the strip: a new window, one end of the window, or the window moved whole (`disegnaStriscia`). */
 type StripDrag = { kind: "new" | "from" | "to" | "move"; x: number; a: number; b: number; moved: boolean };
 
@@ -497,7 +499,9 @@ export class Stage {
     if (w <= 0 || h <= TAPE + AXIS) return;
     const dpr = devicePixelRatio || 1;
     if (w === this.width && h === this.height && dpr === this.dpr && this.frame) return;
-    const before = this.lay ? { cam: this.camera, extent: this.extent } : null;
+    // A camera at rest stays at rest: the stage's top and left edges on the view's, as the screen settles.
+    const resting = this.lay !== null && sameCamera(this.camera, homeCamera(this.extent, this.view));
+    const before = this.lay && !resting ? { cam: this.camera, extent: this.extent } : null;
     this.width = w;
     this.height = h;
     this.dpr = dpr;

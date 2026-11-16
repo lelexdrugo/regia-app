@@ -581,17 +581,19 @@ export function drawStrip(ctx: CanvasRenderingContext2D, s: StripFrame): void {
   ctx.beginPath();
   ctx.font = `10px ${p.mono}`;
   ctx.fillStyle = p.faint;
-  let lastX = -1e9;
+  let lastRight = -1e9;
   for (const i of s.days) {
     const t = (model.nodes[i] as Model["nodes"][number]).t;
     const x = Math.round(scale.x(t) - 2) + 0.5;
     ctx.moveTo(x, 12);
     ctx.lineTo(x, 29);
-    if (x - lastX < 40) continue;
-    lastX = x;
-    const end = x > s.x1 - 30;
-    ctx.textAlign = end ? "end" : "start";
-    ctx.fillText(s.text.day(t), end ? x - 2 : x + 2, 9);
+    // A label where it fits whole, never over the one before: the day is in the window's text too.
+    const label = s.text.day(t);
+    const w = ctx.measureText(label).width;
+    const left = Math.min(x + 2, s.x1 - w);
+    if (left < lastRight + 6) continue;
+    lastRight = left + w;
+    ctx.fillText(label, left, 9);
   }
   ctx.stroke();
   ctx.setLineDash([]);
