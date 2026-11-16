@@ -191,3 +191,52 @@ moviola-word-playhead-term = Playhead
 moviola-word-playhead = The amber line with its time: the date you are reading. Drag it on the stage or on the tape.
 moviola-word-joint-term = Joint
 moviola-word-joint = ✂ on the tape: days with no moment, cut out as in an edit.
+
+## The overview of a project (#598): the filters, the time window, the state at the playhead, the directions.
+
+moviola-filters = Filters
+moviola-filter-mode = How finely to filter
+moviola-filter-basic = Basic
+moviola-filter-advanced = Advanced
+moviola-filter-who = Who worked
+moviola-filter-who-any = Anyone
+moviola-filter-who-use = { $agent } · { $model }
+moviola-filter-who-cited = { $agent } · { $model } (in session)
+moviola-filter-lane = Lane
+moviola-filter-lane-any = Every lane
+moviola-filter-lane-option = { $lane } · { $status }
+moviola-filter-health-any = Any health
+moviola-filter-declared = With checks or defects declared
+moviola-filter-hidden = The filters hide every moment the search finds.
+moviola-window = Time window
+moviola-window-range = { $from } → { $to }
+moviola-window-whole = The whole story, { $from } → { $to }
+moviola-window-hint = Drag on the strip for a window of time, its ends to widen it, its middle to move it; a double click shows the whole story.
+moviola-at = At the playhead
+moviola-at-counts = { $before } before · { $after } after
+moviola-at-none = No moment yet
+moviola-at-last = Last moment
+moviola-at-open = Open directions
+moviola-at-open-hint = Derived: a direction closes at the first abandonment or return with a parent in its lane.
+moviola-at-open-none = none
+moviola-at-decisions = Open decisions in its notes
+moviola-at-decisions-count = { $n ->
+        [one] one: { $first }
+       *[other] { $n }, the first: { $first }
+    }
+moviola-at-decisions-none = none in its notes
+moviola-at-decisions-reading = reading its notes…
+moviola-at-decisions-failed = its notes could not be read
+moviola-directions = Directions
+moviola-direction-main-title = Main line
+moviola-direction-main = The project's line: the other lanes leave it and come back to it.
+moviola-direction-count = { $n ->
+        [one] one moment
+       *[other] { $n } moments
+    }
+moviola-direction-opened = Opened by
+moviola-direction-abandoned = Abandoned with
+moviola-direction-rejoined = Rejoined with
+moviola-direction-no-reason = No reason recorded.
+moviola-direction-no-record = No record names this lane: only its moments do.
+moviola-direction-empty = No moment on this lane yet.

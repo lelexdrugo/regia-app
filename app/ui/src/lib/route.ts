@@ -18,6 +18,11 @@ export interface Route {
   moment: string | null;
   /** Only for a project's moviola: the search the address asks for (`?q=`), or none. */
   query: string | null;
+  /** Only for a project's moviola (#598): the filters' mode (`?filters=`), the kinds hidden (`?hide=`, by the
+   * core's names) and the lane chosen in the overview (`?lane=`), as the address asks; the screen checks them. */
+  filters: string | null;
+  hide: string | null;
+  lane: string | null;
 }
 
 /** A project's id, or a milestone's, as the app's commands accept one (app/src-tauri/src/moviola.rs); anything else
@@ -38,8 +43,10 @@ export function parse(hash: string): Route {
   const area = section === "settings" ? (known(SETTINGS_AREAS, second) ? second : SETTINGS_AREAS[0]) : null;
   const project = section === "moviola" && second !== undefined && PROJECT.test(second) ? second : null;
   const moment = project !== null && third !== undefined && PROJECT.test(third) ? third : null;
-  const query = project !== null ? (new URLSearchParams(search).get("q")?.slice(0, 200) ?? null) : null;
-  return { section, area, project, moment, query };
+  const params = new URLSearchParams(search);
+  const only = (name: string): string | null => (project !== null ? (params.get(name)?.slice(0, 200) ?? null) : null);
+  const lane = only("lane");
+  return { section, area, project, moment, query: only("q"), filters: only("filters"), hide: only("hide"), lane: lane !== null && PROJECT.test(lane) ? lane : null };
 }
 
 export function href(section: Section): string {
@@ -51,5 +58,14 @@ export function projectHref(project: string): string {
 }
 
 export function same(a: Route, b: Route): boolean {
-  return a.section === b.section && a.area === b.area && a.project === b.project && a.moment === b.moment && a.query === b.query;
+  return (
+    a.section === b.section &&
+    a.area === b.area &&
+    a.project === b.project &&
+    a.moment === b.moment &&
+    a.query === b.query &&
+    a.filters === b.filters &&
+    a.hide === b.hide &&
+    a.lane === b.lane
+  );
 }

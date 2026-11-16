@@ -6,10 +6,10 @@
 // a redraw, not a reload. The canvas carries what the proofs wait on: `data-frames`, the frames drawn, `data-dir`,
 // the direction of the last one, `data-camera`, its camera, and `data-view`, the stage above the tape.
 import { clampCamera, type Extent, homeCamera, panBy, reveal, zoomAround } from "./camera";
-import { AXIS, bucketByKind, type CanvasText, cut, drawFrame, type Frame, TAPE, type Tape } from "./canvas2d";
-import { dayStarts, HOUR, laneEnvelope, type Layout, layout, type Model, tapeScale } from "./model";
+import { AXIS, bucketByKind, type CanvasText, cut, drawFrame, drawStrip, type Frame, STRIP, type StripFrame, TAPE, type Tape } from "./canvas2d";
+import { chooseWindow, dayStarts, HOUR, laneEnvelope, type Layout, layout, type Model, tapeScale, type TimeWindow } from "./model";
 import { readPalette, type Palette } from "./palette";
-import { buildScene, type Camera, hitTest, newLabels, pickLabels, type Scene, toScreenX, toScreenY, toWorldX, toWorldY, type View } from "./scene";
+import { buildScene, type Camera, FILTERED, hitTest, newLabels, pickLabels, type Scene, toScreenX, toScreenY, toWorldX, toWorldY, type View } from "./scene";
 
 export type StageOptions = {
   text: CanvasText;
@@ -17,14 +17,25 @@ export type StageOptions = {
   dayKey: (t: number) => string;
   /** Called when the playhead or the selection moves. */
   onchange?: (stage: Stage) => void;
+  /** The strip «time window» (#598), a canvas of its own above the stage: the whole story, the part in view, and the
+   * gestures that choose a window. */
+  strip?: HTMLCanvasElement;
+  /** Called when the part of the story in view changes. */
+  onview?: (view: ViewRange) => void;
   /** Off only for the harness's negative control: a stage that does not hear a change of direction. */
   observeTheme?: boolean;
 };
+
+/** The part of the story the stage shows: from one instant to another, or all of it. */
+export type ViewRange = { from: number; to: number; whole: boolean };
 
 type Drag =
   | { kind: "pan"; x: number; y: number; moved: boolean; node: number }
   | { kind: "playhead" }
   | { kind: "tape" };
+
+/** A hand on the strip: a new window, one end of the window, or the window moved whole (`disegnaStriscia`). */
+type StripDrag = { kind: "new" | "from" | "to" | "move"; x: number; a: number; b: number; moved: boolean };
 
 const ZOOM_STEP = 1.25;
 
@@ -62,6 +73,14 @@ export class Stage {
   private settle: () => void = () => {};
   private readonly labels = newLabels();
   private readonly cleanup: (() => void)[] = [];
+  /** The nodes the filters keep, by model index, or `null` for all; the lane chosen in the overview, or -1. */
+  private kept: readonly boolean[] | null = null;
+  private chosen = -1;
+  private readonly strip: HTMLCanvasElement | null;
+  private readonly stripCtx: CanvasRenderingContext2D | null;
+  private stripFrame: StripFrame | null = null;
+  private stripDrag: StripDrag | null = null;
+  private lastView: ViewRange | null = null;
 
   constructor(host: HTMLElement, canvas: HTMLCanvasElement, model: Model, options: StageOptions) {
     this.host = host;
@@ -75,11 +94,17 @@ export class Stage {
       throw new Error("no 2D context");
     }
     this.ctx = ctx;
+    this.strip = options.strip ?? null;
+    this.stripCtx = this.strip ? this.strip.getContext("2d", { alpha: false }) : null;
     this.palette = readPalette();
     this.ready = new Promise((resolve) => (this.settle = resolve));
 
-    const resized = new ResizeObserver(() => this.resize());
+    const resized = new ResizeObserver(() => {
+      this.resize();
+      this.resizeStrip();
+    });
     resized.observe(host);
+    if (this.strip) resized.observe(this.strip);
     this.cleanup.push(() => resized.disconnect());
     this.watchDensity();
     if (options.observeTheme !== false) {
@@ -108,7 +133,20 @@ export class Stage {
     on("wheel", (event) => this.wheel(event), { passive: false });
     on("dblclick", () => this.home());
     on("keydown", (event) => this.keydown(event));
+    const strip = this.strip;
+    if (strip) {
+      const onStrip = <K extends keyof HTMLElementEventMap>(type: K, listener: (event: HTMLElementEventMap[K]) => void) => {
+        strip.addEventListener(type, listener);
+        this.cleanup.push(() => strip.removeEventListener(type, listener));
+      };
+      onStrip("pointerdown", (event) => this.stripDown(event));
+      onStrip("pointermove", (event) => this.stripMove(event));
+      onStrip("pointerup", (event) => this.stripUp(event));
+      onStrip("pointercancel", (event) => this.stripUp(event));
+      onStrip("dblclick", () => this.home());
+    }
     this.resize();
+    this.resizeStrip();
   }
 
   destroy(): void {
@@ -120,6 +158,63 @@ export class Stage {
   setText(text: CanvasText): void {
     this.text = text;
     if (this.frame) this.frame.text = text;
+    if (this.stripFrame) this.stripFrame.text = text;
+    this.render();
+  }
+
+  /** The filters and the overview (#598): the nodes the filters keep (`null`: all), almost gone otherwise and out of
+   * reach of the pointer, the labels and the keys; the lane chosen (-1: none), the others dimmed. */
+  setEmphasis(kept: readonly boolean[] | null, lane: number): void {
+    this.kept = kept;
+    this.chosen = lane;
+    this.applyEmphasis();
+    this.render();
+  }
+
+  /** A node the filters keep. */
+  shown(index: number): boolean {
+    return this.kept === null || this.kept[index] === true;
+  }
+
+  private applyEmphasis(): void {
+    const frame = this.frame;
+    const scene = this.scene;
+    if (!frame || !scene) return;
+    frame.chosen = this.chosen;
+    if (this.kept === null && this.chosen < 0) {
+      frame.fade = null;
+      return;
+    }
+    const fade = new Uint8Array(scene.n);
+    for (let k = 0; k < scene.n; k++) {
+      const index = scene.node[k] as number;
+      const node = this.model.nodes[index];
+      fade[k] = !this.shown(index) ? FILTERED : this.chosen >= 0 && node?.lane !== this.chosen ? 1 : 0;
+    }
+    frame.fade = fade;
+  }
+
+  /** The part of the story in view, as instants of the layout's time. */
+  viewRange(): ViewRange | null {
+    const lay = this.lay;
+    if (!lay) return null;
+    const from = lay.tAt(toWorldX(this.camera, this.view, 0));
+    const to = lay.tAt(toWorldX(this.camera, this.view, this.view.w));
+    return { from, to, whole: from <= this.model.t0 && to >= this.model.t1 };
+  }
+
+  /** A window of time on the stage (#598): its milestones fill the view, as the prototype's window fills the stage of
+   * variant A, within the camera's zoom; none is the whole story, at rest. */
+  showWindow(window: TimeWindow | null): void {
+    const lay = this.lay;
+    if (!window || !lay) {
+      this.home();
+      return;
+    }
+    const a = lay.xAt(window.from);
+    const b = lay.xAt(window.to);
+    const z = this.view.w / Math.max(1, b - a);
+    this.camera = clampCamera({ cx: (a + b) / 2, cy: this.camera.cy, z }, this.extent, this.view);
     this.render();
   }
 
@@ -186,17 +281,21 @@ export class Stage {
     this.changed();
   }
 
-  /** `saltaFotogramma`: the next or the previous milestone from the selection, or from the playhead. */
+  /** `saltaFotogramma`: the next or the previous milestone from the selection, or from the playhead, among those the
+   * filters keep. */
   step(direction: 1 | -1): void {
-    const nodes = this.model.nodes;
+    const nodes = this.model.nodes.filter((n) => this.shown(n.index));
     if (nodes.length === 0) return;
+    const first = nodes[0] as Model["nodes"][number];
+    const last = nodes[nodes.length - 1] as Model["nodes"][number];
     if (this.selected >= 0) {
-      this.select(Math.min(nodes.length - 1, Math.max(0, this.selected + direction)));
+      const from = this.selected;
+      const next = direction > 0 ? nodes.find((n) => n.index > from) ?? last : [...nodes].reverse().find((n) => n.index < from) ?? first;
+      this.select(next.index);
       return;
     }
-    const next =
-      direction > 0 ? nodes.find((n) => n.t > this.t + 1000) ?? nodes[nodes.length - 1] : [...nodes].reverse().find((n) => n.t < this.t - 1000) ?? nodes[0];
-    if (next) this.select(next.index);
+    const next = direction > 0 ? nodes.find((n) => n.t > this.t + 1000) ?? last : [...nodes].reverse().find((n) => n.t < this.t - 1000) ?? first;
+    this.select(next.index);
   }
 
   /** Zoom by `factor` around the selection, or the centre of the stage. */
@@ -222,8 +321,14 @@ export class Stage {
     this.frame.t = this.t;
     this.frame.selected = this.selected >= 0 ? (this.sceneOf[this.selected] as number) : -1;
     this.frame.hover = this.hover;
-    pickLabels(this.frame.scene, camera, this.view, (k) => this.labelWidth(k), this.labels);
+    pickLabels(this.frame.scene, camera, this.view, (k) => this.labelWidth(k), this.labels, this.frame.fade);
     drawFrame(this.ctx, this.frame);
+    const strip = this.stripFrame;
+    if (strip && this.stripCtx) {
+      const range = this.viewRange();
+      strip.band = range && !range.whole ? [strip.scale.x(range.from), strip.scale.x(range.to)] : null;
+      drawStrip(this.stripCtx, strip);
+    }
     this.frames += 1;
   }
 
@@ -241,6 +346,12 @@ export class Stage {
       this.canvas.dataset["dir"] = this.palette.direction;
       this.canvas.dataset["camera"] = `${cx.toFixed(1)} ${cy.toFixed(1)} ${z.toFixed(3)}`;
       this.canvas.dataset["view"] = `${this.view.w} ${this.view.h}`;
+      const range = this.viewRange();
+      const last = this.lastView;
+      if (range && (!last || last.from !== range.from || last.to !== range.to || last.whole !== range.whole)) {
+        this.lastView = range;
+        this.options.onview?.(range);
+      }
       if (this.fonts) this.settle();
     });
   }
@@ -254,7 +365,97 @@ export class Stage {
     this.palette = readPalette();
     this.widths.clear();
     if (this.frame) this.frame.palette = this.palette;
+    if (this.stripFrame) this.stripFrame.palette = this.palette;
     this.render();
+  }
+
+  /** The strip at its own width and the screen's density, on the tape's scale with the prototype's narrower joints. */
+  private resizeStrip(): void {
+    const strip = this.strip;
+    if (!strip) return;
+    const w = strip.clientWidth;
+    const dpr = devicePixelRatio || 1;
+    if (w <= 16 || (this.stripFrame && this.stripFrame.width === w && this.stripFrame.dpr === dpr)) return;
+    strip.width = Math.round(w * dpr);
+    strip.height = Math.round(STRIP * dpr);
+    const times = this.model.nodes.map((n) => n.t);
+    this.stripFrame = {
+      model: this.model,
+      scale: tapeScale(times, 8, w - 8, 12 * HOUR, 18),
+      x0: 8,
+      x1: w - 8,
+      width: w,
+      dpr,
+      palette: this.palette,
+      text: this.text,
+      days: dayStarts(this.model, this.options.dayKey),
+      band: null,
+      preview: null,
+    };
+    this.render();
+  }
+
+  private stripX(event: MouseEvent): number {
+    const s = this.stripFrame as StripFrame;
+    const box = (this.strip as HTMLCanvasElement).getBoundingClientRect();
+    return Math.min(s.x1, Math.max(s.x0, event.clientX - box.left));
+  }
+
+  private stripDown(event: PointerEvent): void {
+    const s = this.stripFrame;
+    if (!s || (event.pointerType === "mouse" && event.button !== 0)) return;
+    const x = this.stripX(event);
+    const band = s.band;
+    const [a, b] = band ?? [s.x0, s.x1];
+    const kind = band && Math.abs(x - a) <= 7 ? "from" : band && Math.abs(x - b) <= 7 ? "to" : band && x > a && x < b ? "move" : "new";
+    this.stripDrag = { kind, x, a, b, moved: false };
+    try {
+      this.strip?.setPointerCapture(event.pointerId);
+    } catch {
+      // A pointer that is not active.
+    }
+  }
+
+  private stripMove(event: PointerEvent): void {
+    const g = this.stripDrag;
+    const s = this.stripFrame;
+    if (!g || !s) return;
+    const x = this.stripX(event);
+    let a = g.a;
+    let b = g.b;
+    if (g.kind === "from") a = x;
+    else if (g.kind === "to") b = x;
+    else if (g.kind === "move") {
+      const d = Math.max(s.x0 - g.a, Math.min(s.x1 - g.b, x - g.x));
+      a += d;
+      b += d;
+    } else {
+      if (Math.abs(x - g.x) < 4) return;
+      a = Math.min(x, g.x);
+      b = Math.max(x, g.x);
+    }
+    g.moved = true;
+    s.preview = [Math.min(a, b), Math.max(a, b)];
+    this.render();
+  }
+
+  /** A window drawn on the strip becomes the stage's (`impostaFinestra`): the camera shows it. */
+  private stripUp(event: PointerEvent): void {
+    const g = this.stripDrag;
+    this.stripDrag = null;
+    try {
+      this.strip?.releasePointerCapture(event.pointerId);
+    } catch {
+      // A pointer that is not active.
+    }
+    const s = this.stripFrame;
+    const drawn = s?.preview ?? null;
+    if (s) s.preview = null;
+    if (!g || !g.moved || !s || !drawn) {
+      this.render();
+      return;
+    }
+    this.showWindow(chooseWindow(this.model, s.scale.t(drawn[0]), s.scale.t(drawn[1])));
   }
 
   /** A screen of another density moves the pixels under the canvas: the backing store follows, at once where the
@@ -340,7 +541,14 @@ export class Stage {
       labelText: (k) => this.labelOf(k),
       text: this.text,
       tape,
+      fade: null,
+      chosen: -1,
     };
+    this.applyEmphasis();
+    if (this.stripFrame && this.stripFrame.dpr !== dpr) {
+      this.stripFrame = null;
+      this.resizeStrip();
+    }
     this.render();
   }
 
@@ -354,7 +562,7 @@ export class Stage {
     const scene = this.scene;
     if (!scene || y < AXIS || y > this.view.h) return -1;
     const radius = 12 / this.camera.z;
-    return hitTest(scene, toWorldX(this.camera, this.view, x), toWorldY(this.camera, this.view, y), radius);
+    return hitTest(scene, toWorldX(this.camera, this.view, x), toWorldY(this.camera, this.view, y), radius, this.frame?.fade ?? null);
   }
 
   private playheadX(): number {
@@ -462,12 +670,16 @@ export class Stage {
       case "ArrowDown":
         this.acrossLanes(event.key === "ArrowUp" ? -1 : 1);
         return done();
-      case "Home":
-        if (nodes[0]) this.select(0);
+      case "Home": {
+        const first = nodes.find((n) => this.shown(n.index));
+        if (first) this.select(first.index);
         return done();
-      case "End":
-        if (nodes.length) this.select(nodes.length - 1);
+      }
+      case "End": {
+        const last = [...nodes].reverse().find((n) => this.shown(n.index));
+        if (last) this.select(last.index);
         return done();
+      }
       case "+":
       case "=":
         this.zoom(ZOOM_STEP);
@@ -493,7 +705,7 @@ export class Stage {
     const from = model.nodes[this.selected];
     const t = from ? from.t : this.t;
     for (let lane = (from ? from.lane : direction > 0 ? -1 : model.lanes.length) + direction; lane >= 0 && lane < model.lanes.length; lane += direction) {
-      const candidates = (model.lanes[lane]?.nodes ?? []).map((i) => model.nodes[i]).filter((n) => n !== undefined);
+      const candidates = (model.lanes[lane]?.nodes ?? []).map((i) => model.nodes[i]).filter((n): n is Model["nodes"][number] => n !== undefined && this.shown(n.index));
       if (candidates.length === 0) continue;
       const nearest = candidates.reduce((best, n) => (Math.abs(n.t - t) < Math.abs(best.t - t) ? n : best));
       this.select(nearest.index);

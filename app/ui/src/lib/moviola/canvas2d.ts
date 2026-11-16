@@ -57,7 +57,22 @@ export type Frame = {
   labelText: (node: number) => string;
   text: CanvasText;
   tape: Tape;
+  /** Each scene node's emphasis (#598), or `null` when every node is drawn in full: `FADED` for a lane other than
+   * the one chosen, `FILTERED` for a node the filters leave out. */
+  fade: Uint8Array | null;
+  /** The lane chosen in the overview, or -1: the others' envelopes, names and nodes are dimmed. */
+  chosen: number;
 };
+
+/** The alpha of each emphasis (#598): in full, dimmed as the prototype's `attenuato`, filtered out as its
+ * `nascosto`, almost gone but in its place, so the structure does not move. */
+export const FADE = [1, 0.28, 0.04] as const;
+export const FADED = 1;
+
+/** The emphases a frame draws, one pass each: only the full one when nothing is dimmed or filtered out. */
+const levels = (f: Frame): readonly (0 | 1 | 2)[] => (f.fade ? [0, 1, 2] : [0]);
+const fadeOf = (f: Frame, k: number): number => (f.fade ? (f.fade[k] as number) : 0);
+const laneAlpha = (f: Frame, lane: number): number => (f.chosen >= 0 && lane !== f.chosen ? FADE[FADED] : 1);
 
 /** The fill and stroke of each kind, as the UX prototype's `node-mark` rules give them. */
 const STYLE: Record<MilestoneKind, { fill: keyof Palette | null; stroke: keyof Palette; dash: boolean }> = {
@@ -142,8 +157,8 @@ export function cut(title: string): string {
   return title.length > 36 ? `${title.slice(0, 35)}…` : title;
 }
 
-function plate(ctx: CanvasRenderingContext2D, colour: string, x: number, y: number, w: number, h: number): void {
-  ctx.globalAlpha = 0.85;
+function plate(ctx: CanvasRenderingContext2D, colour: string, x: number, y: number, w: number, h: number, alpha = 1): void {
+  ctx.globalAlpha = 0.85 * alpha;
   ctx.fillStyle = colour;
   ctx.fillRect(x, y, w, h);
   ctx.globalAlpha = 1;
@@ -189,6 +204,7 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
   for (const e of f.envelopes) {
     const lane = model.lanes[e.lane] as Lane;
     if (e.x1 < x0 || e.x0 > x1) continue;
+    const dim = laneAlpha(f, e.lane);
     const all = e.points;
     const from = Math.max(0, lowerBoundBy(all, x0) - 1);
     const to = Math.min(all.length, lowerBoundBy(all, x1) + 1);
@@ -211,13 +227,14 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
       ctx.bezierCurveTo(mx, e.y + p0.w, mx, e.y + p1.w, p1.x, e.y + p1.w);
     }
     ctx.closePath();
+    ctx.globalAlpha = dim;
     ctx.fillStyle = p.lane;
     ctx.fill();
-    ctx.globalAlpha = 0.6;
+    ctx.globalAlpha = 0.6 * dim;
     ctx.strokeStyle = p.laneEdge;
     ctx.lineWidth = 0.8 / z;
     ctx.stroke();
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = dim;
     const start = Math.max(e.x0, x0);
     ctx.setLineDash(lane.status === "abandoned" ? [5 / z, 4 / z] : lane.status === "rejoined" ? [1 / z, 4 / z] : []);
     // The dashes stay where they are on the lane while the camera moves.
@@ -230,27 +247,33 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
     ctx.lineDashOffset = 0;
     ctx.setLineDash([]);
   }
+  ctx.globalAlpha = 1;
 
-  // Edges, parent to child: within a lane in the lane's mark, across lanes dashed and faint.
+  // Edges, parent to child: within a lane in the lane's mark, across lanes dashed and faint; an edge goes with a
+  // node filtered out.
   const edges = scene.edges;
+  const fade = f.fade;
   for (const across of [false, true]) {
     ctx.strokeStyle = across ? p.faint : p.muted;
-    ctx.globalAlpha = across ? 1 : 0.75;
     ctx.lineWidth = 1.3 / z;
     ctx.setLineDash(across ? [4 / z, 3 / z] : []);
-    ctx.beginPath();
-    for (let i = 0; i < edges.n; i++) {
-      const ax = edges.x1[i] as number;
-      const ay = edges.y1[i] as number;
-      const bx = edges.x2[i] as number;
-      const by = edges.y2[i] as number;
-      if ((ay !== by) !== across) continue;
-      if ((ax < x0 && bx < x0) || (ax > x1 && bx > x1)) continue;
-      const mx = (ax + bx) / 2;
-      ctx.moveTo(ax, ay);
-      ctx.bezierCurveTo(mx, ay, mx, by, bx, by);
+    for (const gone of fade ? [false, true] : [false]) {
+      ctx.globalAlpha = (across ? 1 : 0.75) * (gone ? FADE[2] : 1);
+      ctx.beginPath();
+      for (let i = 0; i < edges.n; i++) {
+        const ax = edges.x1[i] as number;
+        const ay = edges.y1[i] as number;
+        const bx = edges.x2[i] as number;
+        const by = edges.y2[i] as number;
+        if ((ay !== by) !== across) continue;
+        if ((ax < x0 && bx < x0) || (ax > x1 && bx > x1)) continue;
+        if (fade && (fade[edges.a[i] as number] === 2 || fade[edges.b[i] as number] === 2) !== gone) continue;
+        const mx = (ax + bx) / 2;
+        ctx.moveTo(ax, ay);
+        ctx.bezierCurveTo(mx, ay, mx, by, bx, by);
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
   }
   ctx.globalAlpha = 1;
   ctx.setLineDash([]);
@@ -258,69 +281,74 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
   const lo = lowerBound(scene.x, x0);
   const hi = lowerBound(scene.x, x1);
 
-  // Rings, one per round, above and below the glyph in turn: declared in the muted ink, undeclared dashed.
-  for (const declared of [true, false]) {
-    ctx.strokeStyle = declared ? p.muted : p.faint;
-    ctx.lineWidth = 1.4;
-    ctx.setLineDash(declared ? [] : [2, 1.6]);
-    ctx.beginPath();
-    for (let k = lo; k < hi; k++) {
-      const y = scene.y[k] as number;
-      if (y < y0 || y > y1) continue;
-      const x = scene.x[k] as number;
-      const rings = (model.nodes[scene.node[k] as number] as Model["nodes"][number]).rings;
-      rings.forEach((ring, i) => {
-        if (ring.declared !== declared) return;
-        const ry = y + ringOffset(i);
-        ctx.moveTo(x + 4.4, ry);
-        ctx.arc(x, ry, 4.4, 0, TAU);
-      });
+  // Every mark of a node below, one pass per emphasis: a single one when nothing is dimmed or filtered out.
+  for (const level of levels(f)) {
+    // Rings, one per round, above and below the glyph in turn: declared in the muted ink, undeclared dashed.
+    ctx.globalAlpha = FADE[level];
+    for (const declared of [true, false]) {
+      ctx.strokeStyle = declared ? p.muted : p.faint;
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash(declared ? [] : [2, 1.6]);
+      ctx.beginPath();
+      for (let k = lo; k < hi; k++) {
+        const y = scene.y[k] as number;
+        if (y < y0 || y > y1 || fadeOf(f, k) !== level) continue;
+        const x = scene.x[k] as number;
+        const rings = (model.nodes[scene.node[k] as number] as Model["nodes"][number]).rings;
+        rings.forEach((ring, i) => {
+          if (ring.declared !== declared) return;
+          const ry = y + ringOffset(i);
+          ctx.moveTo(x + 4.4, ry);
+          ctx.arc(x, ry, 4.4, 0, TAU);
+        });
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
-  }
-  ctx.setLineDash([]);
+    ctx.setLineDash([]);
 
-  // Health: a halo for a milestone at risk, or waiting for the owner.
-  ctx.lineWidth = 2;
-  ctx.globalAlpha = 0.7;
-  for (const [health, colour] of [["at_risk", p.negative], ["waiting_on_owner", p.accent]] as const) {
-    ctx.strokeStyle = colour;
-    ctx.beginPath();
-    for (let k = lo; k < hi; k++) {
-      const y = scene.y[k] as number;
-      if (y < y0 || y > y1) continue;
-      if ((model.nodes[scene.node[k] as number] as Model["nodes"][number]).milestone.health !== health) continue;
-      const x = scene.x[k] as number;
-      ctx.moveTo(x + GLYPH + 6, y);
-      ctx.arc(x, y, GLYPH + 6, 0, TAU);
+    // Health: a halo for a milestone at risk, or waiting for the owner.
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.7 * FADE[level];
+    for (const [health, colour] of [["at_risk", p.negative], ["waiting_on_owner", p.accent]] as const) {
+      ctx.strokeStyle = colour;
+      ctx.beginPath();
+      for (let k = lo; k < hi; k++) {
+        const y = scene.y[k] as number;
+        if (y < y0 || y > y1 || fadeOf(f, k) !== level) continue;
+        if ((model.nodes[scene.node[k] as number] as Model["nodes"][number]).milestone.health !== health) continue;
+        const x = scene.x[k] as number;
+        ctx.moveTo(x + GLYPH + 6, y);
+        ctx.arc(x, y, GLYPH + 6, 0, TAU);
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
+
+    // Glyphs, one path per kind.
+    ctx.globalAlpha = FADE[level];
+    ctx.lineWidth = 1.5;
+    KINDS.forEach((kind, k) => {
+      const list = f.buckets[k];
+      if (!list || list.length === 0) return;
+      const style = STYLE[kind];
+      ctx.beginPath();
+      for (let q = lowerBound(list, lo); q < list.length; q++) {
+        const i = list[q] as number;
+        if (i >= hi) break;
+        const y = scene.y[i] as number;
+        if (y < y0 || y > y1 || fadeOf(f, i) !== level) continue;
+        glyph(ctx, kind, scene.x[i] as number, y, GLYPH);
+      }
+      if (style.fill) {
+        ctx.fillStyle = p[style.fill];
+        ctx.fill();
+      }
+      ctx.strokeStyle = p[style.stroke];
+      ctx.setLineDash(style.dash ? [2, 2] : []);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
   }
   ctx.globalAlpha = 1;
-
-  // Glyphs, one path per kind.
-  ctx.lineWidth = 1.5;
-  KINDS.forEach((kind, k) => {
-    const list = f.buckets[k];
-    if (!list || list.length === 0) return;
-    const style = STYLE[kind];
-    ctx.beginPath();
-    for (let q = lowerBound(list, lo); q < list.length; q++) {
-      const i = list[q] as number;
-      if (i >= hi) break;
-      const y = scene.y[i] as number;
-      if (y < y0 || y > y1) continue;
-      glyph(ctx, kind, scene.x[i] as number, y, GLYPH);
-    }
-    if (style.fill) {
-      ctx.fillStyle = p[style.fill];
-      ctx.fill();
-    }
-    ctx.strokeStyle = p[style.stroke];
-    ctx.setLineDash(style.dash ? [2, 2] : []);
-    ctx.stroke();
-  });
-  ctx.setLineDash([]);
 
   // Badges, where they can be read: ✓ a check passed, ? one did not conclude, D3 or 1/3 the defects.
   if (z >= LABEL_ZOOM) {
@@ -331,6 +359,7 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
       const y = scene.y[k] as number;
       if (y < y0 || y > y1) continue;
       const badges = (model.nodes[scene.node[k] as number] as Model["nodes"][number]).badges;
+      ctx.globalAlpha = FADE[fadeOf(f, k) as 0 | 1 | 2];
       let bx = (scene.x[k] as number) + 10;
       for (const badge of badges) {
         const w = 7 + badge.length * 6.2;
@@ -343,6 +372,7 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
         bx += w + 2;
       }
     }
+    ctx.globalAlpha = 1;
     ctx.textAlign = "start";
     ctx.textBaseline = "alphabetic";
   }
@@ -374,17 +404,20 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
     if (sy < AXIS || sy > H + 12) continue;
     const name = f.text.laneName(lane);
     const status = f.text.laneStatus(lane);
+    const dim = laneAlpha(f, lane.index);
     ctx.font = `500 12px ${p.font}`;
     const wName = ctx.measureText(name).width;
     ctx.font = `11px ${p.font}`;
     const wStatus = ctx.measureText(status).width;
     plate(ctx, p.surface, nameX - 4, sy - 17, Math.max(wName, wStatus) + 8, 32);
+    ctx.globalAlpha = dim;
     ctx.font = `500 12px ${p.font}`;
     ctx.fillStyle = p.text;
     ctx.fillText(name, nameX, sy - 4);
     ctx.font = `11px ${p.font}`;
     ctx.fillStyle = p.faint;
     ctx.fillText(status, nameX, sy + 11);
+    ctx.globalAlpha = 1;
   }
 
   // The days' band at the top.
@@ -509,4 +542,91 @@ function drawTape(ctx: CanvasRenderingContext2D, f: Frame, left: number, right: 
   ctx.lineTo(x, top + 14);
   ctx.closePath();
   ctx.fill();
+}
+
+/** The strip's height (#598), in CSS pixels. */
+export const STRIP = 30;
+
+/** The strip «time window» (#598): the whole story, as `disegnaStriscia` draws it, and the part the stage shows. */
+export type StripFrame = {
+  model: Model;
+  scale: TimeScale;
+  x0: number;
+  x1: number;
+  width: number;
+  dpr: number;
+  palette: Palette;
+  text: CanvasText;
+  /** Model indices of each day's first node. */
+  days: number[];
+  /** The part of the story in view, in the strip's x, or `null` when the whole story is. */
+  band: [number, number] | null;
+  /** The window a hand is drawing, until it lets go. */
+  preview: [number, number] | null;
+};
+
+/** `disegnaStriscia`: the axis of the whole story with its days, joints and a tick per milestone, then the window,
+ * the rest under a veil, with a handle at each end. Every milestone is on it, whatever the filters keep. */
+export function drawStrip(ctx: CanvasRenderingContext2D, s: StripFrame): void {
+  const { palette: p, scale, model } = s;
+  ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
+  ctx.fillStyle = p.surface;
+  ctx.fillRect(0, 0, s.width, STRIP);
+  ctx.fillStyle = p.border;
+  ctx.fillRect(s.x0, 21, s.x1 - s.x0, 1);
+  // The days: a line each, a label where it fits; the last one ends inside the strip.
+  ctx.strokeStyle = p.rule;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2, 3]);
+  ctx.beginPath();
+  ctx.font = `10px ${p.mono}`;
+  ctx.fillStyle = p.faint;
+  let lastX = -1e9;
+  for (const i of s.days) {
+    const t = (model.nodes[i] as Model["nodes"][number]).t;
+    const x = Math.round(scale.x(t) - 2) + 0.5;
+    ctx.moveTo(x, 12);
+    ctx.lineTo(x, 29);
+    if (x - lastX < 40) continue;
+    lastX = x;
+    const end = x > s.x1 - 30;
+    ctx.textAlign = end ? "end" : "start";
+    ctx.fillText(s.text.day(t), end ? x - 2 : x + 2, 9);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.textAlign = "center";
+  for (const joint of scale.joints) ctx.fillText("✂", joint.x, 27);
+  ctx.textAlign = "start";
+  for (const kind of KINDS) {
+    ctx.strokeStyle = p[TICK[kind]];
+    ctx.lineWidth = kind === "milestone" ? 1 : 2;
+    ctx.beginPath();
+    for (const node of model.nodes) {
+      if (node.milestone.kind !== kind) continue;
+      const x = scale.x(node.t);
+      ctx.moveTo(x, 15);
+      ctx.lineTo(x, 27);
+    }
+    ctx.stroke();
+  }
+  // The window: what lies outside it under a veil, its edge in the lamp's colour, and a handle at each end. The whole
+  // story has no handles: a drag anywhere draws a window.
+  const window = s.preview ?? s.band;
+  const [a, b] = window ?? [s.x0, s.x1];
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = p.ground;
+  ctx.fillRect(s.x0, 11, Math.max(0, a - s.x0), 18);
+  ctx.fillRect(b, 11, Math.max(0, s.x1 - b), 18);
+  ctx.globalAlpha = window ? 1 : 0.35;
+  ctx.strokeStyle = p.accent;
+  ctx.strokeRect(Math.round(a) + 0.5, 11.5, Math.max(1, Math.round(b - a)), 17);
+  ctx.globalAlpha = 1;
+  if (window) {
+    ctx.fillStyle = p.accent;
+    ctx.beginPath();
+    ctx.roundRect(a - 3, 9, 6, 22, 2);
+    ctx.roundRect(b - 3, 9, 6, 22, 2);
+    ctx.fill();
+  }
 }

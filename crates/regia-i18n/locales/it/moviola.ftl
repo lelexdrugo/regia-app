@@ -191,3 +191,52 @@ moviola-word-playhead-term = Testina
 moviola-word-playhead = La linea ambra con la sua ora: la data che stai leggendo. Trascinala sul palco o sul nastro.
 moviola-word-joint-term = Giunta
 moviola-word-joint = ✂ sul nastro: giorni senza momenti, tagliati come in un montaggio.
+
+## La panoramica di un progetto (#598): i filtri, la finestra temporale, lo stato alla testina, le direzioni.
+
+moviola-filters = Filtri
+moviola-filter-mode = Quanto filtrare
+moviola-filter-basic = Base
+moviola-filter-advanced = Avanzati
+moviola-filter-who = Chi ha lavorato
+moviola-filter-who-any = Chiunque
+moviola-filter-who-use = { $agent } · { $model }
+moviola-filter-who-cited = { $agent } · { $model } (in sessione)
+moviola-filter-lane = Corsia
+moviola-filter-lane-any = Tutte le corsie
+moviola-filter-lane-option = { $lane } · { $status }
+moviola-filter-health-any = Ogni salute
+moviola-filter-declared = Con controlli o difetti dichiarati
+moviola-filter-hidden = I filtri nascondono tutti i momenti che la ricerca trova.
+moviola-window = Finestra temporale
+moviola-window-range = { $from } → { $to }
+moviola-window-whole = Tutta la storia, { $from } → { $to }
+moviola-window-hint = Trascina sulla striscia per una finestra di tempo, i suoi capi per allargarla, il centro per spostarla; un doppio clic mostra tutta la storia.
+moviola-at = Alla testina
+moviola-at-counts = { $before } prima · { $after } dopo
+moviola-at-none = Ancora nessun momento
+moviola-at-last = Ultimo momento
+moviola-at-open = Direzioni aperte
+moviola-at-open-hint = Derivato: una direzione si chiude al primo abbandono o rientro con un genitore nella sua corsia.
+moviola-at-open-none = nessuna
+moviola-at-decisions = Decisioni aperte nelle sue note
+moviola-at-decisions-count = { $n ->
+        [one] una: { $first }
+       *[other] { $n }, la prima: { $first }
+    }
+moviola-at-decisions-none = nessuna nelle sue note
+moviola-at-decisions-reading = leggo le sue note…
+moviola-at-decisions-failed = le sue note non si sono potute leggere
+moviola-directions = Direzioni
+moviola-direction-main-title = Linea principale
+moviola-direction-main = La linea del progetto: le altre corsie se ne staccano e vi rientrano.
+moviola-direction-count = { $n ->
+        [one] un momento
+       *[other] { $n } momenti
+    }
+moviola-direction-opened = Aperta da
+moviola-direction-abandoned = Abbandonata con
+moviola-direction-rejoined = Rientrata con
+moviola-direction-no-reason = Nessun motivo registrato.
+moviola-direction-no-record = Nessun record nomina questa corsia: solo i suoi momenti.
+moviola-direction-empty = Ancora nessun momento su questa corsia.
