@@ -2,10 +2,10 @@ name: ci
 
 # Minutes on a private repo are billed against a small monthly allowance, and macOS costs about ten
 # times Linux. A push to main that touches the build runs Linux and Windows. macOS runs only by hand,
-# as one job that builds what app-smoke starts and nothing else. A run by hand can also pick a single
-# engine (`only`), to check WebKitGTK or WKWebView at the price of one job. Spike branches trigger
-# nothing. The supply-chain, MSRV and release jobs run on Linux only: they read the lockfiles or build
-# for the same targets.
+# as one job that builds what app-smoke and the budget's checks start, and nothing else. A run by hand
+# can also pick a single engine (`only`), to check WebKitGTK or WKWebView at the price of one job.
+# Spike branches trigger nothing. The supply-chain, MSRV and release jobs run on Linux only: they read
+# the lockfiles or build for the same targets.
 on:
   push:
     branches: [main]
@@ -145,7 +145,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     env:
-      # No debug info: this job only runs the app and one test, and compiles and links faster without it.
+      # No debug info: this job only runs the app and a few tests, and compiles and links faster without it.
       CARGO_PROFILE_DEV_DEBUG: "0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -215,6 +215,22 @@ jobs:
               failed += ok ? 0 : 1;
             }
             process.exit(failed ? 1 : 0);' "$RUNNER_TEMP/budget.json"
+      # The precheck's budget gate on macOS (#466, Acceptance 3): the engine's tests, then two cases through the
+      # command, on its real state. Not the whole `--test precheck`: with the consent, every recorded case that
+      # asks the budget reads `non-letta` on macOS, where the probes never read Claude, by design. Last, and
+      # even after a failure above: they build on their own.
+      - name: The precheck's engine, its budget gate included
+        if: ${{ !cancelled() }}
+        run: cargo test -p regia-controller --locked
+      # A filter that matches no test passes, so the step counts the two it asks for.
+      - name: The precheck command on macOS, with the probes refused and with a reading that fails four ticks
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          cargo build --locked -p regia-cli -p regia-controller
+          cargo test -p regia-conformance --test precheck --locked -- a_reading_failing_four_ticks with_the_probes_refused \
+            2>&1 | tee "$RUNNER_TEMP/precheck.log"
+          grep -q "test result: ok. 2 passed;" "$RUNNER_TEMP/precheck.log" || { echo "not the two cases this step asks for"; exit 1; }
 
   supply-chain:
     name: cargo deny, cargo audit and npm audit
