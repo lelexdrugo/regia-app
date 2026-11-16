@@ -202,8 +202,113 @@ export function timeScale(times: readonly number[], x0: number, x1: number, thre
   return { x: (t) => interpolate(knots, xs, t), t: (x) => interpolate(xs, knots, x), joints };
 }
 
+/** The margin at each end of the tape and the strip (#486/V18): a share of the story, between a minute and the
+ * prototype's hour. */
+export const MARGIN = { share: 0.05, min: 60e3, max: HOUR } as const;
+/** The most of the width the two margins may take together, as long as a joint can make room for the story. */
+export const MARGINS_ROOM = 0.1;
+
+/**
+ * The tape's scale (#486/V18): `timeScale`, with a margin of 5 % of the story at each end (`MARGIN`) instead of an
+ * hour, and joints that widen when the margins would take more than a tenth of the width. On a sparse story every
+ * gap between milestones is a joint, so the margins are the only time left to stretch, and with the prototype's
+ * scale they took the whole tape whatever their length: on alpha the story was 130 px of 1,420. Here the joints
+ * widen just enough for the margins to keep a tenth, so the story takes the rest. A story whose margins already fit
+ * keeps the prototype's joints, and its scale is the prototype's, with an hour of margin from 20 hours of story up.
+ */
+export function tapeScale(times: readonly number[], x0: number, x1: number, threshold = 12 * HOUR, joint = 26): TimeScale {
+  const ts = [...new Set(times)].sort((a, b) => a - b);
+  if (ts.length < 2) {
+    const c = (x0 + x1) / 2;
+    return { x: () => c, t: () => ts[0] || 0, joints: [] };
+  }
+  const first = ts[0] as number;
+  const last = ts[ts.length - 1] as number;
+  const pad = Math.min(MARGIN.max, Math.max(MARGIN.min, (last - first) * MARGIN.share));
+  const knots = [first - pad, ...ts, last + pad];
+  let live = 0;
+  let count = 0;
+  for (let i = 1; i < knots.length; i++) {
+    const gap = (knots[i] as number) - (knots[i - 1] as number);
+    if (gap > threshold) count++;
+    else live += gap;
+  }
+  const width = x1 - x0;
+  // A joint as wide as it must be for the two margins, `2 * pad * k`, to stay within their room.
+  const room = count > 0 ? (width - (MARGINS_ROOM * width * live) / (2 * pad)) / count : 0;
+  const wide = Math.max(joint, room);
+  const k = Math.max(1e-9, (width - count * wide) / Math.max(live, 1));
+  const xs = [x0];
+  const joints: Joint[] = [];
+  for (let i = 1; i < knots.length; i++) {
+    const gap = (knots[i] as number) - (knots[i - 1] as number);
+    const dx = gap > threshold ? wide : gap * k;
+    if (gap > threshold) joints.push({ x: (xs[i - 1] as number) + dx / 2, from: knots[i - 1] as number, to: knots[i] as number });
+    xs.push((xs[i - 1] as number) + dx);
+  }
+  return { x: (t) => interpolate(knots, xs, t), t: (x) => interpolate(xs, knots, x), joints };
+}
+
+/** What the project was at an instant: `statoAlla` without the sidecar, which the screen reads for `last`. */
+export type AtDate = {
+  /** The milestones up to the instant, and those after it. */
+  before: number;
+  after: number;
+  /** The last milestone up to the instant: its health is the project's, its sidecar's open decisions too. */
+  last: Node | null;
+  /** The lanes open at the instant, derived: opened, not yet closed, and with a milestone by then (the main lane
+   * from its start). */
+  open: Lane[];
+};
+
+/** `statoAlla`: the project at the instant `t`. */
+export function stateAt(model: Model, t: number): AtDate {
+  const before = model.nodes.filter((node) => node.t <= t);
+  const main = model.timeline.main_direction;
+  const open = model.lanes.filter(
+    (lane) =>
+      lane.opened <= t &&
+      !(lane.closed !== null && lane.closed <= t) &&
+      (lane.id === main || lane.nodes.some((i) => (model.nodes[i] as Node).t <= t)),
+  );
+  return { before: before.length, after: model.nodes.length - before.length, last: before[before.length - 1] ?? null, open };
+}
+
 /** A window of time, in ms: the zoom of the stage. */
 export type TimeWindow = { from: number; to: number };
+
+/** The narrowest window, as the prototype's (`MIN_FINESTRA`). */
+export const MIN_WINDOW = 20 * 60e3;
+
+/**
+ * `impostaFinestra`: the window from `from` to `to`, either way round, at least twenty minutes wide, within an hour
+ * of the first and the last milestone; one that holds every milestone is no window, the whole story.
+ */
+export function chooseWindow(model: Model, from: number, to: number): TimeWindow | null {
+  let a = Math.min(from, to);
+  let b = Math.max(from, to);
+  if (b - a < MIN_WINDOW) {
+    const c = (a + b) / 2;
+    a = c - MIN_WINDOW / 2;
+    b = c + MIN_WINDOW / 2;
+  }
+  a = Math.max(model.t0 - HOUR, a);
+  b = Math.min(model.t1 + HOUR, b);
+  return a <= model.t0 && b >= model.t1 ? null : { from: a, to: b };
+}
+
+/** A direction as the overview lists it (`disegnaL1`): its lane, the milestone that opened it and the one that
+ * closed it, when its record names them. */
+export type LaneCard = { lane: Lane; openedBy: Node | null; closedBy: Node | null };
+
+export function laneCards(model: Model): LaneCard[] {
+  return model.lanes.map((lane) => {
+    const record = model.timeline.directions.find((d) => d.id === lane.id);
+    const opener = record && record.opened_by !== null ? model.byId.get(record.opened_by) : undefined;
+    const closer = lane.closedBy !== null && lane.status !== "active" ? model.byId.get(lane.closedBy) : undefined;
+    return { lane, openedBy: opener ?? null, closedBy: closer ?? null };
+  });
+}
 
 /** `indiciFinestra`: the first and the last milestone inside the window, at least two apart by one. */
 export function windowIndices(model: Model, window: TimeWindow | null): [number, number] {

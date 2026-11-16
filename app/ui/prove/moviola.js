@@ -123,9 +123,162 @@ export const moviola = {
     const frames = await frameChecks(m, fixture);
     const found = await searchChecks(m, fixture);
     const packs = await packChecks(m, fixture);
-    return ok && caughtOrder && caughtMoved && parts && frames && found && packs;
+    const tape = tapeChecks(m, fixture);
+    const overview = await overviewChecks(m, fixture);
+    return ok && caughtOrder && caughtMoved && parts && frames && found && packs && tape && overview;
   },
 };
+
+/** How far apart two scales put the same instants, in pixels. */
+const deviation = (expected, scale) => Math.max(0, ...expected.x.map(([t, x]) => Math.abs(scale.x(t) - x)), ...expected.joints.map((j, i) => Math.abs((scale.joints[i]?.x ?? Infinity) - j.x)));
+
+/** The share of the width between the first and the last milestone. */
+const share = (scale, times, x0, x1) => (scale.x(Math.max(...times)) - scale.x(Math.min(...times))) / (x1 - x0);
+
+/**
+ * The tape and the strip (#486/V18, #598): on the dense story the product's scale is the prototype's within a pixel,
+ * on alpha the story takes at least half the tape (with the prototype's, 130 px of 1,420). The negative controls:
+ * the prototype's own scale on alpha must fail the half, and joints always as wide as twelve hours of story (a rule
+ * that widens them on a dense story too) must fail the tolerance.
+ */
+function tapeChecks(m, fixture) {
+  const { width, strip, stories } = fixture.tape;
+  const TOLERANCE = 1;
+  const checks = [];
+  const check = (name, ok, detail = "") => checks.push([name, ok, detail]);
+  const dense = stories.dense;
+  const onTape = m.tapeScale(dense.times, 10, width - 10);
+  const onStrip = m.tapeScale(dense.times, 8, strip - 8, 12 * m.HOUR, 18);
+  const [dTape, dStrip] = [deviation(dense.tape, onTape), deviation(dense.strip, onStrip)];
+  check(`dense story, tape: the prototype's scale within ${TOLERANCE} px`, dTape <= TOLERANCE && onTape.joints.length === dense.tape.joints.length, `${dTape.toFixed(3)} px`);
+  check(`dense story, strip: the prototype's scale within ${TOLERANCE} px`, dStrip <= TOLERANCE, `${dStrip.toFixed(3)} px`);
+  const shares = {};
+  for (const name of ["alpha", "viewer", "frame"]) {
+    const { times } = stories[name];
+    const product = share(m.tapeScale(times, 10, width - 10), times, 10, width - 10);
+    const prototype = share({ x: (t) => stories[name].tape.x.find(([at]) => at === t)[1] }, times, 10, width - 10);
+    const narrow = share(m.tapeScale(times, 8, strip - 8, 12 * m.HOUR, 18), times, 8, strip - 8);
+    shares[name] = { product, prototype, narrow };
+  }
+  const a = shares.alpha;
+  check("alpha: the story takes at least half the tape, and of the strip", a.product >= 0.5 && a.narrow >= 0.5,
+    `tape ${(a.product * 100).toFixed(1)} %, strip ${(a.narrow * 100).toFixed(1)} %; the prototype ${(a.prototype * 100).toFixed(1)} %`);
+  check("viewer and frame, as sparse: at least half too", shares.viewer.product >= 0.5 && shares.frame.product >= 0.5,
+    `${(shares.viewer.product * 100).toFixed(1)} %, ${(shares.frame.product * 100).toFixed(1)} %`);
+  const ends = m.tapeScale(stories.alpha.times, 10, width - 10);
+  check("the tape still runs from end to end, and back", Math.abs(ends.x(-Infinity) - 10) < 1e-6 && Math.abs(ends.x(Infinity) - (width - 10)) < 1e-6
+    && stories.alpha.times.every((t) => Math.abs(ends.t(ends.x(t)) - t) < 1));
+  // The controls.
+  const caughtSparse = a.prototype < 0.5;
+  const twelveHours = (times, x0, x1, threshold = 12 * m.HOUR) => {
+    const ts = [...new Set(times)].sort((p, q) => p - q);
+    const knots = [ts[0] - m.HOUR, ...ts, ts.at(-1) + m.HOUR];
+    const gaps = knots.slice(1).map((t, i) => t - knots[i]);
+    const live = gaps.filter((g) => g <= threshold).reduce((sum, g) => sum + g, 0);
+    const k = (x1 - x0) / (live + gaps.filter((g) => g > threshold).length * threshold);
+    const xs = [x0];
+    for (const g of gaps) xs.push(xs.at(-1) + (g > threshold ? threshold : g) * k);
+    return { x: (t) => m.interpolate(knots, xs, t), joints: [] };
+  };
+  const caughtDense = deviation({ ...dense.tape, joints: [] }, twelveHours(dense.times, 10, width - 10)) > TOLERANCE;
+  for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
+  console.log(`negative control, the prototype's tape on alpha: ${caughtSparse ? "caught" : "NOT CAUGHT"} (${(a.prototype * 100).toFixed(1)} %)`);
+  console.log(`negative control, joints always as wide as twelve hours: ${caughtDense ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caughtSparse && caughtDense;
+}
+
+/**
+ * The overview (#598) against the prototype's answers on every case: the filters (`visibileFiltri`) keep the same
+ * moments for each setting, with the same «who» to choose from; the state at a date (`statoAlla`), its open
+ * decisions from the last milestone's sidecar; the directions' cards (`disegnaL1`) and each one's moments; the time
+ * window (`impostaFinestra`). Where the prototype's card has a slip, a lane with no record titled «Linea principale»
+ * and a lane with no reason given the main lane's sentence, the product says what it knows instead, and the check
+ * says so. The negative controls: a filter that ignores the kinds hidden, and a state at a date that counts the
+ * milestone at the instant as after it, must both be caught.
+ */
+async function overviewChecks(m, fixture) {
+  const f = await import("../src/lib/moviola/filters.ts");
+  const checks = [];
+  const check = (name, ok, detail = "") => checks.push([name, ok, detail]);
+  const models = Object.fromEntries(fixture.cases.map((c) => [c.name, { model: m.prepare(c.timeline, 0), c }]));
+  const settingOf = (s) => ({ ...f.NO_FILTERS, hidden: s.hide, who: s.who, lane: s.lane, health: s.health, declared: s.declared });
+  const keep = (model, filters, visible = f.visible) => model.nodes.filter((n) => visible(n, filters)).map((n) => n.milestone.id);
+  let filtered = [];
+  let settings = 0;
+  let whoSame = true;
+  for (const [name, { model }] of Object.entries(models)) {
+    const recorded = fixture.filters[name];
+    whoSame &&= JSON.stringify(f.whoOptions(model).slice().sort()) === JSON.stringify(recorded.who.slice().sort());
+    for (const s of recorded.settings) {
+      settings += 1;
+      const ids = keep(model, settingOf(s));
+      if (JSON.stringify(ids) !== JSON.stringify(s.visible)) filtered.push(`${name} ${JSON.stringify({ ...s, visible: undefined })}: ${ids.length} ≠ ${s.visible.length}`);
+    }
+  }
+  check(`filters: the prototype's moments for ${settings} settings on every case`, filtered.length === 0, filtered.slice(0, 3).join("; "));
+  check("filters: the same «who» to choose from, none declared last", whoSame);
+  check("filters: back to basic clears the advanced ones, and an advanced one makes the mode advanced",
+    f.modeOf({ ...f.NO_FILTERS, lane: "x" }) === "advanced" && f.modeOf(f.NO_FILTERS) === "basic" && !f.advancedOn(f.basic({ ...f.NO_FILTERS, who: f.NONE, declared: true })));
+  const address = f.fromAddress("advanced", "gate,nothing,exception");
+  check("filters: an address opens a mode and hides the kinds it names, nothing else", address.mode === "advanced" && JSON.stringify(address.hidden) === '["gate","exception"]'
+    && f.fromAddress("other", null).mode === null);
+
+  let states = [];
+  let samples = 0;
+  for (const [name, { model, c }] of Object.entries(models)) {
+    for (const r of fixture.states[name]) {
+      samples += 1;
+      const s = m.stateAt(model, r.t);
+      const decisions = s.last ? (c.snapshots[s.last.milestone.id]?.open_decisions ?? []) : [];
+      const said = { t: r.t, before: s.before, last: s.last ? s.last.milestone.id : null, open: s.open.map((l) => l.id), decisions, after: s.after };
+      if (JSON.stringify(said) !== JSON.stringify(r)) states.push(`${name} at ${new Date(r.t).toISOString()}: ${JSON.stringify(said)}`);
+    }
+  }
+  check(`the state at a date: the prototype's at ${samples} instants, open decisions from the last sidecar`, states.length === 0, states.slice(0, 2).join("; "));
+
+  const cards = [];
+  let compared = 0;
+  for (const [name, { model }] of Object.entries(models)) {
+    const product = m.laneCards(model);
+    fixture.lanes[name].forEach((r, i) => {
+      compared += 1;
+      const card = product[i];
+      const main = card?.lane.id === model.timeline.main_direction;
+      const said = card && {
+        id: card.lane.id, status: card.lane.status, count: card.lane.nodes.length,
+        openedBy: card.openedBy?.milestone.id ?? null, closedBy: card.closedBy?.milestone.id ?? null,
+        list: card.lane.nodes.map((k) => model.nodes[k].milestone.id),
+      };
+      const same = said && Object.keys(said).every((key) => JSON.stringify(said[key]) === JSON.stringify(r[key]));
+      // The title and the reason: the record's, where there is one; the main lane's are the catalog's words.
+      const title = main ? card.lane.title === null : card.lane.recorded ? card.lane.title === r.title : card.lane.title === null && r.title === "Linea principale";
+      const reason = card && (card.lane.reason ? card.lane.reason === r.reason : r.reason.startsWith("La linea del progetto"));
+      if (!same || !title || !reason) cards.push(`${name}/${r.id}: ${JSON.stringify(said)}`);
+    });
+  }
+  check(`the directions: the prototype's ${compared} cards, each with its moments once chosen`, cards.length === 0, cards.slice(0, 2).join("; "));
+
+  let windows = [];
+  for (const name of ["viewer", "alpha"]) {
+    const { model } = models[name];
+    for (const r of fixture.windows[name]) {
+      const w = m.chooseWindow(model, r.ask[0], r.ask[1]);
+      if (JSON.stringify(w) !== JSON.stringify(r.window)) windows.push(`${name} ${JSON.stringify(r.ask)}: ${JSON.stringify(w)} ≠ ${JSON.stringify(r.window)}`);
+    }
+  }
+  check("the time window: the prototype's for every ask, the whole story as none", windows.length === 0, windows.slice(0, 2).join("; "));
+
+  // The controls.
+  const alpha = models.alpha.model;
+  const deaf = (node, filters) => f.visible(node, { ...filters, hidden: [] });
+  const caughtKinds = fixture.filters.alpha.settings.some((s) => JSON.stringify(keep(alpha, settingOf(s), deaf)) !== JSON.stringify(s.visible));
+  const strict = (model, t) => ({ ...m.stateAt(model, t - 1) });
+  const caughtStrict = fixture.states.alpha.some((r) => strict(alpha, r.t).before !== r.before);
+  for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
+  console.log(`negative control, a filter deaf to the kinds hidden: ${caughtKinds ? "caught" : "NOT CAUGHT"}`);
+  console.log(`negative control, the milestone at the instant counted after it: ${caughtStrict ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caughtKinds && caughtStrict;
+}
 
 /**
  * The search (#487), which the prototype viewer does not have: by what it must hold on every case. Every moment

@@ -7,7 +7,7 @@
 // the direction of the last one, `data-camera`, its camera, and `data-view`, the stage above the tape.
 import { clampCamera, type Extent, homeCamera, panBy, reveal, zoomAround } from "./camera";
 import { AXIS, bucketByKind, type CanvasText, cut, drawFrame, type Frame, TAPE, type Tape } from "./canvas2d";
-import { dayStarts, HOUR, laneEnvelope, type Layout, layout, type Model, timeScale } from "./model";
+import { dayStarts, HOUR, laneEnvelope, type Layout, layout, type Model, tapeScale } from "./model";
 import { readPalette, type Palette } from "./palette";
 import { buildScene, type Camera, hitTest, newLabels, pickLabels, type Scene, toScreenX, toScreenY, toWorldX, toWorldY, type View } from "./scene";
 
@@ -319,7 +319,7 @@ export class Stage {
       this.camera = homeCamera(extent, this.view);
     }
     const times = this.model.nodes.map((n) => n.t);
-    const tape: Tape = { scale: timeScale(times, 10, w - 10, 12 * HOUR, 26), x0: 10, x1: w - 10 };
+    const tape: Tape = { scale: tapeScale(times, 10, w - 10), x0: 10, x1: w - 10 };
     this.frame = {
       model: this.model,
       layout: lay,
