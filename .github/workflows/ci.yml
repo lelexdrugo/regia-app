@@ -49,30 +49,19 @@ jobs:
         os: ${{ fromJSON(inputs.only == 'linux' && '["ubuntu-24.04"]' || '["ubuntu-24.04","windows-2025"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      # Measurement for #610: the runner's disk, what its image brings, and a sample of the root's use every
-      # five seconds for the whole job, printed by the last step.
-      - name: The runner's disk, and what its image brings (Linux)
+      # The root disk is this job's limit on Linux (#610): the image leaves about 13 GB of its 72 free, and the
+      # build and the tests took more. What the image brings and the job never uses goes, about 26 GB: .NET,
+      # Android, Haskell, CodeQL and the Docker images. It goes while the next steps run, and the build waits
+      # for it. A sample of the free space every five seconds gives the job's lowest, in its last step.
+      - name: Room on the disk, from what the runner's image brings and this job never uses (Linux)
         if: runner.os == 'Linux'
         run: |
-          nproc; free -h; df -h
-          sudo du -sh /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/* \
-            /usr/local/share/powershell /usr/local/share/chromium /usr/lib/jvm /usr/share/swift /opt/az /opt/microsoft \
-            /opt/google /usr/lib/google-cloud-sdk /var/lib/docker /usr/local/lib/node_modules ~/.rustup ~/.cargo 2>/dev/null || true
-          docker images --format '{{.Repository}}:{{.Tag}} {{.Size}}' || true
-          nohup bash -c 'while :; do echo "$(date -u +%T) $(df -B1M --output=used,avail / | tail -1)"; sleep 5; done' \
-            > "$RUNNER_TEMP/disk.log" 2>&1 &
-      - name: Room for the build and the tests, from what the image brings and this job never uses (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          for dir in /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL; do
-            start=$SECONDS
-            sudo rm -rf "$dir"
-            echo "$dir: $((SECONDS - start)) s"
-          done
-          start=$SECONDS
-          sudo docker image prune --all --force > /dev/null
-          echo "docker images: $((SECONDS - start)) s"
           df -h /
+          nohup bash -c 'sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache/CodeQL; sudo docker image prune --all --force > /dev/null; touch "$RUNNER_TEMP/room"' \
+            > "$RUNNER_TEMP/room.log" 2>&1 &
+          nohup bash -c 'while :; do echo "$(date -u +%T) $(df -B1M --output=avail / | tail -1)"; sleep 5; done' \
+            > "$RUNNER_TEMP/free.log" 2>&1 &
       - name: System packages for Tauri
         if: runner.os == 'Linux'
         run: |
@@ -98,42 +87,24 @@ jobs:
           toolchain: stable
           components: clippy
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+      - name: The room on the disk, before the build (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          for second in $(seq 600); do [ -e "$RUNNER_TEMP/room" ] && break; sleep 1; done
+          cat "$RUNNER_TEMP/room.log"
+          df -h /
       - name: Build CLI, app and tools
         run: cargo build --workspace --locked
-      - name: The disk after the build (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          df -h /
-          du -sh target/debug/deps target/debug/build target/debug/.fingerprint target/debug ~/.cargo/registry
       - name: Only regia-exec starts a process (V12)
         run: cargo clippy --workspace --all-targets --locked -- -D clippy::disallowed-methods
-      - name: The disk after clippy (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          df -h /
-          du -sh target/debug
       - name: Test, with the brief's conformance, regia-exec's checks and the app's (V01-V05, V08-V10, V27, V28)
         run: cargo test --workspace --locked
-      - name: The disk after the tests, and where it goes (Linux)
+      - name: The disk after the tests (Linux)
         if: runner.os == 'Linux' && !cancelled()
         run: |
           df -h /
-          du -sh target/debug/deps target/debug/build target/debug/conformance-state target/debug /tmp 2>/dev/null || true
-          echo "state folders: $(find target/debug/conformance-state -mindepth 1 -maxdepth 1 | wc -l)"
-          for name in gh python git; do
-            find target/debug/conformance-state -type f -name "$name" -printf '%s\n' |
-              awk -v n="$name" '{s += $1; c++} END {printf "copies of the fake %s: %d, %.0f MB\n", n, c, s / 1048576}'
-          done
-          ls -l target/debug/fake-gh target/debug/fake-python target/debug/fake-git target/debug/regia target/debug/probe
-          echo "the largest executables in deps:"
-          find target/debug/deps -maxdepth 1 -type f -executable -not -name '*.so' -printf '%s %f\n' | sort -rn | head -15 |
-            awk '{printf "%6.0f MB %s\n", $1 / 1048576, $2}'
-          find target/debug/deps -maxdepth 1 -type f -executable -not -name '*.so' -printf '%s\n' |
-            awk '{s += $1; c++} END {printf "executables in deps: %d, %.0f MB\n", c, s / 1048576}'
-          find target/debug/deps -maxdepth 1 -type f -executable -not -name '*.so' -print0 | xargs -0 size -A 2>/dev/null |
-            awk '/^\.debug/ {d += $2} /^[.]/ {t += $2} END {printf "debug sections of the executables: %.0f of %.0f MB\n", d / 1048576, t / 1048576}'
-          size -A target/debug/deps/*.rlib 2>/dev/null |
-            awk '/^\.debug/ {d += $2} /^[.]/ {t += $2} END {printf "debug sections of the rlibs: %.0f of %.0f MB\n", d / 1048576, t / 1048576}'
+          du -sh target || true
+          du -sh target/debug/conformance-state || true
       - name: Build the app for the smoke test
         run: cargo build -p regia-app --features smoke --locked
       - name: The app shows the CLI's brief, in each language, and passes its engine checks, V07 included (Linux)
@@ -162,13 +133,11 @@ jobs:
         run: |
           google-chrome --version
           npm run prove
-      - name: The disk at the end of the job, and its lowest free space (Linux)
+      - name: The disk at the end, and the job's lowest free space (Linux)
         if: runner.os == 'Linux' && always()
         run: |
           df -h /
-          du -sh target/debug ~/.cache /tmp 2>/dev/null || true
-          echo "lowest free space (MB), at:"; sort -k3 -n "$RUNNER_TEMP/disk.log" | head -1
-          cat "$RUNNER_TEMP/disk.log"
+          echo "lowest free space, in MB, and when: $(sort -k2 -n "$RUNNER_TEMP/free.log" | head -1)"
 
   macos:
     name: macos-15 (app-smoke)

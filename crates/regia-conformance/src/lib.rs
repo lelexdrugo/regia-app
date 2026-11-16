@@ -221,7 +221,7 @@ pub fn git_double_env(state: &Path, double: GitDouble) -> Vec<(String, OsString)
         GitDouble::Timeout => {
             fs::create_dir_all(&dir).expect("fake git folder");
             let source = bin_dir().join(format!("fake-git{}", env::consts::EXE_SUFFIX));
-            fs::copy(&source, &git).unwrap_or_else(|error| panic!("{}: {error}", source.display()));
+            place_fake(&source, &git);
             paths.insert(0, dir);
             paths.extend(env::var_os("PATH").iter().flat_map(env::split_paths));
         }
@@ -754,15 +754,32 @@ pub fn fixture_for_python(launch: Launch, responses: &Path, state: &Path) -> Lau
         .env(&writes_var(), writes_log(state))
 }
 
-/// A copy of the fake `gh` in `state/fake-gh/`, with its fixture beside it. Returns its path and the
-/// log of its calls.
+/// The fake `source` at `target`, the path a run starts it by: the fake reads its fixture from the file
+/// beside that path. On Linux it is a hard link, so the state folders of a test run, some four hundred,
+/// share one file on disk: a copy in each filled the Linux runner's disk (#610). Elsewhere it is a copy,
+/// as before.
+fn place_fake(source: &Path, target: &Path) {
+    // A link left by an earlier run in the same folder: a copy over it would empty the file it shares.
+    let _ = fs::remove_file(target);
+    #[cfg(target_os = "linux")]
+    match fs::hard_link(source, target) {
+        Ok(()) => return,
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => panic!("{}: {error}", target.display()),
+        // A file system without hard links gets a copy.
+        Err(_) => {}
+    }
+    fs::copy(source, target).unwrap_or_else(|error| panic!("{}: {error}", source.display()));
+}
+
+/// The fake `gh` in `state/fake-gh/`, with its fixture beside it. Returns its path and the log of its
+/// calls.
 pub fn fake_gh_for_run(state: &Path, responses: &Path) -> (PathBuf, PathBuf) {
     let suffix = env::consts::EXE_SUFFIX;
     let dir = state.join("fake-gh");
     fs::create_dir_all(&dir).expect("fake gh folder");
     let source = bin_dir().join(format!("fake-gh{suffix}"));
     let copy = dir.join(format!("gh{suffix}"));
-    fs::copy(&source, &copy).unwrap_or_else(|error| panic!("{}: {error}", source.display()));
+    place_fake(&source, &copy);
     let log = dir.join("calls.log");
     let sidecar = json!({"responses": responses, "log": log, "writes": writes_log(state)});
     fs::write(dir.join(FAKE_GH_SIDECAR), sidecar.to_string()).expect("fake gh fixture");
@@ -869,7 +886,7 @@ pub fn replay_prototype(state: &Path, replay: &Replay) -> Vec<(String, PathBuf)>
     let suffix = env::consts::EXE_SUFFIX;
     let source = bin_dir().join(format!("fake-python{suffix}"));
     let copy = dir.join(format!("python{suffix}"));
-    fs::copy(&source, &copy).unwrap_or_else(|error| panic!("{}: {error}", source.display()));
+    place_fake(&source, &copy);
     fs::write(dir.join(FAKE_PYTHON_SIDECAR), serde_json::to_string(replay).expect("JSON")).expect("the replay");
     vec![(prototype_env_var("HOME"), dossier), (env_var("PYTHON"), copy)]
 }

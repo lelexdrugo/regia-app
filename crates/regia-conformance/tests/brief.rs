@@ -4,8 +4,8 @@
 use std::fs;
 
 use regia_conformance::{
-    Case, bin_dir, fixture_for_rust, json_diff, prepare_state_dir, project_query, read_json, regia_binary, run_rust,
-    take_not_ported, translate_python,
+    Case, bin_dir, fake_gh_for_run, fixture_for_rust, json_diff, prepare_state_dir, project_query, read_json, regia_binary,
+    run_rust, take_not_ported, translate_python,
 };
 use regia_identity::env_var;
 use serde_json::{Value, json};
@@ -128,6 +128,27 @@ fn the_fake_gh_returns_only_what_the_query_selects() {
     let query = r#"{fieldValueByName(name:"Status"){name} other:fieldValueByName(name: "Other"){name} none:fieldValueByName(name:"Nope"){name}}"#;
     let projected = project_query(query, &item).unwrap();
     assert_eq!(projected, json!({"fieldValueByName": {"name": "Inbox"}, "other": {"name": "y"}, "none": null}));
+}
+
+/// A state folder gets the build's fake `gh` whole, even when a run puts it there a second time, and the
+/// build's stays whole too. On Linux it is the build's own file, by a hard link, not a copy (#610).
+#[test]
+fn a_state_folder_has_the_whole_fake_gh_even_placed_twice_and_on_linux_the_builds_own_file() {
+    let state = prepare_state_dir("fake-gh-placed-twice");
+    let built = bin_dir().join(format!("fake-gh{}", std::env::consts::EXE_SUFFIX));
+    let bytes = fs::read(&built).unwrap();
+    for _ in 0..2 {
+        let (gh, _) = fake_gh_for_run(&state, &state.join("responses.json"));
+        assert_eq!(fs::read(&gh).unwrap(), bytes, "the fake in the state folder is whole");
+        assert_eq!(fs::read(&built).unwrap(), bytes, "the build's fake is whole");
+        #[cfg(target_os = "linux")]
+        {
+            use std::os::unix::fs::MetadataExt;
+            let (placed, built) = (fs::metadata(&gh).unwrap(), fs::metadata(&built).unwrap());
+            assert_eq!((placed.dev(), placed.ino()), (built.dev(), built.ino()), "a link to the build's file, not a copy");
+        }
+    }
+    fs::remove_dir_all(&state).unwrap();
 }
 
 /// The status field is found by id, so a field with another name works, and a wrong id is an error
