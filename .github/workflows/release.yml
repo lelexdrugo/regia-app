@@ -7,8 +7,16 @@ name: release
 # scratch, and a tag could not read its own cache anyway.
 #
 # Least privilege: only `publish` can write to the repo, and it runs no build code; the jobs that
-# compile hold a read-only token. No secret is read: macOS signing is ad hoc, and the updater's
-# artifacts wait for their signing key.
+# compile hold a read-only token and no secret. macOS signing is ad hoc.
+#
+# The updater (#495, the dossier's rilascio.md §4): the jobs that compile leave the packages the
+# updater installs as they are (the NSIS setup, the AppImage, the deb, the rpm), plus the app's
+# tar.gz on macOS and the bare CLI of each system. `finalize`, which runs no build code, signs them
+# with `tauri signer sign --app-version` and writes latest.json. It is the only job that reads the
+# signing key: Tauri's own `createUpdaterArtifacts` would have the bundler sign, so the key would sit
+# in every build job, beside every crate's build script. With no key in the secrets there is no
+# latest.json and no signature, and the rest runs as before; at a tag, a key in tauri.conf.json
+# with no secret to sign for it fails the run.
 on:
   push:
     tags: ["v*"]
@@ -99,11 +107,13 @@ jobs:
           cp target/release/regia.exe "app/src-tauri/binaries/regia-$TARGET.exe"
           cd app/src-tauri
           npx --yes "$TAURI_CLI" build --ci --bundles nsis --config tauri.release.conf.json -- --locked
-      - name: The packages and the CLI's archive
+      # The setup is also the updater's package; the bare CLI is what `regia self-update` downloads.
+      - name: The packages, the CLI's archive and the bare CLI
         run: |
           mkdir -p dist
           cp target/release/bundle/nsis/*-setup.exe dist/
           7z a -tzip "dist/regia-$VERSION-$TARGET.zip" ./target/release/regia.exe > /dev/null
+          cp target/release/regia.exe "dist/regia-$VERSION-$TARGET.exe"
           ls -l dist
       # Kept even if a check below fails: the packages are what the run is for.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -186,13 +196,21 @@ jobs:
             target/aarch64-apple-darwin/release/regia target/x86_64-apple-darwin/release/regia
           cd app/src-tauri
           npx --yes "$TAURI_CLI" build --ci --target universal-apple-darwin --bundles app,dmg --config tauri.release.conf.json -- --locked
-      - name: The packages and the CLI's archive
+      - name: The packages, the CLI's archive, the app's archive for the updater and the bare CLI
         run: |
           bundle=target/universal-apple-darwin/release/bundle
           mkdir -p dist
           cp "$bundle"/dmg/*.dmg dist/
           # The CLI as the bundler signed it, inside the app.
           tar -czf "dist/regia-$VERSION-universal-apple-darwin.tar.gz" -C "$bundle/macos/regia.app/Contents/MacOS" regia
+          cp "$bundle/macos/regia.app/Contents/MacOS/regia" "dist/regia-$VERSION-universal-apple-darwin"
+          # What the bundler's updater archive is (tauri-bundler 2.10.4, updater_bundle.rs): the .app under
+          # its own name, symlinks kept; the plugin drops that first folder when it unpacks. No AppleDouble
+          # files, which would land inside the bundle.
+          COPYFILE_DISABLE=1 tar -czf "dist/regia_${VERSION}_universal.app.tar.gz" -C "$bundle/macos" regia.app
+          tar -tzf "dist/regia_${VERSION}_universal.app.tar.gz" > app-archive.txt
+          sed -n '1,3p' app-archive.txt
+          if grep -q '/\._' app-archive.txt; then echo "::error::AppleDouble files in the app's archive"; exit 1; fi
           ls -l dist
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -263,12 +281,13 @@ jobs:
           cp target/release/regia app/src-tauri/binaries/regia-x86_64-unknown-linux-gnu
           cd app/src-tauri
           npx --yes "$TAURI_CLI" build --ci --bundles deb,rpm,appimage --config tauri.release.conf.json -- --locked
-      - name: The packages and the CLI's archive
+      - name: The packages, the CLI's archive and the bare CLI
         run: |
           bundle=target/release/bundle
           mkdir -p dist
           cp "$bundle"/deb/*.deb "$bundle"/rpm/*.rpm "$bundle"/appimage/*.AppImage dist/
           tar -czf "dist/regia-$VERSION-x86_64-unknown-linux-gnu.tar.gz" -C target/release regia
+          cp target/release/regia "dist/regia-$VERSION-x86_64-unknown-linux-gnu"
           ls -l dist
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -308,14 +327,19 @@ jobs:
           echo "== fedora:44"
           docker run --rm -e VERSION -v "$PWD/pkg:/pkg:ro" fedora:44 bash -euc "dnf install -y -q /pkg/*.rpm > /dev/null && $check"
 
-  checksums:
-    name: SHA256SUMS, sizes against the targets, latest.json
+  finalize:
+    name: SHA256SUMS, sizes against the targets, the updater's signatures and latest.json
     needs: [verify, windows, macos, linux, linux-install]
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     env:
       VERSION: ${{ needs.verify.outputs.version }}
     steps:
+      # One file of the repo: the update key the app trusts.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          sparse-checkout: app/src-tauri/tauri.conf.json
+          sparse-checkout-cone-mode: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
@@ -324,8 +348,11 @@ jobs:
         working-directory: dist
         run: |
           for pattern in '*_x64-setup.exe' '*_universal.dmg' '*_amd64.deb' '*.x86_64.rpm' '*_amd64.AppImage' \
+              '*_universal.app.tar.gz' \
               "regia-$VERSION-x86_64-pc-windows-msvc.zip" "regia-$VERSION-universal-apple-darwin.tar.gz" \
-              "regia-$VERSION-x86_64-unknown-linux-gnu.tar.gz"; do
+              "regia-$VERSION-x86_64-unknown-linux-gnu.tar.gz" \
+              "regia-$VERSION-x86_64-pc-windows-msvc.exe" "regia-$VERSION-universal-apple-darwin" \
+              "regia-$VERSION-x86_64-unknown-linux-gnu"; do
             count=$(find . -maxdepth 1 -name "$pattern" | wc -l)
             [ "$count" -eq 1 ] || { echo "::error::$count files match $pattern"; exit 1; }
           done
@@ -351,26 +378,106 @@ jobs:
               fi
             done
           } | tee -a "$GITHUB_STEP_SUMMARY"
-      # The updater's manifest exists only with its signing key, which this workflow does not hold yet.
-      - name: latest.json, if there is one, names every platform
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # The only step of the workflow that reads the signing key, and it runs no build code: the pinned
+      # Tauri CLI, jq and Python. The key has a password, and both are secrets of the repo while it is
+      # private. If it turns public (#601), they move to the protected environment `release`: this job
+      # gets `environment: release`, and the two names below stay.
+      - name: The updater's signatures and latest.json, when the repo holds the signing key
+        working-directory: dist
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          npm_config_ignore_scripts: "true"
+        run: |
+          pubkey=$(jq -r '.plugins.updater.pubkey // ""' ../app/src-tauri/tauri.conf.json)
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            if [ -n "$pubkey" ] && [ "$GITHUB_REF_TYPE" = tag ]; then
+              echo "::error::tauri.conf.json trusts an update key, and the repo has no TAURI_SIGNING_PRIVATE_KEY to sign for it"
+              exit 1
+            fi
+            echo "no signing key in the secrets: no signatures and no latest.json"
+            exit 0
+          fi
+          if [ -z "$pubkey" ]; then
+            echo "::error::a signing key, and no pubkey in tauri.conf.json: the app would refuse every update"
+            exit 1
+          fi
+          setup=$(ls -- *_x64-setup.exe)
+          app=$(ls -- *_universal.app.tar.gz)
+          appimage=$(ls -- *_amd64.AppImage)
+          deb=$(ls -- *_amd64.deb)
+          rpm=$(ls -- *.x86_64.rpm)
+          cli_windows="regia-$VERSION-x86_64-pc-windows-msvc.exe"
+          cli_macos="regia-$VERSION-universal-apple-darwin"
+          cli_linux="regia-$VERSION-x86_64-unknown-linux-gnu"
+          for file in "$setup" "$app" "$appimage" "$deb" "$rpm" "$cli_windows" "$cli_macos" "$cli_linux"; do
+            # --app-version puts version:<v> in the trusted comment, which requireSignedVersion demands.
+            npx --yes "$TAURI_CLI" signer sign --app-version "$VERSION" "$file" > /dev/null
+          done
+          # Every signature is of the key the app trusts: minisign's key id, bytes 2 to 10 of the second
+          # line of the key and of each signature. The bundler only warns on a mismatch.
+          python3 - "$pubkey" ./*.sig <<'EOF'
+          import base64, sys
+          def key_id(box):
+              lines = [line for line in base64.b64decode(box).decode().splitlines() if line.strip()]
+              return base64.b64decode(lines[1])[2:10]
+          trusted = key_id(sys.argv[1])
+          for path in sys.argv[2:]:
+              with open(path) as handle:
+                  if key_id(handle.read()) != trusted:
+                      sys.exit(f"{path}: not signed by the key tauri.conf.json trusts")
+          print(f"{len(sys.argv) - 2} signatures, all of key {trusted.hex()}")
+          EOF
+          # The app picks <os>-<arch>-<installer>, then <os>-<arch>; the CLI picks cli-<os>-<arch>. Only the
+          # file name of each URL is used: both fetch the release's asset of that name through the API.
+          base="https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION"
+          entry() { jq -n --arg url "$base/$1" --arg signature "$(cat -- "$1.sig")" '{url: $url, signature: $signature}'; }
+          jq -n --arg version "$VERSION" --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson setup "$(entry "$setup")" --argjson app "$(entry "$app")" --argjson appimage "$(entry "$appimage")" \
+            --argjson deb "$(entry "$deb")" --argjson rpm "$(entry "$rpm")" --argjson cli_windows "$(entry "$cli_windows")" \
+            --argjson cli_macos "$(entry "$cli_macos")" --argjson cli_linux "$(entry "$cli_linux")" \
+            '{version: $version, pub_date: $date, platforms: {
+              "windows-x86_64": $setup, "windows-x86_64-nsis": $setup,
+              "darwin-aarch64": $app, "darwin-x86_64": $app, "darwin-aarch64-app": $app, "darwin-x86_64-app": $app,
+              "linux-x86_64": $appimage, "linux-x86_64-appimage": $appimage, "linux-x86_64-deb": $deb, "linux-x86_64-rpm": $rpm,
+              "cli-windows-x86_64": $cli_windows, "cli-darwin-aarch64": $cli_macos, "cli-darwin-x86_64": $cli_macos,
+              "cli-linux-x86_64": $cli_linux}}' > latest.json
+          jq '.platforms | map_values(.url)' latest.json
+      - name: latest.json, if there is one, names every platform and each system's CLI, over https
         working-directory: dist
         run: |
           if [ ! -f latest.json ]; then
-            echo "no latest.json: the updater's artifacts are not built"
+            echo "no latest.json: no signing key"
             exit 0
           fi
-          jq -e '.platforms | has("windows-x86_64") and has("darwin-aarch64") and has("darwin-x86_64") and has("linux-x86_64")' latest.json
+          jq -e --arg version "$VERSION" '.version == $version and (.platforms | has("windows-x86_64")
+            and has("windows-x86_64-nsis") and has("darwin-aarch64") and has("darwin-x86_64") and has("linux-x86_64")
+            and has("linux-x86_64-deb") and has("linux-x86_64-rpm") and has("cli-windows-x86_64")
+            and has("cli-darwin-aarch64") and has("cli-darwin-x86_64") and has("cli-linux-x86_64"))
+            and ([.platforms[].url | startswith("https://")] | all)' latest.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sha256sums
           path: dist/SHA256SUMS
           retention-days: 1
           if-no-files-found: error
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: hashFiles('dist/latest.json') != ''
+        with:
+          name: updater
+          path: |
+            dist/latest.json
+            dist/*.sig
+          retention-days: 1
+          if-no-files-found: error
 
   publish:
     name: draft release
     if: github.event_name == 'push' && github.ref_type == 'tag'
-    needs: [verify, checksums]
+    needs: [verify, finalize]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -380,8 +487,9 @@ jobs:
         with:
           path: dist
           merge-multiple: true
-      # A draft is invisible to the updater and to anyone without write access. It is never published here.
-      - name: The draft, with every package and SHA256SUMS
+      # A draft is invisible to anyone without write access, and to the updater unless REGIA_UPDATE_TAG names
+      # it (the owner's test). It is never published here.
+      - name: The draft, with every package, SHA256SUMS and, with the signing key, latest.json and the signatures
         working-directory: dist
         env:
           GH_TOKEN: ${{ github.token }}
