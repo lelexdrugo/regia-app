@@ -11,5 +11,6 @@
     "lock",
     "stato",
     "alpha"
-  ]
+  ],
+  "state_after": true
 }

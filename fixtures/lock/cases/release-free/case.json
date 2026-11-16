@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. No lock on alpha: it is already free, which is a success, exit 0.",
+  "args": [
+    "lock",
+    "release",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lock",
+    "rilascia",
+    "alpha",
+    "--proprietario",
+    "worker-a"
+  ],
+  "state_after": true
+}
