@@ -87,9 +87,6 @@ jobs:
           toolchain: stable
           components: clippy
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
-        with:
-          # #610, temporary: a key of its own on Linux, so this run builds without the cache and saves one.
-          key: ${{ runner.os == 'Linux' && 'regia-610-cold' || '' }}
       - name: The room on the disk, before the build (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -98,18 +95,8 @@ jobs:
           df -h /
       - name: Build CLI, app and tools
         run: cargo build --workspace --locked
-      - name: "#610, temporary: the disk after the build (Linux)"
-        if: runner.os == 'Linux'
-        run: |
-          df -h /
-          du -sh target || true
       - name: Only regia-exec starts a process (V12)
         run: cargo clippy --workspace --all-targets --locked -- -D clippy::disallowed-methods
-      - name: "#610, temporary: the disk after clippy (Linux)"
-        if: runner.os == 'Linux'
-        run: |
-          df -h /
-          du -sh target || true
       - name: Test, with the brief's conformance, regia-exec's checks and the app's (V01-V05, V08-V10, V27, V28)
         run: cargo test --workspace --locked
       - name: The disk after the tests (Linux)
@@ -118,30 +105,6 @@ jobs:
           df -h /
           du -sh target || true
           du -sh target/debug/conformance-state || true
-      - name: "#610, temporary: where the disk goes after the tests (Linux)"
-        if: runner.os == 'Linux' && !cancelled()
-        run: |
-          set +e
-          state=target/debug/conformance-state
-          echo "state folders: $(find $state -mindepth 1 -maxdepth 1 | wc -l)"
-          for name in gh python git; do
-            find $state -type f -name "$name" -printf '%s %n\n' | awk -v n="$name" '{s += $1; c++; if ($2 > 1) l++}
-              END {printf "the fake %s in the state folders: %d, hard links %d; as copies, %.0f MB\n", n, c, l, s / 1048576}'
-          done
-          ls -l target/debug/fake-gh target/debug/fake-python target/debug/fake-git target/debug/regia
-          echo "the largest executables under target/debug/build:"
-          find target/debug/build -type f -executable -not -name '*.so' -printf '%s %P\n' | sort -rn | head -12 |
-            awk '{printf "%6.0f MB %s\n", $1 / 1048576, $2}'
-          find target/debug/build -type f -executable -not -name '*.so' -printf '%s\n' |
-            awk '{s += $1; c++} END {printf "executables under target/debug/build: %d, %.0f MB\n", c, s / 1048576}'
-          find target/debug/build -type f -executable -not -name '*.so' -print0 | xargs -0 size -A 2>/dev/null |
-            awk '/^\.debug/ {d += $2} /^[.]/ {t += $2} END {printf "their debug sections: %.0f of %.0f MB\n", d / 1048576, t / 1048576}'
-          find target/debug/build -name '*.rlib' -printf '%s\n' |
-            awk '{s += $1; c++} END {printf "rlibs: %d, %.0f MB\n", c, s / 1048576}'
-          find target/debug/build -name '*.rlib' -print0 | xargs -0 size -A 2>/dev/null |
-            awk '/^\.debug/ {d += $2} /^[.]/ {t += $2} END {printf "debug sections of the rlibs: %.0f of %.0f MB\n", d / 1048576, t / 1048576}'
-          du -sh /tmp ~/.cargo/registry ~/.rustup
-          true
       - name: Build the app for the smoke test
         run: cargo build -p regia-app --features smoke --locked
       - name: The app shows the CLI's brief, in each language, and passes its engine checks, V07 included (Linux)
@@ -175,9 +138,6 @@ jobs:
         run: |
           df -h /
           echo "lowest free space, in MB, and when: $(sort -k2 -n "$RUNNER_TEMP/free.log" | head -1)"
-      - name: "#610, temporary: the free space every five seconds (Linux)"
-        if: runner.os == 'Linux' && always()
-        run: cat "$RUNNER_TEMP/free.log"
 
   macos:
     name: macos-15 (app-smoke)
