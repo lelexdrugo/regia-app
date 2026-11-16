@@ -19,21 +19,34 @@ regia-i18n = { path = "crates/regia-i18n" }
 regia-identity = { path = "crates/regia-identity" }
 regia-runtime = { path = "crates/regia-runtime" }
 regia-store = { path = "crates/regia-store" }
+regia-update = { path = "crates/regia-update" }
 
-chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde", "std"] }
+base64 = "0.23"
+chrono ={ version = "0.4.45", default-features = false, features = ["clock", "serde", "std"] }
 clap = { version = "4.6", features = ["derive"] }
 directories = "6.0"
 fluent-bundle = "0.16"
 fluent-syntax = "0.12"
 libc = "0.2"
+# Tests only: keys and signatures made in the test, as `tauri signer sign` makes them.
+minisign = "0.9"
+# What the updater plugin verifies with, and the CLI's `self-update` too (dossier `rilascio.md` §4.4).
+minisign-verify = "0.3"
 pulldown-cmark = { version = "0.13.5", default-features = false }
 regex = "1.13"
 rusqlite = { version = "0.41", default-features = false, features = ["bundled"] }
+# The native confirmation of an update (threat model §3.8), from Rust: tauri-plugin-dialog would bring
+# tauri-plugin-fs, which deny.toml bans (V03). GTK 3 on Linux, as Tauri's own webview.
+rfd = { version = "0.17", default-features = false, features = ["gtk3"] }
+semver = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sys-locale = "0.3"
 tauri = { version = "2.12", features = ["custom-protocol"] }
 tauri-build = { version = "2.7", features = [] }
+# The system's TLS, as ureq's: the default rustls brings ring, whose licence deny.toml does not list. No zip:
+# the v2 artifacts (the NSIS setup, the AppImage, the deb, the rpm, the app's tar.gz) need none.
+tauri-plugin-updater = { version = "2.14", default-features = false, features = ["native-tls"] }
 thiserror = "2"
 toml = "1"
 ts-rs = "12"

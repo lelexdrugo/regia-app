@@ -164,6 +164,14 @@ pub mod gh {
     pub fn graphql() -> Args {
         Args::new().word("api").word("graphql").word("--input=-")
     }
+
+    /// `gh auth token --hostname=github.com`: the token of the account signed in to github.com, on
+    /// stdout. The updater reads it into memory for one round of requests to `api.github.com` and
+    /// never writes it anywhere (the dossier's `rilascio.md` §4.4, point 1). The environment gives
+    /// gh no `GH_TOKEN`, so the token is the one gh keeps, not one the caller's shell exported.
+    pub fn auth_token() -> Args {
+        Args::new().word("auth").word("token").word("--hostname=github.com")
+    }
 }
 
 /// Read-only `git`. The environment of a read of [`Program::Git`](crate::Program::Git) adds no prompt, no
@@ -490,6 +498,13 @@ mod tests {
             let batch = arg.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | ':' | '/' | '=' | '-'));
             assert!(batch, "{arg}");
         }
+    }
+
+    /// The token's host is fixed in argv as well as in the environment (`GH_HOST`), and no token is
+    /// an argument: the command only prints one.
+    #[test]
+    fn the_token_is_asked_of_github_com_only() {
+        assert_eq!(tokens(&gh::auth_token()), ["auth", "token", "--hostname=github.com"]);
     }
 
     #[test]

@@ -6,6 +6,7 @@ mod dossier;
 mod init;
 mod policy;
 mod reads;
+mod self_update;
 mod state;
 mod task;
 
@@ -61,6 +62,9 @@ enum Commands {
         #[command(subcommand)]
         command: policy::PolicyCommand,
     },
+    /// Replaces this command line with the one of the newest release, once its signature verifies. A copy
+    /// that came with the app is the app's to update. Native only: the prototype has no updater.
+    SelfUpdate(self_update::SelfUpdateArgs),
     /// Commands not ported yet go to the prototype through the facade table.
     #[command(external_subcommand)]
     External(Vec<String>),
@@ -230,6 +234,7 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
             Ok(ExitCode::SUCCESS)
         }
         Commands::Policy { command } => policy::run(command, catalog),
+        Commands::SelfUpdate(args) => self_update::run(&args, catalog),
         Commands::External(argv) => {
             let Some((command, args)) = table.split_command(&argv) else {
                 return Err(format!("unknown command `{}`", argv.first().map_or("", String::as_str)));

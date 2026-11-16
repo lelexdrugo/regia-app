@@ -21,15 +21,23 @@ regia-github.workspace = true
 regia-i18n.workspace = true
 regia-identity.workspace = true
 regia-runtime.workspace = true
+# The update channel, shared with the CLI's `self-update`; the plugin installs, from Rust only (threat model
+# §3.9), after rfd's native confirmation (§3.8).
+regia-update.workspace = true
+rfd.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tauri.workspace = true
+tauri-plugin-updater.workspace = true
 toml.workspace = true
 
 # Tests only: ts-rs writes the TypeScript of the IPC types (src/ipc.rs), the core's corpus becomes the
 # frontend proof's fixture, and Tauri's mock runtime runs the webview's calls through this build's ACL
 # (V10). None of them reaches a release build.
 [dev-dependencies]
+# V21 on the plugin: keys and signatures made in the test, as `tauri signer` makes them.
+base64.workspace = true
+minisign.workspace = true
 regia-core = { workspace = true, features = ["corpus", "ts"] }
 tauri = { workspace = true, features = ["test"] }
 ts-rs.workspace = true

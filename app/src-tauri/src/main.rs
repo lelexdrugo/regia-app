@@ -9,6 +9,7 @@ mod navigation;
 mod settings;
 #[cfg(feature = "smoke")]
 mod smoke;
+mod update;
 
 use std::path::PathBuf;
 
@@ -90,8 +91,11 @@ fn open_main_window<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
     Ok(())
 }
 
+/// The updater plugin is registered for the core alone: no capability grants `updater:*`, so the ACL refuses
+/// its four commands to the webview (threat model §3.9), and `update.rs` calls it from Rust. Its default
+/// version comparator stays: none is set, so a lower or equal version is never offered (§3.10 point 5).
 fn builder<R: Runtime>(builder: tauri::Builder<R>, store: Store, moviola: Moviola) -> tauri::Builder<R> {
-    let builder = builder.manage(store).manage(moviola);
+    let builder = builder.manage(store).manage(moviola).plugin(tauri_plugin_updater::Builder::new().build());
     #[cfg(feature = "smoke")]
     let builder = builder.invoke_handler(tauri::generate_handler![
         get_app_info,
@@ -127,7 +131,11 @@ fn main() {
         .setup(|app| {
             #[cfg(feature = "smoke")]
             smoke::start_pings(app.handle().clone());
-            Ok(open_main_window(app.handle())?)
+            open_main_window(app.handle())?;
+            // A smoke run neither asks gh nor opens a dialog: it proves the webview, alone.
+            #[cfg(not(feature = "smoke"))]
+            update::start(app.handle().clone());
+            Ok(())
         })
         .run(context)
         .expect("the app runs");
@@ -231,6 +239,11 @@ mod acl {
             ("plugin:event|listen", json!({ "event": "x", "target": { "kind": "Any" }, "handler": 3 })),
             ("plugin:app|version", json!({})),
             ("plugin:path|resolve_directory", json!({ "directory": 1 })),
+            // Registered for the core, never granted to the webview (threat model §3.9).
+            ("plugin:updater|check", json!({})),
+            ("plugin:updater|download", json!({ "rid": 1 })),
+            ("plugin:updater|install", json!({ "rid": 1 })),
+            ("plugin:updater|download_and_install", json!({ "rid": 1 })),
             ("bootstrap", json!({})),
             ("read_file", json!({ "path": "/etc/passwd" })),
         ];

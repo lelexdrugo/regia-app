@@ -373,13 +373,37 @@ fn config_problems(conf: &Value) -> Vec<String> {
             problems.push("the window names a url".to_owned());
         }
     }
-    if let Some(updater) = conf["plugins"].get("updater") {
-        if updater.get("dangerousInsecureTransportProtocol").is_some() {
-            problems.push("the updater allows insecure transport".to_owned());
+    problems.extend(updater_problems(&conf["plugins"]["updater"]));
+    problems
+}
+
+/// V21 on the configuration (threat model §3.10): no switch that loosens the transport, the certificates or
+/// the versions, whichever spelling the plugin accepts (`allowDowngrades` or `allow-downgrades`); signatures
+/// that carry their version; https endpoints; and a key that is empty (updates off, until the owner generates
+/// it) or a minisign key.
+fn updater_problems(updater: &Value) -> Vec<String> {
+    let Some(fields) = updater.as_object() else {
+        return vec!["plugins.updater is missing: the plugin would not start".to_owned()];
+    };
+    let mut problems = Vec::new();
+    let loosening = ["dangerousinsecuretransportprotocol", "dangerousacceptinvalidcerts", "dangerousacceptinvalidhostnames", "allowdowngrades"];
+    for (name, value) in fields {
+        let plain = name.replace(['-', '_'], "").to_ascii_lowercase();
+        if loosening.contains(&plain.as_str()) && value != &json!(false) {
+            problems.push(format!("the updater sets {name}"));
         }
-        if strings(&updater["endpoints"]).iter().any(|endpoint| !endpoint.starts_with("https://")) {
-            problems.push("an updater endpoint is not https".to_owned());
-        }
+    }
+    if updater["requireSignedVersion"] != json!(true) {
+        problems.push("requireSignedVersion is not true".to_owned());
+    }
+    if strings(&updater["endpoints"]).iter().any(|endpoint| !endpoint.starts_with("https://")) {
+        problems.push("an updater endpoint is not https".to_owned());
+    }
+    match updater["pubkey"].as_str() {
+        None => problems.push("the updater has no pubkey field".to_owned()),
+        Some("") => {}
+        Some(key) if regia_update::key_decodes(key) => {}
+        Some(_) => problems.push("the updater's pubkey is not a minisign public key".to_owned()),
     }
     problems
 }
@@ -393,7 +417,14 @@ fn v05_tauri_conf_has_the_exact_csp_and_the_safe_switches() {
 #[test]
 fn v05_fails_on_each_alteration_of_the_configuration() {
     let conf = read_json(&app_dir().join("tauri.conf.json"));
-    let alterations: [Alteration; 13] = [
+    let alterations: [Alteration; 20] = [
+        ("downgrades", |c| c["plugins"]["updater"]["allowDowngrades"] = json!(true)),
+        ("downgrades, kebab-case", |c| c["plugins"]["updater"]["allow-downgrades"] = json!(true)),
+        ("invalid certificates", |c| c["plugins"]["updater"]["dangerousAcceptInvalidCerts"] = json!(true)),
+        ("invalid hostnames", |c| c["plugins"]["updater"]["dangerous-accept-invalid-hostnames"] = json!(true)),
+        ("unsigned versions", |c| c["plugins"]["updater"]["requireSignedVersion"] = json!(false)),
+        ("a key that is no key", |c| c["plugins"]["updater"]["pubkey"] = json!("bm90IGEga2V5")),
+        ("no updater configuration", |c| c["plugins"] = json!({})),
         ("unsafe-inline", |c| {
             c["app"]["security"]["csp"] = json!(CSP.replace("script-src 'self'", "script-src 'self' 'unsafe-inline'"))
         }),
@@ -717,6 +748,32 @@ fn rust_sources(dir: &Path, out: &mut Vec<PathBuf>) {
             out.push(path);
         }
     }
+}
+
+// V21, in the sources -------------------------------------------------------------------------------------
+
+/// No comparator of versions of our own (threat model §3.10 point 5): the plugin's default offers only a
+/// greater version, and a comparator or `allowDowngrades` could admit a downgrade.
+fn comparator_problems(file: &str, source: &str) -> Vec<String> {
+    ["version_comparator", "allow_downgrades", "allowDowngrades", "allow-downgrades"]
+        .iter()
+        .filter(|needle| source.contains(*needle))
+        .map(|needle| format!("{file} names {needle}"))
+        .collect()
+}
+
+#[test]
+fn v21_no_comparator_of_versions_of_our_own() {
+    let mut files = Vec::new();
+    for dir in ["src", "../../crates/regia-update/src", "../../crates/regia-cli/src"] {
+        rust_sources(&app_dir().join(dir), &mut files);
+    }
+    assert!(files.iter().any(|path| path.ends_with("update.rs")), "the updater's sources are read");
+    let problems: Vec<String> =
+        files.iter().flat_map(|path| comparator_problems(&path.display().to_string(), &read(path))).collect();
+    assert_eq!(problems, Vec::<String>::new());
+    let altered = "app.updater_builder().version_comparator(|current, update| update.version != current)";
+    assert!(!comparator_problems("altered.rs", altered).is_empty(), "V21 misses a comparator");
 }
 
 #[test]

@@ -1,0 +1,23 @@
+[package]
+name = "regia-update"
+description = "The update channel shared by the app and the CLI: the private release on GitHub read with the token gh keeps, its manifest, and the minisign check of what it offers."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+base64.workspace = true
+minisign-verify.workspace = true
+regia-exec.workspace = true
+regia-identity.workspace = true
+semver.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+ureq.workspace = true
+url.workspace = true
+
+# Tests only: keys and signatures made in the test, as `tauri signer sign` makes them. No key is a file.
+[dev-dependencies]
+minisign.workspace = true
