@@ -1,0 +1,28 @@
+{
+  "_note": "Synthetic. The row of alpha's lock is not a lock document and names no holder: it is not worker-a's to release, exit 3, and the refusal shows no lock and gives no reason.",
+  "args": [
+    "lock",
+    "release",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--json"
+  ],
+  "exit": 3,
+  "python": [
+    "--json",
+    "lock",
+    "rilascia",
+    "alpha",
+    "--proprietario",
+    "worker-a"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": "not a lock document"
+    }
+  ],
+  "state_after": true
+}

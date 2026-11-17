@@ -1,0 +1,31 @@
+{
+  "_note": "Synthetic. The row of alpha's lock is not a lock document, so it is nobody's and has no expiry: worker-a takes it in its place, and the lock names no holder it replaced.",
+  "args": [
+    "lock",
+    "acquire",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "600",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lock",
+    "prendi",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "600"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": "not a lock document"
+    }
+  ],
+  "state_after": true
+}
