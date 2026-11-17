@@ -2,3 +2,16 @@
 # dossier's folder, and the placeholder of the papers' experimental data, a whole first segment. They are
 # data, not identifiers, and stay out of the Rust sources.
 data_placeholder = "{dati}"
+
+# The forms that are no path (`_LINK`, `_SEDE`, `_SEGNAPOSTO_NOME`, `_SEGNAPOSTO` of the prototype), matched
+# at the start of a reference, the prototype's `re.match`. Python's `$` also matches before one line feed at
+# the end, and its `\s` reads the four separators U+001C to U+001F as spaces.
+[not_a_path]
+# A scheme with at least two characters: `C://x` is a path written with a doubled backslash, not a link.
+link = '^[A-Za-z][A-Za-z0-9+.-]+://'
+# `~`, `%VAR%`, `${VAR}`, `$VAR`: a place of the machine.
+location = '^(?:~(?:/|\n?\z)|%[^%/\s\x1c-\x1f]+%|\$\{[^{}/\s\x1c-\x1f]+\}(?:/|\n?\z)|\$[A-Za-z_]\w*(?:/|\n?\z))'
+# `<worktree>/x`.
+name_placeholder = '^<[^<>/]+>(?:/|\n?\z)'
+# `{archivio}/x`, a whole segment (`{dati}` has passed already).
+placeholder = '^\{[^{}/]+\}(?:/|\n?\z)'

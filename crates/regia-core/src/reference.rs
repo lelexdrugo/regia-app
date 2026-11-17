@@ -8,6 +8,7 @@
 use std::path::{Component, Path, PathBuf};
 use std::sync::OnceLock;
 
+use regex::Regex;
 use serde::Deserialize;
 
 const FORMAT: &str = include_str!("../formats/references_v1.toml");
@@ -15,11 +16,44 @@ const FORMAT: &str = include_str!("../formats/references_v1.toml");
 #[derive(Deserialize)]
 struct Format {
     data_placeholder: String,
+    not_a_path: Patterns,
+}
+
+/// The forms that are no path, as `references_v1.toml` writes them.
+#[derive(Deserialize)]
+struct Patterns {
+    link: String,
+    location: String,
+    name_placeholder: String,
+    placeholder: String,
+}
+
+struct Compiled {
+    data_placeholder: String,
+    /// In the prototype's order: a link, a place of the machine, a `<name>`, any other placeholder.
+    forms: [(Regex, NotAPathForm); 4],
+}
+
+fn format() -> &'static Compiled {
+    static COMPILED: OnceLock<Compiled> = OnceLock::new();
+    COMPILED.get_or_init(|| {
+        let format: Format = toml::from_str(FORMAT).expect("the embedded format is valid");
+        let patterns = format.not_a_path;
+        let form = |pattern: &str, form| (Regex::new(pattern).expect("a valid pattern"), form);
+        Compiled {
+            data_placeholder: format.data_placeholder,
+            forms: [
+                form(&patterns.link, NotAPathForm::Link),
+                form(&patterns.location, NotAPathForm::MachineLocation),
+                form(&patterns.name_placeholder, NotAPathForm::NamePlaceholder),
+                form(&patterns.placeholder, NotAPathForm::UnknownPlaceholder),
+            ],
+        }
+    })
 }
 
 fn data_placeholder() -> &'static str {
-    static PLACEHOLDER: OnceLock<String> = OnceLock::new();
-    PLACEHOLDER.get_or_init(|| toml::from_str::<Format>(FORMAT).expect("the embedded format is valid").data_placeholder)
+    &format().data_placeholder
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -33,6 +67,24 @@ pub enum ReferenceKind {
     Absolute,
     /// `..`, or a link that leads out of the dossier. It does not resolve.
     Outside,
+    /// Not a path to resolve, and the form it has instead: no path, no existence, whatever the disk holds.
+    NotAPath(NotAPathForm),
+}
+
+/// The form of a reference that is no path (the prototype's reason for a `non-percorso`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NotAPathForm {
+    /// A link: `https://…`, `file://…`.
+    Link,
+    /// A command: a string with a space inside, as `python tools/x.py --a`, unless a file or folder of that
+    /// name is in the dossier.
+    Command,
+    /// A place of the machine: `~/…`, `%VAR%/…`, `${VAR}/…`, `$VAR/…`.
+    MachineLocation,
+    /// A placeholder of a name: `<worktree>/…`.
+    NamePlaceholder,
+    /// A placeholder that is not the data's: `{archivio}/…`.
+    UnknownPlaceholder,
 }
 
 /// Why a reference does not name a file here.
@@ -42,8 +94,10 @@ pub enum Unresolved {
     DataRootNotConfigured,
     AbsolutePath,
     LeavesTheDossier,
-    /// No file at that path on this machine: missing, a folder, or a name the system does not take.
+    /// Nothing at that path on this machine: missing, empty, or a name the system does not take.
     Absent,
+    /// The reference is not a path (see [`NotAPathForm`]).
+    NotAPath,
 }
 
 /// A reference, resolved against a dossier's folder. Its fields are read, never set.
@@ -54,6 +108,7 @@ pub struct Reference {
     kind: ReferenceKind,
     path: Option<PathBuf>,
     exists: bool,
+    folder: bool,
     reason: Option<Unresolved>,
 }
 
@@ -76,9 +131,14 @@ impl Reference {
         self.path.as_deref()
     }
 
-    /// A file, not a folder, is at that path.
+    /// A file or a folder is at that path.
     pub fn exists(&self) -> bool {
         self.exists
+    }
+
+    /// `exists`, and it is a folder.
+    pub fn is_folder(&self) -> bool {
+        self.folder
     }
 
     /// `None` for a file that is there.
@@ -86,10 +146,34 @@ impl Reference {
         self.reason
     }
 
-    /// The reference as a document shows it: its path, with `/`, in backticks, followed by `absent`, the
-    /// catalog's sentence, when the file is not there or the reference does not resolve.
+    /// The reference as a document shows it: its path, with `/`, in backticks, and a folder that is there with
+    /// a `/` at the end; followed by `absent`, the catalog's sentence, when it is not there or does not
+    /// resolve. A reference that is no path comes out as written, with no sentence: "absent" would say
+    /// nothing of it, and the catalog's own is [`Reference::render_with`]'s.
     pub fn render(&self, absent: &str) -> String {
-        if self.exists { format!("`{}`", self.normalized) } else { format!("`{}`: {absent}", self.normalized) }
+        match self.kind {
+            ReferenceKind::NotAPath(_) => format!("`{}`", self.original),
+            _ => self.render_path(absent),
+        }
+    }
+
+    /// [`Reference::render`], with a sentence of the catalog for the form of a reference that is no path:
+    /// the reference as written, in backticks, then `: ` and the sentence.
+    pub fn render_with(&self, absent: &str, not_a_path: impl FnOnce(NotAPathForm) -> String) -> String {
+        match self.kind {
+            ReferenceKind::NotAPath(form) => format!("`{}`: {}", self.original, not_a_path(form)),
+            _ => self.render_path(absent),
+        }
+    }
+
+    fn render_path(&self, absent: &str) -> String {
+        if !self.exists {
+            format!("`{}`: {absent}", self.normalized)
+        } else if self.folder && !self.normalized.ends_with('/') {
+            format!("`{}/`", self.normalized)
+        } else {
+            format!("`{}`", self.normalized)
+        }
     }
 }
 
@@ -103,6 +187,26 @@ pub fn data_root() -> Option<PathBuf> {
 /// one: with `/` for `\`, a path that starts with `/` or whose second character is `:`.
 fn is_absolute(normalized: &str) -> bool {
     normalized.starts_with('/') || normalized.chars().nth(1) == Some(':')
+}
+
+/// What Python's `str.strip()` and `\s` read as a space: Unicode's White_Space, and the four separators
+/// U+001C to U+001F.
+fn is_space(c: char) -> bool {
+    c.is_whitespace() || ('\u{1c}'..='\u{1f}').contains(&c)
+}
+
+/// Why `normalized`, a relative reference that is not the data's, is no path; `None` if it can be one. A
+/// space inside makes it a command, unless a file or folder of that name is in `folder`.
+fn not_a_path(normalized: &str, folder: &Path) -> Option<NotAPathForm> {
+    if let Some((_, form)) = format().forms.iter().find(|(pattern, _)| pattern.is_match(normalized)) {
+        return Some(*form);
+    }
+    let trimmed = normalized.trim_matches(is_space);
+    if trimmed.contains(is_space) {
+        // An error reading the name is a name that is not there, as the prototype's `except`.
+        return (!folder.join(normalized).try_exists().unwrap_or(false)).then_some(NotAPathForm::Command);
+    }
+    None
 }
 
 /// `path` with its links resolved as far as it exists, and the rest as written, as Python's `resolve()`
@@ -143,6 +247,7 @@ pub fn resolve(reference: &str, folder: &Path) -> Reference {
         kind,
         path: None,
         exists: false,
+        folder: false,
         reason: Some(reason),
     };
     let placeholder = data_placeholder();
@@ -153,6 +258,13 @@ pub fn resolve(reference: &str, folder: &Path) -> Reference {
     }
     if is_absolute(&normalized) {
         return unresolved(ReferenceKind::Absolute, Unresolved::AbsolutePath);
+    }
+    if let Some(form) = not_a_path(&normalized, folder) {
+        return unresolved(ReferenceKind::NotAPath(form), Unresolved::NotAPath);
+    }
+    // The empty reference is not the dossier itself (`.` is).
+    if normalized.trim_matches(is_space).is_empty() {
+        return unresolved(ReferenceKind::Relative, Unresolved::Absent);
     }
     // A NUL byte names no path: the prototype's resolver refuses it as it refuses `..`.
     if normalized.split('/').any(|part| part == "..") || normalized.contains('\0') {
@@ -169,6 +281,7 @@ pub fn resolve(reference: &str, folder: &Path) -> Reference {
         return unresolved(ReferenceKind::Outside, Unresolved::LeavesTheDossier);
     }
     // On the path as written, not on the resolved one.
-    let exists = raw.is_file();
-    Reference { original, normalized, kind: ReferenceKind::Relative, path: Some(path), exists, reason: (!exists).then_some(Unresolved::Absent) }
+    let folder = raw.is_dir();
+    let exists = folder || raw.is_file();
+    Reference { original, normalized, kind: ReferenceKind::Relative, path: Some(path), exists, folder, reason: (!exists).then_some(Unresolved::Absent) }
 }
