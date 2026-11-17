@@ -2841,7 +2841,6 @@ name = "regia-app"
 version = "0.0.1"
 dependencies = [
  "regia-core",
- "regia-github",
  "regia-i18n",
  "regia-identity",
  "regia-runtime",
