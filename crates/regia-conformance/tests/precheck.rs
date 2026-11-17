@@ -33,8 +33,8 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
 use regia_conformance::{
-    FIXTURE_NOW, StateRow, bin_dir, fixture_for_python, fixture_for_rust, fixtures_root, log_var, prepare_state_dir, read_json, state_rows,
-    workspace_root, write_state, writes_of_run,
+    FIXTURE_NOW, StateRow, fixture_for_python, fixture_for_rust, fixtures_root, log_var, read_json, state_rows, workspace_root, write_state,
+    writes_of_run,
 };
 use regia_core::SignatureRole;
 use regia_exec::{Pin, Program, python};
@@ -43,6 +43,9 @@ use regia_identity::{env_var, prototype_env_var};
 use serde::Deserialize;
 use serde::de::{MapAccess, SeqAccess, Visitor};
 use serde_json::{Value, json};
+
+mod common;
+use common::Bin;
 
 /// The keys of the prototype's payload, and of each of its projects, that #466 has not ported yet.
 const LATER_PAYLOAD_KEYS: [&str; 0] = [];
@@ -587,6 +590,22 @@ struct Ran {
     exit: Option<i32>,
     stdout: String,
     stderr: String,
+}
+
+/// The binaries this file runs, of two other packages: the product's `precheck`, and `regia`, whose presence
+/// is how the harness finds the folder of the workspace's binaries.
+const BINARIES: [Bin; 2] = [Bin { package: "regia-controller", name: "precheck" }, Bin { package: "regia-cli", name: regia_identity::BIN_NAME }];
+
+/// The folder with the workspace's binaries, built (or found fresh) first: a `cargo test` of this file alone builds none of them.
+fn bin_dir() -> PathBuf {
+    common::built(&BINARIES);
+    regia_conformance::bin_dir()
+}
+
+/// The state folder of a run, after the binaries it needs are in place: the library's own reads them.
+fn prepare_state_dir(label: &str) -> PathBuf {
+    common::built(&BINARIES);
+    regia_conformance::prepare_state_dir(label)
 }
 
 fn precheck_binary() -> PathBuf {

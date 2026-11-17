@@ -460,19 +460,41 @@ fn the_harness_keeps_the_allow_list_and_ends_a_driven_run() {
 }
 
 /// Rule 6: on the deadline the whole tree dies, grandchild included.
+///
+/// The probe in `tree` mode never ends on its own, so the deadline is the only way out of the run: nothing
+/// races it, and the outcome is `TimedOut` or the run is wrong. Two things in this test did race, on a
+/// machine too busy to start two processes inside the deadline (#648: reproduced by running the test at idle
+/// priority beside busy processes):
+///
+/// - The grandchild may not have written its first beat when the deadline kills the tree. Then there is
+///   nothing to say about it: the attempt proves nothing, and it is made again with a deadline twice as long.
+///   The deadline grows only when that condition is missing, never otherwise.
+/// - A bound on the elapsed time (the old `< 10 s`) measures how busy the machine is. What the deadline owes
+///   is not to return early, and that is checked exactly: a run that ignored the deadline would not return
+///   at all, since the probe never ends.
 #[test]
 fn a_deadline_kills_the_whole_tree() {
     let dir = scratch("tree");
-    let beat = dir.join("beat");
-    let started = Instant::now();
-    let outcome = probe_as(Program::Orca)
-        .launch(Args::new(), &dir)
-        .env("REGIA_PROBE_MODE", "tree")
-        .env("REGIA_PROBE_BEAT", &beat)
-        .limits(Limits { timeout: Duration::from_secs(2), ..Limits::default() })
-        .run();
-    assert!(matches!(outcome, Err(ExecError::TimedOut { .. })), "{outcome:?}");
-    assert!(started.elapsed() < Duration::from_secs(10), "the deadline was not kept");
+    let mut deadline = Duration::from_secs(2);
+    let beat = loop {
+        // A beat file for each attempt: nothing an earlier attempt left can pass for this one.
+        let beat = dir.join(format!("beat-{}", deadline.as_secs()));
+        let started = Instant::now();
+        let outcome = probe_as(Program::Orca)
+            .launch(Args::new(), &dir)
+            .env("REGIA_PROBE_MODE", "tree")
+            .env("REGIA_PROBE_BEAT", &beat)
+            .limits(Limits { timeout: deadline, ..Limits::default() })
+            .run();
+        assert!(matches!(outcome, Err(ExecError::TimedOut { limit, .. }) if limit == deadline), "{outcome:?}");
+        assert!(started.elapsed() >= deadline, "the run returned before its deadline");
+        if fs::metadata(&beat).is_ok_and(|beat| beat.len() > 0) {
+            break beat;
+        }
+        assert!(deadline < Duration::from_secs(32), "the grandchild never started, in a deadline of {deadline:?}");
+        deadline *= 2;
+    };
+    // The grandchild ran inside the tree. Once the kill has settled, it must not beat any more.
     std::thread::sleep(Duration::from_millis(500));
     let before = fs::metadata(&beat).expect("the grandchild started").len();
     assert!(before > 0);
