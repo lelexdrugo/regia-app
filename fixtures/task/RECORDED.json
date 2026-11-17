@@ -1,8 +1,8 @@
 {
   "now": "2026-01-10T09:00:00Z",
-  "oracle_commit": "389793d5481f674db068c021ded7af1c9044e743",
-  "oracle_last_change_to_regia_py": "7d2138977b904ae84874fe80cb0300c075330e1c",
+  "oracle_commit": "9e66a2cb9a36fe995c7e93301e7f93dcb1c13c58",
+  "oracle_last_change_to_regia_py": "9e66a2cb9a36fe995c7e93301e7f93dcb1c13c58",
   "oracle_repository": "lelexdrugo/regia",
-  "recorded_at": "2026-11-12",
+  "recorded_at": "2026-11-17",
   "today": "2026-01-10"
 }
