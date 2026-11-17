@@ -269,6 +269,8 @@ fn issues_by_number(scenario: &Scenario) -> Map<String, Value> {
                 "state": state(issue),
                 "subIssues": {"totalCount": issue.sub_total.unwrap_or(issue.sub.len() as u64)},
                 "comments": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": comments},
+                // `task show --since` asks it (#557): a body never edited has none.
+                "lastEditedAt": null,
             });
             (issue.number.to_string(), entry)
         })
