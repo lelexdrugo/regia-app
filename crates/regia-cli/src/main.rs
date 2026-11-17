@@ -348,7 +348,7 @@ fn launch_request(args: &LaunchArgs, settings: Settings) -> Result<(SurfaceKind,
     };
     let prompt = match (&args.prompt.prompt, &args.prompt.prompt_file) {
         (Some(prompt), _) => prompt.clone(),
-        (None, Some(file)) => std::fs::read_to_string(file).map_err(|error| format!("{}: {error}", file.display()))?,
+        (None, Some(file)) => regia_agents::read_prompt_file(file).map_err(|error| format!("{}: {error}", file.display()))?,
         (None, None) => return Err("no prompt".to_owned()),
     };
     let model = args.model.as_deref().map(ModelId::parse).transpose().map_err(|error| error.to_string())?;
@@ -529,6 +529,20 @@ mod tests {
         assert!(parse(&["agents", "show", "--role", "adversarial_review", "--json"]).is_ok());
         assert!(parse(&["agents", "show", "--role", "nobody"]).is_err() && parse(&["agents", "show"]).is_err());
         assert!(parse(&["agents", "show", "--role", "code", "--writer", "gemini"]).is_err());
+    }
+
+    /// V14 of #460: `--prompt-file` is read as the prototype reads it, with `\r\n` and a lone `\r` as
+    /// `\n`; `--prompt` stays as written.
+    #[test]
+    fn a_prompt_file_has_its_line_ends_normalised_like_the_prototype_reads_it() {
+        let file = std::env::temp_dir().join(format!("regia-cli-prompt-{}.md", std::process::id()));
+        std::fs::write(&file, "first\r\nsecond\rthird\n").unwrap();
+        let path = file.to_str().unwrap();
+        let from_file = launch_request(&launch_args(&["--project", "trial", "--folder", FOLDER, "--prompt-file", path]), Settings::default());
+        let inline = launch_request(&launch_args(&["--project", "trial", "--folder", FOLDER, "--prompt", "a\r\nb"]), Settings::default());
+        std::fs::remove_file(&file).unwrap();
+        assert_eq!(from_file.unwrap().1.prompt, "first\nsecond\nthird\n");
+        assert_eq!(inline.unwrap().1.prompt, "a\r\nb");
     }
 
     /// The prototype's command line, on the Dry surface: the prompt from a file, the model and the

@@ -12,7 +12,9 @@ use common::{PROMPT, SESSION, Trial, args, env_of};
 use regia_agents::{
     Cli, LaunchError, LaunchRequest, LaunchSurface, ServiceId, SurfaceKind, claude_slug,
 };
-use regia_exec::{Effort, ModelId, Program, Search};
+#[cfg(windows)]
+use regia_exec::Program;
+use regia_exec::{Effort, ModelId, Search};
 
 /// An argv as `(option, value)` pairs and positionals, whichever form it uses: `--name=value`, or
 /// `--name value` and the short names the prototype gives codex. A flag has no value.
@@ -264,4 +266,23 @@ fn codex_through_a_cmd_shim_gets_its_folder_whole() {
     assert!(argv.contains(&format!("--cd={folder}")), "{argv:?}");
     assert!(argv.contains(&"--config=model_reasoning_effort=high".to_owned()), "{argv:?}");
     assert_eq!(trial.record("codex", 0)["stdin"], PROMPT);
+}
+
+/// V14 of #460: the prompt read from a file is what the prototype's text-mode read gives, on every
+/// platform: `\r\n` and a lone `\r` are `\n`. What the agent then receives on stdin is that text, byte
+/// for byte.
+#[test]
+fn a_prompt_file_is_read_with_universal_newlines() {
+    let trial = Trial::new("prompt-file");
+    for (written, read) in [("do the step\r\nline two: è l'ora\r\n", "do the step\nline two: è l'ora\n"), ("one\rtwo\r\r\nthree", "one\ntwo\n\nthree"), ("already\nlf", "already\nlf")] {
+        let file = trial.dir.join("prompt.md");
+        fs::write(&file, written).unwrap();
+        let prompt = regia_agents::read_prompt_file(&file).expect("the prompt");
+        assert_eq!(prompt, read, "{written:?}");
+        let receipt = trial.launch(&LaunchRequest::new(ServiceId::Claude, "trial", &trial.folder, &prompt).unwrap()).expect("the launch");
+        assert_eq!(fs::read(receipt.prompt_file.expect("a prompt file")).unwrap(), read.as_bytes(), "{written:?}");
+    }
+    assert!(regia_agents::read_prompt_file(&trial.dir.join("missing.md")).is_err());
+    fs::write(trial.dir.join("latin1.md"), b"caff\xe8").unwrap();
+    assert!(regia_agents::read_prompt_file(&trial.dir.join("latin1.md")).is_err(), "not UTF-8");
 }

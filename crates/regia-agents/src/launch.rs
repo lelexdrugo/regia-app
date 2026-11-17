@@ -104,6 +104,22 @@ fn plain(path: PathBuf) -> PathBuf {
     }
 }
 
+/// The prompt in a file, as the prototype reads it: Python's `Path.read_text(encoding="utf-8")` is a
+/// text-mode read, whose universal newlines turn `\r\n` and a lone `\r` into `\n`. The agent gets the
+/// same prompt on every platform; `--prompt` on the command line is not read this way and stays as
+/// written.
+///
+/// # Errors
+///
+/// The file cannot be read, or is not UTF-8.
+pub fn read_prompt_file(path: &Path) -> std::io::Result<String> {
+    Ok(universal_newlines(&std::fs::read_to_string(path)?))
+}
+
+fn universal_newlines(text: &str) -> String {
+    text.replace("\r\n", "\n").replace('\r', "\n")
+}
+
 /// A launch, described by the service and consumed by a surface. It holds no argv.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LaunchRequest {
@@ -362,6 +378,12 @@ mod tests {
         assert_eq!(error, LaunchError::AfterEffect("launch refused".to_owned()));
         assert_eq!(dry.requests().len(), 1, "the second surface ran only for the first case");
         assert_eq!((*before.1.lock().unwrap(), *after.1.lock().unwrap()), (1, 1));
+    }
+
+    #[test]
+    fn universal_newlines_turn_crlf_and_a_lone_cr_into_lf() {
+        assert_eq!(universal_newlines("a\r\nb\rc\nd\r\r\ne\r"), "a\nb\nc\nd\n\ne\n");
+        assert_eq!(universal_newlines("no break"), "no break");
     }
 
     #[test]
