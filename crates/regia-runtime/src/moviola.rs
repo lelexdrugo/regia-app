@@ -10,7 +10,6 @@ use regia_core::{EntryError, Registry, Tracker, TrackerBinding, TrackerConfigV1,
 use regia_git::Git;
 use regia_github::GhTracker;
 use regia_identity::state_dir;
-use serde_json::Value;
 
 use crate::dossier_dir;
 
@@ -46,7 +45,7 @@ pub fn registry_projects(tracker: &impl Tracker, binding: &TrackerBinding, owner
             continue;
         }
         let entry = project_entry(&task, &Registry::parse(&body), owner)?;
-        let text = |key: &str| entry.get(key).and_then(Value::as_str).filter(|value| !value.is_empty()).map(str::to_owned);
+        let text = |key: &str| entry.get(key).and_then(|value| value.as_str()).filter(|value| !value.is_empty()).map(str::to_owned);
         let (Some(id), Some(folder)) = (text("id"), text("folder")) else { continue };
         if Path::new(&folder).is_dir() && !projects.iter().any(|project| project.id == id) {
             projects.push(Project { id, folder: folder.into(), title: text("title") });

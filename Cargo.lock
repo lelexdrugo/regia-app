@@ -2992,7 +2992,6 @@ dependencies = [
  "regia-git",
  "regia-github",
  "regia-identity",
- "serde_json",
  "thiserror 2.0.21",
 ]
 

@@ -11,5 +11,4 @@ regia-core.workspace = true
 regia-git.workspace = true
 regia-github.workspace = true
 regia-identity.workspace = true
-serde_json.workspace = true
 thiserror.workspace = true
