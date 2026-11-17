@@ -235,19 +235,24 @@ impl LaunchSurface for Cli {
     fn launch(&self, request: &LaunchRequest) -> Result<Receipt, LaunchError> {
         let service = AgentService::known(request.service);
         let pin = self.pin(&service)?;
-        let steps = steps_folder(self.state.as_deref(), &request.label)?;
         let absolute = |path: &Path| AbsolutePath::new(path).map_err(|error| LaunchError::before(error.to_string()));
         // A `.cmd` takes arguments of a narrow alphabet only (threat model §3.6, rule 9), which is not
         // widened. The files of the launch are in the state folder and go as arguments; the child's folder
         // goes as its working folder, which codex uses when it has no `--cd`.
         let through_batch = request.service == ServiceId::Codex && pin.through_batch();
-        if through_batch && !absolute(&steps)?.fits_batch() {
-            return Err(LaunchError::before(format!(
-                "the state folder {} has characters that a .cmd does not receive in safety: choose another one with {}",
-                steps.display(),
-                prototype_env_var("RUNTIME")
-            )));
+        if through_batch {
+            // Before the steps folder is created: the refusal leaves nothing behind. What the state folder
+            // adds to it (`passi`, the project, the file names) is inside the alphabet.
+            let state = state_folder(self.state.as_deref())?;
+            if !absolute(&state)?.fits_batch() {
+                return Err(LaunchError::before(format!(
+                    "the state folder {} has characters that a .cmd does not receive in safety: choose another one with {}",
+                    state.display(),
+                    prototype_env_var("RUNTIME")
+                )));
+            }
         }
+        let steps = steps_folder(self.state.as_deref(), &request.label)?;
         let files = Files::reserve(&steps, &request.prompt)?;
         let args = match request.service {
             ServiceId::Claude => claude::print(request.model.as_ref(), request.effort),

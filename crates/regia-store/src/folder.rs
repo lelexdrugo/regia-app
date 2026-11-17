@@ -46,8 +46,9 @@ pub(crate) fn create(folder: &Path) -> Result<(), StoreError> {
 }
 
 /// The temporary folder, which Storage Sense empties: Python's `tempfile.gettempdir()`, the first of
-/// its candidates that is a folder, else the current one. Python also checks that it can create a file
-/// there; this does not, so it can only refuse more.
+/// its candidates that is a folder, else the current one. Python also skips a candidate it cannot create
+/// a file in; this does not, so when the first candidate is a folder nobody can write to the two name
+/// different folders, and this one is then the one that refuses less.
 ///
 /// This is the one place the rule lives: a state folder is refused inside it (see [`is_within`]), by the
 /// store and by the launch surfaces alike, so the two cannot name different folders.

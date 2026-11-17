@@ -339,7 +339,7 @@ fn codex_through_a_cmd_shim_gets_a_folder_with_spaces_as_its_working_folder() {
 }
 
 /// V11 of #460, the limit that stays: a state folder the alphabet does not take cannot carry codex's
-/// `--output-last-message` through a `.cmd`, so the launch refuses before anything starts or is written.
+/// `--output-last-message` through a `.cmd`, so the launch refuses before anything starts, is written or is created.
 #[cfg(windows)]
 #[test]
 fn codex_through_a_cmd_shim_refuses_a_state_folder_outside_the_alphabet_before_any_effect() {
@@ -354,7 +354,7 @@ fn codex_through_a_cmd_shim_refuses_a_state_folder_outside_the_alphabet_before_a
     assert!(error.before_effect(), "{error}");
     assert!(error.to_string().contains(".cmd") && error.to_string().contains("RUNTIME"), "{error}");
     assert!(!trial.started("codex"));
-    assert!(fs::read_dir(state.join("passi").join("trial")).unwrap().next().is_none(), "nothing was written");
+    assert!(!state.exists(), "nothing was created, not even the folder");
     // Claude has no such limit: its prompt is on stdin and it names no file.
     let claude = trial.cli().with_state(state).launch(&trial.request(ServiceId::Claude));
     assert!(claude.is_ok(), "{claude:?}");
