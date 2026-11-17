@@ -12,6 +12,7 @@ targets = [
 # Every advisory on the graph fails, unless it is accepted here with its reason.
 ignore = [
     { id = "RUSTSEC-2024-0370", reason = "proc-macro-error is unmaintained: a build-time macro of gtk3-macros, under Tauri's GTK 3 webview on Linux, which has no maintained replacement" },
+    { id = "RUSTSEC-2026-0543", reason = "chrono is unmaintained, not vulnerable, and has no safe upgrade: a direct workspace dependency of the regia crates only (clock, serde, std); the move to jiff or time is regia-tasks#669, which removes this line" },
 ]
 
 [licenses]
