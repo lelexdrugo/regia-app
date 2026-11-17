@@ -131,9 +131,14 @@ impl GhTracker {
     }
 }
 
-/// The `data` of an envelope, for the writes. A non-empty array of `errors` is the tracker's refusal, their
-/// messages joined by `; `; an empty one, or anything else, is not (the reads take `errors` otherwise).
+/// The `data` of an envelope, for the writes. An envelope that is not an object (`[]`, a number, a string,
+/// `true`, `null`) is a bad response with the envelope as JSON, as the reads take it, and is looked at before
+/// anything else: indexing it by `data` would panic. A non-empty array of `errors` is the tracker's refusal,
+/// their messages joined by `; `; an empty one, or anything else, is not (the reads take `errors` otherwise).
 fn answer(mut envelope: Value) -> Result<Value, TrackerError> {
+    if !envelope.is_object() {
+        return Err(TrackerError::BadResponse(envelope.to_string()));
+    }
     if let Some(errors) = envelope.get("errors").and_then(Value::as_array).filter(|errors| !errors.is_empty()) {
         let messages: Vec<&str> = errors.iter().map(|error| error["message"].as_str().unwrap_or_default()).collect();
         return Err(TrackerError::Refused(messages.join("; ")));
@@ -224,6 +229,50 @@ mod tests {
         assert_eq!(answer(json!({"data": {"x": 1}, "errors": null})).unwrap(), json!({"x": 1}));
         assert_eq!(answer(json!({"data": {"x": 1}, "errors": {"message": "m"}})).unwrap(), json!({"x": 1}));
         assert_eq!(answer(json!({"data": {"x": 1}})).unwrap(), json!({"x": 1}));
+    }
+
+    /// #671: an envelope that is not an object is a bad response with the envelope as JSON, not a panic of the
+    /// mutable index on `data`. One test for each shape, so that a panic names it; the reads' side of the same
+    /// shapes is `lib.rs`'s test of `data_of`.
+    fn bad_response(envelope: Value, text: &str) {
+        let write = answer(envelope.clone());
+        assert!(matches!(&write, Err(TrackerError::BadResponse(said)) if said == text), "{envelope}: {write:?}");
+    }
+
+    #[test]
+    fn a_write_answers_an_array_envelope_as_a_bad_response() {
+        bad_response(json!([]), "[]");
+        bad_response(json!([{"message": "m"}]), r#"[{"message":"m"}]"#);
+    }
+
+    #[test]
+    fn a_write_answers_a_number_envelope_as_a_bad_response() {
+        bad_response(json!(3), "3");
+    }
+
+    #[test]
+    fn a_write_answers_a_string_envelope_as_a_bad_response() {
+        bad_response(json!("x"), r#""x""#);
+    }
+
+    #[test]
+    fn a_write_answers_a_boolean_envelope_as_a_bad_response() {
+        bad_response(json!(true), "true");
+    }
+
+    /// `null` did not panic (the index makes it an object), but it was a success with no data: a mutation
+    /// would have taken it as done.
+    #[test]
+    fn a_write_answers_a_null_envelope_as_a_bad_response() {
+        bad_response(Value::Null, "null");
+    }
+
+    /// An envelope that is an object, with no `data`, stays what it was: `null`, which `parse` refuses where a
+    /// caller expects a type.
+    #[test]
+    fn an_object_without_data_is_still_null() {
+        assert_eq!(answer(json!({})).unwrap(), Value::Null);
+        assert_eq!(answer(json!({"errors": []})).unwrap(), Value::Null);
     }
 
     /// The two sides give the same envelope their own classification and their own text: where they part is
