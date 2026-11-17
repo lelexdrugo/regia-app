@@ -320,8 +320,16 @@ impl Launch {
         let output = File::create(log).map_err(failed)?;
         let errors = output.try_clone().map_err(failed)?;
         command.stdin(input).stdout(output).stderr(errors);
-        let child = tree::spawn_detached(&mut command).map_err(failed)?;
-        let tree = tree::Tree::adopt_detached(&child).ok();
+        let mut child = tree::spawn_detached(&mut command).map_err(failed)?;
+        let tree = match tree::Tree::adopt_detached(&child) {
+            Ok(tree) => tree,
+            Err(source) => {
+                // Not started (on Windows it is still suspended): nothing is left running.
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(failed(source));
+            }
+        };
         Ok(Detached { child, tree, label })
     }
 }
