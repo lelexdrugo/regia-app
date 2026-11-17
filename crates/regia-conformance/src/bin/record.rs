@@ -80,6 +80,10 @@ struct ScenarioIssue {
     /// Recent comments, which the checks read.
     #[serde(default)]
     comments: Vec<ScenarioComment>,
+    /// The instant of the last edit of the body, which `task show --since` reads (#656); without it the
+    /// body was never edited.
+    #[serde(default)]
+    last_edited_at: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -270,7 +274,7 @@ fn issues_by_number(scenario: &Scenario) -> Map<String, Value> {
                 "subIssues": {"totalCount": issue.sub_total.unwrap_or(issue.sub.len() as u64)},
                 "comments": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": comments},
                 // `task show --since` asks it (#557): a body never edited has none.
-                "lastEditedAt": null,
+                "lastEditedAt": issue.last_edited_at,
             });
             (issue.number.to_string(), entry)
         })

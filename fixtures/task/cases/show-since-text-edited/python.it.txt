@@ -1,0 +1,11 @@
+#3    [Approvato] a task edited after the since  (pronto; padre #1)
+progetto: alpha  ·  issue: open  ·  https://tracker.invalid/issues/3
+
+A spec, edited.
+
+! corpo modificato dopo 2026-01-08T00:00:00Z: 2026-01-09T10:00:00Z
+
+── commenti dal 2026-01-08T00:00:00Z: 1 ──
+
+[2026-01-09 12:00Z · titolare] https://tracker.invalid/issues/3#issuecomment-9301
+A comment after the since.

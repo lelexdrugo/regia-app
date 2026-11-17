@@ -44,6 +44,8 @@ const BLOCKERS_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:Strin
 const COMMENTS_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
   comments(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{databaseId createdAt url body}}}}}"#;
 
+const EDITED_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){issue(number:$n){lastEditedAt}}}"#;
+
 const SUB_ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
   subIssues(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{number state}}}}}"#;
 
@@ -186,6 +188,11 @@ impl Tracker for GhTracker {
         }
     }
 
+    fn body_edited_at(&self, number: u64) -> Result<Option<Option<String>>, TrackerError> {
+        let data: EditedData = self.graphql(EDITED_QUERY, Some(number), None)?;
+        Ok(data.repository.issue.map(|issue| issue.last_edited_at))
+    }
+
     fn status_histories(&self, label: &str, since: DateTime<Utc>) -> Result<Vec<StatusHistory>, TrackerError> {
         self.read_status_histories(label, since)
     }
@@ -284,6 +291,22 @@ struct CommentNode {
     created_at: String,
     url: String,
     body: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct EditedData {
+    repository: EditedRepository,
+}
+
+#[derive(Deserialize)]
+struct EditedRepository {
+    issue: Option<EditedIssue>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EditedIssue {
+    last_edited_at: Option<String>,
 }
 
 /// The answer of the walk that only reads where the pages end.

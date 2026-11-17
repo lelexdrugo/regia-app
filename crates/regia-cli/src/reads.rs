@@ -5,7 +5,7 @@
 
 use clap::Parser;
 use regia_core::{
-    GraphOrder, IssueState, ListOptions, ListedTask, Registry, ShownTask, Status, Task, Tracker, TrackerBinding, TrackerConfigV1,
+    BodyEdit, GraphOrder, IssueState, ListOptions, ListedTask, Registry, ShownTask, Status, Task, Tracker, TrackerBinding, TrackerConfigV1,
     UNSET_STATUS, comments, parse_instant, project_entry, task_list,
 };
 use regia_github::GhTracker;
@@ -174,7 +174,18 @@ fn task_show(args: TaskShowArgs) -> Result<u8, String> {
     } else {
         None
     };
-    let shown = ShownTask { task, body, comments };
+    // Only with `--since`, as the prototype asks it: one more call, after the comments.
+    let body_edit = if let Some(given) = &args.since {
+        let edited = tracker.body_edited_at(task.number).map_err(|error| error.to_string())?.ok_or_else(|| format!("issue #{number} not found"))?;
+        let after = match &edited {
+            Some(edited) => parse_instant(edited).map_err(|error| error.to_string())? > parse_instant(given).map_err(|error| error.to_string())?,
+            None => false,
+        };
+        Some(BodyEdit { body_edited_at: edited, body_edited_after_since: after })
+    } else {
+        None
+    };
+    let shown = ShownTask { task, body, comments, body_edit };
     if args.json {
         print_json(&serde_json::to_value(&shown).map_err(|error| error.to_string())?)?;
         return Ok(0);
@@ -191,6 +202,12 @@ fn task_show(args: TaskShowArgs) -> Result<u8, String> {
     }
     if !args.short {
         println!("\n{}", regia_core::pystr::strip(&shown.body));
+    }
+    if let (Some(edit), Some(given)) = (&shown.body_edit, &args.since)
+        && edit.body_edited_after_since
+        && let Some(edited) = &edit.body_edited_at
+    {
+        println!("\n! body edited after {given}: {edited}");
     }
     if let Some(comments) = &shown.comments {
         let after = since.map(|since| format!(" since {since}")).unwrap_or_default();

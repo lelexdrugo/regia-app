@@ -59,4 +59,15 @@ pub struct ShownTask {
     pub body: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub comments: Option<Vec<Comment>>,
+    /// Only with `--since` (#557): when the body was last edited and whether that is after `--since`.
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub body_edit: Option<BodyEdit>,
+}
+
+/// The two keys `task show --since` adds: the instant of the last edit of the body, `null` for one never
+/// edited, and whether it is after the instant given.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct BodyEdit {
+    pub body_edited_at: Option<String>,
+    pub body_edited_after_since: bool,
 }
