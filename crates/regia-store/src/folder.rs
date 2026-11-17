@@ -45,9 +45,14 @@ pub(crate) fn create(folder: &Path) -> Result<(), StoreError> {
     fs::create_dir_all(folder).map_err(|source| StoreError::CreateFolder { folder: folder.to_path_buf(), source })
 }
 
-/// Python's `tempfile.gettempdir()`: the first of its candidates that is a folder, else the current one.
-/// Python also checks that it can create a file there; this does not, so it can only refuse more.
-fn temporary_folder() -> PathBuf {
+/// The temporary folder, which Storage Sense empties: Python's `tempfile.gettempdir()`, the first of
+/// its candidates that is a folder, else the current one. Python also checks that it can create a file
+/// there; this does not, so it can only refuse more.
+///
+/// This is the one place the rule lives: a state folder is refused inside it (see [`is_within`]), by the
+/// store and by the launch surfaces alike, so the two cannot name different folders.
+#[must_use]
+pub fn temporary_folder() -> PathBuf {
     let mut candidates: Vec<PathBuf> = ["TMPDIR", "TEMP", "TMP"]
         .into_iter()
         .filter_map(env::var_os)

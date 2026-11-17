@@ -34,7 +34,7 @@ pub use clock::{Clock, ManualClock, SystemClock};
 pub use cursor::CursorName;
 pub use db::{BUSY_WAIT, Row, SqliteError};
 pub use declarations::{Declaration, DeclarationError, Declared, SessionIds, declarations_folder, step_role, write_declaration};
-pub use folder::{database_name, default_folder, is_within};
+pub use folder::{database_name, default_folder, is_within, temporary_folder};
 pub use lease::{LeaseEntry, TaskNumber};
 pub use lock::{LockOutcome, LockState, LockStatus, LockView, ViewField};
 pub use state_file::{read_state_file, remove_state_file, write_state_file};
