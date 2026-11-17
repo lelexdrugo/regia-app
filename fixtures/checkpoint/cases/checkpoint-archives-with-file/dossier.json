@@ -1,0 +1,11 @@
+{
+  "log": [
+    "b2cceb4f6eedc3a177816fd4c88436546ccb39eb alpha: checkpoint 2026-01-10T09:00:00Z",
+    "e6d73df078bbe38278dbc3e82ea2783f4a8ac6a1 fixture: the dossier before the run"
+  ],
+  "remote": [
+    "b2cceb4f6eedc3a177816fd4c88436546ccb39eb alpha: checkpoint 2026-01-10T09:00:00Z",
+    "e6d73df078bbe38278dbc3e82ea2783f4a8ac6a1 fixture: the dossier before the run"
+  ],
+  "status": []
+}

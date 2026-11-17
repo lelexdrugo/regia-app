@@ -1,0 +1,32 @@
+{
+  "_note": "Synthetic. A new archive, not yet tracked, goes in. What only looks like one stays out: a folder with the name of an archive, an archive in a subfolder of the decisions' folder, one in the project's folder, a month with one digit.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n"
+    },
+    "changes": {
+      ".regia/decisioni-2026-02.md": "Decisions of February, a new archive.\n",
+      ".regia/decisioni-2026-03.md/part.md": "A folder that has the name of an archive.\n",
+      ".regia/old/decisioni-2026-04.md": "An archive in a subfolder.\n",
+      "decisioni-2026-05.md": "An archive outside the decisions' folder.\n",
+      ".regia/decisioni-2026-6.md": "A month with one digit.\n"
+    }
+  }
+}
