@@ -3,9 +3,15 @@
 //! its id, and for the checks the recent comments and the closed issues.
 //! The fixture is named by the environment (the prototype's runs) or by a file beside the fake (the
 //! product's, which do not pass those variables on). Without either it refuses to run, so it can
-//! never pass for the real tool by accident. It returns only what the query selects, and refuses a
-//! query that drops the arguments the brief relies on, so a fixture richer than the query cannot
-//! hide a broken query.
+//! never pass for the real tool by accident. It returns only what the query selects, so a fixture richer
+//! than the query cannot hide a field the query forgot.
+//!
+//! It checks the shape of the reads, and no more: that every connection a query pages through has the
+//! `first`, `last` and `after` the prototype's queries have, that each page selects `pageInfo{hasNextPage
+//! endCursor}`, that a fragment is on a type the prototype uses, and that the list of issues has its
+//! `states` and its order (`check_connections` in the library, with its table). It does not run GraphQL: it
+//! does not cut a fixture's list at `first:N`, it does not know the real schema, and a field of another
+//! name that the fixture happens to hold is an answer. The cursor of a request is read as `page-<n>`.
 //!
 //! It takes the request in both forms: `-f`/`-F` pairs, as the prototype sends it, and the whole
 //! request on stdin with `--input=-`, as the product does, where `n` must be a number.
@@ -198,6 +204,8 @@ fn answer(args: &[String]) -> Result<Reply, String> {
         let projected = project_query(&query, data)?;
         return serde_json::to_string(&json!({ "data": projected })).map(Reply::Out).map_err(|error| error.to_string());
     }
+    // The pagination of every connection, the cursors and the types of the fragments, as the prototype's.
+    regia_conformance::check_connections(&query)?;
     let mut number = None;
     let mut after = None;
     let mut node = None;

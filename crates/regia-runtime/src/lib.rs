@@ -57,7 +57,8 @@ pub fn project_folder(project: &str) -> Result<String, FolderError> {
 
 pub fn load_brief(options: &BriefOptions) -> Result<Brief, BriefError> {
     // `REGIA_TODAY` makes the brief count due dates from another day: the conformance fixtures are recorded
-    // on a fixed one. A value that is not a date is an error, never the clock in its place.
+    // on a fixed one. A value that is not a date is an error, never the clock in its place. Without it the
+    // day is the system's clock in the system's zone, and `TZ` does not change it on Windows (`BriefOptions::today`).
     let mut options = options.clone();
     let name = env_var("TODAY");
     if let (None, Ok(value)) = (options.today, std::env::var(&name)) {

@@ -13,7 +13,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
+    Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, foreign_urls, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
     place_args, prepare_case_state, prepare_dossier, read_json, state_rows, unplace_json, unplace_text, writes_of_run, written_files,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
@@ -481,9 +481,10 @@ fn main() {
         let recorded = [text.as_str(), stderr.as_str(), &serde_json::to_string(&writes).expect("JSON")].concat();
         // The prototype builds the URL of an issue it creates, and of a repo, from the tracker's owner:
         // those of the fixture's owner are synthetic too.
-        let urls = recorded.matches("https://").count() + recorded.matches("http://").count();
-        let synthetic = recorded.matches(URL_PREFIX).count() + recorded.matches(&owner_url).count();
-        assert_eq!(synthetic, urls, "{}: foreign URL", case.name);
+        // Any `scheme://` of any string counts, whichever the key: a title can hold one as well (#439/D6).
+        let urls = recorded.matches("://").count();
+        let foreign = foreign_urls(&recorded, &[URL_PREFIX, &owner_url]);
+        assert!(foreign.is_empty(), "{}: foreign URL {foreign:?}", case.name);
         // An error prints nothing on stdout, even with `--json`: the facade passes it as text, empty.
         let json = argv.first().is_some_and(|arg| arg == "--json") && table.has_output(&command) && !text.trim().is_empty();
         let parsed = json.then(|| serde_json::from_str::<Value>(&text).expect("the prototype printed JSON"));
@@ -505,6 +506,14 @@ fn main() {
             files
         });
         replace(&case.dir.join("written.json"), written);
+        // What the case keeps on disk, its inputs too: a scenario's title that no output prints is in the
+        // responses, and goes wherever the repo goes.
+        for entry in fs::read_dir(&case.dir).expect("the case's folder") {
+            let path = entry.expect("an entry").path();
+            let text = fs::read_to_string(&path).unwrap_or_default();
+            let foreign = foreign_urls(&text, &[URL_PREFIX, &owner_url]);
+            assert!(foreign.is_empty(), "{}: {} holds a foreign URL {foreign:?}", case.name, path.display());
+        }
         println!(
             "{}/{}: exit {}, {} calls to the fake gh, {} writes, {urls} URLs, all synthetic",
             case.family,

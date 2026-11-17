@@ -1,0 +1,3547 @@
+{
+  "all_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 1,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "root, ready: five tasks downstream, of which Done and Discarded still count in the total",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/1"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 2,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Fatto",
+                        "optionId": "opt-f6"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Fatto",
+                          "optionId": "opt-f6"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "downstream of 1, Done but still open: counted in the total, not in the work",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/2"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 3,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Scartato",
+                        "optionId": "opt-g7"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Scartato",
+                          "optionId": "opt-g7"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "downstream of 1, Discarded but still open: counted in the total, not in the work",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/3"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 4,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "downstream of 1, approved: counted in both",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/4"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 5,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
+                          "optionId": "opt-a1"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "downstream of 1, Inbox: counted in the total only",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/5"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 6,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "two project labels and two maturity labels: the first of each, in the labels' order",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/6"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-1",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "maturità:pronto"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  },
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 7,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "the same two of each, the other way round",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/7"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 201,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 202,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 203,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 204,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 205,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 206,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 207,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 208,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 209,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 210,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 211,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 212,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 213,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 214,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 215,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 216,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 217,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 218,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 219,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 220,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 20
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 8,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "twenty blockers, all the list reads: no call for the rest",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/8"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 301,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 302,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 303,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 304,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 305,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 306,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 307,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 308,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 309,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 310,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 311,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 312,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 313,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 314,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 315,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 316,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 317,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 318,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 319,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 320,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 21
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 9,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "twenty-one blockers: the twenty-first is read in a page of its own",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/9"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 10,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 401,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 402,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 403,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 404,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 405,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 406,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 407,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 408,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 409,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 410,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 411,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 412,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 413,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 414,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 415,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 416,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 417,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 418,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 419,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 420,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 421,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 422,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 423,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 424,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 425,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 426,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 427,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 428,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 429,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 430,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 431,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 432,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 433,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 434,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 435,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 436,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 437,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 438,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 439,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 440,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 441,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 442,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 443,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 444,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 445,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 446,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 447,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 448,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 449,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 450,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 50
+              },
+              "title": "fifty sub-issues, all the list reads: no call for the rest",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/10"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 11,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 501,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 502,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 503,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 504,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 505,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 506,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 507,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 508,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 509,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 510,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 511,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 512,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 513,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 514,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 515,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 516,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 517,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 518,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 519,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 520,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 521,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 522,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 523,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 524,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 525,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 526,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 527,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 528,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 529,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 530,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 531,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 532,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 533,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 534,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 535,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 536,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 537,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 538,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 539,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 540,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 541,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 542,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 543,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 544,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 545,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 546,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 547,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 548,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 549,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 550,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 51
+              },
+              "title": "fifty-one sub-issues: the fifty-first is read in a page of its own",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/11"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "blocker_pages": {
+    "9": [
+      {
+        "repository": {
+          "issue": {
+            "blockedBy": {
+              "nodes": [
+                {
+                  "number": 321,
+                  "state": "CLOSED"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": null,
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "closed_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "comment_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "issue_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 1,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "root, ready: five tasks downstream, of which Done and Discarded still count in the total",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/1"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 2,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Fatto",
+                        "optionId": "opt-f6"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Fatto",
+                          "optionId": "opt-f6"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "downstream of 1, Done but still open: counted in the total, not in the work",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/2"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 3,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Scartato",
+                        "optionId": "opt-g7"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Scartato",
+                          "optionId": "opt-g7"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "downstream of 1, Discarded but still open: counted in the total, not in the work",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/3"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 4,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "downstream of 1, approved: counted in both",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/4"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 1,
+                    "state": "OPEN"
+                  }
+                ],
+                "totalCount": 1
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 5,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
+                          "optionId": "opt-a1"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "downstream of 1, Inbox: counted in the total only",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/5"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 6,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "two project labels and two maturity labels: the first of each, in the labels' order",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/6"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": "page-1",
+            "hasNextPage": true
+          }
+        }
+      }
+    },
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "maturità:pronto"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  },
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 7,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "the same two of each, the other way round",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/7"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 201,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 202,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 203,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 204,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 205,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 206,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 207,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 208,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 209,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 210,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 211,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 212,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 213,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 214,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 215,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 216,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 217,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 218,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 219,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 220,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 20
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 8,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "twenty blockers, all the list reads: no call for the rest",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/8"
+            },
+            {
+              "blockedBy": {
+                "nodes": [
+                  {
+                    "number": 301,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 302,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 303,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 304,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 305,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 306,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 307,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 308,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 309,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 310,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 311,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 312,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 313,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 314,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 315,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 316,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 317,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 318,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 319,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 320,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 21
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 9,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "twenty-one blockers: the twenty-first is read in a page of its own",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/9"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 10,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 401,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 402,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 403,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 404,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 405,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 406,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 407,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 408,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 409,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 410,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 411,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 412,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 413,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 414,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 415,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 416,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 417,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 418,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 419,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 420,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 421,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 422,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 423,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 424,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 425,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 426,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 427,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 428,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 429,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 430,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 431,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 432,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 433,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 434,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 435,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 436,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 437,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 438,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 439,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 440,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 441,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 442,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 443,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 444,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 445,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 446,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 447,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 448,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 449,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 450,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 50
+              },
+              "title": "fifty sub-issues, all the list reads: no call for the rest",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/10"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 11,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [
+                  {
+                    "number": 501,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 502,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 503,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 504,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 505,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 506,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 507,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 508,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 509,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 510,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 511,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 512,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 513,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 514,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 515,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 516,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 517,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 518,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 519,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 520,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 521,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 522,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 523,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 524,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 525,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 526,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 527,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 528,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 529,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 530,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 531,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 532,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 533,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 534,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 535,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 536,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 537,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 538,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 539,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 540,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 541,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 542,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 543,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 544,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 545,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 546,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 547,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 548,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 549,
+                    "state": "CLOSED"
+                  },
+                  {
+                    "number": 550,
+                    "state": "CLOSED"
+                  }
+                ],
+                "totalCount": 51
+              },
+              "title": "fifty-one sub-issues: the fifty-first is read in a page of its own",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/11"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "issues": {
+    "1": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_1",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "10": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_10",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 50
+      }
+    },
+    "11": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_11",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 51
+      }
+    },
+    "2": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_2",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "3": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_3",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "4": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_4",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "5": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_5",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "6": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_6",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "7": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_7",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "8": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_8",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "9": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_9",
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    }
+  },
+  "mutations": {
+    "addBlockedBy": {
+      "addBlockedBy": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "addProjectV2ItemById": {
+      "addProjectV2ItemById": {
+        "item": {
+          "id": "ITEM_ADDED"
+        }
+      }
+    },
+    "addSubIssue": {
+      "addSubIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "closeIssue": {
+      "closeIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "removeBlockedBy": {
+      "removeBlockedBy": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "reopenIssue": {
+      "reopenIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "updateProjectV2ItemFieldValue": {
+      "updateProjectV2ItemFieldValue": {
+        "projectV2Item": {
+          "id": "ITEM_WRITTEN"
+        }
+      }
+    }
+  },
+  "nodes": {
+    "ISSUE_1": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_1",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_10": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_10",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_11": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_11",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_2": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_2",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_3": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_3",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_4": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_4",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_5": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_5",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_6": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_6",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_7": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_7",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_8": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_8",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_9": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_9",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "PROJECT_FIXTURE": {
+      "fields": {
+        "nodes": [
+          {
+            "__typename": "ProjectV2Field",
+            "id": "FIELD_TITLE",
+            "name": "Title"
+          },
+          {
+            "__typename": "ProjectV2SingleSelectField",
+            "id": "FIELD_FIXTURE",
+            "name": "Status",
+            "options": [
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-c3",
+                "name": "Approvato"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-e5",
+                "name": "Decisione"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-f6",
+                "name": "Fatto"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-d4",
+                "name": "In corso"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-a1",
+                "name": "Inbox"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-b2",
+                "name": "Proposta"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-g7",
+                "name": "Scartato"
+              }
+            ]
+          }
+        ]
+      },
+      "items": {
+        "nodes": [
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 1
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_1"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 2
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_2"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 3
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_3"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  }
+                ]
+              },
+              "number": 4
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_4"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 5
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_5"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 6
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_6"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "maturità:pronto"
+                  },
+                  {
+                    "name": "maturità:abbozzo"
+                  },
+                  {
+                    "name": "progetto:beta"
+                  },
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 7
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_7"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 8
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_8"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 9
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_9"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 10
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_10"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 11
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_11"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      }
+    }
+  },
+  "sub_issue_pages": {
+    "11": [
+      {
+        "repository": {
+          "issue": {
+            "subIssues": {
+              "nodes": [
+                {
+                  "number": 551,
+                  "state": "CLOSED"
+                }
+              ],
+              "pageInfo": {
+                "endCursor": null,
+                "hasNextPage": false
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "views": {
+    "1": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "10": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "11": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "2": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "3": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "4": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:abbozzo"
+        }
+      ]
+    },
+    "5": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "6": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "progetto:beta"
+        },
+        {
+          "name": "maturità:abbozzo"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "7": {
+      "labels": [
+        {
+          "name": "maturità:pronto"
+        },
+        {
+          "name": "maturità:abbozzo"
+        },
+        {
+          "name": "progetto:beta"
+        },
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "8": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "9": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    }
+  }
+}

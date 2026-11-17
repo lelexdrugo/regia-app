@@ -4,7 +4,7 @@
 use std::fs;
 
 use regia_conformance::{
-    Case, bin_dir, fake_gh_for_run, fixture_for_rust, json_diff, prepare_state_dir, project_query, read_json, regia_binary,
+    Case, SYNTHETIC_URLS, bin_dir, fake_gh_for_run, fixture_for_rust, foreign_urls, json_diff, prepare_state_dir, project_query, read_json, regia_binary,
     run_rust, take_not_ported, translate_python,
 };
 use regia_identity::env_var;
@@ -34,6 +34,10 @@ fn write_responses(name: &str, responses: &Value) -> std::path::PathBuf {
 #[test]
 fn rust_and_python_agree_on_every_recorded_case() {
     for case in Case::of_family("brief") {
+        // The case the product declares a difference on: `tests/brief_rules.rs` asserts both sides.
+        if case.name == "nostatus" {
+            continue;
+        }
         let diff = diff_of(&case);
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
     }
@@ -260,7 +264,11 @@ fn fixtures_are_synthetic() {
         for entry in fs::read_dir(&case.dir).unwrap() {
             let path = entry.unwrap().path();
             let file = path.file_name().unwrap().to_string_lossy().into_owned();
-            let mut text = fs::read_to_string(&path).unwrap().replace("https://github.com/example/", "");
+            let text = fs::read_to_string(&path).unwrap();
+            // Every URL of every string, whatever its key: a title or a body can hold one as well (#439/D6).
+            let foreign = foreign_urls(&text, &SYNTHETIC_URLS);
+            assert!(foreign.is_empty(), "{}/{file} names a host that is not synthetic: {foreign:?}", case.name);
+            let mut text = text.replace("https://github.com/example/", "");
             if case.command_name() == "init" && file == "python.it.json" {
                 text = text.replace("\"repo\": \"regia-tasks\"", "");
             }
@@ -269,4 +277,22 @@ fn fixtures_are_synthetic() {
             }
         }
     }
+}
+
+/// The scan of the URLs sees one in a title, in a key and with any scheme, as `record` and the test above use
+/// it; the check it replaced looked at the values of the key `url` only (#439/D6).
+#[test]
+fn the_url_scan_sees_a_foreign_host_wherever_it_is() {
+    let allowed = ["https://tracker.invalid/"];
+    let title = r#"{"title": "see https://private.example/document now", "url": "https://tracker.invalid/issues/1"}"#;
+    assert_eq!(foreign_urls(title, &allowed), ["https://private.example/document"]);
+    assert_eq!(foreign_urls(r#"{"https://private.example/k": 1}"#, &allowed), ["https://private.example/k"]);
+    assert_eq!(foreign_urls("ssh://host.example/repo.git and (ftp://a.example/x)", &allowed), ["ssh://host.example/repo.git", "ftp://a.example/x"]);
+    assert!(foreign_urls(r#"{"url": "https://tracker.invalid/issues/1#issuecomment-2", "body": "no link"}"#, &allowed).is_empty());
+    // The check it replaced: only the values of the key `url`. It does not see the title.
+    let url_values_only = |text: &str| {
+        let value: Value = serde_json::from_str(text).unwrap();
+        value["url"].as_str().is_some_and(|url| !url.starts_with("https://tracker.invalid/"))
+    };
+    assert!(!url_values_only(title), "the old check saw it");
 }

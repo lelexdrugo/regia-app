@@ -797,6 +797,47 @@ pub fn regia_binary() -> PathBuf {
     bin_dir().join(format!("{}{}", regia_identity::BIN_NAME, env::consts::EXE_SUFFIX))
 }
 
+/// How `live-check` starts the Rust side, against the real tracker and the real clock. The prototype side
+/// has no way to be told the day, so this one must not be told it either: a `REGIA_TODAY` left in the
+/// environment would make the two sides count the due dates from different days and the diff would show
+/// the clock, not the code (#559, #435/V6). The engine is forced to the native one: with the dossier named
+/// the reads would go to the prototype, and this side has to be the Rust one.
+pub fn live_rust_launch(binary: &Path, args: &[String], dossier: &Path) -> Launch {
+    regia_exec::harness::launch(binary, args, dossier)
+        .env(&prototype_env_var("HOME"), dossier)
+        .env(&env_var("ENGINE"), "rust")
+        .without(&env_var("TODAY"))
+}
+
+/// Every `scheme://…` in `text` that does not start with one of the `allowed` prefixes. `text` is a whole
+/// file: the scan does not know keys or values, so a URL in a title, a body or a key counts like one in
+/// a field called `url` (#559, #439/D6). A URL ends at a blank, a quote, a bracket or a backslash.
+pub fn foreign_urls(text: &str, allowed: &[&str]) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut rest = text;
+    let mut consumed = 0;
+    while let Some(at) = rest.find("://") {
+        let scheme_start = text[..consumed + at]
+            .rfind(|c: char| !(c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.')))
+            .map_or(0, |i| i + 1);
+        let after = consumed + at + 3;
+        let end = text[after..]
+            .find(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '<' | '>' | ')' | ']' | '}' | '\\' | ',' | '`'))
+            .map_or(text.len(), |i| after + i);
+        let url = &text[scheme_start..end];
+        if !allowed.iter().any(|prefix| url.starts_with(prefix)) {
+            out.push(url.to_owned());
+        }
+        consumed = end.max(after);
+        rest = &text[consumed..];
+    }
+    out
+}
+
+/// The synthetic hosts a fixture may name: the invented tracker, and the URLs the prototype builds on
+/// GitHub from the fixture's owner (`task new`, the origin of `project new`).
+pub const SYNTHETIC_URLS: [&str; 2] = ["https://tracker.invalid/", "https://github.com/example/"];
+
 /// Runs the real binary on `responses` and returns its parsed stdout. The fake's log proves that the
 /// copy named by its absolute path answered.
 pub fn run_rust(label: &str, args: &[String], responses: &Path) -> Result<Value, String> {
@@ -1115,6 +1156,8 @@ struct Selection {
     alias: Option<String>,
     /// A `name: "…"` argument written in the query, for the fields that pick a value by name.
     by_name: Option<String>,
+    /// The field's arguments, without blanks outside strings: `first:100,after:$after`.
+    arguments: String,
     fragment: bool,
     children: Vec<Selection>,
 }
@@ -1193,7 +1236,7 @@ fn parse_selection(text: &[char], at: &mut usize) -> Result<Vec<Selection>, Stri
                 }
                 *at += 1;
                 let children = parse_selection(text, at)?;
-                out.push(Selection { name, alias: None, by_name: None, fragment: true, children });
+                out.push(Selection { name, alias: None, by_name: None, arguments: String::new(), fragment: true, children });
             }
             Some(_) => {
                 let mut name = read_name(text, at);
@@ -1212,8 +1255,11 @@ fn parse_selection(text: &[char], at: &mut usize) -> Result<Vec<Selection>, Stri
                     skip_blank(text, at);
                 }
                 let mut by_name = None;
+                let mut arguments = String::new();
                 if text.get(*at) == Some(&'(') {
-                    by_name = name_argument(&skip_arguments(text, at)?);
+                    let written = skip_arguments(text, at)?;
+                    by_name = name_argument(&written);
+                    arguments = compact(&written);
                     skip_blank(text, at);
                 }
                 let mut children = Vec::new();
@@ -1221,7 +1267,7 @@ fn parse_selection(text: &[char], at: &mut usize) -> Result<Vec<Selection>, Stri
                     *at += 1;
                     children = parse_selection(text, at)?;
                 }
-                out.push(Selection { name, alias, by_name, fragment: false, children });
+                out.push(Selection { name, alias, by_name, arguments, fragment: false, children });
             }
         }
     }
@@ -1266,9 +1312,8 @@ fn project(selections: &[Selection], value: &Value, optional: bool) -> Result<Va
     }
 }
 
-/// What a GraphQL server would return for `query` on `value`: only the selected fields, and an error
-/// on a field that does not exist.
-pub fn project_query(query: &str, value: &Value) -> Result<Value, String> {
+/// The selection set of a query's root, after its keyword and its variables.
+fn parse_root(query: &str) -> Result<Vec<Selection>, String> {
     let text: Vec<char> = query.chars().collect();
     let mut at = 0;
     skip_blank(&text, &mut at);
@@ -1288,7 +1333,132 @@ pub fn project_query(query: &str, value: &Value) -> Result<Value, String> {
         return Err("the query has no selection set".to_owned());
     }
     at += 1;
-    project(&parse_selection(&text, &mut at)?, value, false)
+    parse_selection(&text, &mut at)
+}
+
+/// What a GraphQL server would return for `query` on `value`: only the selected fields, and an error
+/// on a field that does not exist.
+pub fn project_query(query: &str, value: &Value) -> Result<Value, String> {
+    project(&parse_root(query)?, value, false)
+}
+
+/// The pagination the prototype's queries ask for, by the path of the connection from the root of the
+/// query (the names of the fields, with fragments and aliases left out), and what each path may carry: the
+/// arguments `first`, `last` and `after`, written as the query writes them. A connection with one of those
+/// arguments that is not here is refused, and so is one with other values: a query that reads one
+/// `projectItems` where the prototype reads five would pass a fixture of one item, and so would one that
+/// drops its cursor (#559, #435/V4, #439/D2). Where the prototype and the product ask differently, each
+/// form is here with its reason.
+const CONNECTIONS: &[(&str, &[&str])] = &[
+    // The list of the issues, as the brief reads it, and the history of a label's Status.
+    ("repository.issues", &["first:100,after:$after"]),
+    ("repository.issues.nodes.labels", &["first:20"]),
+    ("repository.issues.nodes.subIssues", &["first:50"]),
+    ("repository.issues.nodes.blockedBy", &["first:20"]),
+    // Both sides read the first five items of an issue: an issue in more Projects than that does not show
+    // its status. The limit is the prototype's, and shared (#439/D2).
+    ("repository.issues.nodes.projectItems", &["first:5"]),
+    // Only the product reads the fields of an item as a list, to find the status by its id; the prototype
+    // asks `fieldValueByName`.
+    ("repository.issues.nodes.projectItems.nodes.fieldValues", &["first:50"]),
+    ("repository.issues.nodes.timelineItems", &["first:50"]),
+    ("repository.issues.nodes.comments", &["last:20"]),
+    // One issue's connections, read a page at a time. The comments' cursor is `$c` in the prototype's
+    // `commenti_issue`, `$after` in the product's; `subIssues(first:1)` only counts.
+    ("repository.issue.blockedBy", &["first:100,after:$after"]),
+    ("repository.issue.subIssues", &["first:100,after:$after", "first:1"]),
+    ("repository.issue.comments", &["first:100,after:$after", "first:100,after:$c"]),
+    // `init`: the Projects of an owner, with their fields.
+    ("repositoryOwner.projectsV2", &["first:50,after:$after"]),
+    ("repositoryOwner.projectsV2.nodes.fields", &["first:50"]),
+    // A node by its id: an issue's items, or a Project's fields and items.
+    ("node.projectItems", &["first:10"]),
+    ("node.fields", &["first:50"]),
+    ("node.items", &["first:100,after:$after"]),
+    ("node.items.nodes.content.labels", &["first:30"]),
+];
+
+/// The types a fragment may be on, by the path of the field it is inside. A fragment on another type
+/// selects nothing on the real API, and the fake answers its fields anyway: without this a wrong type
+/// would pass.
+const FRAGMENTS: &[(&str, &[&str])] = &[
+    ("node", &["Issue", "ProjectV2"]),
+    ("repositoryOwner", &["User", "Organization"]),
+    ("repositoryOwner.projectsV2.nodes.fields.nodes", &["ProjectV2FieldCommon", "ProjectV2SingleSelectField"]),
+    ("node.fields.nodes", &["ProjectV2FieldCommon", "ProjectV2SingleSelectField"]),
+    ("repositoryOwner.projectsV2.nodes.field", &["ProjectV2SingleSelectField"]),
+    ("repository.issues.nodes.projectItems.nodes.fieldValues.nodes", &["ProjectV2ItemFieldSingleSelectValue"]),
+    ("repository.issues.nodes.projectItems.nodes.fieldValues.nodes.field", &["ProjectV2SingleSelectField"]),
+    ("repository.issues.nodes.projectItems.nodes.fieldValueByName", &["ProjectV2ItemFieldSingleSelectValue"]),
+    ("repository.issues.nodes.timelineItems.nodes", &["ProjectV2ItemStatusChangedEvent"]),
+    ("node.items.nodes.content", &["Issue"]),
+    ("node.items.nodes.fieldValueByName", &["ProjectV2ItemFieldSingleSelectValue"]),
+];
+
+/// `first`, `last` and `after` of `arguments`, in the order written, as `first:100,after:$after`. The rest
+/// (`states`, `orderBy`, `filterBy`) is checked where it matters.
+fn pagination_of(arguments: &str) -> String {
+    let (mut parts, mut depth, mut quoted, mut start) = (Vec::new(), 0, false, 0);
+    for (at, c) in arguments.char_indices() {
+        match c {
+            '"' => quoted = !quoted,
+            '{' | '[' | '(' if !quoted => depth += 1,
+            '}' | ']' | ')' if !quoted => depth -= 1,
+            ',' if !quoted && depth == 0 => {
+                parts.push(&arguments[start..at]);
+                start = at + 1;
+            }
+            _ => {}
+        }
+    }
+    parts.push(&arguments[start..]);
+    parts.retain(|part| ["first:", "last:", "after:"].iter().any(|key| part.starts_with(key)));
+    parts.join(",")
+}
+
+fn check_selections(selections: &[Selection], path: &str) -> Result<(), String> {
+    let join = |name: &str| if path.is_empty() { name.to_owned() } else { format!("{path}.{name}") };
+    for selection in selections {
+        if selection.fragment {
+            let allowed = FRAGMENTS.iter().find(|(at, _)| *at == path).map(|(_, types)| *types);
+            if !allowed.is_some_and(|types| types.contains(&selection.name.as_str())) {
+                return Err(format!("a fragment on {} inside `{path}`, which the prototype never has", selection.name));
+            }
+            check_selections(&selection.children, path)?;
+            continue;
+        }
+        let here = join(&selection.name);
+        let pagination = pagination_of(&selection.arguments);
+        if !pagination.is_empty() {
+            let allowed = CONNECTIONS.iter().find(|(at, _)| *at == here).map(|(_, forms)| *forms);
+            let Some(forms) = allowed else {
+                return Err(format!("`{here}({pagination})` is a connection the prototype does not read"));
+            };
+            if !forms.contains(&pagination.as_str()) {
+                return Err(format!("`{here}` is read with `{pagination}`, the prototype reads it with {forms:?}"));
+            }
+            // A page read needs to say whether there is another: without them the loop would stop at the first.
+            if pagination.contains("after:") {
+                let selected = |name: &str| {
+                    selection.children.iter().any(|child| {
+                        child.name == "pageInfo" && child.children.iter().any(|field| field.name == name)
+                    })
+                };
+                if !selected("hasNextPage") || !selected("endCursor") {
+                    return Err(format!("`{here}` has a cursor and does not select pageInfo{{hasNextPage endCursor}}"));
+                }
+            }
+        }
+        check_selections(&selection.children, &here)?;
+    }
+    Ok(())
+}
+
+/// Refuses a query that does not read the connections as the prototype does: another `first`, a cursor
+/// dropped, a connection the prototype never reads, a fragment on another type, a page that does not say
+/// whether it has a next one. For the fake `gh`, on every query that is not a mutation.
+pub fn check_connections(query: &str) -> Result<(), String> {
+    check_selections(&parse_root(query)?, "")
 }
 
 /// Differences as JSON paths. Object key order does not count; array order does, because the order

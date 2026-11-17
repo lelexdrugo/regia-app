@@ -60,7 +60,15 @@ pub struct Brief {
 #[derive(Debug, Clone, Default)]
 pub struct BriefOptions {
     pub project: Option<String>,
-    /// The day due dates count from. `None` is today's date on this machine.
+    /// The day due dates count from. `None` is today's date on this machine, from the system's zone. Two
+    /// ways to be told the day: `REGIA_TODAY`, read by `regia-runtime` before this (the conformance
+    /// fixtures are recorded on a fixed day, and `live-check` runs without it), and this field.
+    ///
+    /// **Declared difference from the prototype (#435/V6, #559):** the prototype's Python takes the zone from
+    /// the `TZ` variable, which on Windows chrono ignores. With `TZ` set to a zone other than the system's, the
+    /// two can count from different days between local midnights, and a due date of that day reads as due
+    /// today on one and overdue or due soon on the other. No test can show it: a day from the real clock
+    /// against fixtures of a fixed one gives the same brief in every zone.
     pub today: Option<NaiveDate>,
 }
 
