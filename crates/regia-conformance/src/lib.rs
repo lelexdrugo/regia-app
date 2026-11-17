@@ -1044,6 +1044,19 @@ pub fn run_case_on_dossier(label: &str, case: &Case, extra: impl FnOnce(&Path) -
     run_case_in(label, case, true, extra)
 }
 
+/// The variables a run of `case` in `state` is given, in the order they are set: the last one of a name wins.
+/// The case's session variables, then `extra`, then the stand-in for git. The stand-in comes after `extra`,
+/// which may set `PATH` itself (a live run puts the fake `gh` first on the machine's `PATH`, git included):
+/// it must have the last word, or the prototype finds the machine's git where the case says there is none (#666).
+fn case_env(case: &Case, state: &Path, extra: Vec<(String, OsString)>) -> Vec<(String, OsString)> {
+    let mut env: Vec<(String, OsString)> = case.spec.session_env().into_iter().map(|(name, value)| (name, value.into())).collect();
+    env.extend(extra);
+    if let Some(double) = case.spec.dossier.as_ref().and_then(|spec| spec.git_double) {
+        env.extend(git_double_env(state, double));
+    }
+    env
+}
+
 fn run_case_in(label: &str, case: &Case, build: bool, extra: impl FnOnce(&Path) -> Vec<(String, OsString)>) -> CliRun {
     let state = prepare_case_state(label, case);
     let responses = if case.responses_path().is_file() {
@@ -1057,19 +1070,8 @@ fn run_case_in(label: &str, case: &Case, build: bool, extra: impl FnOnce(&Path) 
     let args = dossier.as_ref().map_or_else(|| case.spec.args.clone(), |dossier| place_args(&case.spec.args, dossier));
     let launch = regia_exec::harness::launch(&regia_binary(), &args, &state);
     let (mut launch, _) = fixture_for_rust(launch, &responses, &state);
-    for (name, value) in case.spec.session_env() {
+    for (name, value) in case_env(case, &state, extra(&state)) {
         launch = launch.env(&name, value);
-    }
-    for (name, value) in extra(&state) {
-        launch = launch.env(&name, value);
-    }
-    // After `extra`, which may set `PATH` itself (a live run puts the fake `gh` first on the machine's
-    // `PATH`, git included): the stand-in for git must have the last word, or the prototype finds the
-    // machine's git where the case says there is none (#666).
-    if let Some(double) = case.spec.dossier.as_ref().and_then(|spec| spec.git_double) {
-        for (name, value) in git_double_env(&state, double) {
-            launch = launch.env(&name, value);
-        }
     }
     let output = launch.run().expect("run regia");
     let dossier_after = case.spec.dossier.as_ref().filter(|_| build).and_then(|spec| dossier_after(&state, spec));
@@ -1590,5 +1592,65 @@ fn diff_at(path: &str, left: &Value, right: &Value, out: &mut Vec<String>) {
         }
         (a, b) if a != b => out.push(format!("{path}: rust {a}, python {b}")),
         _ => {}
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn case_with(git_double: &str) -> Case {
+        let spec = json!({"args": ["checkpoint"], "dossier": {"git_double": git_double}});
+        Case {
+            family: "checkpoint".to_owned(),
+            name: format!("git-double-{git_double}"),
+            dir: PathBuf::new(),
+            spec: serde_json::from_value(spec).expect("a case with a stand-in for git"),
+        }
+    }
+
+    /// The value the run ends up with: the last entry of `name` wins, as in `Launch::env`.
+    fn last(env: &[(String, OsString)], name: &str) -> OsString {
+        env.iter().rev().find(|(key, _)| key == name).map(|(_, value)| value.clone()).unwrap_or_else(|| panic!("{name} is not set"))
+    }
+
+    /// `extra` setting `PATH`, as the live run of `tests/facade.rs` does, must not take the stand-in for git
+    /// away (#666/V2): the last `PATH` of the run is the one of the stand-in, whichever the double.
+    #[test]
+    fn the_stand_in_for_git_has_the_last_word_over_a_path_set_by_extra() {
+        let marker = PathBuf::from("a-folder-of-extra-only");
+        for (double, label) in [(GitDouble::Missing, "missing"), (GitDouble::Timeout, "timeout")] {
+            let case = case_with(label);
+            let state = prepare_case_state(&format!("env-{label}"), &case);
+            let extra = vec![("PATH".to_owned(), env::join_paths([marker.clone()]).expect("PATH"))];
+            let env = case_env(&case, &state, extra);
+
+            let path = last(&env, "PATH");
+            let folders: Vec<PathBuf> = env::split_paths(&path).collect();
+            assert!(!folders.contains(&marker), "{label}: the PATH of extra won: {path:?}");
+            assert!(folders.contains(&fake_gh_dir()), "{label}: the fake gh is not on PATH: {path:?}");
+            let fake_git_dir = state.join("fake-git");
+            match double {
+                GitDouble::Timeout => assert_eq!(folders.first(), Some(&fake_git_dir), "{label}: the fake git is not first: {path:?}"),
+                GitDouble::Missing => assert!(!folders.contains(&fake_git_dir), "{label}: a git folder where there is none: {path:?}"),
+            }
+            let git = fake_git_dir.join(format!("git{}", env::consts::EXE_SUFFIX));
+            assert_eq!(last(&env, &Program::Git.env_name()), OsString::from(git), "{label}: REGIA_GIT");
+        }
+    }
+
+    /// Without a stand-in, `extra` keeps its `PATH`: the order only matters for a case with a double.
+    #[test]
+    fn a_case_without_a_double_keeps_the_path_of_extra() {
+        let case = Case {
+            family: "checkpoint".to_owned(),
+            name: "no-double".to_owned(),
+            dir: PathBuf::new(),
+            spec: serde_json::from_value(json!({"args": ["checkpoint"]})).expect("a case"),
+        };
+        let state = prepare_case_state("env-no-double", &case);
+        let extra = vec![("PATH".to_owned(), OsString::from("only-extra"))];
+        let env = case_env(&case, &state, extra);
+        assert_eq!(last(&env, "PATH"), OsString::from("only-extra"));
     }
 }
