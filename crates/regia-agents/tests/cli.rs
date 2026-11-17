@@ -286,3 +286,76 @@ fn a_prompt_file_is_read_with_universal_newlines() {
     fs::write(trial.dir.join("latin1.md"), b"caff\xe8").unwrap();
     assert!(regia_agents::read_prompt_file(&trial.dir.join("latin1.md")).is_err(), "not UTF-8");
 }
+
+/// A folder with a space and an accent in its name, as two registered projects have.
+fn awkward_folder(trial: &Trial) -> PathBuf {
+    let folder = trial.dir.join("Tesi di dottorato è qui");
+    fs::create_dir_all(&folder).unwrap();
+    folder
+}
+
+/// V11 of #460, where the program is a real executable: the folder is an argument as the prototype
+/// gives it, spaces and all, and it is the child's working folder too.
+#[test]
+fn codex_as_an_executable_gets_a_folder_with_spaces_as_its_argument() {
+    let trial = Trial::new("awkward-exe");
+    let folder = awkward_folder(&trial);
+    let request = LaunchRequest::new(ServiceId::Codex, "trial", &folder, PROMPT).unwrap();
+    trial.launch(&request).expect("the launch");
+    let record = trial.record("codex", 0);
+    let argv = args(&record);
+    assert!(argv.contains(&format!("--cd={}", slashes(&request.folder.display().to_string()))), "{argv:?}");
+    assert!(same_place(Path::new(record["cwd"].as_str().unwrap()), &folder));
+}
+
+/// V11 of #460, on Windows, where codex is npm's `codex.cmd` and `cmd.exe` reads its arguments again:
+/// the alphabet of threat model §3.6 rule 9 does not take a space or an accent, and is not widened.
+/// The folder is the working folder of the child instead, which codex uses when it has no `--cd`; one
+/// that the alphabet takes stays an argument, as the prototype passes it.
+#[cfg(windows)]
+#[test]
+fn codex_through_a_cmd_shim_gets_a_folder_with_spaces_as_its_working_folder() {
+    let trial = Trial::new("awkward-shim");
+    let shim = trial.dir.join("shim");
+    fs::create_dir_all(&shim).unwrap();
+    let script = shim.join("codex.cmd");
+    fs::write(&script, format!("@\"{}\" %*\r\n", trial.bin.join(common::exe("codex")).display())).unwrap();
+    let cli = trial.cli().with_pin(ServiceId::Codex, regia_exec::Pin::at(Program::Codex, &script).unwrap());
+
+    let folder = awkward_folder(&trial);
+    let request = LaunchRequest::new(ServiceId::Codex, "trial", &folder, PROMPT).unwrap().effort(Some(Effort::High));
+    let receipt = cli.launch(&request).expect("the launch through the shim, from a folder with spaces");
+    assert_eq!(receipt.session.as_deref(), Some(SESSION));
+    let record = trial.record("codex", 0);
+    let argv = args(&record);
+    assert!(!argv.iter().any(|arg| arg.starts_with("--cd")), "{argv:?}");
+    assert!(argv.iter().any(|arg| arg.starts_with("--output-last-message=")) && argv.contains(&"--config=model_reasoning_effort=high".to_owned()), "{argv:?}");
+    assert!(same_place(Path::new(record["cwd"].as_str().unwrap()), &folder), "{record}");
+    assert_eq!(record["stdin"], PROMPT);
+
+    // A folder inside the alphabet is an argument still: the prototype's argv, byte for byte.
+    cli.launch(&trial.request(ServiceId::Codex)).expect("the second launch");
+    assert!(args(&trial.record("codex", 1)).iter().any(|arg| arg.starts_with("--cd=")));
+}
+
+/// V11 of #460, the limit that stays: a state folder the alphabet does not take cannot carry codex's
+/// `--output-last-message` through a `.cmd`, so the launch refuses before anything starts or is written.
+#[cfg(windows)]
+#[test]
+fn codex_through_a_cmd_shim_refuses_a_state_folder_outside_the_alphabet_before_any_effect() {
+    let trial = Trial::new("awkward-state");
+    let shim = trial.dir.join("shim");
+    fs::create_dir_all(&shim).unwrap();
+    let script = shim.join("codex.cmd");
+    fs::write(&script, format!("@\"{}\" %*\r\n", trial.bin.join(common::exe("codex")).display())).unwrap();
+    let state = trial.dir.join("state con spazi");
+    let cli = trial.cli().with_state(state.clone()).with_pin(ServiceId::Codex, regia_exec::Pin::at(Program::Codex, &script).unwrap());
+    let error = cli.launch(&trial.request(ServiceId::Codex)).unwrap_err();
+    assert!(error.before_effect(), "{error}");
+    assert!(error.to_string().contains(".cmd") && error.to_string().contains("RUNTIME"), "{error}");
+    assert!(!trial.started("codex"));
+    assert!(fs::read_dir(state.join("passi").join("trial")).unwrap().next().is_none(), "nothing was written");
+    // Claude has no such limit: its prompt is on stdin and it names no file.
+    let claude = trial.cli().with_state(state).launch(&trial.request(ServiceId::Claude));
+    assert!(claude.is_ok(), "{claude:?}");
+}

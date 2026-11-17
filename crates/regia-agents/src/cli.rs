@@ -235,12 +235,26 @@ impl LaunchSurface for Cli {
     fn launch(&self, request: &LaunchRequest) -> Result<Receipt, LaunchError> {
         let service = AgentService::known(request.service);
         let pin = self.pin(&service)?;
-        let files = Files::reserve(&steps_folder(self.state.as_deref(), &request.label)?, &request.prompt)?;
+        let steps = steps_folder(self.state.as_deref(), &request.label)?;
+        let absolute = |path: &Path| AbsolutePath::new(path).map_err(|error| LaunchError::before(error.to_string()));
+        // A `.cmd` takes arguments of a narrow alphabet only (threat model §3.6, rule 9), which is not
+        // widened. The files of the launch are in the state folder and go as arguments; the child's folder
+        // goes as its working folder, which codex uses when it has no `--cd`.
+        let through_batch = request.service == ServiceId::Codex && pin.through_batch();
+        if through_batch && !absolute(&steps)?.fits_batch() {
+            return Err(LaunchError::before(format!(
+                "the state folder {} has characters that a .cmd does not receive in safety: choose another one with {}",
+                steps.display(),
+                prototype_env_var("RUNTIME")
+            )));
+        }
+        let files = Files::reserve(&steps, &request.prompt)?;
         let args = match request.service {
             ServiceId::Claude => claude::print(request.model.as_ref(), request.effort),
             ServiceId::Codex => {
-                let absolute = |path: &Path| AbsolutePath::new(path).map_err(|error| LaunchError::before(error.to_string()));
-                codex::exec(&absolute(&request.folder)?, &absolute(&files.last)?, request.model.as_ref(), request.effort)
+                let folder = absolute(&request.folder)?;
+                let cd = (!through_batch || folder.fits_batch()).then_some(&folder);
+                codex::exec(cd, &absolute(&files.last)?, request.model.as_ref(), request.effort)
             }
         };
         let launch = self.environment(pin.launch(args, &request.folder), &service, request);

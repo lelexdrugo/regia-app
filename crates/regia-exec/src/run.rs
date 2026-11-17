@@ -398,7 +398,7 @@ pub(crate) fn new_command(path: &Path) -> Command {
 }
 
 /// A `.cmd` or `.bat` runs through `cmd.exe`, which reads its arguments again.
-fn batch(path: &Path) -> bool {
+pub(crate) fn batch(path: &Path) -> bool {
     cfg!(windows)
         && path
             .extension()
@@ -407,7 +407,7 @@ fn batch(path: &Path) -> bool {
 }
 
 /// The alphabet of threat model §3.6, rule 9. Rust refuses more on its own (CVE-2024-24576).
-fn safe_for_batch(arg: &OsStr) -> bool {
+pub(crate) fn safe_for_batch(arg: &OsStr) -> bool {
     arg.to_str().is_some_and(|arg| {
         !arg.is_empty() && arg.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | ':' | '/' | '=' | '-'))
     })

@@ -307,6 +307,13 @@ impl AbsolutePath {
         &self.text
     }
 
+    /// Whether a `.cmd` can receive this path as (part of) an argument: the alphabet of threat model §3.6,
+    /// rule 9, which a space, an accent and `%`, `&` or `^` are outside of. The rule is not widened for
+    /// a path; a caller that cannot pass it hands the program the folder in another way, or refuses.
+    pub fn fits_batch(&self) -> bool {
+        crate::run::safe_for_batch(std::ffi::OsStr::new(&self.text))
+    }
+
     pub fn as_path(&self) -> &Path {
         &self.path
     }
