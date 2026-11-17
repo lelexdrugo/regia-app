@@ -28,16 +28,24 @@ const BUILD_LIMITS: Limits = Limits {
     stderr: 8 << 20,
 };
 
-/// The folder of the running test's profile (`target/debug`): the test is `<it>/deps/<name>-<hash>`.
+/// The folder of the running test's profile (`target/debug`), where cargo leaves the binaries it builds. The
+/// test itself is below it, but not always in `deps/`: a newer cargo keeps it in `build/<package>/<hash>/out/`
+/// (CI on Linux). So the folder is found as the one inside the target folder, which holds `CACHEDIR.TAG`.
 fn profile_dir() -> PathBuf {
     let exe = env::current_exe().expect("current executable");
-    let deps = exe.parent().expect("the test's folder");
-    assert!(
-        deps.file_name().is_some_and(|name| name == "deps"),
-        "{} is not in a deps folder",
-        exe.display()
-    );
-    deps.parent().expect("the profile's folder").to_path_buf()
+    exe.ancestors()
+        .skip(1)
+        .find(|dir| {
+            dir.parent()
+                .is_some_and(|parent| parent.join("CACHEDIR.TAG").is_file())
+        })
+        .unwrap_or_else(|| {
+            panic!(
+                "no target folder (with a CACHEDIR.TAG) above {}",
+                exe.display()
+            )
+        })
+        .to_path_buf()
 }
 
 fn file_of(dir: &Path, bin: Bin) -> PathBuf {
