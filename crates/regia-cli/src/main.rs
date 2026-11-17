@@ -153,7 +153,7 @@ const NATIVE_THROUGH_THE_TABLE: [&str; 27] = [
 #[derive(clap::Args)]
 #[group(required = true, multiple = false)]
 struct PromptSource {
-    /// A UTF-8 file, sent byte for byte.
+    /// A UTF-8 file, read as the prototype reads it: its line ends are `\n`.
     #[arg(long)]
     prompt_file: Option<PathBuf>,
     #[arg(long)]
