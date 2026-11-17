@@ -2,9 +2,10 @@
 //! fourteen tests one by one, on folders under the build's own temporary folder. The prototype's sentence
 //! for what is not there is a catalog's, so here it is a value the test passes.
 //!
-//! Links: a symbolic link, or on Windows without the privilege none, as the prototype skips its test then;
-//! the prototype's junction needs a process, which a test here does not start. Its fourteenth test, that a
-//! result cannot be changed, holds by the type: `Reference` has no setter and no public field.
+//! Links: a symbolic link, or on Windows without the privilege a junction (`mklink /J`, which needs no
+//! privilege), as the prototype's `collega_cartella` does. A test is skipped only when neither can be made,
+//! and it says so. Its fourteenth test, that a result cannot be changed, holds by the type: `Reference`
+//! has no setter and no public field.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -36,12 +37,53 @@ fn strip(path: PathBuf) -> PathBuf {
     text.strip_prefix(r"\\?\").filter(|rest| rest.chars().nth(1) == Some(':')).map_or(path, PathBuf::from)
 }
 
-/// A link to a folder, or `false` when this machine does not allow one.
-fn link_folder(link: &Path, target: &Path) -> bool {
-    #[cfg(unix)]
-    return std::os::unix::fs::symlink(target, link).is_ok();
+/// What `link_folder` made.
+#[derive(Clone, Copy, Debug)]
+enum Link {
+    Symlink,
     #[cfg(windows)]
-    return std::os::windows::fs::symlink_dir(target, link).is_ok();
+    Junction,
+}
+
+/// A link to a folder: a symbolic link, or on Windows, when that is not allowed, a junction. `None` when
+/// this machine allows neither.
+fn link_folder(link: &Path, target: &Path) -> Option<Link> {
+    #[cfg(unix)]
+    return std::os::unix::fs::symlink(target, link).is_ok().then_some(Link::Symlink);
+    #[cfg(windows)]
+    {
+        if std::os::windows::fs::symlink_dir(target, link).is_ok() {
+            return Some(Link::Symlink);
+        }
+        junction(link, target).then_some(Link::Junction)
+    }
+}
+
+/// `cmd /C mklink /J <link> <target>`: a junction needs no privilege. Started through the harness, the only
+/// way a test starts a process (`only_regia_exec_starts_a_process`).
+#[cfg(windows)]
+fn junction(link: &Path, target: &Path) -> bool {
+    let system = std::env::var_os("SystemRoot").map_or_else(|| PathBuf::from(r"C:\Windows"), PathBuf::from);
+    let args: Vec<String> =
+        ["/C", "mklink", "/J", &link.display().to_string(), &target.display().to_string()].map(str::to_owned).to_vec();
+    regia_exec::harness::launch(&system.join("System32").join("cmd.exe"), &args, target)
+        .run()
+        .is_ok_and(|output| output.status.success())
+        && link.is_dir()
+}
+
+/// Says which link a test used, or that it is skipped because the machine allows none.
+fn report_link(test: &str, made: Option<Link>) -> bool {
+    match made {
+        Some(link) => {
+            eprintln!("{test}: link made as {link:?}");
+            true
+        }
+        None => {
+            eprintln!("{test}: neither a symbolic link nor a junction can be made on this machine: the test is skipped");
+            false
+        }
+    }
 }
 
 fn link_file(link: &Path, target: &Path) -> bool {
@@ -133,8 +175,7 @@ fn a_link_out_of_the_dossier_leads_out_of_it() {
     let outside = d.root.join("esterna");
     fs::create_dir_all(&outside).unwrap();
     fs::write(outside.join("s.md"), "no").unwrap();
-    if !link_folder(&d.dossier.join("ln"), &outside) {
-        eprintln!("links not allowed on this machine: the test is skipped, as the prototype's");
+    if !report_link("a_link_out_of_the_dossier_leads_out_of_it", link_folder(&d.dossier.join("ln"), &outside)) {
         return;
     }
     let mut references = vec!["ln/s.md", "ln\\s.md"];
@@ -151,8 +192,8 @@ fn a_link_out_of_the_dossier_leads_out_of_it() {
 #[test]
 fn a_link_inside_the_dossier_stays_relative() {
     let d = dossier("link-in");
-    if !link_folder(&d.dossier.join("ln"), &d.dossier.join(".regia").join("report")) {
-        eprintln!("links not allowed on this machine: the test is skipped, as the prototype's");
+    let made = link_folder(&d.dossier.join("ln"), &d.dossier.join(".regia").join("report"));
+    if !report_link("a_link_inside_the_dossier_stays_relative", made) {
         return;
     }
     let r = resolve("ln/x.md", &d.dossier);

@@ -274,8 +274,12 @@ fn answer(args: &[String]) -> Result<Reply, String> {
     } else if query.contains("issue(number:$n)") {
         // One issue by its number, null if the fixture has none: its id and state, its sub-issues' count,
         // its comments.
+        // The fixture holds all of the comments; they are paged here, a hundred to a page, by the cursor `c`
+        // (the product's `after`), so that an issue with more than a hundred is read as GitHub gives it (#573).
         let number = number.ok_or("issue query without n")?;
-        (format!("issue {number}"), json!({"repository": {"issue": responses["issues"][&number].clone()}}))
+        let issue = page_comments(responses["issues"][&number].clone(), index)?;
+        let kind = if index == 0 { format!("issue {number}") } else { format!("issue {number} {index}") };
+        (kind, json!({"repository": {"issue": issue}}))
     } else if query.contains("repositoryOwner(login:$o)") {
         // The owner's Projects, for `init`: one page, whatever the cursor; or the failure the fixture gives there,
         // of `gh` with its exit code, or of GraphQL with its `errors`.
@@ -301,6 +305,30 @@ fn answer(args: &[String]) -> Result<Reply, String> {
     let projected = project_query(&query, &page)?;
     append(fixture.log.as_ref(), &kind)?;
     serde_json::to_string(&json!({ "data": projected })).map(Reply::Out).map_err(|error| error.to_string())
+}
+
+/// The comments of one issue as GitHub pages them: page `index` of a hundred, with the `pageInfo` of that page
+/// and the cursor of the next (`page-<n>`, as the lists'). An issue the fixture gives no more than a hundred
+/// comments, read from the start, is left as the fixture has it.
+fn page_comments(mut issue: Value, index: usize) -> Result<Value, String> {
+    const PAGE: usize = 100;
+    let Some(comments) = issue.pointer("/comments/nodes").and_then(Value::as_array) else {
+        return Ok(issue);
+    };
+    if comments.len() <= PAGE && index == 0 {
+        return Ok(issue);
+    }
+    if index * PAGE >= comments.len() {
+        return Err(format!("no page {index} of comments: the fixture has {}", comments.len()));
+    }
+    let end = ((index + 1) * PAGE).min(comments.len());
+    let page: Vec<Value> = comments[index * PAGE..end].to_vec();
+    let more = end < comments.len();
+    issue["comments"] = json!({
+        "pageInfo": {"hasNextPage": more, "endCursor": more.then(|| format!("page-{}", index + 1))},
+        "nodes": page,
+    });
+    Ok(issue)
 }
 
 /// The message of the fixture's refusal of a mutation with these variables: the first entry of its

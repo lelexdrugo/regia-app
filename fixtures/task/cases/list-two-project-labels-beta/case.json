@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. The tasks of beta: #2, which carries beta's label first.",
+  "scenario": "two-project-labels",
+  "args": [
+    "task",
+    "list",
+    "--project",
+    "beta",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "list",
+    "--progetto",
+    "beta"
+  ]
+}
