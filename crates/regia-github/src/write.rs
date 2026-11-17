@@ -135,6 +135,10 @@ impl GhTracker {
 /// `true`, `null`) is a bad response with the envelope as JSON, as the reads take it, and is looked at before
 /// anything else: indexing it by `data` would panic. A non-empty array of `errors` is the tracker's refusal,
 /// their messages joined by `; `; an empty one, or anything else, is not (the reads take `errors` otherwise).
+/// An object with no `data` key (`{}`, `{"errors": []}`, `{"extensions": {}}`) is a bad response with the
+/// envelope as JSON, as the prototype's `return data["data"]` is a `KeyError` (#674): a mutation that drops
+/// the answer would have taken it for done. A `data` that is there and is `null` is `Ok(Null)`: the prototype
+/// returns `None` and goes on, and `parse` refuses it where a caller expects a type.
 fn answer(mut envelope: Value) -> Result<Value, TrackerError> {
     if !envelope.is_object() {
         return Err(TrackerError::BadResponse(envelope.to_string()));
@@ -143,7 +147,10 @@ fn answer(mut envelope: Value) -> Result<Value, TrackerError> {
         let messages: Vec<&str> = errors.iter().map(|error| error["message"].as_str().unwrap_or_default()).collect();
         return Err(TrackerError::Refused(messages.join("; ")));
     }
-    Ok(envelope["data"].take())
+    match envelope.get_mut("data") {
+        Some(data) => Ok(data.take()),
+        None => Err(TrackerError::BadResponse(envelope.to_string())),
+    }
 }
 
 fn parse<T: for<'de> Deserialize<'de>>(value: &Value) -> Result<T, TrackerError> {
@@ -267,12 +274,34 @@ mod tests {
         bad_response(Value::Null, "null");
     }
 
-    /// An envelope that is an object, with no `data`, stays what it was: `null`, which `parse` refuses where a
-    /// caller expects a type.
+    /// #674: an envelope that is an object with no `data` key is a bad response with the envelope as JSON, as
+    /// the prototype's `KeyError: 'data'` is a failure; a refusal in `errors` still comes first.
     #[test]
-    fn an_object_without_data_is_still_null() {
-        assert_eq!(answer(json!({})).unwrap(), Value::Null);
-        assert_eq!(answer(json!({"errors": []})).unwrap(), Value::Null);
+    fn an_object_without_data_is_a_bad_response() {
+        bad_response(json!({}), "{}");
+        bad_response(json!({"errors": []}), r#"{"errors":[]}"#);
+        bad_response(json!({"errors": null}), r#"{"errors":null}"#);
+    }
+
+    #[test]
+    fn an_object_with_other_keys_but_no_data_is_a_bad_response() {
+        bad_response(json!({"extensions": {}}), r#"{"extensions":{}}"#);
+        bad_response(json!({"extensions": {"cost": 1}, "errors": []}), r#"{"errors":[],"extensions":{"cost":1}}"#);
+        bad_response(json!({"Data": {"x": 1}}), r#"{"Data":{"x":1}}"#);
+    }
+
+    #[test]
+    fn a_refusal_comes_before_the_missing_data() {
+        let write = answer(json!({"errors": [{"message": "no"}]}));
+        assert!(matches!(write, Err(TrackerError::Refused(ref text)) if text == "no"), "{write:?}");
+    }
+
+    /// `data: null` is there: the prototype returns `None` and the write goes on, so it is a success with
+    /// `null` (measured in `.regia/prove/674/prototipo.txt`), with or without an empty `errors`.
+    #[test]
+    fn a_null_data_is_a_success_with_null() {
+        assert_eq!(answer(json!({"data": null})).unwrap(), Value::Null);
+        assert_eq!(answer(json!({"data": null, "errors": []})).unwrap(), Value::Null);
     }
 
     /// The two sides give the same envelope their own classification and their own text: where they part is
