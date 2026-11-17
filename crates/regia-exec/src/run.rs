@@ -310,8 +310,9 @@ impl Launch {
     /// program when it ends or when the handle is dropped: [`Detached::kill`] does, on request.
     ///
     /// An error means that no process is running: everything that can fail is checked before the
-    /// start, and a tree that cannot be set up afterwards leaves [`Detached::kill`] with the program
-    /// alone.
+    /// start, and a program that was created but could not be started (on Windows, resumed in its
+    /// tree) is killed before the error returns. A tree that cannot be set up leaves
+    /// [`Detached::kill`] with the program alone.
     pub fn detach(self, input: &Path, log: &Path) -> Result<Detached, ExecError> {
         let label = self.program_name();
         let failed = |source| ExecError::Spawn { program: label.clone(), source };

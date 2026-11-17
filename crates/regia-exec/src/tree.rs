@@ -24,7 +24,9 @@ mod windows {
         JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JobObjectExtendedLimitInformation, SetInformationJobObject,
         TerminateJobObject,
     };
-    use windows_sys::Win32::System::Threading::{OpenThread, ResumeThread, THREAD_SUSPEND_RESUME};
+    use windows_sys::Win32::System::Threading::{
+        GetProcessIdOfThread, OpenThread, ResumeThread, THREAD_QUERY_LIMITED_INFORMATION, THREAD_SUSPEND_RESUME,
+    };
 
     /// The release app has no console: without this flag every program would flash a window.
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
@@ -139,15 +141,25 @@ mod windows {
             let mut more = Thread32First(snapshot.as_raw_handle(), &mut entry) != 0;
             while more {
                 if entry.th32OwnerProcessID == pid {
-                    let raw = OpenThread(THREAD_SUSPEND_RESUME, 0, entry.th32ThreadID);
+                    let raw = OpenThread(
+                        THREAD_SUSPEND_RESUME | THREAD_QUERY_LIMITED_INFORMATION,
+                        0,
+                        entry.th32ThreadID,
+                    );
                     if raw.is_null() {
                         return Err(io::Error::last_os_error());
                     }
                     let thread = OwnedHandle::from_raw_handle(raw);
-                    if ResumeThread(thread.as_raw_handle()) == u32::MAX {
-                        return Err(io::Error::last_os_error());
+                    // A thread id can be reused between the snapshot and the open: only a thread
+                    // that still belongs to the program is resumed.
+                    if GetProcessIdOfThread(thread.as_raw_handle()) == pid {
+                        match ResumeThread(thread.as_raw_handle()) {
+                            u32::MAX => return Err(io::Error::last_os_error()),
+                            // Someone else holds it suspended too: it would not run.
+                            0 | 1 => resumed = true,
+                            _ => return Err(io::Error::other("the program is still suspended by another")),
+                        }
                     }
-                    resumed = true;
                 }
                 more = Thread32Next(snapshot.as_raw_handle(), &mut entry) != 0;
             }
@@ -194,7 +206,12 @@ mod windows {
                     println!("GRANDCHILD={}", sleeper(Stdio::null()).id());
                     thread::sleep(FOREVER);
                 }
-                "sleeper" => thread::sleep(FOREVER),
+                "sleeper" => {
+                    if let Ok(marker) = env::var(MARKER) {
+                        fs::write(marker, "ran").expect("the marker is written");
+                    }
+                    thread::sleep(FOREVER);
+                }
                 // A caller of `spawn_detached`: it starts a session and ends.
                 "caller" => {
                     let mut command = this_binary("sleeper");
@@ -327,13 +344,22 @@ mod windows {
         /// back to staying in the job, fails the test with its own message instead of passing.
         #[test]
         fn a_detached_session_outlives_the_job_of_its_caller() {
+            let marker = env::temp_dir().join(format!("regia-tree-session-{}", std::process::id()));
+            let _ = fs::remove_file(&marker);
             let mut command = this_binary("caller");
             prepare(&mut command);
-            command.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::null());
+            command.env(MARKER, &marker).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::null());
             let mut caller = command.spawn().expect("the caller starts");
             let job = Tree::adopt(&caller).expect("the caller's tree is made");
             let session = Watched::open(announced(&mut caller, "SESSION"));
             caller.wait().expect("the caller is reaped");
+            // The session was started, not left suspended: it writes its marker.
+            let waited = std::time::Instant::now();
+            while !marker.exists() {
+                assert!(waited.elapsed() < Duration::from_secs(30), "the session never ran");
+                thread::sleep(Duration::from_millis(20));
+            }
+            let _ = fs::remove_file(&marker);
 
             let mut inside = 0;
             // SAFETY: both handles are open and owned here; `inside` is a BOOL that the call sets.
