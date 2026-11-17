@@ -208,9 +208,9 @@ impl Launch {
         self
     }
 
-    /// A `git` call that writes: commit, merge, push. It does not get the settings of a read (no optional
-    /// lock, no literal pathspecs, no fsmonitor off), which would reach the user's hooks. Without it a
-    /// call is a read. No other program reads it.
+    /// A `git` call that writes: fetch, merge, add, commit, push (`WRITES` of `regia-git`). It does not
+    /// get the settings of a read (no optional lock, no literal pathspecs, no fsmonitor off), which would
+    /// reach the user's hooks. Without it a call is a read. No other program reads it.
     #[must_use]
     pub fn writing(mut self) -> Self {
         self.writes = true;
