@@ -5,7 +5,7 @@
 use std::fs;
 use std::path::Path;
 
-use regia_conformance::{Case, bin_dir, check_connections, project_query, responses_var, workspace_root};
+use regia_conformance::{Case, bin_dir, check_connections, log_var, project_query, responses_var, workspace_root};
 use serde_json::{Value, json};
 
 const FAKE_GH: &str = env!("CARGO_BIN_EXE_fake-gh");
@@ -90,4 +90,47 @@ fn the_fake_gh_answers_the_products_query_and_refuses_the_wrong_ones() {
         let message = String::from_utf8_lossy(&refused.stderr);
         assert!(message.contains(word), "{what}: {message}");
     }
+}
+
+/// The product's walk of the cursors (`ENDS_QUERY`, #572: the list with no nodes), answered with the
+/// fixture's pages and logged as a kind of its own, `issues-walk <page>`, so that a test counts it apart
+/// from the full pages (#559/V19); and the log of calls made at once keeps one line to a call, whole
+/// (the lines came out mixed when `append` wrote the text and the newline in two writes).
+#[test]
+fn the_walk_of_the_cursors_is_logged_apart_and_calls_at_once_do_not_mix_their_lines() {
+    let source = fs::read_to_string(workspace_root().join("crates/regia-github/src/lib.rs")).unwrap().replace("\r\n", "\n");
+    let start = source.find("const ENDS_QUERY: &str = r#\"").expect("the walk's query") + "const ENDS_QUERY: &str = r#\"".len();
+    let walk = source[start..start + source[start..].find("\"#;").expect("its end")].replace("{STATES}", "states:[OPEN],");
+    let case = Case::named("core");
+    let dir = bin_dir().join("conformance-state").join("fake-gh-walk");
+    let _ = fs::remove_dir_all(&dir);
+    fs::create_dir_all(&dir).unwrap();
+    let log = dir.join("log");
+    let ask = |query: String| {
+        let body = json!({"query": query, "variables": {"o": "example", "r": "tracker"}}).to_string();
+        regia_exec::harness::launch(Path::new(FAKE_GH), &["api".to_owned(), "graphql".to_owned(), "--input=-".to_owned()], &dir)
+            .env(&responses_var(), case.responses_path())
+            .env(&log_var(), &log)
+            .stdin(body)
+            .run()
+            .expect("the fake runs")
+    };
+    let answered = ask(walk.clone());
+    assert!(answered.status.success(), "{}", String::from_utf8_lossy(&answered.stderr));
+    let page: Value = serde_json::from_slice(&answered.stdout).unwrap();
+    assert!(page["data"]["repository"]["issues"]["pageInfo"]["hasNextPage"].is_boolean());
+    assert!(page["data"]["repository"]["issues"].get("nodes").is_none(), "the walk answers no nodes");
+    // Twelve calls at once, the walk and the full page alternating.
+    let full = issues_query();
+    std::thread::scope(|scope| {
+        for k in 0..12 {
+            let query = if k % 2 == 0 { walk.clone() } else { full.clone() };
+            let ask = &ask;
+            scope.spawn(move || assert!(ask(query).status.success()));
+        }
+    });
+    let lines: Vec<String> = fs::read_to_string(&log).unwrap().lines().map(str::to_owned).collect();
+    assert_eq!(lines.len(), 13, "{lines:?}");
+    assert_eq!(lines.iter().filter(|line| *line == "issues-walk 0").count(), 7, "{lines:?}");
+    assert_eq!(lines.iter().filter(|line| *line == "issues 0").count(), 6, "{lines:?}");
 }

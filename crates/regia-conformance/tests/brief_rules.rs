@@ -31,16 +31,39 @@ fn python(case: &Case) -> Value {
     translate_python("brief", &case.python_output()).unwrap()
 }
 
+/// The calls of a run that read the list for where its pages end and nothing else: the fake logs them apart
+/// (`issues-walk 0`), as the walk of the cursors that #572 added to the product's reading of the list.
+fn walks(calls: &[String]) -> Vec<&String> {
+    calls.iter().filter(|call| call.contains("-walk ")).collect()
+}
+
 /// How many times the product asks `gh`, by case: one call a page of the list, one a page of what the list
 /// cuts (twenty blockers, fifty sub-issues). The numbers are what the prototype did when it was recorded
 /// (`record` prints them); a call more is a defect, a call less is a rule that stopped being read (#435/V5).
+///
+/// Declared difference, #572/V6 (this is #559/V19): since #572 the product reads the pages of the list
+/// together, and for that it first walks the list without its issues, to have the cursor of every page: one
+/// light call a page of the list, which the prototype never made. The count of the prototype is the count of
+/// the calls that are not that walk, page by page and completion by completion; the walk is asserted on its
+/// own (a page of the list each, `crates/regia-github/src/read.rs`, `in_parallel`), so that a full page or a
+/// completion more or less still fails the test.
 #[test]
 fn the_product_calls_gh_as_often_as_the_prototype_did() {
-    for (name, expected) in [("core", 14), ("filtered", 14), ("edges", 4), ("truncated", 1), ("empty", 1)] {
+    // (case, pages of the list, pages of what it cuts, the prototype's calls: pages and completions)
+    for (name, pages, completions, expected) in
+        [("core", 9, 5, 14), ("filtered", 9, 5, 14), ("edges", 2, 2, 4), ("truncated", 1, 0, 1), ("empty", 1, 0, 1)]
+    {
+        assert_eq!(pages + completions, expected, "{name}: the table adds up to what the prototype did");
         let case = Case::named(name);
         let (code, _, stderr, calls) = run(&format!("calls-{name}"), &case, &case.responses_path(), None);
         assert_eq!(code, Some(0), "{name}: {stderr}");
-        assert_eq!(calls.len(), expected, "{name}: {calls:?}");
+        let walk = walks(&calls);
+        let read: Vec<&String> = calls.iter().filter(|call| !walk.contains(call)).collect();
+        assert_eq!(read.len(), expected, "{name}: {calls:?}");
+        let is_page = |call: &&String| !call.starts_with("blockers ") && !call.starts_with("sub-issues ");
+        assert_eq!(read.iter().filter(|call| is_page(call)).count(), pages, "{name}: pages of the list: {calls:?}");
+        assert_eq!(read.iter().filter(|call| !is_page(call)).count(), completions, "{name}: completions: {calls:?}");
+        assert_eq!(walk.len(), pages, "{name}: the walk is one call a page of the list: {calls:?}");
     }
     // `edges` shows where the extra calls come from: two pages of the list, then the twenty-first blocker of
     // #9 and the fifty-first sub-issue of #11 each in a page of its own, and none for #8 and #10, which the
@@ -49,6 +72,7 @@ fn the_product_calls_gh_as_often_as_the_prototype_did() {
     let (_, _, _, calls) = run("calls-edges-kinds", &case, &case.responses_path(), None);
     let kinds: Vec<&str> = calls.iter().map(|call| call.split(' ').next().unwrap()).collect();
     assert_eq!(kinds.iter().filter(|kind| **kind == "issues").count(), 2);
+    assert_eq!(kinds.iter().filter(|kind| **kind == "issues-walk").count(), 2);
     assert!(calls.contains(&"blockers 9 0".to_owned()) && calls.contains(&"sub-issues 11 0".to_owned()), "{calls:?}");
     assert!(!calls.iter().any(|call| call.starts_with("blockers 8") || call.starts_with("sub-issues 10")), "{calls:?}");
 }
@@ -130,7 +154,12 @@ fn a_project_with_items_and_no_status_is_a_brief_in_the_prototype_and_an_error_h
     assert_ne!(code, Some(0), "the product printed a brief");
     assert_eq!(rust, Value::Null, "the product printed something on stdout");
     assert!(stderr.contains("status field") && stderr.contains("tracker.json"), "{stderr}");
-    assert_eq!(calls.len(), 1, "it reads the list once and then refuses");
+    // Declared difference, #572/V6 (this is #559/V19): the product's one page of the list comes with the
+    // walk of the cursors, one light call that the prototype never made; the product reads the page once, and
+    // refuses after it, without a page more or a completion.
+    assert_eq!(calls.len(), 2, "one page and its walk, then it refuses: {calls:?}");
+    assert_eq!(walks(&calls).len(), 1, "{calls:?}");
+    assert_eq!(calls.iter().filter(|call| call.starts_with("issues ")).count(), 1, "it reads the list once and then refuses: {calls:?}");
 }
 
 /// Declared difference, #435/V8 (#559): a page of the rest of an issue's blockers that says the issue is not

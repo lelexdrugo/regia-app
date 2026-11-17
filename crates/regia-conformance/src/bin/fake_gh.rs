@@ -90,10 +90,12 @@ fn fixture() -> Result<Fixture, String> {
     Ok(Fixture { responses: responses.into(), log: path("log"), writes: path("writes") })
 }
 
+/// One line to the log, in one write: the product reads the list with several calls at once (#572), and
+/// two lines written in two writes each (`writeln!` writes the text and then the newline) came out mixed.
 fn append(path: Option<&PathBuf>, line: &str) -> Result<(), String> {
     let Some(path) = path else { return Ok(()) };
     let mut file = OpenOptions::new().create(true).append(true).open(path).map_err(|error| error.to_string())?;
-    writeln!(file, "{line}").map_err(|error| error.to_string())
+    file.write_all(format!("{line}\n").as_bytes()).map_err(|error| error.to_string())
 }
 
 fn read_stdin() -> Result<String, String> {
@@ -233,6 +235,10 @@ fn answer(args: &[String]) -> Result<Reply, String> {
             .and_then(|n| n.parse::<usize>().ok())
             .ok_or_else(|| format!("unknown cursor {cursor}"))?,
     };
+    // A list read for where its pages end and nothing else (no `nodes`): the walk of the cursors that lets the
+    // product read the full pages together (#572). It is logged as its own kind (`issues-walk 0`), so that a
+    // test counts the pages and the walk apart (#559/V19).
+    let walk = if query.contains("issues(first:") && !query.contains("nodes") { "-walk" } else { "" };
     let (kind, page) = if query.contains("blockedBy(first:100") {
         let number = number.ok_or("blockers query without n")?;
         let pages = &responses["blocker_pages"][&number];
@@ -251,20 +257,20 @@ fn answer(args: &[String]) -> Result<Reply, String> {
         // The checks' read of recent comments, on open and closed issues alike.
         (format!("comments {index}"), responses["comment_pages"][index].clone())
     } else if query.contains("states:[CLOSED]") {
-        (format!("closed {index}"), responses["closed_pages"][index].clone())
+        (format!("closed{walk} {index}"), responses["closed_pages"][index].clone())
     } else if query.contains("issues(first:") && !query.contains("states:") {
         // The list with no `states`, closed issues too: only a fixture that holds those pages answers it.
         if !query.contains(REQUIRED_ON_ISSUES[1]) {
             return Err(format!("the issues query lost {}", REQUIRED_ON_ISSUES[1]));
         }
-        (format!("issues-all {index}"), responses["all_pages"][index].clone())
+        (format!("issues-all{walk} {index}"), responses["all_pages"][index].clone())
     } else if query.contains("issues(first:") {
         for required in REQUIRED_ON_ISSUES {
             if !query.contains(required) {
                 return Err(format!("the issues query lost {required}"));
             }
         }
-        (format!("issues {index}"), responses["issue_pages"][index].clone())
+        (format!("issues{walk} {index}"), responses["issue_pages"][index].clone())
     } else if query.contains("issue(number:$n)") {
         // One issue by its number, null if the fixture has none: its id and state, its sub-issues' count,
         // its comments.
