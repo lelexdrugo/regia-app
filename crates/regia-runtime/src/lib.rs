@@ -9,6 +9,10 @@ use regia_core::{
 use regia_github::GhTracker;
 use regia_identity::{env_var, prototype_env_var, state_dir};
 
+mod moviola;
+
+pub use moviola::{MoviolaError, moviola_projects, project_links, project_remote, registry_projects, tracker_links};
+
 #[derive(Debug, thiserror::Error)]
 pub enum BriefError {
     #[error(transparent)]

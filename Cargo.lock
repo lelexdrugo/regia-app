@@ -2882,6 +2882,7 @@ dependencies = [
  "regia-facade",
  "regia-i18n",
  "regia-identity",
+ "regia-runtime",
  "regia-store",
  "rusqlite",
  "serde",
@@ -2988,8 +2989,10 @@ name = "regia-runtime"
 version = "0.0.1"
 dependencies = [
  "regia-core",
+ "regia-git",
  "regia-github",
  "regia-identity",
+ "serde_json",
  "thiserror 2.0.21",
 ]
 
