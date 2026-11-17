@@ -36,6 +36,8 @@ fn mutations(query: &str) -> Vec<(&'static str, String, &'static str)> {
         ("another cursor", swap("after:$after", "after:$cursor"), "issues"),
         ("no word on the next page", swap("pageInfo{hasNextPage endCursor}", "pageInfo{endCursor}"), "pageInfo"),
         ("a fragment on another type", swap("... on ProjectV2ItemFieldSingleSelectValue", "... on ProjectV2ItemFieldTextValue"), "ProjectV2ItemFieldTextValue"),
+        ("labels without a pagination", swap("labels(first:20)", "labels"), "labels"),
+        ("blockers without a pagination", swap("blockedBy(first:20)", "blockedBy"), "blockedBy"),
         ("a connection the prototype never reads", swap("parent{number}", "parent{number} assignees(first:5){nodes{id}}"), "assignees"),
     ]
 }

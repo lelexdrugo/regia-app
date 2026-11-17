@@ -800,13 +800,15 @@ pub fn regia_binary() -> PathBuf {
 /// How `live-check` starts the Rust side, against the real tracker and the real clock. The prototype side
 /// has no way to be told the day, so this one must not be told it either: a `REGIA_TODAY` left in the
 /// environment would make the two sides count the due dates from different days and the diff would show
-/// the clock, not the code (#559, #435/V6). The engine is forced to the native one: with the dossier named
-/// the reads would go to the prototype, and this side has to be the Rust one.
+/// the clock, not the code (#559, #435/V6); so would a `REGIA_NOW`, which the CLI reads for the instant (D10).
+/// The engine is forced to the native one: with the dossier named the reads would go to the prototype, and
+/// this side has to be the Rust one.
 pub fn live_rust_launch(binary: &Path, args: &[String], dossier: &Path) -> Launch {
     regia_exec::harness::launch(binary, args, dossier)
         .env(&prototype_env_var("HOME"), dossier)
         .env(&env_var("ENGINE"), "rust")
         .without(&env_var("TODAY"))
+        .without(&env_var("NOW"))
 }
 
 /// Every `scheme://…` in `text` that does not start with one of the `allowed` prefixes. `text` is a whole
@@ -828,10 +830,36 @@ pub fn foreign_urls(text: &str, allowed: &[&str]) -> Vec<String> {
         if !allowed.iter().any(|prefix| url.starts_with(prefix)) {
             out.push(url.to_owned());
         }
-        consumed = end.max(after);
+        // From the end of the scheme, not of the URL: a second URL inside the first (`https://a/?u=https://b`)
+        // is a URL of its own, and the allowed prefix of the first must not hide it (#559, D6).
+        consumed = after;
         rest = &text[consumed..];
     }
     out
+}
+
+/// Every foreign URL of every file under `dir`, at any depth: the cases, the scenarios the fake `gh` answers
+/// from and `RECORDED.json` alike, since what the repo keeps is all of it. A file that cannot be read is
+/// an error, never an empty text: a scan that skips what it cannot open proves nothing (#559, D7).
+pub fn foreign_urls_in_tree(dir: &Path, allowed: &[&str]) -> Result<Vec<(PathBuf, Vec<String>)>, String> {
+    let mut found = Vec::new();
+    let mut entries: Vec<PathBuf> = fs::read_dir(dir)
+        .map_err(|error| format!("{}: {error}", dir.display()))?
+        .map(|entry| entry.map(|entry| entry.path()).map_err(|error| format!("{}: {error}", dir.display())))
+        .collect::<Result<_, _>>()?;
+    entries.sort();
+    for path in entries {
+        if path.is_dir() {
+            found.extend(foreign_urls_in_tree(&path, allowed)?);
+        } else {
+            let text = fs::read_to_string(&path).map_err(|error| format!("{}: {error}", path.display()))?;
+            let foreign = foreign_urls(&text, allowed);
+            if !foreign.is_empty() {
+                found.push((path, foreign));
+            }
+        }
+    }
+    Ok(found)
 }
 
 /// The synthetic hosts a fixture may name: the invented tracker, and the URLs the prototype builds on
@@ -1429,8 +1457,13 @@ fn check_selections(selections: &[Selection], path: &str) -> Result<(), String> 
         }
         let here = join(&selection.name);
         let pagination = pagination_of(&selection.arguments);
+        let allowed = CONNECTIONS.iter().find(|(at, _)| *at == here).map(|(_, forms)| *forms);
+        // A path of the table is a connection, and the prototype never reads one whole: `labels{...}` with no
+        // `first` would pass as a connection the prototype reads, and the real API refuses it (#559, D1).
+        if pagination.is_empty() && allowed.is_some() {
+            return Err(format!("`{here}` is a connection read with no pagination, the prototype reads it with {:?}", allowed.unwrap_or_default()));
+        }
         if !pagination.is_empty() {
-            let allowed = CONNECTIONS.iter().find(|(at, _)| *at == here).map(|(_, forms)| *forms);
             let Some(forms) = allowed else {
                 return Err(format!("`{here}({pagination})` is a connection the prototype does not read"));
             };

@@ -13,7 +13,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, foreign_urls, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
+    Case, FIXTURE_NOW, FIXTURE_TODAY, SYNTHETIC_URLS, dossier_after, fixed_now_driver, foreign_urls, foreign_urls_in_tree, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
     place_args, prepare_case_state, prepare_dossier, read_json, state_rows, unplace_json, unplace_text, writes_of_run, written_files,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
@@ -508,12 +508,8 @@ fn main() {
         replace(&case.dir.join("written.json"), written);
         // What the case keeps on disk, its inputs too: a scenario's title that no output prints is in the
         // responses, and goes wherever the repo goes.
-        for entry in fs::read_dir(&case.dir).expect("the case's folder") {
-            let path = entry.expect("an entry").path();
-            let text = fs::read_to_string(&path).unwrap_or_default();
-            let foreign = foreign_urls(&text, &[URL_PREFIX, &owner_url]);
-            assert!(foreign.is_empty(), "{}: {} holds a foreign URL {foreign:?}", case.name, path.display());
-        }
+        let held = foreign_urls_in_tree(&case.dir, &[URL_PREFIX, &owner_url]).unwrap_or_else(|error| panic!("{}: {error}", case.name));
+        assert!(held.is_empty(), "{}: holds a foreign URL {held:?}", case.name);
         println!(
             "{}/{}: exit {}, {} calls to the fake gh, {} writes, {urls} URLs, all synthetic",
             case.family,
@@ -537,6 +533,9 @@ fn main() {
     });
     for family in families {
         write_json(&family.join("RECORDED.json"), &recorded);
+        // The whole family, its scenarios and RECORDED.json too: the cases were scanned one by one above.
+        let held = foreign_urls_in_tree(&family, &SYNTHETIC_URLS).unwrap_or_else(|error| panic!("{error}"));
+        assert!(held.is_empty(), "{}: holds a foreign URL {held:?}", family.display());
     }
 }
 
