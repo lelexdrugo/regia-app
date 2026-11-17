@@ -8,7 +8,7 @@ export type Health = "healthy" | "at_risk" | "waiting_on_owner";
 
 export type DirectionStatus = "active" | "abandoned" | "rejoined";
 
-export type ReportKind = "relative" | "data" | "absolute" | "outside";
+export type ReportKind = "relative" | "data" | "absolute" | "outside" | "not_a_path";
 
 export type Refs = { issue: number[]; commit: string[]; report: string[] };
 

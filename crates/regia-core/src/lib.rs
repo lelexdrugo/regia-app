@@ -31,7 +31,7 @@ pub use markdown::{Block, Document, Inline, parse_document};
 pub use model::{CloseReason, DueDate, IssueState, Maturity, Status, Task};
 pub use policy::{Lever, LeverValue, Local, LocalStatus, Origin, Policy, PolicyError, Room, Values};
 pub use reads::{BodyEdit, ListOptions, ListedTask, ShownTask, task_list};
-pub use reference::{Reference, ReferenceKind, Unresolved, data_root, resolve};
+pub use reference::{NotAPathForm, Reference, ReferenceKind, Unresolved, data_root, resolve};
 pub use registry::{EntryError, Registry, full_repo, project_entry, registry_with};
 pub use text::{Normalized, normalize, normalize_document, normalize_title};
 pub use tracker::{

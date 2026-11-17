@@ -92,6 +92,7 @@ pub enum ReportKind {
     Data,
     Absolute,
     Outside,
+    NotAPath,
 }
 
 impl From<ReferenceKind> for ReportKind {
@@ -101,6 +102,7 @@ impl From<ReferenceKind> for ReportKind {
             ReferenceKind::Data => ReportKind::Data,
             ReferenceKind::Absolute => ReportKind::Absolute,
             ReferenceKind::Outside => ReportKind::Outside,
+            ReferenceKind::NotAPath(_) => ReportKind::NotAPath,
         }
     }
 }

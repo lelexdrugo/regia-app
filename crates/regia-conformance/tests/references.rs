@@ -1,6 +1,7 @@
-//! The resolver of the dossier's references against `tools/tests/test_riferimenti.py` of the dossier, its
-//! fourteen tests one by one, on folders under the build's own temporary folder. The prototype's sentence
-//! for what is not there is a catalog's, so here it is a value the test passes.
+//! The resolver of the dossier's references against `tools/tests/test_riferimenti.py` of the dossier (as
+//! #530 changed it: forms that are no path, folders that are there, the empty reference), its tests one by
+//! one, on folders under the build's own temporary folder. The prototype's sentences for what is not there,
+//! and for a form that is no path, are a catalog's, so here they are values the test passes.
 //!
 //! Links: a symbolic link, or on Windows without the privilege a junction (`mklink /J`, which needs no
 //! privilege), as the prototype's `collega_cartella` does. A test is skipped only when neither can be made,
@@ -10,9 +11,24 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use regia_core::{ReferenceKind, Unresolved, data_root, resolve};
+use regia_core::{NotAPathForm, ReferenceKind, Unresolved, data_root, resolve};
 
 const ABSENT: &str = "not on this machine";
+
+/// The prototype's `motivo` of a `non-percorso`, in the words the test compares the product's forms by.
+fn form_name(form: NotAPathForm) -> &'static str {
+    match form {
+        NotAPathForm::Link => "link",
+        NotAPathForm::Command => "comando",
+        NotAPathForm::MachineLocation => "sede della macchina",
+        NotAPathForm::NamePlaceholder => "segnaposto <nome>",
+        NotAPathForm::UnknownPlaceholder => "segnaposto sconosciuto",
+    }
+}
+
+fn not_a_path_sentence(form: NotAPathForm) -> String {
+    format!("not a path ({})", form_name(form))
+}
 
 struct Dossier {
     root: PathBuf,
@@ -111,11 +127,121 @@ fn a_relative_reference_that_is_not_there() {
     assert_eq!(r.render(ABSENT), format!("`.regia/report/manca.md`: {ABSENT}"));
 }
 
+/// `test_una_cartella_che_esiste_e_presente`: a folder that is there is there, and says it is a folder.
 #[test]
-fn a_folder_is_not_a_file() {
+fn a_folder_that_is_there_is_present() {
     let d = dossier("folder");
-    assert!(!resolve(".regia/report", &d.dossier).exists());
-    assert_eq!(resolve(".regia/report", &d.dossier).render(ABSENT), format!("`.regia/report`: {ABSENT}"));
+    for reference in [".regia/report", ".regia/report/", ".regia", ".regia\\report", "."] {
+        let r = resolve(reference, &d.dossier);
+        assert_eq!((r.kind(), r.exists(), r.is_folder(), r.reason()), (ReferenceKind::Relative, true, true, None), "{reference}");
+        assert!(r.path().is_some_and(Path::is_dir), "{reference}");
+    }
+    assert_eq!(resolve(".regia/report", &d.dossier).render(ABSENT), "`.regia/report/`");
+    assert_eq!(resolve(".regia/report/", &d.dossier).render(ABSENT), "`.regia/report/`", "the slash is not doubled");
+    assert_eq!(resolve(".regia\\report", &d.dossier).render(ABSENT), "`.regia/report/`");
+}
+
+/// `test_un_file_non_e_una_cartella`.
+#[test]
+fn a_file_is_not_a_folder() {
+    let d = dossier("file-not-folder");
+    let r = resolve(".regia/report/x.md", &d.dossier);
+    assert_eq!((r.exists(), r.is_folder()), (true, false));
+    assert!(!resolve(".regia/report/manca.md", &d.dossier).is_folder());
+}
+
+/// `test_una_cartella_che_non_c_e_e_assente`.
+#[test]
+fn a_folder_that_is_not_there_is_absent() {
+    let d = dossier("folder-absent");
+    let r = resolve(".regia/prove/342/", &d.dossier);
+    assert_eq!((r.kind(), r.exists(), r.is_folder(), r.reason()), (ReferenceKind::Relative, false, false, Some(Unresolved::Absent)));
+    assert_eq!(r.render(ABSENT), format!("`.regia/prove/342/`: {ABSENT}"));
+}
+
+/// `test_non_percorso`: a link, a command, a place of the machine, a placeholder: no path, whatever the
+/// disk holds, and a document shows the reference as written.
+#[test]
+fn a_form_that_is_no_path_does_not_resolve() {
+    let d = dossier("not-a-path");
+    let cases = [
+        ("https://x/y", NotAPathForm::Link),
+        ("http://github.com/lelexdrugo/regia/blob/main/x.md", NotAPathForm::Link),
+        ("file:///C:/x", NotAPathForm::Link),
+        ("file:///home/x/y", NotAPathForm::Link),
+        ("python tools/x.py --a", NotAPathForm::Command),
+        ("python -m unittest → exit 0", NotAPathForm::Command),
+        ("diff -r skills/regia ~/.claude/skills/regia", NotAPathForm::Command),
+        ("git status", NotAPathForm::Command),
+        ("~/x", NotAPathForm::MachineLocation),
+        ("~", NotAPathForm::MachineLocation),
+        ("~\\x", NotAPathForm::MachineLocation),
+        ("%LOCALAPPDATA%/x", NotAPathForm::MachineLocation),
+        ("%LOCALAPPDATA%\\regia\\tracker.json", NotAPathForm::MachineLocation),
+        ("%ProgramFiles(x86)%/x", NotAPathForm::MachineLocation),
+        ("$HOME/x", NotAPathForm::MachineLocation),
+        ("${HOME}/x", NotAPathForm::MachineLocation),
+        ("<worktree>/x", NotAPathForm::NamePlaceholder),
+        ("<bytesized>", NotAPathForm::NamePlaceholder),
+        ("{archivio}/x", NotAPathForm::UnknownPlaceholder),
+        ("{archivio}", NotAPathForm::UnknownPlaceholder),
+    ];
+    for (reference, form) in cases {
+        let r = resolve(reference, &d.dossier);
+        assert_eq!(r.kind(), ReferenceKind::NotAPath(form), "{reference}");
+        assert_eq!((r.path(), r.exists(), r.is_folder(), r.reason()), (None, false, false, Some(Unresolved::NotAPath)), "{reference}");
+        // As written, not normalized, and never "not on this machine".
+        assert_eq!(r.render_with(ABSENT, not_a_path_sentence), format!("`{reference}`: not a path ({})", form_name(form)), "{reference}");
+        assert!(!r.render_with(ABSENT, not_a_path_sentence).contains(ABSENT), "{reference}");
+        assert_eq!(r.render(ABSENT), format!("`{reference}`"), "{reference}");
+    }
+}
+
+/// `test_non_percorso_non_guarda_il_disco`.
+#[test]
+fn a_form_that_is_no_path_does_not_look_at_the_disk() {
+    let d = dossier("not-a-path-disk");
+    fs::create_dir_all(d.dossier.join("~")).unwrap();
+    fs::write(d.dossier.join("~").join("x"), "si").unwrap();
+    fs::create_dir_all(d.dossier.join("%X%")).unwrap();
+    assert!(matches!(resolve("~/x", &d.dossier).kind(), ReferenceKind::NotAPath(NotAPathForm::MachineLocation)));
+    assert!(matches!(resolve("%X%/y", &d.dossier).kind(), ReferenceKind::NotAPath(NotAPathForm::MachineLocation)));
+}
+
+/// `test_assoluti_con_forme_che_somigliano_ad_altro_restano_assoluti`: the candidates of the dossier's check
+/// `percorso-assoluto` keep their kind.
+#[test]
+fn absolute_paths_that_look_like_something_else_stay_absolute() {
+    let d = dossier("absolute-lookalikes");
+    for reference in [
+        "C://Users/x",
+        "C:\\\\Users\\x",
+        "C:\\Program Files\\x y",
+        "C:/Program Files (x86)/x",
+        "/c/Users/x",
+        "/home/x y/z",
+        "\\\\server\\share\\x",
+        "/mnt/c/Users/x",
+        "/tmp/x",
+    ] {
+        assert_eq!(resolve(reference, &d.dossier).kind(), ReferenceKind::Absolute, "{reference}");
+    }
+}
+
+/// `test_forme_che_restano_relative`: a shape that looks like a form but is not one, and a file with a space
+/// in its name that is there is not a command.
+#[test]
+fn shapes_that_look_like_a_form_stay_relative() {
+    let d = dossier("relative-lookalikes");
+    fs::create_dir_all(d.dossier.join("docs")).unwrap();
+    fs::write(d.dossier.join("docs").join("due parole.md"), "si").unwrap();
+    for reference in ["docs/design/x.md", "{dati}-copia/x", "a<b>/x", "<x", "$x.md", "%x", "~x", "100%/x", "x/{archivio}/y"] {
+        assert_eq!(resolve(reference, &d.dossier).kind(), ReferenceKind::Relative, "{reference}");
+    }
+    let r = resolve("docs/due parole.md", &d.dossier);
+    assert_eq!((r.kind(), r.exists(), r.is_folder()), (ReferenceKind::Relative, true, false));
+    // A known limit of the prototype: the space makes it a command.
+    assert_eq!(resolve("docs/manca per davvero.md", &d.dossier).kind(), ReferenceKind::NotAPath(NotAPathForm::Command));
 }
 
 #[test]
@@ -215,13 +341,28 @@ fn slashes_and_backslashes_are_the_same() {
 fn an_empty_or_strange_reference_does_not_fail() {
     let d = dossier("strange");
     let long = "x".repeat(5000);
-    for reference in ["", ".", "a?b", "a\0b", long.as_str()] {
+    for reference in ["", " ", "a?b", "a\0b", long.as_str()] {
         assert!(!resolve(reference, &d.dossier).exists(), "{}", &reference[..reference.len().min(20)]);
         assert!(resolve(reference, &d.dossier).render(ABSENT).contains(ABSENT));
     }
     // As the prototype's: a NUL names no path, and a name the system refuses is a path with no file.
     assert_eq!(resolve("a\0b", &d.dossier).kind(), ReferenceKind::Outside);
     assert_eq!(resolve("a?b", &d.dossier).kind(), ReferenceKind::Relative);
+    // The dot is the dossier itself, the empty reference is not.
+    assert!(resolve(".", &d.dossier).is_folder());
+}
+
+/// `test_riferimento_vuoto_o_con_caratteri_strani_non_solleva`, the empty case: a relative reference that
+/// is not there and has no path, not the dossier's folder.
+#[test]
+fn the_empty_reference_is_not_the_dossier_itself() {
+    let d = dossier("empty");
+    for reference in ["", " ", "  ", "\t"] {
+        let r = resolve(reference, &d.dossier);
+        assert_eq!((r.kind(), r.path(), r.exists(), r.is_folder()), (ReferenceKind::Relative, None, false, false), "{reference:?}");
+        assert_eq!(r.reason(), Some(Unresolved::Absent), "{reference:?}");
+        assert_eq!(r.render(ABSENT), format!("`{reference}`: {ABSENT}"), "{reference:?}");
+    }
 }
 
 #[test]
