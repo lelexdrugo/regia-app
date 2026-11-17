@@ -1513,10 +1513,10 @@ fn check_selections(selections: &[Selection], path: &str) -> Result<(), String> 
             (true, "repositoryOwner") => Some("login:$o"),
             _ => None,
         };
-        if let Some(wanted) = root_arguments {
-            if selection.arguments != wanted {
-                return Err(format!("`{here}` is read with `{}`, the prototype reads it with `{wanted}`", selection.arguments));
-            }
+        if let Some(wanted) = root_arguments
+            && selection.arguments != wanted
+        {
+            return Err(format!("`{here}` is read with `{}`, the prototype reads it with `{wanted}`", selection.arguments));
         }
         let pagination = pagination_of(&selection.arguments);
         let allowed = CONNECTIONS.iter().find(|(at, _)| *at == here).map(|(_, forms)| *forms);
