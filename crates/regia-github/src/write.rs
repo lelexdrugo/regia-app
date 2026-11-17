@@ -36,29 +36,10 @@ const SUB_ISSUE_COUNT_QUERY: &str =
     "query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){issue(number:$n){subIssues(first:1){totalCount}}}}";
 
 impl GhTracker {
-    /// `gh api graphql` with `variables` as they are, the whole request on stdin: the `data` of the answer.
-    /// Errors in the answer are the tracker's refusal, their messages joined by `; `.
+    /// `variables` as they are through the one `gh api graphql` of the adapter ([`GhTracker::envelope`]): the
+    /// `data` of the answer, `answer` of its errors.
     fn request(&self, query: &str, variables: Map<String, Value>) -> Result<Value, TrackerError> {
-        let gh = self.gh.as_ref().map_err(|error| TrackerError::Unavailable(error.clone()))?;
-        let body = json!({"query": query, "variables": variables}).to_string();
-        let output = gh
-            .launch(regia_exec::gh::graphql(), &self.work_dir)
-            .stdin(body)
-            .run()
-            .map_err(|error| TrackerError::Unavailable(error.to_string()))?;
-        let text = |bytes: &[u8]| String::from_utf8_lossy(bytes).trim().to_owned();
-        if !output.status.success() {
-            let stderr = text(&output.stderr);
-            let said = if stderr.is_empty() { text(&output.stdout) } else { stderr };
-            return Err(TrackerError::Unavailable(format!("gh api graphql: {said}")));
-        }
-        let mut envelope: Value =
-            serde_json::from_slice(&output.stdout).map_err(|error| TrackerError::BadResponse(error.to_string()))?;
-        if let Some(errors) = envelope.get("errors").and_then(Value::as_array).filter(|errors| !errors.is_empty()) {
-            let messages: Vec<&str> = errors.iter().map(|error| error["message"].as_str().unwrap_or_default()).collect();
-            return Err(TrackerError::Refused(messages.join("; ")));
-        }
-        Ok(envelope["data"].take())
+        answer(self.envelope(query, &variables)?)
     }
 
     /// A mutation with string variables.
@@ -150,6 +131,16 @@ impl GhTracker {
     }
 }
 
+/// The `data` of an envelope, for the writes. A non-empty array of `errors` is the tracker's refusal, their
+/// messages joined by `; `; an empty one, or anything else, is not (the reads take `errors` otherwise).
+fn answer(mut envelope: Value) -> Result<Value, TrackerError> {
+    if let Some(errors) = envelope.get("errors").and_then(Value::as_array).filter(|errors| !errors.is_empty()) {
+        let messages: Vec<&str> = errors.iter().map(|error| error["message"].as_str().unwrap_or_default()).collect();
+        return Err(TrackerError::Refused(messages.join("; ")));
+    }
+    Ok(envelope["data"].take())
+}
+
 fn parse<T: for<'de> Deserialize<'de>>(value: &Value) -> Result<T, TrackerError> {
     T::deserialize(value).map_err(|error| TrackerError::BadResponse(error.to_string()))
 }
@@ -218,6 +209,57 @@ mod tests {
         assert_eq!(call(MOVE_SUB_ISSUE).1, "input:{issueId:$p,subIssueId:$c,replaceParent:true}");
         assert_eq!(call(ADD_SUB_ISSUE).1, "input:{issueId:$p,subIssueId:$c}");
         assert_eq!(call(REMOVE_BLOCKED_BY), ("removeBlockedBy", "input:{issueId:$i,blockingIssueId:$b}".to_owned()));
+    }
+
+    /// Difference 2 and 4 of #595, the writes' side: a non-empty array of `errors` is a refusal with the
+    /// messages joined by `; `, and an empty one, or one that is not an array, is a success, as it was.
+    #[test]
+    fn the_writes_take_errors_as_a_refusal_with_their_messages() {
+        let errors = json!([{"type": "FORBIDDEN", "message": "no"}, {"message": "nor this"}, {"type": "NO_MESSAGE"}]);
+        assert!(matches!(
+            answer(json!({"data": null, "errors": errors})),
+            Err(TrackerError::Refused(text)) if text == "no; nor this; "
+        ));
+        assert_eq!(answer(json!({"data": {"x": 1}, "errors": []})).unwrap(), json!({"x": 1}));
+        assert_eq!(answer(json!({"data": {"x": 1}, "errors": null})).unwrap(), json!({"x": 1}));
+        assert_eq!(answer(json!({"data": {"x": 1}, "errors": {"message": "m"}})).unwrap(), json!({"x": 1}));
+        assert_eq!(answer(json!({"data": {"x": 1}})).unwrap(), json!({"x": 1}));
+    }
+
+    /// The two sides give the same envelope their own classification and their own text: where they part is
+    /// the point of keeping the mapping with the caller.
+    #[test]
+    fn each_side_keeps_its_own_classification_of_the_same_envelope() {
+        let envelope = json!({"data": null, "errors": [{"message": "Could not resolve"}]});
+        let read = crate::GhTracker::data_of::<Value>(envelope.clone());
+        let write = answer(envelope);
+        assert!(matches!(read, Err(TrackerError::BadResponse(text)) if text == r#"[{"message":"Could not resolve"}]"#));
+        assert!(matches!(write, Err(TrackerError::Refused(text)) if text == "Could not resolve"));
+        // `errors: []`: a success for a write, an error for a read, as today.
+        let empty = json!({"data": {"x": 1}, "errors": []});
+        assert!(answer(empty.clone()).is_ok());
+        assert!(crate::GhTracker::data_of::<Value>(empty).is_err());
+    }
+
+    /// Difference 1 of #595: a write takes a place among the running calls, as a read does. The `gh` here is
+    /// this test binary, which fails at once on `api graphql --input=-` (a run that fails is enough): with the
+    /// only place held, `request` does not start it until the place is given back. The wait for "it did not
+    /// answer" can only pass too soon on a slow machine, never fail for it.
+    #[test]
+    fn a_write_waits_for_a_place() {
+        use std::sync::mpsc;
+        use std::time::Duration;
+
+        let tracker = crate::tests::tracker_running_this_binary(1);
+        let place = tracker.calls.start();
+        let (done, hear) = mpsc::channel();
+        std::thread::scope(|scope| {
+            scope.spawn(|| done.send(tracker.request(REOPEN, tracker.issue_variables(1))).unwrap());
+            assert!(hear.recv_timeout(Duration::from_millis(1500)).is_err(), "the write ran without a place");
+            drop(place);
+            let result = hear.recv_timeout(Duration::from_secs(60)).expect("the write runs once it has a place");
+            assert!(matches!(result, Err(TrackerError::Unavailable(ref text)) if text.starts_with("gh api graphql: ")), "{result:?}");
+        });
     }
 
     /// The first field of a mutation and its arguments without blanks, as the conformance harness reads them.
