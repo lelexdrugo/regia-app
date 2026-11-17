@@ -74,6 +74,13 @@ pub trait Tracker {
         Err(TrackerError::Unavailable(format!("this tracker does not read the comments of #{number}")))
     }
 
+    /// The instant of the last edit of an issue's body, in ISO 8601, or `None` inside if the body was never
+    /// edited (`Issue.lastEditedAt`, not `updatedAt`, which a comment moves too); `None` outside if the
+    /// tracker has no such issue.
+    fn body_edited_at(&self, number: u64) -> Result<Option<Option<String>>, TrackerError> {
+        Err(TrackerError::Unavailable(format!("this tracker does not read when the body of #{number} was edited")))
+    }
+
     /// The changes of Status since `since` of every issue labelled `label`, open and closed, in tracker
     /// order: where the Proposals of a week are counted. The Status does not move an issue's `updatedAt`.
     fn status_histories(&self, label: &str, since: DateTime<Utc>) -> Result<Vec<StatusHistory>, TrackerError> {

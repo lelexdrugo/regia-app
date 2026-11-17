@@ -1,0 +1,36 @@
+{
+  "bloccato_da": [],
+  "bloccato_da_totale": 0,
+  "body": "A spec, edited.\n",
+  "body_edited_after_dal": true,
+  "body_edited_at": "2026-01-09T10:00:00Z",
+  "campo_progetto": null,
+  "closedAt": null,
+  "comments": [
+    {
+      "accorciato": false,
+      "body": "A comment after the since.",
+      "creato": "2026-01-09T12:00:00Z",
+      "firma": "titolare",
+      "id": 9301,
+      "url": "https://tracker.invalid/issues/3#issuecomment-9301"
+    }
+  ],
+  "createdAt": "2026-01-01T00:00:00Z",
+  "labels": [
+    "progetto:alpha",
+    "maturità:pronto"
+  ],
+  "maturita": "pronto",
+  "number": 3,
+  "obiettivo": false,
+  "parent": 1,
+  "progetto": "alpha",
+  "state": "OPEN",
+  "stateReason": null,
+  "stato": "Approvato",
+  "sub": [],
+  "title": "a task edited after the since",
+  "updatedAt": "2026-01-02T03:04:05Z",
+  "url": "https://tracker.invalid/issues/3"
+}
