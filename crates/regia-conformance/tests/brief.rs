@@ -307,6 +307,12 @@ fn the_tree_scan_reaches_scenarios_and_recorded_and_refuses_what_it_cannot_read(
         .map(|(path, urls)| format!("{}: {urls:?}", path.file_name().unwrap().to_string_lossy()))
         .collect();
     assert_eq!(found, ["RECORDED.json: [\"https://private.example/r\"]", "s.json: [\"https://private.example/s\"]"]);
+    // A URL written in JSON escapes is not in the text as such, and is in the decoded string (D18).
+    fs::write(dir.join("escaped.json"), r#"{"note": "https:\/\/private.example/esc"}"#).unwrap();
+    let escaped = foreign_urls_in_tree(&dir, &allowed).unwrap();
+    let escaped: Vec<&String> = escaped.iter().filter(|(path, _)| path.ends_with("escaped.json")).flat_map(|(_, urls)| urls).collect();
+    assert_eq!(escaped, ["https://private.example/esc"]);
+    fs::remove_file(dir.join("escaped.json")).unwrap();
     fs::write(dir.join("cases/one/binary.bin"), [0xff_u8, 0xfe, 0x00]).unwrap();
     let error = foreign_urls_in_tree(&dir, &allowed).expect_err("a file that is not text is an error");
     assert!(error.contains("binary.bin"), "{error}");
@@ -322,6 +328,8 @@ fn the_url_scan_sees_a_foreign_host_wherever_it_is() {
     assert_eq!(foreign_urls(r#"{"https://private.example/k": 1}"#, &allowed), ["https://private.example/k"]);
     assert_eq!(foreign_urls("ssh://host.example/repo.git and (ftp://a.example/x)", &allowed), ["ssh://host.example/repo.git", "ftp://a.example/x"]);
     assert!(foreign_urls(r#"{"url": "https://tracker.invalid/issues/1#issuecomment-2", "body": "no link"}"#, &allowed).is_empty());
+    // A multibyte character right before the scheme is text, and the scan does not stop on it (D19).
+    assert_eq!(foreign_urls("see →https://private.example/x", &allowed), ["https://private.example/x"]);
     // A second URL inside an allowed one is a URL of its own (D6).
     assert_eq!(foreign_urls("https://tracker.invalid/redirect?to=https://private.example/inner", &allowed), ["https://private.example/inner"]);
 }

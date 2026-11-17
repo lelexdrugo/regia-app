@@ -13,7 +13,7 @@
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use regia_conformance::{json_diff, live_rust_launch, regia_binary, take_not_ported, translate_python};
+use regia_conformance::{json_diff, live_python_launch, live_rust_launch, regia_binary, take_not_ported, translate_python};
 use regia_facade::{PythonPrototype, Table};
 use serde_json::Value;
 
@@ -54,7 +54,7 @@ impl Sides<'_> {
     fn python(&self, args: &[String]) -> Result<Value, String> {
         let (command, rest) = self.table.split_command(args).ok_or("unknown command")?;
         let argv = self.table.python_argv(&command, rest).map_err(|_| "the table refuses the arguments")?;
-        let output = self.prototype.launch(&argv).map_err(|error| error.to_string())?.run().map_err(|error| error.to_string())?;
+        let output = live_python_launch(self.prototype.launch(&argv).map_err(|error| error.to_string())?, self.dossier).run().map_err(|error| error.to_string())?;
         if !output.status.success() {
             return Err(format!("the prototype exited {:?}", output.status.code()));
         }

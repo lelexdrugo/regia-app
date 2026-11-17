@@ -3,8 +3,9 @@
 
 use std::path::Path;
 
-use regia_conformance::{live_rust_launch, workspace_root};
-use regia_identity::env_var;
+use regia_conformance::{live_python_launch, live_rust_launch, workspace_root};
+use regia_exec::Program;
+use regia_identity::{env_var, prototype_env_var};
 use serde_json::Value;
 
 const PROBE: &str = env!("CARGO_BIN_EXE_probe");
@@ -20,6 +21,13 @@ fn live_check_starts_the_rust_side_without_the_fixed_day_and_on_the_native_engin
     let now = env_var("NOW");
     // SAFETY: as above.
     unsafe { std::env::set_var(&now, "2026-01-12T10:00:00Z") };
+    // The programs and the dossier of the shell must not reach either side: both read the tracker `gh` on PATH
+    // gives, from the dossier named (D20, D21).
+    let (gh, home) = (Program::Gh.env_name(), prototype_env_var("HOME"));
+    // SAFETY: as above.
+    unsafe { std::env::set_var(&gh, "poisoned-gh") };
+    // SAFETY: as above.
+    unsafe { std::env::set_var(&home, "poisoned-home") };
     let dossier = workspace_root();
     let output = live_rust_launch(Path::new(PROBE), &["brief".to_owned()], &dossier).run().expect("the probe runs");
     let report: Value = serde_json::from_slice(&output.stdout).expect("the probe prints JSON");
@@ -29,4 +37,11 @@ fn live_check_starts_the_rust_side_without_the_fixed_day_and_on_the_native_engin
     assert!(!env.contains_key(&now), "{now} reached the Rust side of live-check");
     assert_eq!(env.get(&env_var("ENGINE")).and_then(Value::as_str), Some("rust"));
     assert_eq!(report["argv"], serde_json::json!(["brief"]));
+    assert!(!env.contains_key(&gh), "{gh} reached the Rust side of live-check");
+    assert_eq!(env.get(&home).and_then(Value::as_str), dossier.to_str(), "{home} of the Rust side is not the dossier named");
+
+    // The prototype side: the same dossier, whatever the shell says.
+    let python = live_python_launch(regia_exec::harness::launch(Path::new(PROBE), &[], &dossier), &dossier);
+    let report: Value = serde_json::from_slice(&python.run().expect("the probe runs").stdout).expect("the probe prints JSON");
+    assert_eq!(report["env"][&home].as_str(), dossier.to_str(), "{home} of the prototype side is not the dossier named");
 }

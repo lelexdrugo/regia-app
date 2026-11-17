@@ -5,7 +5,7 @@
 use std::fs;
 use std::path::Path;
 
-use regia_conformance::{Case, bin_dir, check_connections, responses_var, workspace_root};
+use regia_conformance::{Case, bin_dir, check_connections, project_query, responses_var, workspace_root};
 use serde_json::{Value, json};
 
 const FAKE_GH: &str = env!("CARGO_BIN_EXE_fake-gh");
@@ -38,6 +38,8 @@ fn mutations(query: &str) -> Vec<(&'static str, String, &'static str)> {
         ("a fragment on another type", swap("... on ProjectV2ItemFieldSingleSelectValue", "... on ProjectV2ItemFieldTextValue"), "ProjectV2ItemFieldTextValue"),
         ("labels without a pagination", swap("labels(first:20)", "labels"), "labels"),
         ("blockers without a pagination", swap("blockedBy(first:20)", "blockedBy"), "blockedBy"),
+        ("the owner and the repo swapped", swap("repository(owner:$o,name:$r)", "repository(owner:$r,name:$o)"), "repository"),
+        ("a page asked backwards", swap("issues(first:100,", "issues(before:$after,first:100,"), "issues"),
         ("a connection the prototype never reads", swap("parent{number}", "parent{number} assignees(first:5){nodes{id}}"), "assignees"),
     ]
 }
@@ -50,6 +52,16 @@ fn a_query_that_does_not_read_the_connections_as_the_prototype_does_is_refused()
         let refusal = check_connections(&wrong).err().unwrap_or_else(|| panic!("passed: {what}"));
         assert!(refusal.contains(word), "{what}: the reason does not say {word}: {refusal}");
     }
+}
+
+/// An object read with nothing selected in it is an error on the real API; the fake used to copy the whole
+/// fixture value (D14). A scalar, and a list of scalars, need no selection.
+#[test]
+fn an_object_with_no_selection_is_refused_and_a_scalar_is_not() {
+    let page = json!({"labels": {"nodes": [{"name": "a"}]}, "title": "t", "names": ["a", "b"]});
+    let refusal = project_query("{labels}", &page).expect_err("an object with nothing selected");
+    assert!(refusal.contains("labels"), "{refusal}");
+    assert_eq!(project_query("{labels{nodes{name}} title names}", &page).unwrap(), page);
 }
 
 /// The fake itself, started as the product starts it: the request on stdin. The same fixture answers the

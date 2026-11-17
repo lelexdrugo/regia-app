@@ -804,11 +804,20 @@ pub fn regia_binary() -> PathBuf {
 /// The engine is forced to the native one: with the dossier named the reads would go to the prototype, and
 /// this side has to be the Rust one.
 pub fn live_rust_launch(binary: &Path, args: &[String], dossier: &Path) -> Launch {
-    regia_exec::harness::launch(binary, args, dossier)
+    // The programs are the ones on PATH, as the prototype's: a `REGIA_GH` left in the shell (a fixture's fake)
+    // would make this side read another tracker than the prototype's (D20).
+    let launch = Program::ALL.iter().fold(regia_exec::harness::launch(binary, args, dossier), |launch, program| launch.without(&program.env_name()));
+    launch
         .env(&prototype_env_var("HOME"), dossier)
         .env(&env_var("ENGINE"), "rust")
         .without(&env_var("TODAY"))
         .without(&env_var("NOW"))
+}
+
+/// The prototype side of `live-check`: the dossier is the one named, whatever `REGIA_HOME` holds in the
+/// shell, so both sides read the same tracker (D21).
+pub fn live_python_launch(launch: Launch, dossier: &Path) -> Launch {
+    launch.env(&prototype_env_var("HOME"), dossier)
 }
 
 /// Every `scheme://…` in `text` that does not start with one of the `allowed` prefixes. `text` is a whole
@@ -819,9 +828,13 @@ pub fn foreign_urls(text: &str, allowed: &[&str]) -> Vec<String> {
     let mut rest = text;
     let mut consumed = 0;
     while let Some(at) = rest.find("://") {
+        // The scheme starts after the last character that cannot be in one: past that character's whole
+        // encoding, since a multibyte one (an arrow, an accent) before the URL is text like any other (D19).
         let scheme_start = text[..consumed + at]
-            .rfind(|c: char| !(c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.')))
-            .map_or(0, |i| i + 1);
+            .char_indices()
+            .rev()
+            .find(|(_, c)| !(c.is_ascii_alphanumeric() || matches!(c, '+' | '-' | '.')))
+            .map_or(0, |(i, c)| i + c.len_utf8());
         let after = consumed + at + 3;
         let end = text[after..]
             .find(|c: char| c.is_whitespace() || matches!(c, '"' | '\'' | '<' | '>' | ')' | ']' | '}' | '\\' | ',' | '`'))
@@ -853,13 +866,45 @@ pub fn foreign_urls_in_tree(dir: &Path, allowed: &[&str]) -> Result<Vec<(PathBuf
             found.extend(foreign_urls_in_tree(&path, allowed)?);
         } else {
             let text = fs::read_to_string(&path).map_err(|error| format!("{}: {error}", path.display()))?;
-            let foreign = foreign_urls(&text, allowed);
+            let mut foreign = foreign_urls(&text, allowed);
+            // A JSON file can write a URL in escapes (`https:\/\/host`, `\u003a`): the text above does not
+            // show it, the decoded keys and strings do (D18).
+            if let Ok(json) = serde_json::from_str::<Value>(&text) {
+                let mut decoded = String::new();
+                json_strings(&json, &mut decoded);
+                for url in foreign_urls(&decoded, allowed) {
+                    if !foreign.contains(&url) {
+                        foreign.push(url);
+                    }
+                }
+            }
             if !foreign.is_empty() {
                 found.push((path, foreign));
             }
         }
     }
     Ok(found)
+}
+
+const NEWLINE: char = '\n';
+
+/// Every key and every string of `value`, decoded, one per line.
+fn json_strings(value: &Value, out: &mut String) {
+    match value {
+        Value::String(text) => {
+            out.push_str(text);
+            out.push(NEWLINE);
+        }
+        Value::Array(items) => items.iter().for_each(|item| json_strings(item, out)),
+        Value::Object(object) => {
+            for (key, inner) in object {
+                out.push_str(key);
+                out.push(NEWLINE);
+                json_strings(inner, out);
+            }
+        }
+        _ => {}
+    }
 }
 
 /// The synthetic hosts a fixture may name: the invented tracker, and the URLs the prototype builds on
@@ -1324,7 +1369,12 @@ fn project(selections: &[Selection], value: &Value, optional: bool) -> Result<Va
                     (_, found) => found.cloned(),
                 };
                 match found {
+                    // An object or a list of objects with no selection set: the real API refuses the query, and
+                    // copying the whole fixture value would let it through (D14).
                     Some(inner) if selection.children.is_empty() => {
+                        if inner.is_object() || inner.as_array().is_some_and(|items| items.iter().any(Value::is_object)) {
+                            return Err(format!("`{}` is an object and the query selects nothing in it", selection.name));
+                        }
                         out.insert(key, inner);
                     }
                     Some(inner) => {
@@ -1440,7 +1490,7 @@ fn pagination_of(arguments: &str) -> String {
         }
     }
     parts.push(&arguments[start..]);
-    parts.retain(|part| ["first:", "last:", "after:"].iter().any(|key| part.starts_with(key)));
+    parts.retain(|part| ["first:", "last:", "after:", "before:"].iter().any(|key| part.starts_with(key)));
     parts.join(",")
 }
 
@@ -1456,6 +1506,18 @@ fn check_selections(selections: &[Selection], path: &str) -> Result<(), String> 
             continue;
         }
         let here = join(&selection.name);
+        // The repository and the owner a query reads are the ones its variables name, in that order: with
+        // `owner:$r,name:$o` the fixture would answer for a repo that is not the tracker (D16).
+        let root_arguments = match (path.is_empty(), selection.name.as_str()) {
+            (true, "repository") => Some("owner:$o,name:$r"),
+            (true, "repositoryOwner") => Some("login:$o"),
+            _ => None,
+        };
+        if let Some(wanted) = root_arguments {
+            if selection.arguments != wanted {
+                return Err(format!("`{here}` is read with `{}`, the prototype reads it with `{wanted}`", selection.arguments));
+            }
+        }
         let pagination = pagination_of(&selection.arguments);
         let allowed = CONNECTIONS.iter().find(|(at, _)| *at == here).map(|(_, forms)| *forms);
         // A path of the table is a connection, and the prototype never reads one whole: `labels{...}` with no
