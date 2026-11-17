@@ -1060,13 +1060,16 @@ fn run_case_in(label: &str, case: &Case, build: bool, extra: impl FnOnce(&Path) 
     for (name, value) in case.spec.session_env() {
         launch = launch.env(&name, value);
     }
+    for (name, value) in extra(&state) {
+        launch = launch.env(&name, value);
+    }
+    // After `extra`, which may set `PATH` itself (a live run puts the fake `gh` first on the machine's
+    // `PATH`, git included): the stand-in for git must have the last word, or the prototype finds the
+    // machine's git where the case says there is none (#666).
     if let Some(double) = case.spec.dossier.as_ref().and_then(|spec| spec.git_double) {
         for (name, value) in git_double_env(&state, double) {
             launch = launch.env(&name, value);
         }
-    }
-    for (name, value) in extra(&state) {
-        launch = launch.env(&name, value);
     }
     let output = launch.run().expect("run regia");
     let dossier_after = case.spec.dossier.as_ref().filter(|_| build).and_then(|spec| dossier_after(&state, spec));
