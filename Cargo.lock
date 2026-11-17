@@ -2912,7 +2912,6 @@ dependencies = [
  "chrono",
  "pulldown-cmark",
  "regex",
- "regia-identity",
  "serde",
  "serde_json",
  "thiserror 2.0.21",
