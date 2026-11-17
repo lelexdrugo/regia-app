@@ -96,7 +96,11 @@ fn every_builder_hands_the_program_exactly_its_tokens() {
     let report = seen(probe_as(Program::Python).launch(python::prototype(&path, &facade).unwrap(), &dir));
     assert_eq!(argv(&report)[..4], ["-X", "utf8", "-I", "tools/regia.py"]);
     assert_eq!(argv(&report)[4..], facade[..]);
-    for hostile in ["-x", "--upload-pack=x", "-c core.sshCommand=x", "--", "", "--Upper"] {
+    // #568/V2: an option with its value joined passes, name and value judged apart; the table of the
+    // facade is what keeps an option it does not list from getting here at all.
+    let joined = vec!["commento".to_owned(), "12".to_owned(), "--corpo=- a list item".to_owned()];
+    assert_eq!(argv(&seen(probe_as(Program::Python).launch(python::prototype(&path, &joined).unwrap(), &dir)))[4..], joined[..]);
+    for hostile in ["-x", "--Upload-pack=x", "--upload-pack=", "-c core.sshCommand=x", "--", "", "--Upper"] {
         let facade = vec!["brief".to_owned(), hostile.to_owned()];
         assert!(python::prototype(&path, &facade).is_err(), "the facade passed {hostile:?}");
     }
