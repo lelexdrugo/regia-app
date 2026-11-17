@@ -32,7 +32,7 @@ pub use cli::{Cli, WAKE_PROMPT, Waits};
 pub use gates::{Gate, GateError, Gates};
 pub use https::{Https, TIMEOUT};
 pub use launch::{
-    Dry, Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback,
+    Dry, Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback, read_prompt_file,
 };
 pub use orca::{Auto, Orca, OrcaWaits, PROMPT_IN_ARGV_MAX, surface};
 pub use policy::{Assignment, Diversity, Fallback, Policy, Role, Settings, SettingsError, Tier};

@@ -292,17 +292,19 @@ pub mod codex {
     use crate::{AbsolutePath, Args, Effort, ModelId};
 
     /// `codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check
-    /// --cd=<folder> --output-last-message=<file> [--model=…] [--config=model_reasoning_effort=…] -`.
+    /// [--cd=<folder>] --output-last-message=<file> [--model=…] [--config=model_reasoning_effort=…] -`.
     /// The last `-` makes it read the prompt from stdin. On Windows codex is `codex.cmd`, so the
     /// paths are written with `/` ([`AbsolutePath`]).
-    pub fn exec(folder: &AbsolutePath, last_message: &AbsolutePath, model: Option<&ModelId>, effort: Option<Effort>) -> Args {
-        let mut args = Args::new()
-            .word("exec")
-            .word("--json")
-            .word("--dangerously-bypass-approvals-and-sandbox")
-            .word("--skip-git-repo-check")
-            .opt("--cd", folder)
-            .opt("--output-last-message", last_message);
+    ///
+    /// `folder` is `None` when the program is started in that folder and takes no `--cd`: codex works
+    /// in its own current folder when it has none. That is how a folder a `.cmd` cannot receive as an
+    /// argument ([`AbsolutePath::fits_batch`]) still reaches codex, whole.
+    pub fn exec(folder: Option<&AbsolutePath>, last_message: &AbsolutePath, model: Option<&ModelId>, effort: Option<Effort>) -> Args {
+        let mut args = Args::new().word("exec").word("--json").word("--dangerously-bypass-approvals-and-sandbox").word("--skip-git-repo-check");
+        if let Some(folder) = folder {
+            args = args.opt("--cd", folder);
+        }
+        args = args.opt("--output-last-message", last_message);
         if let Some(model) = model {
             args = args.opt("--model", model);
         }
@@ -447,7 +449,7 @@ mod tests {
             (absolute("/work/trial"), absolute("/state/steps/trial/1.last.txt"))
         };
         let model = ModelId::parse("gpt-x").unwrap();
-        let args = tokens(&codex::exec(&folder, &last, Some(&model), Some(Effort::High)));
+        let args = tokens(&codex::exec(Some(&folder), &last, Some(&model), Some(Effort::High)));
         let root = if cfg!(windows) { "C:/" } else { "/" };
         assert_eq!(
             args,
@@ -463,7 +465,12 @@ mod tests {
                 "-".to_owned(),
             ]
         );
-        assert_eq!(tokens(&codex::exec(&folder, &last, None, None)).last().map(String::as_str), Some("-"));
+        assert_eq!(tokens(&codex::exec(Some(&folder), &last, None, None)).last().map(String::as_str), Some("-"));
+        // Without a folder: the same argv without `--cd`, which codex does not need when it starts in it.
+        let without = tokens(&codex::exec(None, &last, Some(&model), Some(Effort::High)));
+        let with: Vec<String> = args.iter().filter(|token| !token.starts_with("--cd=")).cloned().collect();
+        assert_eq!(without, with);
+        assert_eq!(without.len(), args.len() - 1);
     }
 
     /// The prototype's `SVEGLIA_ARGOMENTI` in the `--name=value` form, without the prompt, which goes

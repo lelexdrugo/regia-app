@@ -98,6 +98,15 @@ impl Platform {
     pub fn current() -> Platform {
         if cfg!(target_os = "macos") { Platform::MacOs } else { Platform::Other }
     }
+
+    /// Whether the probes read Claude's windows and token here, with the consent. On macOS they do not:
+    /// where Claude Code keeps its credentials is not proven there ([`MACOS_CLAUDE`]). This is the one
+    /// place the rule lives: the probes ask it, and so does whoever must know what they never read, such
+    /// as the budget gate of the controller, which then does not trust what the cache holds of Claude.
+    #[must_use]
+    pub fn probes_read_claude(self) -> bool {
+        self != Platform::MacOs
+    }
 }
 
 /// The usage probes, with the user's consent or without it.
@@ -158,7 +167,7 @@ impl UsageProbes {
     pub fn claude(&self) -> ProviderUsage {
         let provider = ServiceId::Claude.id();
         let Some(granted) = &self.granted else { return ProviderUsage::probe_off(provider, PROBES_OFF) };
-        if granted.platform == Platform::MacOs {
+        if !granted.platform.probes_read_claude() {
             return ProviderUsage::unknown(provider, None, MACOS_CLAUDE, None);
         }
         let doc = match read_json(credentials(&granted.env, ServiceId::Claude), "Claude") {
@@ -246,7 +255,7 @@ impl UsageProbes {
     /// consent, on macOS, or when it cannot be read.
     #[must_use]
     pub fn claude_token_expiry(&self) -> Option<String> {
-        let granted = self.granted.as_ref().filter(|granted| granted.platform != Platform::MacOs)?;
+        let granted = self.granted.as_ref().filter(|granted| granted.platform.probes_read_claude())?;
         let doc = read_json(credentials(&granted.env, ServiceId::Claude), "Claude").ok()?;
         let ms = doc.get("claudeAiOauth")?.as_object()?.get("expiresAt").and_then(number)?;
         WallTime::from_unix_secs_f64(ms / 1000.0).map(|at| self.local(at, Precision::Seconds))

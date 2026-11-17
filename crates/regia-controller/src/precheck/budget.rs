@@ -32,15 +32,15 @@ pub enum BudgetSource {
 }
 
 impl BudgetSource {
-    /// What the consent and the system say before any reading: `None` when the cache decides. On macOS the
-    /// probes never read Claude (`regia_agents::MACOS_CLAUDE`), so whatever the cache holds of it was not
-    /// read by them.
+    /// What the consent and the system say before any reading: `None` when the cache decides. Where the
+    /// probes never read Claude ([`Platform::probes_read_claude`], macOS), whatever the cache holds of it
+    /// was not read by them.
     #[must_use]
     pub fn before_reading(consent: ProbeConsent, platform: Platform) -> Option<BudgetSource> {
-        match (consent, platform) {
-            (ProbeConsent::Refused, _) => Some(BudgetSource::ProbesOff),
-            (ProbeConsent::Granted, Platform::MacOs) => Some(BudgetSource::NeverRead),
-            (ProbeConsent::Granted, Platform::Other) => None,
+        match consent {
+            ProbeConsent::Refused => Some(BudgetSource::ProbesOff),
+            ProbeConsent::Granted if !platform.probes_read_claude() => Some(BudgetSource::NeverRead),
+            ProbeConsent::Granted => None,
         }
     }
 }
