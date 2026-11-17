@@ -42,6 +42,68 @@ fn an_events_cursor_in_the_old_form_fails_closed_through_the_facade() {
     assert!(run.stdout.is_empty() && run.stderr.contains("cursore"), "{}", run.stderr);
 }
 
+/// #568/V3: `dailies start` (the prototype's `giornalieri avvia`, F274) is a write that opens a chat in
+/// Orca, so no recording of it exists: the prototype would open a real one wherever Orca runs, and the
+/// harness does not hide Orca from it. The case is the translation of its arguments, run through the
+/// binary with the stand-in interpreter, which refuses an argv other than the one written here and
+/// answers with lines shaped like the prototype's for an opened chat and for a refusal. No chat is opened.
+#[test]
+fn dailies_start_reaches_the_prototype_with_its_arguments_and_opens_no_chat() {
+    let table = Table::embedded();
+    let argv = |items: &[&str]| items.iter().map(|item| (*item).to_owned()).collect::<Vec<_>>();
+    assert_eq!(table.python_argv("dailies start", &argv(&[])).unwrap(), ["giornalieri", "avvia"]);
+    assert_eq!(table.python_argv("dailies start", &argv(&["--force"])).unwrap(), ["giornalieri", "avvia", "--forza"]);
+    assert_eq!(table.python_argv("dailies start", &argv(&["--force", "--json"])).unwrap(), ["--json", "giornalieri", "avvia", "--forza"]);
+    assert!(matches!(table.python_argv("dailies start", &argv(&["--force=yes"])), Err(regia_facade::FacadeError::FlagWithValue { .. })));
+    assert!(table.python_argv("dailies start", &argv(&["--forza"])).is_err(), "the Italian name is not the interface");
+    assert!(table.python_argv("dailies start", &argv(&["now"])).is_err(), "no positional argument");
+
+    let mut case = Case::named("core");
+    let mut run_with = |label: &str, args: &[&str], python: &[&str], exit: u8, stdout: &str, stderr: &str| {
+        case.spec.args = argv(args);
+        case.spec.python = Some(argv(python));
+        let replay = Replay {
+            argv: regia_exec::python::FLAGS.iter().map(|flag| (*flag).to_owned()).chain(["tools/regia.py".to_owned()]).chain(argv(python)).collect(),
+            stdout: stdout.to_owned(),
+            stderr: stderr.to_owned(),
+            exit,
+            json: false,
+        };
+        replayed(label, &case, &replay)
+    };
+    let opened = "giornalieri avviati: chat aperta con Orca (sessione non indicata).
+";
+    let run = run_with("dailies-start", &["dailies", "start"], &["giornalieri", "avvia"], 0, opened, "");
+    assert_eq!((run.exit, String::from_utf8_lossy(&run.stdout).as_ref()), (Some(0), opened), "{}", run.stderr);
+    // The refusal of a chat still open exits with 3 and says so on stderr, as the prototype does.
+    let refused = "giornalieri NON avviati: la chat aperta il 2026-01-10T08:00:00Z non ha ancora il file di chiusura.
+";
+    let run = run_with("dailies-start-force", &["dailies", "start", "--force"], &["giornalieri", "avvia", "--forza"], 3, "", refused);
+    assert_eq!((run.exit, run.stdout.is_empty(), run.stderr.as_str()), (Some(3), true, refused));
+    // The stand-in is the judge of the argv: the same run with the flag dropped is noticed.
+    let run = run_with("dailies-start-no-force", &["dailies", "start", "--force"], &["giornalieri", "avvia"], 0, opened, "");
+    assert_eq!(run.exit, Some(i32::from(FAKE_PYTHON_WRONG_ARGV)), "the stand-in took another argv: {}", run.stderr);
+}
+
+/// #568/V2 (#441/V2): a comment whose body starts with a dash goes through the facade in the joined form,
+/// `--body=- a list item`, and the prototype writes it whole: not as an option, and not refused by
+/// `regia-exec` as the name of one. The replay of the case, in `every_case_through_the_facade_replays_with_its_exit_and_output`,
+/// runs the binary and the stand-in on exactly that argv.
+#[test]
+fn a_comment_body_that_starts_with_a_dash_goes_through_the_facade_whole() {
+    let case = Case::named("comment-worker-dash");
+    assert_eq!(case.spec.args[2], "--body=- a list item");
+    assert_eq!(case.spec.python.as_deref().unwrap()[3], "--corpo=- a list item");
+    assert_eq!(case.spec.exit, 0);
+    let writes = case.writes();
+    assert_eq!(writes.len(), 1, "one comment");
+    assert!(writes[0]["stdin"].as_str().unwrap().starts_with("- a list item
+
+— regia · worker"), "the body, whole, then the signature");
+    let run = replayed("replay-comment-worker-dash", &case, &Replay::of(&case));
+    assert_eq!(run.exit, Some(0), "{}", run.stderr);
+}
+
 fn os(pairs: Vec<(String, PathBuf)>) -> Vec<(String, OsString)> {
     pairs.into_iter().map(|(name, value)| (name, value.into_os_string())).collect()
 }

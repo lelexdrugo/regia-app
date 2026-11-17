@@ -221,19 +221,38 @@ pub mod python {
 
     /// `python -X utf8 -I <script> <argv…>`, with [`FLAGS`].
     ///
-    /// Each element of `argv` is an option name from the facade table (`--json`) or a value, and a
-    /// value never starts with a dash: the facade passes values untouched, so this is where a
-    /// hostile one stops.
+    /// Each element of `argv` is an option name from the facade table (`--json`), an option with its
+    /// value joined (`--corpo=- a list item`) or a value. A separate value never starts with a dash:
+    /// the facade passes values untouched, so this is where a hostile one stops.
+    ///
+    /// A joined option is the form the threat model asks for (§3.6, rule 2), and the one way a value
+    /// that starts with a dash gets through: the prototype's parser takes what follows the first `=`
+    /// as the value, whatever it starts with, so it never reads it as an option. The name before the
+    /// `=` has the rule of a bare option name. The value after it has the rules of a [`Text`] except
+    /// the leading dash: not empty, no control character but tab and line breaks, 64 KiB at most. An
+    /// empty joined value (`--corpo=`) is refused as an empty separate one is: it would not reach any
+    /// option, but the prototype has no use for it, and a value is refused the same wherever it stands
+    /// (#568/V2).
     pub fn prototype(script: &DossierPath, argv: &[String]) -> Result<Args, InvalidValue> {
         let mut args = FLAGS.into_iter().fold(Args::new(), Args::word).value(script);
         for item in argv {
-            if let Some(name) = item.strip_prefix("--") {
+            if let Some(option) = item.strip_prefix("--") {
+                let (name, joined) = match option.split_once('=') {
+                    Some((name, value)) => (name, Some(value)),
+                    None => (option, None),
+                };
                 let valid = !name.is_empty()
                     && name.len() <= 64
                     && name.starts_with(|c: char| c.is_ascii_lowercase())
                     && name.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-');
                 if !valid {
                     return Err(InvalidValue { kind: "option name", reason: "is not --lowercase-words" });
+                }
+                if let Some(value) = joined {
+                    // The rules of `Text` with a dash first allowed: that one dash becomes a letter of
+                    // the same length, and `Text` judges the rest.
+                    let probe = value.strip_prefix('-').map_or_else(|| value.to_owned(), |rest| format!("x{rest}"));
+                    Text::parse(&probe)?;
                 }
                 args.0.push(item.into());
             } else {
@@ -497,6 +516,45 @@ mod tests {
             let batch = arg.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | ':' | '/' | '=' | '-'));
             assert!(batch, "{arg}");
         }
+    }
+
+    /// #568/V2: `--<name>=<value>` is one option of the facade with its value joined, which is how the
+    /// prototype's parser takes a value that starts with a dash (`--corpo=- a list item`). The name
+    /// keeps today's rule and the value is a [`Text`]; a value that is separate and starts with a dash
+    /// stays refused, and so does a name that is not lowercase words, before the `=`.
+    #[test]
+    fn the_prototype_takes_a_joined_option_with_its_value() {
+        let script = DossierPath::parse("tools/regia.py").unwrap();
+        let argv = |items: &[&str]| items.iter().map(|item| (*item).to_owned()).collect::<Vec<_>>();
+        let tokens_of = |items: &[&str]| python::prototype(&script, &argv(items)).map(|args| tokens(&args));
+        let fixed = ["-X", "utf8", "-I", "tools/regia.py"].map(str::to_owned);
+
+        let joined = tokens_of(&["--json", "commento", "12", "--corpo=- a list item"]).unwrap();
+        assert_eq!(joined[..4], fixed);
+        assert_eq!(joined[4..], ["--json", "commento", "12", "--corpo=- a list item"]);
+        let many = tokens_of(&["--report-elaborati=a.md", "--corpo=line one\nline two", "--n1-x=y=z"]).unwrap();
+        assert_eq!(many[4..], ["--report-elaborati=a.md", "--corpo=line one\nline two", "--n1-x=y=z"], "the value keeps what follows its own `=`");
+
+        // What stays out: the value's own rules, the name's rule before the `=`, a separate value.
+        for hostile in [
+            "--corpo=",          // `Text` takes no empty value, joined or not
+            "--=x",              // no name
+            "--Corpo=x",         // a name of lowercase words
+            "--corpo x=y",       // a space is not in a name
+            "--1corpo=x",        // a name starts with a letter
+            "--corpo=a\u{1b}[31m", // a control character in the value
+            "--corpo-é=x",       // an ASCII name
+            "-x=y",              // one dash is no option name
+        ] {
+            assert!(tokens_of(&["brief", hostile]).is_err(), "the facade passed {hostile:?}");
+        }
+        let too_long = format!("--corpo={}", "x".repeat(64 * 1024 + 1));
+        assert!(tokens_of(&["brief", &too_long]).is_err(), "a value is at most 64 KiB, joined or not");
+        let long_name = format!("--{}=x", "a".repeat(65));
+        assert!(tokens_of(&["brief", &long_name]).is_err(), "a name is at most 64 characters");
+        assert!(tokens_of(&["commento", "12", "--corpo", "-x"]).is_err(), "a separate value that starts with a dash stays refused");
+        let dashes = tokens_of(&["brief", "--corpo=-", "--corpo=--upload-pack=x"]).unwrap();
+        assert_eq!(dashes[5..], ["--corpo=-", "--corpo=--upload-pack=x"], "a joined value is never read as an option");
     }
 
     #[test]

@@ -1,0 +1,16 @@
+# `dailies start` (the prototype's `giornalieri avvia`, F274 of the inventory, #209): opens now the
+# chat of the dailies in Orca, with the prompt, the folder, the model and the adapter of the
+# `giornalieri` entry of the controller's configuration. It is a write: it opens a chat. It exits with
+# 3 when the previous chat has no closing file yet and `--force` is missing, and with 1 when Orca is not
+# there or the launch fell after its effect. It prints text; `--json` would give the prototype's keys
+# in Italian, which the table does not translate yet. The name is the nearest the table has (`step
+# start`, `--overwrite`) and not decided: it goes to the gate of the names (#223), the `--force` of the
+# prototype's `--forza` with it. Not in `docs/contract/commands.md`.
+schema = 1
+
+[commands."dailies start"]
+python = ["giornalieri", "avvia"]
+group = "writes"
+[commands."dailies start".args]
+# Opens the chat even if the previous one has no closing file.
+"--force" = { to = "--forza", flag = true }
