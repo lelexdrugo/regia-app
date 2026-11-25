@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::due::DueRule;
 use crate::model::{Maturity, Status, Task};
@@ -25,6 +25,113 @@ pub enum V1Error {
     UnknownOption { number: u64, option: String },
     #[error("invalid local tracker config {path}: {problem}")]
     Local { path: PathBuf, problem: String },
+    #[error("invalid tracker anchor {path}: {problem}")]
+    InvalidAnchor { path: PathBuf, problem: String },
+    #[error("{file} names the tracker {found}, but this app is anchored to {anchored} by {anchor}")]
+    AnchorMismatch { file: PathBuf, anchor: PathBuf, found: Box<TrackerNames>, anchored: Box<TrackerNames> },
+}
+
+/// The file of the tracker's anchor in the configuration folder.
+pub const ANCHOR_FILE: &str = "anchor.toml";
+
+/// The anchor of a configuration folder: the one place its path is built.
+#[must_use]
+pub fn anchor_file(config_dir: &Path) -> PathBuf {
+    config_dir.join(ANCHOR_FILE)
+}
+
+/// The tracker this machine's app follows, kept in the app's configuration folder, outside the dossier (threat model
+/// T08, V17): `init derive` writes it beside the configuration it derives, and [`TrackerConfigV1::load`] stops on a
+/// `tracker.json` that names another repo or another Project. Not format v1: the prototype has no anchor. The
+/// Project is anchored by its id too, since every read and write of the tracker goes by the id and none by the number.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TrackerAnchor {
+    pub owner: String,
+    pub repo: String,
+    pub project_number: u64,
+    pub project_id: String,
+}
+
+/// What names a tracker, as an anchor holds it or a `tracker.json` says it: `owner/repo #number id`. A value that is
+/// missing reads `?`, one that is not a string its JSON.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TrackerNames {
+    pub owner: String,
+    pub repo: String,
+    pub project_number: String,
+    pub project_id: String,
+}
+
+impl std::fmt::Display for TrackerNames {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}/{} #{} {}", self.owner, self.repo, self.project_number, self.project_id)
+    }
+}
+
+impl TrackerNames {
+    fn of(config: &serde_json::Value) -> Self {
+        let text = |key: &str| match config.get(key) {
+            None | Some(serde_json::Value::Null) => "?".to_owned(),
+            Some(serde_json::Value::String(text)) => text.clone(),
+            Some(other) => other.to_string(),
+        };
+        Self { owner: text("owner"), repo: text("repo"), project_number: text("project_number"), project_id: text("project_id") }
+    }
+}
+
+impl TrackerAnchor {
+    /// The file as it is written: TOML, as the other files of the configuration folder.
+    #[must_use]
+    pub fn file_text(&self) -> String {
+        toml::to_string(self).expect("four plain values serialize")
+    }
+
+    /// The anchor at `path`: `None` when there is no file. A file that is there and does not read, or does not hold
+    /// exactly the four values, is an error, never no anchor.
+    pub fn read(path: &Path) -> Result<Option<Self>, V1Error> {
+        let invalid = |problem: String| V1Error::InvalidAnchor { path: path.to_path_buf(), problem };
+        let text = match std::fs::read_to_string(path) {
+            Ok(text) => text,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => return Err(invalid(error.to_string())),
+        };
+        toml::from_str(&text).map(Some).map_err(|error| invalid(error.message().to_owned()))
+    }
+
+    /// Whether `config`, a `tracker.json` as JSON, names this tracker: the same owner and repo, which GitHub compares
+    /// without case, the same number as Python compares numbers (`7 == 7.0`), and the same id.
+    fn names(&self, config: &serde_json::Value) -> bool {
+        let text = |key: &str| config.get(key).and_then(serde_json::Value::as_str);
+        text("owner").is_some_and(|owner| owner.eq_ignore_ascii_case(&self.owner))
+            && text("repo").is_some_and(|repo| repo.eq_ignore_ascii_case(&self.repo))
+            && config.get("project_number").is_some_and(|number| crate::init::python_equal(number, &serde_json::Value::from(self.project_number)))
+            && text("project_id") == Some(self.project_id.as_str())
+    }
+
+    fn tracker_names(&self) -> TrackerNames {
+        TrackerNames {
+            owner: self.owner.clone(),
+            repo: self.repo.clone(),
+            project_number: self.project_number.to_string(),
+            project_id: self.project_id.clone(),
+        }
+    }
+}
+
+/// Stops on the `tracker.json` at `file`, read as `config`, when the anchor at `anchor` names another tracker. No
+/// configuration folder, or no anchor in it, checks nothing.
+fn check_anchor(anchor: Option<&Path>, file: &Path, config: &serde_json::Value) -> Result<(), V1Error> {
+    let Some(path) = anchor else { return Ok(()) };
+    match TrackerAnchor::read(path)? {
+        Some(anchored) if !anchored.names(config) => Err(V1Error::AnchorMismatch {
+            file: file.to_path_buf(),
+            anchor: path.to_path_buf(),
+            found: Box::new(TrackerNames::of(config)),
+            anchored: Box::new(anchored.tracker_names()),
+        }),
+        _ => Ok(()),
+    }
 }
 
 /// The keys a local `tracker.json` must have, as the prototype checks them (`CHIAVI_CONFIG`).
@@ -141,14 +248,23 @@ impl TrackerConfigV1 {
     /// `config/tracker.json` of the dossier. A local file is checked as the prototype checks it, every key
     /// there and an option for every status, and an invalid one is an error, never a fallback on the
     /// dossier's, which is the owner's tracker.
-    pub fn load(state_dir: Option<&Path>, dossier: Option<&Path>) -> Result<Self, V1Error> {
+    ///
+    /// The file read is then checked against the anchor of `config_dir`, the app's configuration folder, which the
+    /// prototype does not have (T08, V17): one that names another repo or Project is an error, whichever of the two
+    /// it is. With no folder, or no anchor in it, nothing changes.
+    pub fn load(state_dir: Option<&Path>, dossier: Option<&Path>, config_dir: Option<&Path>) -> Result<Self, V1Error> {
+        let anchor = config_dir.map(anchor_file);
         let local = state_dir.map(local_config_file);
         if let Some(path) = local.as_ref().filter(|path| path.is_file()) {
-            return Self::read_local(path);
+            let (config, value) = Self::read_local(path)?;
+            check_anchor(anchor.as_deref(), path, &value)?;
+            return Ok(config);
         }
         let shared = dossier.map(|dir| dir.join("config").join("tracker.json"));
         if let Some(path) = shared.as_ref().filter(|path| path.is_file()) {
-            return Self::read(path);
+            let (config, value) = Self::read_with_value(path)?;
+            check_anchor(anchor.as_deref(), path, &value)?;
+            return Ok(config);
         }
         let tried: Vec<String> = [local, shared].into_iter().flatten().map(|p| p.display().to_string()).collect();
         Err(V1Error::Missing(tried.join(", ")))
@@ -157,16 +273,20 @@ impl TrackerConfigV1 {
     /// The configuration as the prototype's moviola takes it for its links (`config_tracker` of its `fonti.py`): a
     /// local file that does not read is an error, as in [`load`](Self::load), since no configuration would drop
     /// the URLs in silence and the dossier's would name another tracker; with no local file, a configuration of
-    /// the dossier that is missing or does not read is none.
-    pub fn load_for_links(state_dir: Option<&Path>, dossier: Option<&Path>) -> Result<Option<Self>, V1Error> {
-        match Self::load(state_dir, dossier) {
+    /// the dossier that is missing or does not read is none. The anchor is checked as `load` checks it, and a file
+    /// that names another tracker, or an anchor that does not read, is an error whichever file was read: no links
+    /// would hide it.
+    pub fn load_for_links(state_dir: Option<&Path>, dossier: Option<&Path>, config_dir: Option<&Path>) -> Result<Option<Self>, V1Error> {
+        match Self::load(state_dir, dossier, config_dir) {
             Ok(config) => Ok(Some(config)),
+            Err(error @ (V1Error::AnchorMismatch { .. } | V1Error::InvalidAnchor { .. })) => Err(error),
             Err(error) if state_dir.is_some_and(|dir| local_config_file(dir).is_file()) => Err(error),
             Err(_) => Ok(None),
         }
     }
 
-    fn read_local(path: &Path) -> Result<Self, V1Error> {
+    /// The local file, checked as the prototype checks it, and the JSON it holds.
+    fn read_local(path: &Path) -> Result<(Self, serde_json::Value), V1Error> {
         let local = |problem: String| V1Error::Local { path: path.to_path_buf(), problem };
         let text = std::fs::read_to_string(path).map_err(|source| V1Error::Read { path: path.to_path_buf(), source })?;
         let value: serde_json::Value = serde_json::from_str(&text).map_err(|source| V1Error::Parse { path: path.to_path_buf(), source })?;
@@ -180,14 +300,22 @@ impl TrackerConfigV1 {
         if !without.is_empty() {
             return Err(local(format!("status_options without {}", without.join(", "))));
         }
-        serde_json::from_value(value).map_err(|source| V1Error::Parse { path: path.to_path_buf(), source })
+        let config = serde_json::from_value(value.clone()).map_err(|source| V1Error::Parse { path: path.to_path_buf(), source })?;
+        Ok((config, value))
     }
 
+    /// The file at `path`, with no anchor and no check of the keys: for the tests and the recorder. The commands read
+    /// through [`load`](Self::load).
     pub fn read(path: &Path) -> Result<Self, V1Error> {
-        let text = std::fs::read_to_string(path)
-            .map_err(|source| V1Error::Read { path: path.to_path_buf(), source })?;
-        serde_json::from_str(&text)
-            .map_err(|source| V1Error::Parse { path: path.to_path_buf(), source })
+        Self::read_with_value(path).map(|(config, _)| config)
+    }
+
+    /// The file and the JSON it holds; the errors of the configuration are those of the file read as it.
+    fn read_with_value(path: &Path) -> Result<(Self, serde_json::Value), V1Error> {
+        let parse = |source| V1Error::Parse { path: path.to_path_buf(), source };
+        let text = std::fs::read_to_string(path).map_err(|source| V1Error::Read { path: path.to_path_buf(), source })?;
+        let config = serde_json::from_str(&text).map_err(parse)?;
+        Ok((config, serde_json::from_str(&text).map_err(parse)?))
     }
 }
 
@@ -459,6 +587,95 @@ mod tests {
         assert_eq!(names.len(), 5);
         assert_eq!([&names[0], &names[1], &names[2], &names[4]], [&labels.objective, &labels.maturity.draft, &labels.maturity.ready, &labels.session]);
         assert!(base_labels().iter().all(|label| label.color.len() == 6 && label.color.chars().all(|c| c.is_ascii_hexdigit())));
+    }
+
+    /// A folder of its own under `target/`, beside the test's executable.
+    fn scratch(name: &str) -> PathBuf {
+        let root = std::env::current_exe().unwrap().parent().unwrap().join(format!("v1-anchor-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        std::fs::create_dir_all(&root).unwrap();
+        root
+    }
+
+    /// A valid local `tracker.json` in `state`, naming `Acme/tasks`, Project #7 `PVT_7`.
+    fn write_local(state: &Path) {
+        let options: serde_json::Map<String, serde_json::Value> =
+            vocabulary().status_labels.into_keys().map(|label| (label.clone(), serde_json::Value::String(format!("opt-{label}")))).collect();
+        let file = serde_json::json!({"owner": "Acme", "repo": "tasks", "project_number": 7, "project_id": "PVT_7", "project_url": "u",
+                                      "status_field_id": "f", "status_options": options});
+        std::fs::create_dir_all(state).unwrap();
+        std::fs::write(local_config_file(state), file.to_string()).unwrap();
+    }
+
+    fn anchored_to(owner: &str, repo: &str, project_number: u64, project_id: &str) -> TrackerAnchor {
+        TrackerAnchor { owner: owner.into(), repo: repo.into(), project_number, project_id: project_id.into() }
+    }
+
+    fn write_anchor(config: &Path, anchor: &TrackerAnchor) {
+        std::fs::create_dir_all(config).unwrap();
+        std::fs::write(anchor_file(config), anchor.file_text()).unwrap();
+    }
+
+    /// T08, V17: with an anchor, the same tracker loads, owner and repo in any case; another owner, repo, number or id
+    /// is an error that names both files and shows both trackers. Without an anchor, or without a configuration
+    /// folder, the file loads as before.
+    #[test]
+    fn the_anchor_stops_a_tracker_json_that_names_another_tracker() {
+        let root = scratch("cases");
+        let (state, config) = (root.join("state"), root.join("config"));
+        write_local(&state);
+        let load = || TrackerConfigV1::load(Some(&state), None, Some(&config));
+        assert_eq!(load().unwrap().project_id, "PVT_7", "no anchor: as before");
+        write_anchor(&config, &anchored_to("acme", "Tasks", 7, "PVT_7"));
+        assert_eq!(load().unwrap().project_id, "PVT_7", "the same tracker");
+        assert_eq!(TrackerConfigV1::load(Some(&state), None, None).unwrap().project_id, "PVT_7", "no folder: as before");
+        let others = [
+            ("owner", anchored_to("other", "tasks", 7, "PVT_7")),
+            ("repo", anchored_to("acme", "other", 7, "PVT_7")),
+            ("number", anchored_to("acme", "tasks", 8, "PVT_7")),
+            ("id", anchored_to("acme", "tasks", 7, "PVT_8")),
+        ];
+        for (what, other) in others {
+            write_anchor(&config, &other);
+            match load() {
+                Err(V1Error::AnchorMismatch { file, anchor, found, anchored }) => {
+                    assert_eq!((file, anchor), (local_config_file(&state), anchor_file(&config)), "{what}");
+                    assert_eq!((found.to_string(), *anchored), ("Acme/tasks #7 PVT_7".to_owned(), other.tracker_names()), "{what}");
+                }
+                result => panic!("another {what} loads: {result:?}"),
+            }
+        }
+        std::fs::remove_dir_all(&root).unwrap();
+    }
+
+    /// The dossier's file is checked too, its number compared as Python compares it, and a number it does not have is
+    /// another tracker; for the links too, where a file that does not read is no links but another tracker is an
+    /// error. An anchor that does not read, or holds a key more or less, is an error, never no anchor.
+    #[test]
+    fn the_dossier_s_file_is_anchored_too_and_a_broken_anchor_is_an_error() {
+        let root = scratch("dossier");
+        let (dossier, config) = (root.join("dossier"), root.join("config"));
+        let shared = dossier.join("config").join("tracker.json");
+        std::fs::create_dir_all(shared.parent().unwrap()).unwrap();
+        let mut file = serde_json::json!({"owner": "acme", "repo": "tasks", "project_number": 7.0, "project_id": "PVT_7", "status_field_id": "f", "status_options": {}});
+        std::fs::write(&shared, file.to_string()).unwrap();
+        let load = || TrackerConfigV1::load(None, Some(&dossier), Some(&config));
+        let links = || TrackerConfigV1::load_for_links(None, Some(&dossier), Some(&config));
+        write_anchor(&config, &anchored_to("acme", "tasks", 7, "PVT_7"));
+        assert!(load().is_ok() && links().unwrap().is_some());
+        file.as_object_mut().unwrap().remove("project_number");
+        std::fs::write(&shared, file.to_string()).unwrap();
+        assert!(matches!(load(), Err(V1Error::AnchorMismatch { ref found, .. }) if found.project_number == "?"));
+        assert!(matches!(links(), Err(V1Error::AnchorMismatch { .. })), "another tracker is not just no links");
+        let anchor = anchored_to("acme", "tasks", 7, "PVT_7");
+        assert_eq!(toml::from_str::<TrackerAnchor>(&anchor.file_text()).unwrap(), anchor);
+        let more = format!("{}more = 1\n", anchor.file_text());
+        for text in ["owner = ", "owner = \"acme\"\n", more.as_str(), "owner = \"acme\"\nrepo = \"tasks\"\nproject_number = -7\nproject_id = \"PVT_7\"\n"] {
+            std::fs::write(anchor_file(&config), text).unwrap();
+            assert!(matches!(load(), Err(V1Error::InvalidAnchor { .. })), "{text}");
+            assert!(matches!(links(), Err(V1Error::InvalidAnchor { .. })), "{text}");
+        }
+        std::fs::remove_dir_all(&root).unwrap();
     }
 
     /// The options of the status field, in the order of the statuses, each bound to its status.

@@ -18,8 +18,6 @@ use regia_core::{
 };
 use regia_github::GhTracker;
 use regia_i18n::Catalog;
-use regia_identity::state_dir;
-use regia_runtime::dossier_dir;
 use serde_json::json;
 
 use crate::clock::Clock;
@@ -458,7 +456,7 @@ fn read_text(file: &str) -> Result<String, String> {
 
 /// The binding of the config, and the tracker it names.
 fn tracker() -> Result<(TrackerBinding, GhTracker), String> {
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
+    let config: TrackerConfigV1 = crate::tracker_config()?;
     let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
     Ok((binding, GhTracker::new(&config)))
 }

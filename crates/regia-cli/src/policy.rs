@@ -16,7 +16,6 @@ use regia_core::policy::{self, read_local, set_local};
 use regia_core::{LocalStatus, Origin, Policy, Room, Tracker, TrackerBinding, TrackerConfigV1, Values};
 use regia_github::GhTracker;
 use regia_i18n::Catalog;
-use regia_identity::state_dir;
 use regia_runtime::dossier_dir;
 use regia_store::{default_folder, read_state_file, remove_state_file, write_state_file};
 use serde_json::Value;
@@ -73,7 +72,7 @@ pub(crate) fn run(command: PolicyCommand, catalog: &Catalog) -> Result<ExitCode,
         PolicyCommand::Set { pairs, until, note } => sources.set(&pairs, until.as_deref(), note.as_deref(), catalog)?,
         PolicyCommand::Reset => sources.reset(catalog)?,
         PolicyCommand::Proposals { project, json } => {
-            let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
+            let config: TrackerConfigV1 = crate::tracker_config()?;
             let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
             let tracker = GhTracker::new(&config);
             proposals(&tracker, &binding, &project, &sources.policy(), sources.now, json, catalog)?

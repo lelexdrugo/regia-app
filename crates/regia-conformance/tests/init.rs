@@ -25,11 +25,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, CliRun, FIXTURE_NOW, Recorded, fixed_now_driver, fixture_for_python, fixture_for_rust, fixtures_dir, json_diff, lf, log_var,
+    Case, CliRun, app_config_dir, FIXTURE_NOW, Recorded, fixed_now_driver, fixture_for_python, fixture_for_rust, fixtures_dir, json_diff, lf, log_var,
     place_args, prepare_case_state, prepare_dossier, prepare_state_dir, regia_binary, run_case_on_dossier, translate_python,
     unplace_json, unplace_text, written_files,
 };
 use regia_core::init::{default_project_title, default_repo};
+use regia_core::{TrackerAnchor, TrackerConfigV1, anchor_file};
 use regia_exec::{Output, Pin, Program, python};
 use regia_facade::PROTOTYPE_LIMITS;
 use regia_identity::{PROTOTYPE_NAME, env_var, prototype_env_var};
@@ -180,6 +181,35 @@ fn a_key_more_or_a_byte_less_is_a_difference() {
     written["tracker.json"] = json!(text.replacen("\n}", "}", 1));
     let diff = differences(&case, &run, Some(&written));
     assert!(diff.iter().any(|line| line.starts_with("written")), "a missing line break must show: {diff:?}");
+}
+
+/// #456 round 2, Acceptance 2 (threat model T08, V17): `derive` anchors the app to the tracker it derives, in the
+/// configuration folder the harness moves into the case's own folder, while each run stays the prototype's, the file
+/// it writes byte for byte. A destination already the same, or overwritten, anchors it too; a refusal anchors nothing.
+/// The derived file then loads against the anchor beside it.
+#[test]
+fn derive_anchors_the_app_in_the_configuration_folder_of_its_run() {
+    let expected = TrackerAnchor { owner: "example".into(), repo: "tracker".into(), project_number: 1, project_id: "PROJECT_FIXTURE".into() };
+    let cases = [
+        ("init-derive-written", true),
+        ("init-derive-same", true),
+        ("init-derive-overwrite", true),
+        ("init-derive-different", false),
+        ("init-derive-not-ready", false),
+    ];
+    for (name, anchored) in cases {
+        let case = Case::named(name);
+        let run = native(&format!("native-anchor-{name}"), &case);
+        let diff = differences(&case, &run, case.written().as_ref());
+        assert!(diff.is_empty(), "{name}: {}", diff.join("\n"));
+        let config = app_config_dir(&run.state);
+        assert_eq!(TrackerAnchor::read(&anchor_file(&config)).unwrap(), anchored.then(|| expected.clone()), "{name}");
+        if anchored {
+            let loaded = TrackerConfigV1::load(run.dossier.as_deref(), None, Some(&config)).unwrap();
+            assert_eq!((loaded.owner.as_str(), loaded.project_id.as_str()), ("example", "PROJECT_FIXTURE"), "{name}");
+        }
+        let _ = fs::remove_dir_all(&run.state);
+    }
 }
 
 /// The plan of `init-plan-ready`, natively, with `prepare` run on the state folder first.

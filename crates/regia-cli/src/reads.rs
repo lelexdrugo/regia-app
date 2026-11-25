@@ -10,8 +10,6 @@ use regia_core::{
 };
 use regia_github::GhTracker;
 use regia_i18n::Catalog;
-use regia_identity::state_dir;
-use regia_runtime::dossier_dir;
 use serde_json::Value;
 
 use crate::print_json;
@@ -88,7 +86,7 @@ pub(crate) fn run(command: &str, args: &[String], catalog: &Catalog) -> Option<R
 
 /// The config, its binding and the tracker it names.
 fn tracker() -> Result<(TrackerConfigV1, TrackerBinding, GhTracker), String> {
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
+    let config = crate::tracker_config()?;
     let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
     let tracker = GhTracker::new(&config);
     Ok((config, binding, tracker))
