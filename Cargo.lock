@@ -2940,7 +2940,7 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
 name = "regia-agents"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "chrono",
  "regia-core",
@@ -2956,7 +2956,7 @@ dependencies = [
 
 [[package]]
 name = "regia-app"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "base64 0.23.1",
  "minisign",
@@ -2977,7 +2977,7 @@ dependencies = [
 
 [[package]]
 name = "regia-cli"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "chrono",
  "clap",
@@ -2998,7 +2998,7 @@ dependencies = [
 
 [[package]]
 name = "regia-conformance"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "proptest",
  "regia-core",
@@ -3016,7 +3016,7 @@ dependencies = [
 
 [[package]]
 name = "regia-controller"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "chrono",
  "regia-agents",
@@ -3032,7 +3032,7 @@ dependencies = [
 
 [[package]]
 name = "regia-core"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "chrono",
  "pulldown-cmark",
@@ -3047,7 +3047,7 @@ dependencies = [
 
 [[package]]
 name = "regia-exec"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "directories",
  "libc",
@@ -3059,7 +3059,7 @@ dependencies = [
 
 [[package]]
 name = "regia-facade"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "regia-exec",
  "serde",
@@ -3070,7 +3070,7 @@ dependencies = [
 
 [[package]]
 name = "regia-git"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "proptest",
  "regia-exec",
@@ -3081,7 +3081,7 @@ dependencies = [
 
 [[package]]
 name = "regia-github"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "chrono",
  "regia-core",
@@ -3092,7 +3092,7 @@ dependencies = [
 
 [[package]]
 name = "regia-i18n"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "fluent-bundle",
  "fluent-syntax",
@@ -3103,14 +3103,14 @@ dependencies = [
 
 [[package]]
 name = "regia-identity"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "directories",
 ]
 
 [[package]]
 name = "regia-runtime"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "regia-core",
  "regia-git",
@@ -3121,7 +3121,7 @@ dependencies = [
 
 [[package]]
 name = "regia-store"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "chrono",
  "libc",
@@ -3135,7 +3135,7 @@ dependencies = [
 
 [[package]]
 name = "regia-update"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "base64 0.23.1",
  "minisign",
