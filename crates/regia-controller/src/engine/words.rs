@@ -19,6 +19,8 @@ pub(crate) struct Format {
     pub(crate) actions: Actions,
     pub(crate) launched: LaunchedWords,
     pub(crate) adapters: Adapters,
+    pub(crate) receipt: ReceiptWords,
+    pub(crate) prompt: PromptWords,
     pub(crate) finished: FinishedWords,
     pub(crate) budget: BudgetWords,
     pub(crate) wake: WakeWords,
@@ -109,8 +111,20 @@ pub(crate) struct LaunchedWords {
 #[serde(deny_unknown_fields)]
 pub(crate) struct Adapters {
     pub(crate) fake: String,
-    pub(crate) cli: String,
-    pub(crate) orca: String,
+    pub(crate) own_sessions: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ReceiptWords {
+    pub(crate) surface_session: String,
+    pub(crate) marker: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct PromptWords {
+    pub(crate) workers: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -218,7 +232,7 @@ pub(crate) struct RegistryRecord {
     pub(crate) effort: String,
     pub(crate) session: String,
     pub(crate) resume: String,
-    pub(crate) orca_session: String,
+    pub(crate) surface_session: String,
     pub(crate) transcript: String,
     pub(crate) pid: String,
     pub(crate) log: String,

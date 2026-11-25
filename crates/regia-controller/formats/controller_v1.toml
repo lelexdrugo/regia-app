@@ -64,8 +64,8 @@ skipped_suspended = "saltato-sospesa"
 postponed = "rinviato-limite-giro"
 launch_error = "errore-lancio"
 
-# A launch, as the prototype's receipt names it. `adapter` takes the words below: a `Dry` surface is the
-# prototype's fake launcher, which starts nothing either.
+# A launch, as the prototype's receipt names it. `adapter` is the surface's id, except a `Dry` surface's, which is
+# the prototype's fake launcher: it starts nothing either.
 [launched]
 adapter = "adapter"
 agent = "agente"
@@ -80,8 +80,15 @@ project = "progetto"
 
 [adapters]
 fake = "finto"
-cli = "cli"
-orca = "orca"
+# The surface whose receipt carries its own id of the session and a marker (#462): its record resumes the agent's
+# session only when the transcript was found, and keeps the marker by which the session is found again.
+own_sessions = "orca"
+
+# The keys of the agents' receipt (`regia-agents`) that only that surface fills, read as data, so that the tick
+# names no surface: Orca stays in its adapter.
+[receipt]
+surface_session = "orca_session"
+marker = "marker"
 
 # A step no longer alive, and why.
 [finished]
@@ -168,7 +175,7 @@ model = "modello"
 effort = "effort"
 session = "sessione"
 resume = "sessione_resume"
-orca_session = "sessione_orca"
+surface_session = "sessione_orca"
 transcript = "transcript"
 pid = "pid"
 log = "log"
@@ -188,6 +195,11 @@ to_resume = "da-riprendere"
 
 [registry.origins]
 controller = "controller"
+
+# How the step's workers start, by the protocol §1.3: a sentence of the step's prompt, in English. It names the
+# optional surface by the commands the agent runs, so it is data, as the rest of the surface stays in its adapter.
+[prompt]
+workers = "Workers start by the protocol §1.3: with `orca orchestration worker-start` if Orca is reachable and `run-create` succeeds, otherwise with subagents."
 
 # What the prompts of a step name of the dossier: the files the stall's step reads and writes after.
 [dossier]

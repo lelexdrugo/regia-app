@@ -34,12 +34,11 @@ pub fn prompt(project: &str, folder: &str, entry: &Json, payload: &Json, prechec
          A step is a wave: dispatch together every task that can run and is independent, up to the project's wip and \
          the budget (§1.3), and let each worker split its own task among subagents. Do not wait for the workers: their \
          reports will start the next step.\n\
-         Workers start by the protocol §1.3: with `orca orchestration worker-start` if Orca is reachable and \
-         `run-create` succeeds, otherwise with subagents. The protocol's gates hold as always: what is irreversible or \
-         goes outside goes through Decision.\n\n\
+         {workers} The protocol's gates hold as always: what is irreversible or goes outside goes through Decision.\n\n\
          The controller found work ({outcome}/{reason}, precheck of {t}). Counts and ids only: read the facts again \
          from the tracker and from {dossier}/.\n{attached}\n{backlog}",
         dossier = dossier_folder(),
+        workers = words().prompt.workers,
     )
 }
 

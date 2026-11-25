@@ -177,17 +177,16 @@ fn cleaned_rows(state: &Value, dossier: &str) -> (Vec<StateRow>, Value) {
             continue;
         }
         let mut doc = placed(&document["doc"], dossier);
-        if kind == cursor && key == registry_key {
-            if let Some(records) = doc.get_mut(&value).and_then(|value| value.get_mut(&steps)).and_then(Value::as_object_mut) {
-                records.retain(|_, record| {
-                    let state = record[&state_key].as_str().unwrap_or_default().to_owned();
-                    let keep = !dropped_states.contains(&state);
-                    if !keep {
-                        *dropped.entry(state).or_default() += 1;
-                    }
-                    keep
-                });
-            }
+        let records = doc.get_mut(&value).and_then(|value| value.get_mut(&steps)).and_then(Value::as_object_mut);
+        if let (true, Some(records)) = (kind == cursor && key == registry_key, records) {
+            records.retain(|_, record| {
+                let state = record[&state_key].as_str().unwrap_or_default().to_owned();
+                let keep = !dropped_states.contains(&state);
+                if !keep {
+                    *dropped.entry(state).or_default() += 1;
+                }
+                keep
+            });
         }
         rows.push(StateRow { kind: kind.to_owned(), key: key.to_owned(), doc });
     }
