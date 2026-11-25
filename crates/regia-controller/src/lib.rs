@@ -6,6 +6,9 @@
 //! - [`engine`]: the tick, [`engine::Controller::tick`], with its clock, precheck, launch surface, lock and
 //!   registry injected; the words of its line, of the postponements and of the registry are data of format
 //!   v1, in `formats/controller_v1.toml`.
+//! - [`resident`]: the tick's host, [`resident::Resident::run`]: the controller's lock, the registry read after
+//!   it, the restart, the ticks and the wait between them, the log and the state file.
 
 pub mod engine;
 pub mod precheck;
+pub mod resident;
