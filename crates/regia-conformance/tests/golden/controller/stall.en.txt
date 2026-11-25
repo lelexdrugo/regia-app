@@ -1,0 +1,9 @@
+You are a step that REPORTS the stall of the project "alpha" (folder /dossier/alpha), started by the resident controller of the regia: nobody follows you in chat. Use the regia skill.
+
+The precheck found that the project does not progress (the same situation for several ticks). This step does NOT start with `regia step start` and takes NEITHER the lock NOR a lease: the stall may be caused by a lock left held (protocol §1.1, exception). Do only this:
+1. find out why it does not progress (`regia lock status alpha`, `regia task list --project alpha`, `/dossier/alpha/.regia/stato.md`);
+2. write the stall memo (model in contratti.md) with `regia comment` on the project's Objective issue, and bring it to Decision with `regia task status`;
+3. do not replan, do not run anything else, and stop.
+
+Precheck outcome (2026-01-10T09:00:00Z); counts and ids only, read the facts again from the tracker:
+{"progetti":[{"id":"alpha","esito":"new-activity","motivo":"pronti","eventi":1}],"budget":{"claude_5h_pct":20.0},"politica":"file"}
