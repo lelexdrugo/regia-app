@@ -20,6 +20,10 @@ use serde_json::{Value, json};
 
 const T0: &str = "2026-10-21T10:00:00Z";
 
+/// What a fake runs at a point of the tick: a thief, in the cases of D1.
+type Hook = Box<dyn FnMut(&str) + Send>;
+type ReadHook = Box<dyn FnMut() + Send>;
+
 // ---------- the precheck's answers ----------
 
 fn entry(id: &str, outcome: &str, reason: &str) -> Value {
@@ -77,7 +81,7 @@ impl Precheck for FakePrecheck {
 #[derive(Default)]
 struct FakeFolders {
     map: BTreeMap<String, Option<String>>,
-    hook: Mutex<Option<Box<dyn FnMut() + Send>>>,
+    hook: Mutex<Option<ReadHook>>,
 }
 
 impl Folders for FakeFolders {
@@ -95,7 +99,7 @@ struct FakeSurface {
     pid: Option<u32>,
     failing: BTreeSet<String>,
     calls: Mutex<Vec<LaunchRequest>>,
-    after: Mutex<Option<Box<dyn FnMut(&str) + Send>>>,
+    after: Mutex<Option<Hook>>,
     wakes: AtomicUsize,
 }
 
@@ -174,7 +178,7 @@ struct FakeSteps {
     launched: Mutex<Vec<(String, f64)>>,
     finished: Mutex<Vec<String>>,
     suspended: Mutex<BTreeSet<String>>,
-    after: Mutex<Option<Box<dyn FnMut(&str) + Send>>>,
+    after: Mutex<Option<Hook>>,
 }
 
 impl Steps for FakeSteps {
@@ -515,7 +519,7 @@ fn with_two_candidates_a_lock_stolen_during_the_first_launch_stops_the_second() 
     for after_the_registry in [false, true] {
         let on = OnTheStore::new(vec![work(&["a", "b"])]);
         let (store, clock) = (on.store.clone(), on.harness.clock.clone());
-        let steal: Box<dyn FnMut(&str) + Send> = Box::new(move |project| {
+        let steal: Hook = Box::new(move |project| {
             if project == "a" {
                 OnTheStore::steal(&store, &clock);
             }

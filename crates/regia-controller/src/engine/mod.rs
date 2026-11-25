@@ -210,21 +210,23 @@ pub struct StepReceipt {
     pub log: Option<String>,
     /// Whether something started: false on `Dry`.
     pub started: bool,
-    pub orca_session: Option<String>,
+    /// The surface's own id of the session, where it has one.
+    pub surface_session: Option<String>,
     pub marker: Option<String>,
 }
 
 impl StepReceipt {
+    /// The receipt of `regia-agents` as the prototype's: the adapter is the surface's id, `Dry`'s the fake
+    /// launcher's; what only one surface fills is read by the receipt's keys, as data, so the tick names none.
     #[must_use]
     pub fn of(receipt: &Receipt) -> StepReceipt {
-        let adapters = &words().adapters;
-        let (adapter, started) = match receipt.surface {
-            SurfaceKind::Dry => (&adapters.fake, false),
-            SurfaceKind::Orca => (&adapters.orca, true),
-            SurfaceKind::Cli | SurfaceKind::Auto => (&adapters.cli, true),
-        };
+        let dry = receipt.surface == SurfaceKind::Dry;
+        let adapter = if dry { words().adapters.fake.clone() } else { receipt.surface.id().to_owned() };
+        let keys = &words().receipt;
+        let value = serde_json::to_value(receipt).unwrap_or_default();
+        let text = |key: &str| value.get(key).and_then(Value::as_str).map(str::to_owned);
         StepReceipt {
-            adapter: adapter.clone(),
+            adapter,
             agent: receipt.service.id().to_owned(),
             model: receipt.model.clone(),
             effort: receipt.effort.map(str::to_owned),
@@ -232,9 +234,9 @@ impl StepReceipt {
             transcript: receipt.transcript.clone(),
             pid: receipt.pid,
             log: receipt.log.clone(),
-            started,
-            orca_session: receipt.orca_session.clone(),
-            marker: receipt.marker.clone(),
+            started: !dry,
+            surface_session: text(&keys.surface_session),
+            marker: text(&keys.marker),
         }
     }
 }

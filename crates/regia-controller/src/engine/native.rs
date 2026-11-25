@@ -276,8 +276,8 @@ impl StoreSteps {
 #[must_use]
 pub fn new_record(step: &LaunchedStep<'_>, at: f64) -> (String, Value) {
     let (w, r) = (&words().registry.record, step.receipt);
-    let orca = r.adapter == words().adapters.orca;
-    let resume = if orca && (r.transcript.is_none() || r.session == r.orca_session) { None } else { r.session.clone() };
+    let own = r.adapter == words().adapters.own_sessions;
+    let resume = if own && (r.transcript.is_none() || r.session == r.surface_session) { None } else { r.session.clone() };
     let mut record = Map::new();
     record.insert(w.project.clone(), json!(step.project));
     record.insert(w.folder.clone(), json!(step.folder));
@@ -288,11 +288,11 @@ pub fn new_record(step: &LaunchedStep<'_>, at: f64) -> (String, Value) {
     record.insert(w.effort.clone(), json!(r.effort));
     record.insert(w.session.clone(), json!(r.session));
     record.insert(w.resume.clone(), json!(resume));
-    record.insert(w.orca_session.clone(), json!(r.orca_session));
+    record.insert(w.surface_session.clone(), json!(r.surface_session));
     record.insert(w.transcript.clone(), json!(r.transcript));
     record.insert(w.pid.clone(), json!(r.pid));
     record.insert(w.log.clone(), json!(r.log));
-    record.insert(w.marker.clone(), json!(if orca { r.marker.clone() } else { None }));
+    record.insert(w.marker.clone(), json!(if own { r.marker.clone() } else { None }));
     record.insert(w.started_t.clone(), json!(at));
     record.insert(w.started.clone(), json!(iso(at)));
     record.insert(w.state.clone(), json!(words().registry.states.launched));
