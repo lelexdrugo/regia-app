@@ -237,6 +237,7 @@ fn both_create_the_same_schema() {
         (sql, journal)
     };
     assert_eq!(schema(&by_python), schema(&by_rust));
+    assert_eq!(schema(&by_python).1, "delete", "the prototype never sets the journal mode: a database it creates is in the rollback journal");
     assert_eq!(schema(&by_rust).1, "delete", "rollback journal, never WAL");
 }
 
@@ -363,6 +364,47 @@ fn the_controller_lock_excludes_both_ways() {
     println!("store-probe while the Python holds it: exit {} {}", refused.code, refused.json);
     assert_eq!((refused.code, &refused.json["state"]), (3, &Value::from("busy")), "{refused:?}");
     assert_eq!(refused.json["lock"]["holder"], python_holder.as_str());
+}
+
+/// `test_a_otto_processi_un_solo_vincitore` of `test_runtime.py`, with eight real processes, four of each
+/// language, in four rounds: each round starts all eight on the same free lock at the same instant, and ends
+/// with one winner, seven refusals and the winner's row. The prototype's case starts eight Python processes;
+/// the one-language cases on the Rust side are in `crates/regia-store/tests/state.rs`.
+#[test]
+#[ignore = "needs the dossier and python: REGIA_HOME"]
+fn eight_processes_four_of_each_language_give_one_winner_in_each_of_four_rounds() {
+    let sides = sides();
+    let dir = folder("eight-processes");
+    let limits = Limits { timeout: Duration::from_secs(120), ..Limits::default() };
+    for round in 0..4 {
+        let project = format!("p{round}");
+        // The interpreters need a moment to start; every process then waits for this instant.
+        let start = (epoch_ms() + 3000).to_string();
+        let ran: Vec<(String, bool, Ran)> = thread::scope(|scope| {
+            let handles: Vec<_> = (0..8)
+                .map(|i| {
+                    let (sides, dir, project, start) = (&sides, &dir, &project, &start);
+                    scope.spawn(move || {
+                        let rust = i % 2 == 0;
+                        let holder = format!("{}{i}", if rust { "rs-" } else { "py-" });
+                        let args = ["acquire", project.as_str(), holder.as_str(), "60", "--start-at-ms", start.as_str()];
+                        let launch = if rust { sides.rust_launch(dir, &args) } else { sides.python_launch(dir, &args) };
+                        let output = launch.limits(limits).run().expect("run one of the eight");
+                        (holder, rust, finish(output))
+                    })
+                })
+                .collect();
+            handles.into_iter().map(|handle| handle.join().expect("one of the eight")).collect()
+        });
+        let winners: Vec<&(String, bool, Ran)> = ran.iter().filter(|(_, _, ran)| ran.code == 0).collect();
+        assert_eq!(winners.len(), 1, "round {round}: {ran:?}");
+        for (holder, rust, ran) in &ran {
+            let refused = if *rust { s(&ran.json["state"]) == "busy" } else { s(&ran.json["stato"]) == "occupato" };
+            assert!(ran.code == 0 || (ran.code == 3 && refused), "round {round}, {holder}: {ran:?}");
+        }
+        let held = sides.rust(&dir, &["status", &project]);
+        assert_eq!(held.json["lock"]["holder"], winners[0].0.as_str(), "round {round}: the row is the winner's: {held:?}");
+    }
 }
 
 fn refs(list: &[String]) -> Vec<&str> {
