@@ -29,7 +29,7 @@
       "--label",
       "tipo:obiettivo"
     ],
-    "stdin": "<!-- regia:progetto\nid: epsilon\ncartella: {dossier}\nplaybook: paper\npriorita: 1\nwip: 10\ndefault_automatici: 24\nprodotti: example/eps-app, example/eps-lib\n-->\n\n## Obiettivo\n\nAnother objective.\n\n## Definizione di fatto\n\nDone.\n\n## Mandato\n\nA mandate.\n"
+    "stdin": "<!-- regia:progetto\nid: epsilon\ncartella: {dossier}\nplaybook: custom\npriorita: 1\nwip: 10\ndefault_automatici: 24\nprodotti: example/eps-app, example/eps-lib\n-->\n\n## Obiettivo\n\nAnother objective.\n\n## Definizione di fatto\n\nDone.\n\n## Mandato\n\nA mandate.\n"
   },
   {
     "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",

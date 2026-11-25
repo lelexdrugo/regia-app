@@ -134,9 +134,9 @@ proptest! {
 
     /// R5: each item of a list of products is a repo, or the list is refused; a word for none is no product.
     #[test]
-    fn a_list_of_products_is_each_a_repo(items in prop::collection::vec("[ ]{0,2}([a-z]{1,5}(/[a-z]{1,5})?|a b|x.git)[ ]{0,2}", 0..4)) {
+    fn a_list_of_products_is_each_a_repo(items in prop::collection::vec("[ ]{0,2}([a-z]{1,5}(/[a-z]{1,5})?|a b|x\\.git)[ ]{0,2}", 0..4)) {
         let text = items.join(",");
-        let wanted: Vec<&str> = items.iter().map(|item| pystr::strip(item)).filter(|item| !item.is_empty()).collect();
+        let wanted: Vec<&str> = text.split(',').map(pystr::strip).filter(|item| !item.is_empty()).collect();
         let full = |item: &str| if item.contains('/') { item.to_owned() } else { format!("owner/{item}") };
         let expected = if wanted.iter().all(|item| repo_pattern(&full(item)) && !full(item).ends_with(".git")) {
             Some(wanted.iter().map(|item| full(item)).collect::<Vec<_>>())

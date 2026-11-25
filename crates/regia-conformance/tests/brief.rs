@@ -257,10 +257,13 @@ fn another_day_produces_a_diff_and_a_bad_day_is_an_error() {
 
 /// The fixtures go wherever the repo goes: only synthetic hosts and names, in every file of every case
 /// of every family. Two exceptions, both the prototype's own words: the URLs it builds on GitHub from the
-/// fixture's owner (`task new`, the origin of `project new`), as `record` counts them, and the default
-/// name of the tracker's repo, which `init` alone prints.
+/// fixture's owner (`task new`, the origin of `project new`), as `record` counts them, the default
+/// name of the tracker's repo, which `init` alone prints, and the lines of the scaffold's models that a written
+/// file holds as the prototype wrote them (#452), which name its playbook for papers.
 #[test]
 fn fixtures_are_synthetic() {
+    let values = regia_core::ScaffoldValues { id: "x", title: "x", objective: 1, repo: "x/x", date: "x" };
+    let models: Vec<String> = regia_core::scaffold_files(&values).into_iter().flat_map(|file| file.text.lines().map(str::to_owned).collect::<Vec<_>>()).collect();
     for case in Case::all() {
         for entry in fs::read_dir(&case.dir).unwrap() {
             let path = entry.unwrap().path();
@@ -269,6 +272,11 @@ fn fixtures_are_synthetic() {
             let mut text = text.replace("https://github.com/example/", "");
             if case.command_name() == "init" && file == "python.it.json" {
                 text = text.replace("\"repo\": \"regia-tasks\"", "");
+            }
+            if file == "written.json" {
+                for line in models.iter().filter(|line| line.contains("paper")) {
+                    text = text.replace(line.as_str(), "");
+                }
             }
             for forbidden in ["github.com", "lelexdrugo", "regia-tasks", "paper", "orca\\\\projects"] {
                 assert!(!text.contains(forbidden), "{}/{file} contains {forbidden}", case.name);
