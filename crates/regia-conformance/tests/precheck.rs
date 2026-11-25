@@ -1123,11 +1123,10 @@ fn the_comparison_notices_a_difference() {
 /// TestVincoli of the prototype: the command never reads stdin, and the engine has no way to write the
 /// tracker, a lock, a lease or a cursor other than its detector's own: one call writes a cursor, in the
 /// live sources' `write_detector`, under the detector's name.
-#[test]
-fn the_precheck_reads_no_stdin_and_writes_only_its_detector() {
-    let root = workspace_root().join("crates").join("regia-controller").join("src");
+/// The Rust sources under `dir`, every level.
+fn sources_under(dir: PathBuf) -> Vec<PathBuf> {
     let mut sources = Vec::new();
-    let mut stack = vec![root];
+    let mut stack = vec![dir];
     while let Some(dir) = stack.pop() {
         for entry in fs::read_dir(&dir).expect("a folder") {
             let path = entry.expect("an entry").path();
@@ -1138,20 +1137,59 @@ fn the_precheck_reads_no_stdin_and_writes_only_its_detector() {
             }
         }
     }
-    assert!(sources.len() >= 8, "the scan reads the sources");
+    sources
+}
+
+/// The calls of `sources` that write a cursor, each with the function it is in; and no source uses a word of
+/// `forbidden`.
+fn cursor_writes(sources: Vec<PathBuf>, forbidden: &[&str]) -> Vec<(PathBuf, String)> {
     let mut writes = Vec::new();
     for path in sources {
         let text = fs::read_to_string(&path).expect("a source");
-        for forbidden in ["stdin", "add_comment", "acquire_lock", "release_lock", "acquire_lease", "heartbeat", "open_step", "close_step", "record_own_comment", "write_state_file"] {
-            assert!(!text.contains(forbidden), "{} uses {forbidden}", path.display());
+        for word in forbidden {
+            assert!(!text.contains(word), "{} uses {word}", path.display());
         }
-        writes.extend(text.match_indices(".write_cursor(").map(|(at, _)| (path.clone(), text[..at].rfind("fn ").map(|start| text[start..at].to_owned()))));
+        writes.extend(text.match_indices(".write_cursor(").map(|(at, _)| {
+            let function = text[..at].rfind("fn ").map(|start| text[start..at].to_owned()).unwrap_or_default();
+            (path.clone(), function)
+        }));
     }
+    writes
+}
+
+/// The precheck's sources (its module and its command, #465): no stdin, and the one write of a cursor is its
+/// detector's. The tick of #467 lives in the same crate, and writes for its own sake: the test after this.
+#[test]
+fn the_precheck_reads_no_stdin_and_writes_only_its_detector() {
+    let src = workspace_root().join("crates").join("regia-controller").join("src");
+    let mut sources = sources_under(src.join("precheck"));
+    sources.push(src.join("bin").join("precheck.rs"));
+    assert!(sources.len() >= 8, "the scan reads the sources");
+    let forbidden =
+        ["stdin", "add_comment", "acquire_lock", "release_lock", "acquire_lease", "heartbeat", "open_step", "close_step", "record_own_comment", "write_state_file"];
+    let writes = cursor_writes(sources, &forbidden);
     assert_eq!(writes.len(), 1, "one call writes a cursor: {writes:?}");
     let (path, function) = &writes[0];
     assert!(path.ends_with("sources.rs"), "{}", path.display());
-    let function = function.as_deref().unwrap_or_default();
     assert!(function.starts_with("fn write_detector(") && function.contains("detector_cursor(project)"), "the write is the detector's: {function}");
+}
+
+/// The tick's sources (#467): no stdin, no tracker write, no lock taken or released (the host's, #468), no step or
+/// lease; its writes of a cursor are the postponement's and the steps registry's, and nothing else.
+#[test]
+fn the_tick_writes_only_its_postponements_and_its_registry() {
+    let sources = sources_under(workspace_root().join("crates").join("regia-controller").join("src").join("engine"));
+    assert!(sources.len() >= 4, "the scan reads the sources");
+    let forbidden = ["stdin", "add_comment", "acquire_lock", "release_lock", "acquire_lease", "heartbeat", "open_step", "close_step", "record_own_comment", "write_state_file"];
+    let mut functions: Vec<String> = cursor_writes(sources, &forbidden)
+        .into_iter()
+        .map(|(path, function)| {
+            assert!(path.ends_with("native.rs"), "{}", path.display());
+            function.split('(').next().unwrap_or_default().to_owned()
+        })
+        .collect();
+    functions.sort();
+    assert_eq!(functions, ["fn postpone", "fn save"], "the writes are the postponement's and the registry's");
 }
 
 /// The product's line of a run, parsed, after it ran on `state` with the consent given.
