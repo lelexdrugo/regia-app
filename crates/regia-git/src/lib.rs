@@ -11,9 +11,14 @@
 //! - the push goes to the branch's upstream only, never with force and never to another branch.
 //!
 //! A failure of git is an outcome with its reason, never an error.
+//!
+//! [`link`] and [`first_push`] are the prototype's `_collega_dossier` and `_primo_push`: a new project's dossier
+//! linked to its repo, and its scaffold pushed when the folder was made a repo here.
 
 mod dossier;
 mod git;
+mod link;
 
 pub use dossier::{Checkpoint, DossierSync, Outcome, named_files, named_paths, sync, sync_with};
 pub use git::{Git, GitDate, Run, TIMEOUT};
+pub use link::{FirstPush, LinkError, Linked, PushStep, first_push, is_repo, link, other_origin};

@@ -28,6 +28,7 @@ struct RegistryFile {
 }
 
 struct Format {
+    marker: String,
     block: Regex,
     repo: Regex,
     no_products: Vec<String>,
@@ -53,6 +54,7 @@ fn format() -> &'static Format {
         let space = pystr::SPACE;
         let marker = regex::escape(&file.registry.marker);
         Format {
+            marker: file.registry.marker.clone(),
             block: Regex::new(&format!(r"(?s)<!--{space}*{marker}{space}*(.*?)-->")).expect("a valid pattern"),
             repo: Regex::new(r"^[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$").expect("a valid pattern"),
             no_products: file.registry.no_products,
@@ -60,6 +62,28 @@ fn format() -> &'static Format {
             status_labels: file.status_labels,
         }
     })
+}
+
+/// The key of format v1 for a field of the contract: `folder` → the prototype's word for it.
+#[must_use]
+pub fn registry_key(contract: &str) -> &'static str {
+    format().key(contract)
+}
+
+/// The marker that opens the registry's block.
+#[must_use]
+pub fn registry_marker() -> &'static str {
+    &format().marker
+}
+
+/// The values of the products' key that mean none, in lower case.
+pub(crate) fn no_products() -> &'static [String] {
+    &format().no_products
+}
+
+/// The text of the registry's block in `body`, between its marker and its end, if it has one.
+pub(crate) fn block(body: &str) -> Option<&str> {
+    format().block.captures(body).and_then(|captures| captures.get(1)).map(|block| block.as_str())
 }
 
 /// The keys of a registry with their values, each where it was first written.

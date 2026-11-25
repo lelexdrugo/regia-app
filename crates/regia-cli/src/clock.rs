@@ -2,7 +2,7 @@
 //! clock dates the dossier's commits and stands the state's clock still at its instant (#442/V3), so a run
 //! at the fixtures' instant writes what the prototype wrote at it.
 
-use chrono::{DateTime, FixedOffset, Utc};
+use chrono::{DateTime, FixedOffset, Local, NaiveDate, Utc};
 use regia_git::GitDate;
 use regia_identity::env_var;
 use regia_store::{ManualClock, Store, WallTime};
@@ -34,6 +34,12 @@ impl Clock {
     /// otherwise git dates it, as the user's own git would.
     pub(crate) fn commit_date(&self) -> Option<GitDate> {
         self.fixed.then(|| GitDate::new(self.now.timestamp(), self.now.offset().local_minus_utc()))
+    }
+
+    /// The local day, as the prototype dates the scaffold (`time.strftime`): a fixed clock's in its own offset,
+    /// which stands for the zone of its instant; otherwise the system's in the system's zone.
+    pub(crate) fn local_day(&self) -> NaiveDate {
+        if self.fixed { self.now.date_naive() } else { self.now.with_timezone(&Local).date_naive() }
     }
 
     /// The machine's state database, on this clock: fixed, the state's clock stands still at its instant

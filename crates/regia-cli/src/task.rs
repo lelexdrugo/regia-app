@@ -455,7 +455,7 @@ fn read_text(file: &str) -> Result<String, String> {
 }
 
 /// The binding of the config, and the tracker it names.
-fn tracker() -> Result<(TrackerBinding, GhTracker), String> {
+pub(crate) fn tracker() -> Result<(TrackerBinding, GhTracker), String> {
     let config: TrackerConfigV1 = crate::tracker_config()?;
     let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
     Ok((binding, GhTracker::new(&config)))
@@ -471,7 +471,7 @@ fn issue_number(number: i64) -> Result<u64, String> {
     u64::try_from(number).map_err(|_| format!("invalid issue number: {number}"))
 }
 
-fn tracker_error(error: TrackerError) -> String {
+pub(crate) fn tracker_error(error: TrackerError) -> String {
     error.to_string()
 }
 
@@ -531,7 +531,7 @@ fn inline_body(body: &str) -> Result<(), String> {
 /// The status of issue `number`, as the prototype sets it (T10, T11): a closing status closes an open
 /// issue, any other reopens a closed one; then the status field of its item, added to the Project if it
 /// is not there; and for a closing status the same field again after a pause.
-fn set_status(tracker: &dyn Tracker, binding: &TrackerBinding, number: u64, status: Status) -> Result<(), String> {
+pub(crate) fn set_status(tracker: &dyn Tracker, binding: &TrackerBinding, number: u64, status: Status) -> Result<(), String> {
     let option = binding.option_id(status).ok_or_else(|| format!("the config binds no option to `{}`", status.id()))?;
     let issue = tracker.issue_node(number).map_err(tracker_error)?.ok_or_else(|| not_found(number))?;
     match status.close_reason() {

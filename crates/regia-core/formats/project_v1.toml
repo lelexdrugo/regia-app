@@ -1,0 +1,116 @@
+# Format v1 of what `project new` writes (`cmd_progetto_new` and `scaffold` of `tools/regia.py` in the dossier):
+# data in the prototype's language, which other programs read, and so it stays out of the Rust sources (ADR 0001
+# §12, ADR 0017 "Data").
+
+# The registry of the Objective: the word written for no products. The reads take it, and the others of
+# `[registry] no_products` in `tracker_v1.toml`, as none.
+[registry]
+no_products = "nessuno"
+
+# The playbook when `--playbook` is not given.
+[defaults]
+playbook = "generico"
+
+# The scaffold of the dossier: the files written in `<folder>/<folder of the scaffold>/`, each only when it is not
+# there, then the folders, made empty. The models are copied byte for byte from `templates/progetto/` of the
+# dossier at commit 47e081658e2643ca34c9fdb322cedc80e4de1299 (2026-11-12), the last that changed that folder: rows F264-F267 of the dossier's
+# inventory. Their placeholders are replaced one after the other, in the order of `[scaffold.placeholders]` as the
+# code lists them (id, title, objective, repo, date), so a value that holds a later placeholder has it replaced too.
+[scaffold]
+folder = ".regia"
+folders = ["report", "journal", "briefings"]
+
+[scaffold.placeholders]
+id = "{{ID}}"
+title = "{{TITOLO}}"
+objective = "{{OBIETTIVO}}"
+repo = "{{REPO}}"
+date = "{{DATA}}"
+
+# Not in the prototype: #452 adds the moviola's folder, and in it the rule that keeps the pages the moviola
+# generates out of git, as the dossier's own `.gitignore` does (`.regia/moviola/snapshot/*.html` and `*.svg`, with
+# its comment). Written as the models are, only when it is not there, and listed after them.
+[scaffold.added]
+folder = "moviola"
+file = ".gitignore"
+text = '''
+# moviola: HTML e SVG generati da `build` (in git vanno solo i JSON)
+snapshot/*.html
+snapshot/*.svg
+'''
+
+# The models, in the order the prototype lists the files it wrote: its folder's order on Windows.
+[[scaffold.files]]
+name = "decisioni.md"
+text = '''
+# Decisioni: {{TITOLO}}
+
+<!-- Livello TIEPIDO. Una riga per decisione: data · decisione · perché · chi (tu / orchestratore / default automatico).
+     Tetto di 30.000 caratteri, nessun limite per voce. Oltre, il passo lancia `regia compatta-decisioni`: sposta le voci più vecchie,
+     uguali, in .regia/decisioni-AAAA-MM.md (non in journal/) fino a 15.000 caratteri, e scrive in testa un Riassunto di al più 10
+     righe che cita `decisioni-AAAA-MM.md:<riga>`. Le righe `#N/V<n> →` e `#N/resta → nessuno` passano uguali (ARCHITECTURE §4.3). -->
+
+- {{DATA}} · Progetto creato · avvio del ciclo regia · tu
+'''
+
+[[scaffold.files]]
+name = "LEGGIMI.md"
+text = '''
+# .regia/
+
+Cartella di stato della regia per il progetto `{{ID}}`. Il piano dei task è nel tracker ({{REPO}}, etichetta `progetto:{{ID}}`).
+
+| File | Livello | Regola |
+|---|---|---|
+| `stato.md` | caldo | ≤ 1 schermata, si riscrive |
+| `decisioni.md` | tiepido | una riga per decisione, si compatta |
+| `mappa.md` | mappa | si riscrive |
+| `report/` | report | un file per unità di lavoro (`AAAA-MM-GG-<task>.md`) |
+| `journal/` | freddo | si accoda, non si carica mai di default |
+| `briefings/` | HTML locali | mai pubblicati |
+
+Protocollo: skill `regia` (vedi il repo regia).
+'''
+
+[[scaffold.files]]
+name = "mappa.md"
+text = '''
+# Mappa: {{TITOLO}}
+
+<!-- Si RISCRIVE. Una schermata: serve a capire il progetto senza rileggere tutto.
+     Per un paper è il RIASSUNTO della base dei claim, che sta nel repo del paper in `scope/claims.md` (modello: `templates/paper/claims.md`;
+     playbook paper, «La base dei claim»): i claim per stato, citati per ID (C01…), quelli senza evidenza o senza sezione secondo
+     `tools/claims.py`, e "cosa è cambiato dall'ultima volta". Non ricopiare la tabella: rimanda a `scope/claims.md`.
+     Per altri progetti: componenti, decisioni chiave, stato di ciascuna parte. -->
+
+(vuota: verrà compilata dai primi passi)
+'''
+
+[[scaffold.files]]
+name = "stato.md"
+text = '''
+# Stato: {{TITOLO}}
+
+<!-- Livello CALDO. Una schermata (≤ 60 righe). Si RISCRIVE a ogni passo, non si accoda.
+     Il piano (task, ordine, chi esegue cosa) vive nel tracker: qui si riassume e si rimanda. -->
+
+- **Progetto:** `{{ID}}` · Obiettivo: {{OBIETTIVO}} in {{REPO}}
+- **Aggiornato:** {{DATA}}
+- **Fase:** avvio
+
+## Situazione
+Progetto appena creato. Nessun passo eseguito.
+
+## Prossimo passo previsto
+Prima ripianificazione: proporre il mandato e i primi task.
+
+## Domande aperte
+- (nessuna)
+
+## Rischi
+- (nessuno noto)
+
+## File rilevanti
+- `.regia/decisioni.md`: decisioni prese e perché
+- `.regia/mappa.md`: mappa del progetto
+'''

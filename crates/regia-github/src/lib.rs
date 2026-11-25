@@ -6,10 +6,12 @@ mod history;
 mod init;
 mod issue;
 mod limit;
+mod project;
 mod read;
 mod write;
 
 pub use init::GhInit;
+pub use project::repo_url;
 
 use std::path::PathBuf;
 
@@ -311,6 +313,22 @@ impl Tracker for GhTracker {
 
     fn edit_labels(&self, number: u64, add: &str, remove: Option<&str>) -> Result<(), TrackerError> {
         self.issue_edit_labels(number, add, remove)
+    }
+
+    fn create_label(&self, name: &str, color: &str, description: &str) -> Result<(), TrackerError> {
+        self.label_create(name, color, description)
+    }
+
+    fn edit_body(&self, number: u64, body: &str) -> Result<(), TrackerError> {
+        self.issue_edit_body(number, body)
+    }
+
+    fn create_private_repo(&self, full: &str, description: &str) -> Result<(), TrackerError> {
+        self.repo_create_private(full, description)
+    }
+
+    fn add_repo_topic(&self, full: &str, topic: &str) -> Result<(), TrackerError> {
+        self.repo_add_topic(full, topic)
     }
 
     fn issue_url(&self, number: u64) -> Option<String> {

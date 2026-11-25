@@ -69,12 +69,12 @@ impl GhTracker {
         Ok(Args::new().word("issue").word(verb).value(&number).opt("--repo", &self.repo_slug()?))
     }
 
-    fn repo_slug(&self) -> Result<RepoSlug, TrackerError> {
+    pub(crate) fn repo_slug(&self) -> Result<RepoSlug, TrackerError> {
         RepoSlug::parse(&format!("{}/{}", self.owner, self.repo)).map_err(invalid)
     }
 
     /// Runs `gh`; a failure is its stderr, or else its stdout, as the prototype reports it.
-    fn run_gh(&self, name: &str, args: Args, stdin: Option<&str>) -> Result<String, TrackerError> {
+    pub(crate) fn run_gh(&self, name: &str, args: Args, stdin: Option<&str>) -> Result<String, TrackerError> {
         let gh = self.gh.as_ref().map_err(|error| TrackerError::Unavailable(error.clone()))?;
         let mut launch = gh.launch(args, &self.work_dir);
         if let Some(stdin) = stdin {

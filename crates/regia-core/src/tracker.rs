@@ -210,6 +210,31 @@ pub trait Tracker {
         let _ = remove;
         Err(not_written(format!("the label {add} on #{number}")))
     }
+
+    /// Creates the label `name` with its color and description, or updates it in place when it is there (`gh label
+    /// create --force`, G3 of the dossier's conformance study).
+    fn create_label(&self, name: &str, color: &str, description: &str) -> Result<(), TrackerError> {
+        let _ = (color, description);
+        Err(not_written(format!("the label {name}")))
+    }
+
+    /// Replaces the body of issue `number`.
+    fn edit_body(&self, number: u64, body: &str) -> Result<(), TrackerError> {
+        let _ = body;
+        Err(not_written(format!("the body of #{number}")))
+    }
+
+    /// Creates the repo `full`, `<owner>/<name>`, private, with its description (G6): a dossier's repo is never
+    /// public, and no other visibility can be asked for.
+    fn create_private_repo(&self, full: &str, description: &str) -> Result<(), TrackerError> {
+        let _ = description;
+        Err(not_written(format!("the repo {full}")))
+    }
+
+    /// Adds `topic` to the topics of the repo `full`.
+    fn add_repo_topic(&self, full: &str, topic: &str) -> Result<(), TrackerError> {
+        Err(not_written(format!("the topic {topic} of {full}")))
+    }
 }
 
 /// The node of an issue, as the tracker's writes name it.

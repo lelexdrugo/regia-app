@@ -14,6 +14,7 @@ pub mod markdown;
 pub mod model;
 pub mod moviola;
 pub mod policy;
+pub mod project;
 pub mod pystr;
 pub mod reads;
 pub mod reference;
@@ -36,7 +37,11 @@ pub use model::{CloseReason, DueDate, IssueState, Maturity, Status, Task};
 pub use policy::{Lever, LeverValue, Local, LocalStatus, Origin, Policy, PolicyError, Room, Values};
 pub use reads::{BodyEdit, ListOptions, ListedTask, ShownTask, task_list};
 pub use reference::{NotAPathForm, Reference, ReferenceKind, Unresolved, data_root, resolve};
-pub use registry::{EntryError, Registry, full_repo, project_entry, registry_with};
+pub use project::{
+    LeverError, ObjectiveWords, ProjectLever, ScaffoldFile, ScaffoldValues, default_playbook, no_products_word, objective_body, products_list,
+    registry_key_count, repo_argument, scaffold_files, scaffold_folder, scaffold_folders,
+};
+pub use registry::{EntryError, Registry, full_repo, project_entry, registry_key, registry_marker, registry_with};
 pub use text::{Normalized, normalize, normalize_document, normalize_title};
 pub use tracker::{
     ClosedIssue, IssueRef, RawComment, RawIssue, RecentComments, StatusHistory, Tracker, TrackerError, add_children_from_parents, created_issue_number,
