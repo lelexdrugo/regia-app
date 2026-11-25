@@ -208,6 +208,43 @@ async function overview(page, harness, m, fixture, model, check) {
     `${JSON.stringify(listed)}; the main lane's first node ${main} → ${dimmed}`);
 }
 
+/**
+ * The world from tiles against the world drawn directly (#489), on the stage as it is: still wheels at the same zoom
+ * until a frame's world comes from tiles (`data-world`), then a new direction and back, whose frame draws it
+ * directly. The share of the stage's pixels that differ by more than 8 in a channel, and, for the control, the share
+ * that differs from the tiles' own frame moved by one device pixel.
+ */
+async function sameWorld(page, at) {
+  const grab = (name) => page.evaluate(`(() => { const c = ${CANVAS}; const k = c.width / c.clientWidth;
+    window[${JSON.stringify(name)}] = c.getContext("2d").getImageData(0, 0, c.width, Math.floor(${at.h} * k)).data; return c.dataset.world; })()`);
+  let world = "";
+  for (let i = 0; i < 12 && world !== "tiles"; i++) {
+    const before = await frames(page);
+    await mouse(page, "mouseWheel", at.left + 4, at.top + at.h - 4, { deltaX: 0, deltaY: 0, buttons: 0 });
+    await waitFrames(page, before).catch(() => {});
+    world = await data(page, "world");
+  }
+  const tiles = await grab("__tiles");
+  const dir = (await page.evaluate("document.documentElement.dataset.dir")) || "montaggio";
+  for (const next of [dir === "foglio" ? "nero" : "foglio", dir]) {
+    const before = await frames(page);
+    await page.evaluate(`document.documentElement.dataset.dir = ${JSON.stringify(next)}`);
+    await waitFrames(page, before).catch(() => {});
+  }
+  const direct = await grab("__direct");
+  const [differ, moved] = await page.evaluate(`(() => {
+    const a = window.__tiles, b = window.__direct, w = ${CANVAS}.width;
+    const far = (p, q) => Math.max(Math.abs(a[p] - b[q]), Math.abs(a[p + 1] - b[q + 1]), Math.abs(a[p + 2] - b[q + 2])) > 8;
+    let n = 0, m = 0;
+    for (let i = 0; i < a.length; i += 4) {
+      if (far(i, i)) n++;
+      if ((i / 4) % w > 0 && Math.max(Math.abs(a[i] - a[i - 4]), Math.abs(a[i + 1] - a[i - 3]), Math.abs(a[i + 2] - a[i - 2])) > 8) m++;
+    }
+    return [n / (a.length / 4), m / (a.length / 4)];
+  })()`);
+  return { tiles, direct, differ, moved };
+}
+
 /** The tape's ink of each kind, which a group of several takes, and the ink a group of one's glyph shows (canvas2d.ts's
  * TICK and STYLE): the decision's fill is the surface, so its stroke is what shows. */
 const TICK_INK = { milestone: "node", decision: "node", gate: "accent", exception: "negative", exploration: "muted", rejoin: "positive", abandonment: "faint" };
@@ -283,6 +320,9 @@ async function groups(page, harness, m, check) {
   const hit = await measure();
   check("each group in view has its mark in its kind's ink where lod.ts puts it, measured on the canvas", boxes.length >= 50 && hit >= 0.9 * boxes.length,
     `${hit} of ${boxes.length} groups`);
+  const far = await sameWorld(page, at);
+  check("zoomed out, the world from tiles is the world drawn directly", far.tiles === "tiles" && far.direct === "direct" && far.differ <= 0.001,
+    `${(far.differ * 100).toFixed(3)} % of the stage differs (${far.tiles}, then ${far.direct})`);
 
   // The control: every kind hidden.
   let before = await frames(page);
@@ -306,7 +346,12 @@ async function groups(page, harness, m, check) {
   check("a click on a group of several opens it at the zoom of detail, and the line empties",
     pick >= 0 && opened[2] >= l.GROUP_ZOOM && (await data(page, "groups")) === "" && (await page.evaluate(`document.getElementById("moviola-groups").textContent.trim()`)) === "",
     `camera ${opened.join(" ")}`);
-  return { caught, hidden, of: boxes.length };
+  const near = await sameWorld(page, at);
+  check("at the zoom of detail, the world from tiles is the world drawn directly", near.tiles === "tiles" && near.direct === "direct" && near.differ <= 0.001,
+    `${(near.differ * 100).toFixed(3)} % of the stage differs (${near.tiles}, then ${near.direct})`);
+  // The control: the tiles' frame against itself moved by one device pixel.
+  const moved = Math.min(far.moved, near.moved);
+  return { caught, hidden, of: boxes.length, caughtMoved: moved > 0.001, moved };
 }
 
 export const stage = {
@@ -470,9 +515,10 @@ export const stage = {
     console.log(`negative control, the prototype's timecode ${JSON.stringify(prototype)}: ${caughtFormat ? "caught" : "NOT CAUGHT"}`);
     console.log(`negative control, a stage deaf to the direction: ${caughtTheme ? "caught" : "NOT CAUGHT"} (kept ${kept})`);
     console.log(`negative control, the groups with every kind hidden: ${grouped.caught ? "caught" : "NOT CAUGHT"} (${grouped.hidden} of ${grouped.of} still in their ink)`);
+    console.log(`negative control, the world one device pixel off: ${grouped.caughtMoved ? "caught" : "NOT CAUGHT"} (${(grouped.moved * 100).toFixed(2)} % of the stage differs)`);
     const newErrors = page.consoleErrors.slice(errors);
     console.log(`errors in the console: ${newErrors.length}`);
     for (const error of [...new Set(newErrors)].slice(0, 10)) console.log(`  ${error}`);
-    return results.every(([, ok]) => ok) && caughtFormat && caughtTheme && grouped.caught && newErrors.length === 0;
+    return results.every(([, ok]) => ok) && caughtFormat && caughtTheme && grouped.caught && grouped.caughtMoved && newErrors.length === 0;
   },
 };

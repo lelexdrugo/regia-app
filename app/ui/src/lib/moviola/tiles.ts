@@ -1,8 +1,8 @@
 // The world in tiles (#489): the stage's lanes, edges and marks drawn once for a zoom, in squares of `CELL` CSS px
 // on whole device pixels, and blitted on every frame the camera moves without zooming, a pan, the playhead followed,
-// the pointer over the stage. Blitting a square costs a fraction of drawing what is on it, so a frame stays under the
-// display's interval whatever the stage holds (the bench of #488: x10 dense lost 38 % of its frames in pan, drawn
-// directly). A new zoom draws its first frame directly (canvas2d.ts's `drawWorldDirect`) and the next frames at that
+// the pointer over the stage. On the machine measured for #489, blitting a square cost a fraction of drawing what is
+// on it, so a frame stayed under the display's interval whatever the stage held (the bench of #488: x10 dense lost
+// 38 % of its frames in pan as the renderer drew it before, and none with the tiles). A new zoom draws its first frame directly (canvas2d.ts's `drawWorldDirect`) and the next frames at that
 // zoom draw a few tiles each, until all those in view are there: while one is missing the frame draws directly.
 // Anything that changes the marks, a direction, a filter, the stage's size or density, drops them all (`invalidate`).
 import { CELL, drawWorld, type Frame, type WorldSource, worldMargin } from "./canvas2d";
@@ -15,6 +15,8 @@ const KEEP = 36;
 type Tile = { canvas: HTMLCanvasElement; used: number };
 
 export class WorldTiles implements WorldSource {
+  /** Whether the last frame's world came from tiles: the stage tells the proofs (`data-world`). */
+  blitted = false;
   private readonly tiles = new Map<string, Tile>();
   private readonly spare: HTMLCanvasElement[] = [];
   private key = "";
@@ -34,6 +36,7 @@ export class WorldTiles implements WorldSource {
   }
 
   draw(ctx: CanvasRenderingContext2D, f: Frame): boolean {
+    this.blitted = false;
     const { cam, view, dpr } = f;
     const s = dpr * cam.z;
     const key = `${this.generation} ${dpr} ${cam.z}`;
@@ -78,6 +81,7 @@ export class WorldTiles implements WorldSource {
       }
     }
     ctx.restore();
+    this.blitted = true;
     return true;
   }
 

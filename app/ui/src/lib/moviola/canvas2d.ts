@@ -7,11 +7,14 @@
 // envelopes and `arco` of `disegnaPalco`, the tape of `disegnaNastro` with its joints), in the seven shapes and the
 // tokens of the design system. Text is drawn by the system's text engine; its words come from the catalog.
 //
-// The level of detail (#489). Chromium's Canvas rasterises a path in proportion to the area it spans on screen, so
-// one path for every ring in view cost as much as the whole stage, on every frame: the world is drawn part by part
-// (`drawWorldDirect`, cells of `CELL` px), or blitted from tiles drawn once for the zoom (tiles.ts). Under the zoom of
-// groups (lod.ts) each lane's milestones are drawn in groups, a group of one as its glyph. The tape's marks that do
-// not move with the playhead are drawn once, in two layers, for each size, direction and language.
+// The level of detail (#489). Measured on one machine (WebView2 158 on Skia Ganesh over Direct3D 11, an Intel Arc
+// GPU, density 2; the dossier's report of #489): a path that spans the stage, one for the rings in view, cost a few
+// ms to rasterise with only a few dozen marks in it, about three times less at density 1, and much less split by
+// region. So
+// the world is drawn part by part (`drawWorldDirect`, cells of `CELL` px), or blitted from tiles drawn once for the
+// zoom (tiles.ts). Under the zoom of groups (lod.ts) each lane's milestones are drawn in groups, a group of one as its
+// glyph. The tape's marks that do not move with the playhead are drawn once, in two layers, for each size, direction
+// and language.
 import { AT_RISK, groupHalfHeight, groupLevel, groupRange, type Groups, SINGLE_RADIUS, size, WAITING } from "./lod";
 import type { Layout, Lane, Envelope, Model, TimeScale } from "./model";
 import { ringOffset } from "./model";
@@ -85,6 +88,8 @@ export type Frame = {
   nameWidths: Float32Array | null;
   /** The groups of one's glyphs, drawn once in this frame's tokens and density, `null` until a frame draws one. */
   sprites: Map<number, HTMLCanvasElement> | null;
+  /** Whether the world is drawn part by part and the groups of one from sprites (stage.ts's PARTS), or in one pass. */
+  parts: boolean;
 };
 
 /** The alpha of each emphasis (#598): in full, dimmed as the prototype's `attenuato`, filtered out as its
@@ -370,16 +375,25 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame, world: WorldS
 }
 
 /** The world under the frame's camera, drawn straight onto the stage one cell at a time: each cell clipped on whole
- * device pixels, so two cells meet without a seam, and each with paths of its own, so none spans the stage. */
+ * device pixels, so two cells meet without a seam, and each with paths of its own, so none spans the stage. The
+ * world's origin lands on a whole device pixel, as with the tiles (tiles.ts), so the two ways draw the same pixels. */
 export function drawWorldDirect(ctx: CanvasRenderingContext2D, f: Frame): void {
   const { cam, view, dpr } = f;
   const s = dpr * cam.z;
-  const tx = dpr * (view.w / 2 - cam.cx * cam.z);
-  const ty = dpr * (view.h / 2 - cam.cy * cam.z);
+  const tx = Math.round(dpr * (view.w / 2 - cam.cx * cam.z));
+  const ty = Math.round(dpr * (view.h / 2 - cam.cy * cam.z));
   const wide = Math.round(view.w * dpr);
   const high = Math.round(view.h * dpr);
-  const step = Math.max(1, Math.round(CELL * dpr));
   const [mx, my] = worldMargin(f);
+  if (!f.parts) {
+    // In one pass, as before #489, where parts cost more than they save (stage.ts's PARTS).
+    ctx.save();
+    ctx.setTransform(s, 0, 0, s, tx, ty);
+    drawWorld(ctx, f, -tx / s - mx, (wide - tx) / s + mx, -ty / s - my, (high - ty) / s + my);
+    ctx.restore();
+    return;
+  }
+  const step = Math.max(1, Math.round(CELL * dpr));
   for (let dy = 0; dy < high; dy += step) {
     for (let dx = 0; dx < wide; dx += step) {
       const w = Math.min(step, wide - dx);
@@ -723,16 +737,53 @@ function drawGroups(ctx: CanvasRenderingContext2D, f: Frame, groups: Groups, x0:
       ctx.fillStyle = p[TICK[KINDS[groups.kind[g] as number] as MilestoneKind]];
       ctx.fillRect(a - hh, (groups.y[g] as number) - hh, b - a + 2 * hh, 2 * hh);
     }
-    // The groups of one.
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    for (const g of mine) {
-      if (size(groups, g) !== 1) continue;
-      const dx = at.a * (groups.x0[g] as number) + at.e;
-      const dy = at.d * (groups.y[g] as number) + at.f;
-      ctx.drawImage(sprite(f, groups.kind[g] as number, groups.health[g] as number), Math.round(dx - half), Math.round(dy - half));
+    // The groups of one: from sprites, or where copying a canvas costs more than drawing (stage.ts's PARTS), their
+    // glyphs and halos as paths, one for each kind.
+    if (f.parts) {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      for (const g of mine) {
+        if (size(groups, g) !== 1) continue;
+        const dx = at.a * (groups.x0[g] as number) + at.e;
+        const dy = at.d * (groups.y[g] as number) + at.f;
+        ctx.drawImage(sprite(f, groups.kind[g] as number, groups.health[g] as number), Math.round(dx - half), Math.round(dy - half));
+      }
+      ctx.restore();
+      continue;
     }
-    ctx.restore();
+    const r = SINGLE_RADIUS / z;
+    ctx.lineWidth = 1.5 / z;
+    ctx.globalAlpha = 0.7 * FADE[level];
+    for (const [bit, colour, ring] of [[AT_RISK, p.negative, 3], [WAITING, p.accent, 4.5]] as const) {
+      ctx.strokeStyle = colour;
+      ctx.beginPath();
+      for (const g of mine) {
+        if (size(groups, g) !== 1 || !((groups.health[g] as number) & bit)) continue;
+        const x = groups.x0[g] as number;
+        ctx.moveTo(x + r + ring / z, groups.y[g] as number);
+        ctx.arc(x, groups.y[g] as number, r + ring / z, 0, TAU);
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = FADE[level];
+    ctx.lineWidth = 1.2 / z;
+    KINDS.forEach((kind, k) => {
+      const style = STYLE[kind];
+      ctx.beginPath();
+      let any = false;
+      for (const g of mine) {
+        if ((groups.kind[g] as number) !== k || size(groups, g) !== 1) continue;
+        glyph(ctx, kind, groups.x0[g] as number, groups.y[g] as number, r);
+        any = true;
+      }
+      if (!any) return;
+      if (style.fill) {
+        ctx.fillStyle = p[style.fill];
+        ctx.fill();
+      }
+      ctx.strokeStyle = p[style.stroke];
+      ctx.stroke();
+    });
   }
   ctx.globalAlpha = 1;
 }
