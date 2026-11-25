@@ -65,3 +65,6 @@ toml.workspace = true
 
 [dev-dependencies]
 proptest = { version = "1", default-features = false, features = ["std"] }
+# The controller's tick, in process, for its cases and the traces of #436 (#467).
+regia-agents.workspace = true
+regia-controller = { path = "../regia-controller" }
