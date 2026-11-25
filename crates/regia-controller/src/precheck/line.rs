@@ -237,6 +237,128 @@ impl Json {
     }
 }
 
+impl Json {
+    /// The value of `key` in an object, the first when it repeats.
+    #[must_use]
+    pub fn get(&self, key: &str) -> Option<&Json> {
+        match self {
+            Json::Object(fields) => fields.iter().find(|(name, _)| name == key).map(|(_, value)| value),
+            _ => None,
+        }
+    }
+
+    #[must_use]
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            Json::Str(text) => Some(text),
+            _ => None,
+        }
+    }
+
+    /// A whole number, as Python's `int` reads one of a JSON line: a float is not one.
+    #[must_use]
+    pub fn as_i64(&self) -> Option<i64> {
+        match self {
+            Json::Int(value) => Some(*value),
+            _ => None,
+        }
+    }
+
+    #[must_use]
+    pub fn as_list(&self) -> Option<&[Json]> {
+        match self {
+            Json::List(items) => Some(items),
+            _ => None,
+        }
+    }
+
+    #[must_use]
+    pub fn is_object(&self) -> bool {
+        matches!(self, Json::Object(_))
+    }
+
+    /// The same value as a `serde_json::Value`: the order of the keys goes, a float stays a float.
+    #[must_use]
+    pub fn to_value(&self) -> serde_json::Value {
+        use serde_json::Value;
+        match self {
+            Json::Null => Value::Null,
+            Json::Bool(value) => Value::Bool(*value),
+            Json::Int(value) => Value::from(*value),
+            Json::Float(value) => serde_json::Number::from_f64(*value).map_or(Value::Null, Value::Number),
+            Json::Str(text) => Value::String(text.clone()),
+            Json::List(items) => Value::Array(items.iter().map(Json::to_value).collect()),
+            Json::Object(fields) => Value::Object(fields.iter().map(|(key, value)| (key.clone(), value.to_value())).collect()),
+        }
+    }
+}
+
+/// A JSON text read with its objects in the order it wrote their keys, as Python's `json.loads` keeps a
+/// dict's: what the controller attaches to a prompt is the precheck's payload byte for byte.
+impl<'de> serde::Deserialize<'de> for Json {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Json, D::Error> {
+        deserializer.deserialize_any(OrderedVisitor)
+    }
+}
+
+struct OrderedVisitor;
+
+impl<'de> serde::de::Visitor<'de> for OrderedVisitor {
+    type Value = Json;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("a JSON value")
+    }
+
+    fn visit_unit<E>(self) -> Result<Json, E> {
+        Ok(Json::Null)
+    }
+
+    fn visit_none<E>(self) -> Result<Json, E> {
+        Ok(Json::Null)
+    }
+
+    fn visit_bool<E>(self, value: bool) -> Result<Json, E> {
+        Ok(Json::Bool(value))
+    }
+
+    fn visit_i64<E>(self, value: i64) -> Result<Json, E> {
+        Ok(Json::Int(value))
+    }
+
+    fn visit_u64<E>(self, value: u64) -> Result<Json, E> {
+        Ok(i64::try_from(value).map_or(Json::Float(value as f64), Json::Int))
+    }
+
+    fn visit_f64<E>(self, value: f64) -> Result<Json, E> {
+        Ok(Json::Float(value))
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Json, E> {
+        Ok(Json::Str(value.to_owned()))
+    }
+
+    fn visit_string<E>(self, value: String) -> Result<Json, E> {
+        Ok(Json::Str(value))
+    }
+
+    fn visit_seq<A: serde::de::SeqAccess<'de>>(self, mut seq: A) -> Result<Json, A::Error> {
+        let mut items = Vec::new();
+        while let Some(item) = seq.next_element::<Json>()? {
+            items.push(item);
+        }
+        Ok(Json::List(items))
+    }
+
+    fn visit_map<A: serde::de::MapAccess<'de>>(self, mut map: A) -> Result<Json, A::Error> {
+        let mut fields = Vec::new();
+        while let Some((key, value)) = map.next_entry::<String, Json>()? {
+            fields.push((key, value));
+        }
+        Ok(Json::Object(fields))
+    }
+}
+
 /// The shortest digits that read back as `value`, and the place of the decimal point after the first of
 /// them: `74.9` is `("749", 2)`, `0.001` is `("1", -2)`.
 fn shortest_digits(value: f64) -> (String, i32) {

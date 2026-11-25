@@ -41,7 +41,7 @@ mod line;
 mod observe;
 mod series;
 mod sources;
-mod v1;
+pub(crate) mod v1;
 
 use regia_agents::{Platform, ProbeConsent};
 use regia_core::{Policy, RawComment, Task};
