@@ -31,7 +31,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use chrono::DateTime;
-use regia_agents::{LaunchSurface, ProbeConsent, WakeAttempt, WakeOutcome, WakeUp};
+use regia_agents::{LaunchError, LaunchRequest, LaunchSurface, ProbeConsent, Receipt, SurfaceKind, WakeAttempt, WakeOutcome, WakeUp};
 use regia_store::{Clock, Holder, LockView, ProjectId, Store, Ttl, WallTime};
 use serde_json::{Map, Value, json};
 
@@ -177,8 +177,32 @@ pub struct HostPorts {
     /// The id of a postponement.
     pub ids: Arc<dyn Fn() -> String + Send + Sync>,
     pub consent: ProbeConsent,
+    /// The reader of Claude's token expiry, the probes' own (`UsageProbes::claude_token_expiry`): the token's
+    /// wake-up reads it before and after (#462/V3). None reads nothing.
+    pub token_expiry: Option<Arc<dyn Fn() -> Option<String> + Send + Sync>>,
     pub console: Arc<dyn Console>,
     pub stop: Arc<AtomicBool>,
+}
+
+/// The tick's surface, whose token wake-up reads the token's expiry before and after it, so the state says whether
+/// the wake-up renewed the token (#462/V3: `WakeUp::round` in the tick, around `WakeOutcome::with_expiry`).
+struct ExpiryAround {
+    surface: Arc<dyn LaunchSurface + Send + Sync>,
+    expiry: Arc<dyn Fn() -> Option<String> + Send + Sync>,
+}
+
+impl LaunchSurface for ExpiryAround {
+    fn kind(&self) -> SurfaceKind {
+        self.surface.kind()
+    }
+
+    fn launch(&self, request: &LaunchRequest) -> Result<Receipt, LaunchError> {
+        self.surface.launch(request)
+    }
+
+    fn wake(&self) -> WakeOutcome {
+        WakeOutcome::with_expiry(|| (self.expiry)(), || self.surface.wake())
+    }
 }
 
 /// What the controller before this one left in its state file (F135): the count of the ticks with the budget
@@ -383,12 +407,16 @@ impl Resident {
             return state_exit(error);
         }
         let earlier = Earlier::read(&self.config.folder);
+        let surface: Arc<dyn LaunchSurface + Send + Sync> = match &self.ports.token_expiry {
+            Some(expiry) => Arc::new(ExpiryAround { surface: Arc::clone(&self.ports.surface), expiry: Arc::clone(expiry) }),
+            None => Arc::clone(&self.ports.surface),
+        };
         let ports = engine::Ports {
             clock: Arc::clone(&self.ports.clock),
             precheck: Arc::clone(&self.ports.precheck),
             folders: Arc::clone(&self.ports.folders),
             liveness: Arc::clone(&self.ports.liveness),
-            surface: Arc::clone(&self.ports.surface),
+            surface,
             lock: Arc::new(StoreLock::new(store.clone(), holder.clone())),
             signals: Arc::new(StoreSignals::new(store.clone(), holder.clone())),
             steps: steps.clone(),

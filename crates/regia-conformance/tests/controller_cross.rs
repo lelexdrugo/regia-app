@@ -152,6 +152,7 @@ fn resident(dir: &Path, answer: Arc<Answer>, rounds: u64, stop: Arc<AtomicBool>)
         surface: Arc::new(Dry::new()),
         ids: Arc::new(|| "id-cross".to_owned()),
         consent: ProbeConsent::Granted,
+        token_expiry: None,
         console: Arc::new(Recorder::default()),
         stop,
     };

@@ -106,11 +106,13 @@ impl Folders for FakeFolders {
     }
 }
 
-/// A surface like the prototype's `LancioFinto`: a receipt with a pid and a session, nothing started.
+/// A surface like the prototype's `LancioFinto`: a receipt with a pid and a session, nothing started; its wake-up is
+/// a fake one, or with `real` one that went well.
 struct FakeSurface {
     pid: Option<u32>,
     launched: Mutex<Vec<String>>,
     wakes: AtomicUsize,
+    real: AtomicBool,
 }
 
 impl LaunchSurface for FakeSurface {
@@ -130,9 +132,11 @@ impl LaunchSurface for FakeSurface {
 
     fn wake(&self) -> WakeOutcome {
         self.wakes.fetch_add(1, Ordering::SeqCst);
-        WakeOutcome::fake()
+        if self.real.load(Ordering::SeqCst) { WakeOutcome { ok: true, exit: Some(0), ..WakeOutcome::default() } } else { WakeOutcome::fake() }
     }
 }
+
+type Expiry = Arc<dyn Fn() -> Option<String> + Send + Sync>;
 
 #[derive(Default)]
 struct FakeLiveness {
@@ -211,6 +215,7 @@ struct Run {
     sleep: Arc<FakeSleep>,
     console: Arc<Recorder>,
     stop: Arc<AtomicBool>,
+    expiry: Mutex<Option<Expiry>>,
 }
 
 impl Run {
@@ -223,11 +228,12 @@ impl Run {
             folder,
             store,
             precheck: Arc::new(FakePrecheck { answers: Mutex::new(answers), calls: AtomicUsize::new(0) }),
-            surface: Arc::new(FakeSurface { pid: Some(4242), launched: Mutex::new(Vec::new()), wakes: AtomicUsize::new(0) }),
+            surface: Arc::new(FakeSurface { pid: Some(4242), launched: Mutex::new(Vec::new()), wakes: AtomicUsize::new(0), real: AtomicBool::new(false) }),
             liveness: Arc::new(FakeLiveness::default()),
             sleep: Arc::new(FakeSleep { clock: clock.clone(), slept: Mutex::new(Vec::new()), jumps: Mutex::new(BTreeMap::new()), hook: Mutex::new(None) }),
             console: Arc::new(Recorder::default()),
             stop: Arc::new(AtomicBool::new(false)),
+            expiry: Mutex::new(None),
             clock,
         }
     }
@@ -252,6 +258,7 @@ impl Run {
             surface: self.surface.clone(),
             ids: Arc::new(|| "id-fixed".to_owned()),
             consent: ProbeConsent::Granted,
+            token_expiry: self.expiry.lock().unwrap().clone(),
             console: self.console.clone(),
             stop: self.stop.clone(),
         };
@@ -731,6 +738,27 @@ fn a_restart_keeps_the_cap_of_the_wake_up() {
     assert_eq!(run.surface.wakes.load(Ordering::SeqCst), 0, "ten minutes after the last one: none");
     assert_eq!(run.log()[0].get("sveglia"), None);
     assert_eq!(run.status()["sveglia"], earlier);
+}
+
+/// #462/V3: the token's wake-up reads Claude's expiry before and after it, and the line and the state say the token
+/// was renewed.
+#[test]
+fn the_wake_up_reads_the_token_s_expiry_around_it() {
+    let run = Run::new("wake-expiry", vec![unknown_budget()]);
+    run.surface.real.store(true, Ordering::SeqCst);
+    let reads = Arc::new(AtomicUsize::new(0));
+    let counter = reads.clone();
+    let expiry: Expiry = Arc::new(move || {
+        let before = counter.fetch_add(1, Ordering::SeqCst) == 0;
+        Some(if before { "2026-10-21T08:00:00+00:00" } else { "2026-10-21T18:00:00+00:00" }.to_owned())
+    });
+    *run.expiry.lock().unwrap() = Some(expiry);
+    assert_eq!(run.resident(run.config(1, 900.0)).run(), Exit::Done);
+    let wake = run.log()[0]["sveglia"].clone();
+    assert_eq!((wake["ok"].clone(), wake["token_rinnovato"].clone()), (json!(true), json!(true)), "{wake}");
+    assert_eq!((wake["token_scadenza_prima"].clone(), wake["token_scadenza_dopo"].clone()), (json!("2026-10-21T08:00:00+00:00"), json!("2026-10-21T18:00:00+00:00")));
+    assert_eq!((reads.load(Ordering::SeqCst), run.surface.wakes.load(Ordering::SeqCst)), (2, 1));
+    assert_eq!(run.status()["sveglia"]["token_rinnovato"], true);
 }
 
 /// F136: a step an earlier controller launched, still launched and alive, is not launched again; a finished one, or
