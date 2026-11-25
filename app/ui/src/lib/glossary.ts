@@ -42,6 +42,7 @@ export const MOVIOLA_KEYS: readonly [string, string][] = [
   ["moviola-keys-arrows", "← →"],
   ["moviola-keys-lanes", "↑ ↓"],
   ["moviola-keys-ends", "Home · End"],
+  ["moviola-keys-pages", "PgUp · PgDn"],
   ["moviola-keys-zoom", "+ · − · 0"],
   ["moviola-keys-enter", "Enter"],
   ["moviola-keys-escape", "Esc"],

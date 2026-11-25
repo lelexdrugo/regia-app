@@ -12,10 +12,17 @@
 // pointer finds as it finds a node, a click on one opening it at the zoom of detail; the world is blitted from tiles
 // drawn once for the zoom (tiles.ts), dropped whenever the marks change; the labels go by rank and keep off the
 // lanes' names.
+//
+// The list of moments (#490): the canvas is a listbox, and a window of the list (moments.ts, listbox.ts) is its own
+// children, rebuilt when the moment chosen, the filters or the level of detail change. The arrows walk the list's
+// order: time's at the zoom of detail, the groups' at the zoom of groups; PageUp and PageDown go ten moments, or a
+// group, at a time.
 import { clampCamera, type Extent, homeCamera, panBy, reveal, zoomAround } from "./camera";
 import { AXIS, bucketByKind, type CanvasText, cut, drawFrame, drawStrip, type Frame, reservedPlaces, STRIP, type StripFrame, TAPE, type Tape } from "./canvas2d";
 import { GROUP_ZOOM, groupAt, groupEnvelopes, type Groups, groupsAt, groupZoom, inView, size } from "./lod";
 import { chooseWindow, dayStarts, type Envelope, halfThickness, HOUR, laneEnvelope, type Layout, layout, type Model, tapeScale, type TimeWindow } from "./model";
+import { type ListMode, type ListText, MomentList } from "./listbox";
+import { listOrder, nextEntry, type Order, PAGE } from "./moments";
 import { readPalette, type Palette } from "./palette";
 import { buildScene, type Camera, FILTERED, hitTest, labelRank, newLabels, pickLabels, type Scene, toScreenX, toScreenY, toWorldX, toWorldY, type View } from "./scene";
 import { WorldTiles } from "./tiles";
@@ -36,6 +43,10 @@ export type StageOptions = {
   ongroups?: (shown: GroupsShown | null) => void;
   /** Off only for the harness's negative control: a stage that does not hear a change of direction. */
   observeTheme?: boolean;
+  /** The words of the list of moments (#490), which the canvas holds as a listbox; none: no list. */
+  list?: ListText;
+  /** The list as the product has it, or one of the harness's negative controls (listbox.ts). */
+  listMode?: ListMode;
 };
 
 /** The part of the story the stage shows: from one instant to another, or all of it. */
@@ -117,6 +128,10 @@ export class Stage {
   private groupEnv: Envelope[] | null = null;
   private hoverGroup = -1;
   private lastGroups: string | null = null;
+  /** The list of moments in the page (#490), and its order for the filters, the groups and the scene it was made for. */
+  private readonly list: MomentList | null;
+  private order: Order | null = null;
+  private orderFor: [readonly boolean[] | null, Groups | null, Scene | null] = [null, null, null];
 
   constructor(host: HTMLElement, canvas: HTMLCanvasElement, model: Model, options: StageOptions) {
     this.host = host;
@@ -134,6 +149,7 @@ export class Stage {
     this.stripCtx = this.strip ? this.strip.getContext("2d", { alpha: false }) : null;
     this.palette = readPalette();
     this.ready = new Promise((resolve) => (this.settle = resolve));
+    this.list = options.list && options.listMode !== "none" ? new MomentList(canvas, model, options.list, options.listMode ?? "window") : null;
 
     const resized = new ResizeObserver(() => {
       this.resize();
@@ -189,6 +205,49 @@ export class Stage {
     if (this.pending) cancelAnimationFrame(this.pending);
     for (const undo of this.cleanup.splice(0)) undo();
     this.tiles.clear();
+    if (this.list) {
+      this.canvas.replaceChildren();
+      this.canvas.removeAttribute("aria-activedescendant");
+    }
+  }
+
+  /** The list's words in another language: the window is written again. */
+  setListText(text: ListText): void {
+    this.list?.setText(text);
+    this.syncList();
+  }
+
+  /** The list's order now (moments.ts): the moments the filters keep, by time, or by group at the zoom of groups. */
+  get listOrder(): Order {
+    const groups = this.scene ? this.groupsFor(this.camera.z) : null;
+    const [kept, cut, scene] = this.orderFor;
+    if (this.order && kept === this.kept && cut === groups && scene === this.scene) return this.order;
+    this.order = listOrder(this.model, this.scene ?? { node: new Uint32Array(0), kind: new Uint8Array(0) }, this.kept, groups);
+    this.orderFor = [this.kept, groups, this.scene];
+    return this.order;
+  }
+
+  /** The entry at the playhead: where the window stands while no moment is chosen, and where a page key starts. */
+  private anchor(order: Order): number {
+    let best = 0;
+    let gap = Infinity;
+    for (let e = 0; e < order.index.length; e++) {
+      const d = Math.abs((this.model.nodes[order.index[e] as number]?.t ?? 0) - this.t);
+      if (d < gap) {
+        gap = d;
+        best = e;
+      }
+    }
+    return best;
+  }
+
+  /** The window of the list around the moment chosen, and the canvas naming its option. */
+  private syncList(): void {
+    if (!this.list) return;
+    const order = this.listOrder;
+    const active = this.list.render(order, this.selected, this.selected >= 0 ? -1 : this.anchor(order));
+    if (active) this.canvas.setAttribute("aria-activedescendant", active);
+    else this.canvas.removeAttribute("aria-activedescendant");
   }
 
   /** The words of the catalog in use: a new language is a redraw, the lanes' names measured again and the strip's
@@ -330,6 +389,12 @@ export class Stage {
   /** `saltaFotogramma`: the next or the previous milestone from the selection, or from the playhead, among those the
    * filters keep. */
   step(direction: 1 | -1): void {
+    const order = this.listOrder;
+    const at = this.selected >= 0 ? (order.place[this.selected] as number) : -1;
+    if (at >= 0) {
+      this.select(order.index[nextEntry(order, at, direction)] as number);
+      return;
+    }
     const nodes = this.model.nodes.filter((n) => this.shown(n.index));
     if (nodes.length === 0) return;
     const first = nodes[0] as Model["nodes"][number];
@@ -413,6 +478,7 @@ export class Stage {
         this.lastGroups = said;
         this.options.ongroups?.(shown);
       }
+      this.syncList();
       if (this.fonts) this.settle();
     });
   }
@@ -440,6 +506,7 @@ export class Stage {
   }
 
   private changed(): void {
+    this.syncList();
     this.options.onchange?.(this);
     this.render();
   }
@@ -788,8 +855,9 @@ export class Stage {
     this.render();
   }
 
-  /** The arrows go from moment to moment, Up and Down to the nearest in the next lane with one; Home and End to the
-   * first and the last; + and - zoom, 0 brings the camera home; Esc lets the selection go. */
+  /** The arrows go from moment to moment in the list's order, Up and Down to the nearest in the next lane with one;
+   * Home and End to the first and the last; PageUp and PageDown ten moments, or a group, back or on; + and - zoom, 0
+   * brings the camera home; Esc lets the selection go. */
   private keydown(event: KeyboardEvent): void {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
     const nodes = this.model.nodes;
@@ -813,6 +881,14 @@ export class Stage {
       case "End": {
         const last = [...nodes].reverse().find((n) => this.shown(n.index));
         if (last) this.select(last.index);
+        return done();
+      }
+      case "PageDown":
+      case "PageUp": {
+        const order = this.listOrder;
+        const at = this.selected >= 0 ? (order.place[this.selected] as number) : -1;
+        const e = nextEntry(order, at, event.key === "PageDown" ? PAGE : -PAGE, order.groups !== null, this.anchor(order));
+        if (e >= 0) this.select(order.index[e] as number);
         return done();
       }
       case "+":

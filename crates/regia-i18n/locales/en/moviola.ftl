@@ -247,3 +247,21 @@ moviola-groups = { $moments ->
            *[other] { $groups } groups
         } by lane: zoom in to see each one with its rings.
     }
+moviola-list-group = Group { $position } of { $total }
+moviola-list-moments = { $n ->
+        [one] one moment
+       *[other] { $n } moments
+    }
+moviola-list-span = { $from } to { $to }
+moviola-list-kind = { $kind }: { $n }
+moviola-list-at-risk = { $n ->
+        [one] one at risk
+       *[other] { $n } at risk
+    }
+moviola-list-waiting = { $n ->
+        [one] one waiting for you
+       *[other] { $n } waiting for you
+    }
+moviola-list-level-groups = Zoomed out: the moments are drawn in groups by lane, and the list goes group by group.
+moviola-list-level-detail = Zoomed in: each moment is drawn, and the list goes from moment to moment in time.
+moviola-keys-pages = On the stage: ten moments back or on; zoomed out, the group before or after

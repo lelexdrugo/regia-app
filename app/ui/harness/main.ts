@@ -14,6 +14,7 @@ import type { Done } from "../src/lib/brief";
 import DocumentView from "../src/lib/content/Document.svelte";
 import { type Catalog, catalog } from "../src/lib/i18n";
 import { DENSITIES, DIRECTIONS, draw } from "../src/lib/look";
+import type { ListMode } from "../src/lib/moviola/listbox";
 import type { MoviolaSource, ProjectSummary, Snapshot, Timeline } from "../src/lib/moviola/types";
 import { bench, type BenchResult } from "./bench";
 import { SECTIONS } from "../src/lib/route";
@@ -158,7 +159,9 @@ function moviolaOf(data: string, params: URLSearchParams): MoviolaSource {
   return {
     projects: () => Promise.resolve(data === "empty" ? [] : moviolaFixtures.portfolio),
     timeline: (project) => {
-      const found = timelines.get(project);
+      // #/moviola/x100: x100's synthetic story, 2,700 moments, by address only and made only when asked for, for the
+      // list of moments (#490).
+      const found = project === "x100" ? syntheticTimeline(100) : timelines.get(project);
       return found ? Promise.resolve(found) : Promise.reject(`unknown project: ${project}`);
     },
     snapshot: (project, milestone) => {
@@ -269,6 +272,10 @@ async function show(): Promise<void> {
     const done = fixtures.done[data] ?? [];
     // theme=fixed: the negative control of the moviola's redraw on a new direction (prove/moviola-canvas.js).
     const observeTheme = params.get("theme") !== "fixed";
+    // list=capped|none: the negative controls of the list of moments (#490, prove/access.js): the renderer spike's
+    // list, stopped at 200 items, and no list at all, as before.
+    const listed = params.get("list");
+    const listMode: ListMode = listed === "capped" || listed === "none" ? listed : "window";
     const props = {
       strings: catalogOf,
       catalogFor,
@@ -279,6 +286,7 @@ async function show(): Promise<void> {
       quota,
       moviola: moviolaOf(data, params),
       observeTheme,
+      listMode,
       onsettled,
     };
     mounted.push(mount(App, { target: root, props }));

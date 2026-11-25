@@ -247,3 +247,21 @@ moviola-groups = { $moments ->
            *[other] { $groups } gruppi
         } per corsia: ingrandisci per vederli uno per uno, con i loro anelli.
     }
+moviola-list-group = Gruppo { $position } di { $total }
+moviola-list-moments = { $n ->
+        [one] un momento
+       *[other] { $n } momenti
+    }
+moviola-list-span = da { $from } a { $to }
+moviola-list-kind = { $kind }: { $n }
+moviola-list-at-risk = { $n ->
+        [one] uno a rischio
+       *[other] { $n } a rischio
+    }
+moviola-list-waiting = { $n ->
+        [one] uno aspetta te
+       *[other] { $n } aspettano te
+    }
+moviola-list-level-groups = Da lontano: i momenti sono disegnati in gruppi per corsia, e l'elenco va di gruppo in gruppo.
+moviola-list-level-detail = Da vicino: ogni momento è disegnato, e l'elenco va da un momento all'altro nel tempo.
+moviola-keys-pages = Sul palco: dieci momenti indietro o avanti; da lontano, il gruppo prima o dopo
