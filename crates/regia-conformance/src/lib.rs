@@ -149,6 +149,10 @@ pub struct CaseSpec {
     /// stores them in `written.json`, and a native run must leave the same (the `tracker.json` of `init derive`).
     #[serde(default)]
     pub written: Vec<String>,
+    /// Keys of the synthetic `tracker.json` the case's state folder gets, over those of the brief's family: the
+    /// configured project field of the checks (#448).
+    #[serde(default)]
+    pub tracker: serde_json::Map<String, Value>,
 }
 
 /// A case's dossier: a folder of files, by default a git repo whose `files` are committed and pushed to
@@ -594,7 +598,28 @@ pub fn prepare_state_dir(label: &str) -> PathBuf {
 pub fn prepare_case_state(label: &str, case: &Case) -> PathBuf {
     let dir = prepare_state_dir(label);
     write_state(&dir, &case.spec.state);
+    if !case.spec.tracker.is_empty() {
+        let path = dir.join("tracker.json");
+        let mut config: Value = read_json(&path);
+        let object = config.as_object_mut().expect("tracker.json is an object");
+        object.extend(case.spec.tracker.clone());
+        fs::write(&path, serde_json::to_string_pretty(&config).expect("JSON")).expect("the case's tracker.json");
+    }
     dir
+}
+
+/// The responses at `responses` with the folder of the run's dossier in place of the placeholder, written in `state`:
+/// a registry that names the dossier is answered with the run's own folder (#448). Without a placeholder, the file as
+/// it is.
+pub fn placed_responses(responses: &Path, state: &Path, dossier: &Path) -> PathBuf {
+    let text = fs::read_to_string(responses).unwrap_or_else(|error| panic!("{}: {error}", responses.display()));
+    if !text.contains(DOSSIER_PLACEHOLDER) {
+        return responses.to_path_buf();
+    }
+    let placed = place_json(&serde_json::from_str(&text).expect("the responses are JSON"), dossier);
+    let path = state.join("responses-placed.json");
+    fs::write(&path, serde_json::to_string(&placed).expect("JSON")).expect("the placed responses");
+    path
 }
 
 /// `rows` in the state database of `dir`, in format v1: the table and its columns come from
@@ -1082,6 +1107,7 @@ fn run_case_in(label: &str, case: &Case, build: bool, extra: impl FnOnce(&Path) 
         empty
     };
     let dossier = case.spec.dossier.as_ref().map(|spec| if build { prepare_dossier(&state, spec) } else { dossier_dir(&state) });
+    let responses = dossier.as_ref().map_or(responses.clone(), |dossier| placed_responses(&responses, &state, dossier));
     let args = dossier.as_ref().map_or_else(|| case.spec.args.clone(), |dossier| place_args(&case.spec.args, dossier));
     let launch = regia_exec::harness::launch(&regia_binary(), &args, &state);
     let (mut launch, _) = fixture_for_rust(launch, &responses, &state);

@@ -11,8 +11,8 @@
 //! The normalizations, declared:
 //! - **The reasons** are the product's own sentences, in English: the prototype's are translated by the
 //!   tables of `words` before the comparison, those of a lock or a lease and those of the dossier.
-//! - **The checks** of `step finish` are not ported (#448): natively they are `{unavailable: <why>}`, and
-//!   the prototype's are not compared.
+//! - **The checks** of `step finish` (#448) are compared whole, through the table, when the prototype ran them;
+//!   when it could not, each side says why in its own words, and only that both could not is compared.
 //! - **A generated holder**, `passo-` and 12 random hex digits, reads as `passo-<generated>` on both sides,
 //!   as in every comparison of the harness.
 //! - **The text** of the product is the JSON's keys, one leaf a line: for a case recorded in text, the
@@ -57,7 +57,7 @@ fn native(label: &str, case: &Case, extra: Vec<(String, std::ffi::OsString)>) ->
 }
 
 /// The prototype's JSON in the product's words: the table's names, the reasons translated, the
-/// checks left out.
+/// checks left out, for `checks_differences`.
 fn python_in_the_product_s_words(case: &Case, python: &Value) -> Result<Value, String> {
     let mut python = translate_python(&case.command_name(), python).map_err(|error| error.to_string())?;
     if let Some(object) = python.as_object_mut() {
@@ -74,18 +74,27 @@ fn python_in_the_product_s_words(case: &Case, python: &Value) -> Result<Value, S
     Ok(generated(&python))
 }
 
-/// The native checks: absent when the prototype's are, and otherwise not ported, with why.
+/// The native checks against the prototype's, through the table: absent on both sides, unavailable on both with a
+/// reason each, or the same findings, counts and warnings.
 fn checks_differences(case: &Case, rust: &mut Value) -> Vec<String> {
-    let python_has = matches!(case.recorded(), Recorded::Json(python) if python.get("controlli").is_some());
+    let python = match case.recorded() {
+        Recorded::Json(python) => python.get("controlli").map(|checks| translate_python(&case.command_name(), &json!({"controlli": checks}))),
+        Recorded::Text(_) => None,
+    };
     let Some(object) = rust.as_object_mut() else { return Vec::new() };
-    match (object.remove("checks"), python_has) {
-        (None, false) => Vec::new(),
-        (Some(checks), true) => {
-            let reason = checks.get("unavailable").and_then(Value::as_str).unwrap_or_default();
-            let alone = checks.as_object().is_some_and(|fields| fields.len() == 1);
-            if reason.is_empty() || !alone { vec![format!("checks: rust {checks}, not unavailable with a reason")] } else { Vec::new() }
+    match (object.remove("checks"), python) {
+        (None, None) => Vec::new(),
+        (Some(rust), Some(Ok(python))) => {
+            let python = &python["checks"];
+            let unavailable = |checks: &Value| checks.get("unavailable").and_then(Value::as_str).is_some_and(|reason| !reason.is_empty());
+            match (unavailable(&rust), unavailable(python)) {
+                (true, true) => Vec::new(),
+                (false, false) => json_diff(&rust, python).into_iter().map(|line| format!("checks {line}")).collect(),
+                _ => vec![format!("checks: rust {rust}, python {python}")],
+            }
         }
-        (rust, _) => vec![format!("checks: rust {rust:?}, python has them: {python_has}")],
+        (_, Some(Err(error))) => vec![format!("checks: the table does not cover the prototype's: {error}")],
+        (rust, python) => vec![format!("checks: rust {rust:?}, python has them: {}", python.is_some())],
     }
 }
 

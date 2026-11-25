@@ -308,11 +308,17 @@ impl Thresholds {
         parse_thresholds(text, name, Thresholds::defaults(), &mut BTreeSet::new())
     }
 
-    /// The defaults, and why: the file `name` did not read, for `error`.
-    pub fn unreadable(name: &str, error: Option<&str>) -> (Thresholds, Option<String>) {
+    /// The defaults, and why: the file `name` did not read, for an error of the system of type `kind` (Python's
+    /// name of it) with its message, or none.
+    pub fn unreadable(name: &str, kind: &str, message: Option<&str>) -> (Thresholds, Option<String>) {
         let reasons = &format().thresholds_reasons;
-        let error = error.map_or_else(|| reasons["not_readable"].clone(), str::to_owned);
+        let error = format!("{kind}: {}", message.unwrap_or(&reasons["not_readable"]));
         (Thresholds::defaults(), Some(sentence(reasons, "unreadable", &[("file", name), ("error", &error)])))
+    }
+
+    /// The defaults, and why: the file `name` is not UTF-8.
+    pub fn undecodable(name: &str) -> (Thresholds, Option<String>) {
+        (Thresholds::defaults(), Some(sentence(&format().thresholds_reasons, "unreadable", &[("file", name), ("error", "UnicodeDecodeError")])))
     }
 
     /// The values with the prototype's keys, in its order, for a comparison with its own.

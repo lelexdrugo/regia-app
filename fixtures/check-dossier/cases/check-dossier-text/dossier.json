@@ -1,0 +1,10 @@
+{
+  "log": [
+    "be3545b637a49770b92be86e9d53c67d2bbd3a62 fixture: a commit not pushed",
+    "69fa9386a30dd2c585e5d7b9604a68c5ecbc6672 fixture: the dossier before the run"
+  ],
+  "remote": [
+    "69fa9386a30dd2c585e5d7b9604a68c5ecbc6672 fixture: the dossier before the run"
+  ],
+  "status": []
+}

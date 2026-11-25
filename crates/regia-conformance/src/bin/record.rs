@@ -13,7 +13,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, FIXTURE_NOW, FIXTURE_TODAY, SYNTHETIC_URLS, dossier_after, fixed_now_driver, foreign_urls, foreign_urls_in_tree, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
+    Case, FIXTURE_NOW, FIXTURE_TODAY, SYNTHETIC_URLS, dossier_after, placed_responses, fixed_now_driver, foreign_urls, foreign_urls_in_tree, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
     place_args, prepare_case_state, prepare_dossier, read_json, state_rows, unplace_json, unplace_text, writes_of_run, written_files,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
@@ -84,7 +84,16 @@ struct ScenarioIssue {
     /// body was never edited.
     #[serde(default)]
     last_edited_at: Option<String>,
+    /// When the issue was created and last updated, which the checks count days from (#448); without them the
+    /// same instants for every issue.
+    #[serde(default)]
+    created_at: Option<String>,
+    #[serde(default)]
+    updated_at: Option<String>,
 }
+
+const CREATED_AT: &str = "2026-01-01T00:00:00Z";
+const UPDATED_AT: &str = "2026-01-02T03:04:05Z";
 
 #[derive(Deserialize)]
 struct ScenarioComment {
@@ -93,7 +102,7 @@ struct ScenarioComment {
     body: String,
 }
 
-/// The checks' read of recent comments: one page with the issues that have comments.
+/// The checks' read of recent comments: one page with the issues that have comments, open or closed (#442/V6).
 fn comment_pages(scenario: &Scenario) -> Value {
     let nodes: Vec<Value> = scenario
         .issues
@@ -109,10 +118,23 @@ fn comment_pages(scenario: &Scenario) -> Value {
                     json!({"databaseId": comment.id, "createdAt": comment.created_at, "body": comment.body, "url": url})
                 })
                 .collect();
-            json!({"number": issue.number, "state": "OPEN", "closedAt": null, "labels": {"nodes": labels}, "comments": {"nodes": comments}})
+            json!({"number": issue.number, "state": state(issue), "closedAt": issue.closed_at, "labels": {"nodes": labels}, "comments": {"nodes": comments}})
         })
         .collect();
     json!([{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": nodes}}}])
+}
+
+/// The closed issues as the checks read them: number, state, reason, when, URL.
+fn closed_nodes(scenario: &Scenario) -> Vec<Value> {
+    scenario
+        .issues
+        .iter()
+        .filter(|issue| issue.closed_at.is_some())
+        .map(|issue| {
+            let url = format!("{URL_PREFIX}issues/{}", issue.number);
+            json!({"number": issue.number, "state": "CLOSED", "stateReason": issue.state_reason, "closedAt": issue.closed_at, "url": url})
+        })
+        .collect()
 }
 
 fn pairs(list: &[(u64, String)]) -> Vec<Value> {
@@ -173,8 +195,8 @@ fn issue_node(issue: &ScenarioIssue, scenario: &Scenario, config: &TrackerConfig
         "stateReason": issue.state_reason,
         "body": issue.body.clone().unwrap_or_default(),
         "url": format!("{URL_PREFIX}issues/{}", issue.number),
-        "updatedAt": "2026-01-02T03:04:05Z",
-        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": issue.updated_at.as_deref().unwrap_or(UPDATED_AT),
+        "createdAt": issue.created_at.as_deref().unwrap_or(CREATED_AT),
         "closedAt": issue.closed_at,
         "labels": {"nodes": labels},
         "parent": issue.parent.map(|number| json!({"number": number})),
@@ -399,8 +421,8 @@ fn responses_of(scenario: &Scenario, config: &TrackerConfigV1, binding: &Tracker
         "blocker_pages": extra_pages(&scenario.extra_blockers, "blockedBy"),
         "sub_issue_pages": extra_pages(&scenario.extra_sub_issues, "subIssues"),
         "comment_pages": comment_pages(scenario),
-        // No scenario that runs the checks has a closed issue.
-        "closed_pages": [{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": []}}}],
+        // The light read of the closed issues, for `remaining-unreconciled` (#442/V6).
+        "closed_pages": [{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": closed_nodes(scenario)}}}],
     })
 }
 
@@ -457,11 +479,14 @@ fn main() {
             assert_eq!(&argv, expected, "{}: the table does not build the argv the case expects", case.name);
         }
         let folder = case.spec.dossier.as_ref().map(|spec| prepare_dossier(&state, spec));
+        // A registry that names the case's dossier: the responses the run answers from have its folder in place of the
+        // placeholder, and the file the case keeps does not.
+        let responses = folder.as_ref().map_or_else(|| case.responses_path(), |folder| placed_responses(&case.responses_path(), &state, folder));
         let mut launch_args: Vec<String> = python::FLAGS.map(str::to_owned).to_vec();
         launch_args.extend([driver.clone(), script.clone(), FIXTURE_NOW.to_owned()]);
         launch_args.extend(folder.as_ref().map_or_else(|| argv.clone(), |folder| place_args(&argv, folder)));
         let launch = regia_exec::harness::program(&interpreter, &launch_args, &dossier).limits(PROTOTYPE_LIMITS);
-        let mut launch = fixture_for_python(launch, &case.responses_path(), &state).env(&log_var(), &log);
+        let mut launch = fixture_for_python(launch, &responses, &state).env(&log_var(), &log);
         for (name, value) in case.spec.session_env() {
             launch = launch.env(&name, value);
         }

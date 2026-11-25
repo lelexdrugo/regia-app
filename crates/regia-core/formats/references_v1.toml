@@ -15,3 +15,16 @@ location = '^(?:~(?:/|\n?\z)|%[^%/\s\x1c-\x1f]+%|\$\{[^{}/\s\x1c-\x1f]+\}(?:/|\n
 name_placeholder = '^<[^<>/]+>(?:/|\n?\z)'
 # `{archivio}/x`, a whole segment (`{dati}` has passed already).
 placeholder = '^\{[^{}/]+\}(?:/|\n?\z)'
+
+# The prototype's reason for a reference that does not resolve, as `percorso` gives it (`motivo`): a sentence of
+# its language, which the contract passes as it is; for a reference that is no path, the name of its form.
+[reasons]
+absent = "non presente su questa macchina"
+data_root = "radice {dati} non configurata su questa macchina"
+absolute = "percorso assoluto: da migrare a relativo (#268)"
+outside = "porta fuori dal dossier"
+link = "link"
+command = "comando"
+location = "sede della macchina"
+name_placeholder = "segnaposto <nome>"
+placeholder = "segnaposto sconosciuto"

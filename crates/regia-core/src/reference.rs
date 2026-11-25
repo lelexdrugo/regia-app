@@ -17,6 +17,21 @@ const FORMAT: &str = include_str!("../formats/references_v1.toml");
 struct Format {
     data_placeholder: String,
     not_a_path: Patterns,
+    reasons: Reasons,
+}
+
+/// The prototype's reasons, by what does not resolve.
+#[derive(Deserialize)]
+struct Reasons {
+    absent: String,
+    data_root: String,
+    absolute: String,
+    outside: String,
+    link: String,
+    command: String,
+    location: String,
+    name_placeholder: String,
+    placeholder: String,
 }
 
 /// The forms that are no path, as `references_v1.toml` writes them.
@@ -30,6 +45,7 @@ struct Patterns {
 
 struct Compiled {
     data_placeholder: String,
+    reasons: Reasons,
     /// In the prototype's order: a link, a place of the machine, a `<name>`, any other placeholder.
     forms: [(Regex, NotAPathForm); 4],
 }
@@ -42,6 +58,7 @@ fn format() -> &'static Compiled {
         let form = |pattern: &str, form| (Regex::new(pattern).expect("a valid pattern"), form);
         Compiled {
             data_placeholder: format.data_placeholder,
+            reasons: format.reasons,
             forms: [
                 form(&patterns.link, NotAPathForm::Link),
                 form(&patterns.location, NotAPathForm::MachineLocation),
@@ -144,6 +161,26 @@ impl Reference {
     /// `None` for a file that is there.
     pub fn reason(&self) -> Option<Unresolved> {
         self.reason
+    }
+
+    /// Why it does not resolve, in the prototype's words (`motivo`), as `path` gives it: `None` for a file or a folder
+    /// that is there; the name of its form for a reference that is no path.
+    pub fn reason_sentence(&self) -> Option<&'static str> {
+        let reasons = &format().reasons;
+        let sentence = match (self.kind, self.reason?) {
+            (ReferenceKind::NotAPath(form), _) => match form {
+                NotAPathForm::Link => &reasons.link,
+                NotAPathForm::Command => &reasons.command,
+                NotAPathForm::MachineLocation => &reasons.location,
+                NotAPathForm::NamePlaceholder => &reasons.name_placeholder,
+                NotAPathForm::UnknownPlaceholder => &reasons.placeholder,
+            },
+            (_, Unresolved::DataRootNotConfigured) => &reasons.data_root,
+            (_, Unresolved::AbsolutePath) => &reasons.absolute,
+            (_, Unresolved::LeavesTheDossier) => &reasons.outside,
+            (_, Unresolved::Absent | Unresolved::NotAPath) => &reasons.absent,
+        };
+        Some(sentence.as_str())
     }
 
     /// The reference as a document shows it: its path, with `/`, in backticks, and a folder that is there with

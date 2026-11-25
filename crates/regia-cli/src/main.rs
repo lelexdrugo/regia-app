@@ -1,4 +1,5 @@
 mod budget_text;
+mod check;
 mod clock;
 mod comment;
 mod declare;
@@ -123,7 +124,8 @@ struct BudgetArgs {
 }
 
 /// The commands of the table this binary implements besides its own subcommands.
-const NATIVE_THROUGH_THE_TABLE: [&str; 27] = [
+const NATIVE_THROUGH_THE_TABLE: [&str; 29] = [
+    "check",
     "checkpoint",
     "comment",
     "declare",
@@ -151,6 +153,7 @@ const NATIVE_THROUGH_THE_TABLE: [&str; 27] = [
     "step start",
     "step renew",
     "step finish",
+    "path",
 ];
 
 /// The prompt: one of the two, never both.
@@ -260,6 +263,9 @@ fn native_command(command: &str, args: &[String], catalog: &Catalog) -> Result<u
         return outcome;
     }
     if let Some(outcome) = state::run(command, args, catalog) {
+        return outcome;
+    }
+    if let Some(outcome) = check::run(command, args, catalog) {
         return outcome;
     }
     if let Some(outcome) = comment::run(command, args, catalog) {

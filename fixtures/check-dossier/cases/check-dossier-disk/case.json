@@ -1,0 +1,37 @@
+{
+ "_note": "Synthetic. #442/V6: the checks against the disk, as step finish runs them, the state file of HEAD against the one on disk, and remaining-unreconciled through the closed issues.",
+ "scenario": "dossier",
+ "args": [
+  "check",
+  "--project",
+  "alpha",
+  "--against-disk",
+  "--json"
+ ],
+ "python": [
+  "--json",
+  "controlla",
+  "--progetto",
+  "alpha",
+  "--contro-il-disco"
+ ],
+ "tracker": {
+  "progetto_field_id": "FIELD_PROJECT_FIXTURE",
+  "progetto_options": {
+   "alpha": "opt-project-alpha",
+   "beta": "opt-project-beta"
+  }
+ },
+ "dossier": {
+  "files": {
+   ".regia/stato.md": "# Alpha\n\n- ✋ #5 una proposta aspetta il titolare\n- da fare: la tabella dei risultati\n- vedi C:\\Users\\someone\\notes\\a.md\n",
+   "docs/open-questions.md": "# Domande\n\n- [ ] una domanda senza numero\n- [ ] una con il numero #5\n",
+   ".regia/decisioni.md": "# Decisioni\n\n- 2026-11-12 · una decisione di prova, con il suo perché.\n",
+   ".regia/report/2026-11-12-7-figura.md": "---\ntipo: done\nresta:\n  - \"V1: rifare la figura → ?\"\n---\n\nIl corpo del report.\n",
+   ".regia/report/2026-11-12-9-tabella.md": "---\ntipo: done\nresta:\n  - \"V1: la tabella → #10\"\n---\n"
+  },
+  "changes": {
+   ".regia/stato.md": "# Alpha\n\n- ✋ #5 una proposta aspetta il titolare\n- ✋ chiedere la chiave al titolare\n- vedi C:\\Users\\someone\\notes\\a.md\n"
+  }
+ }
+}

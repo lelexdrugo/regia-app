@@ -1,0 +1,112 @@
+{
+  "avvisi": [
+    "approvato-mai-partito: la cronologia degli stati non si legge, si applicano due criteri su tre (età, report)"
+  ],
+  "per_controllo": {
+    "approvato-mai-partito": 1,
+    "commento-dopo-chiusura": 1,
+    "decisione-senza-flag": 1,
+    "domande-aperte-senza-issue": 1,
+    "in-corso-fermo": 1,
+    "inbox-ferma": 1,
+    "percorso-assoluto": 1,
+    "progetto-campo": 1,
+    "resta-non-riconciliato": 2,
+    "stato-righe-tolte": 1,
+    "stato-senza-issue": 1
+  },
+  "voci": [
+    {
+      "controllo": "stato-senza-issue",
+      "dove": ".regia/stato.md:4",
+      "perche": "domanda al titolare senza un #N in Proposta o Decisione",
+      "progetto": "alpha",
+      "testo": "✋ chiedere la chiave al titolare"
+    },
+    {
+      "controllo": "stato-righe-tolte",
+      "dove": ".regia/stato.md:4",
+      "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta",
+      "progetto": "alpha",
+      "testo": "da fare: la tabella dei risultati"
+    },
+    {
+      "controllo": "domande-aperte-senza-issue",
+      "dove": "docs/open-questions.md:3",
+      "perche": "casella aperta senza un #N: senza, è solo una domanda",
+      "progetto": "alpha",
+      "testo": "una domanda senza numero"
+    },
+    {
+      "controllo": "resta-non-riconciliato",
+      "dove": ".regia/report/2026-11-12-7-figura.md:4",
+      "perche": "#7 chiuso Fatto il 05/01, destino «?», nessuno l'ha riconciliato",
+      "progetto": "alpha",
+      "testo": "V1: rifare la figura",
+      "url": "https://tracker.invalid/issues/7"
+    },
+    {
+      "controllo": "resta-non-riconciliato",
+      "dove": ".regia/report/2026-11-12-9-tabella.md:4",
+      "perche": "#9 chiuso Fatto il 03/01, destino #10, chiuso come Scartato",
+      "progetto": "alpha",
+      "testo": "V1: la tabella",
+      "url": "https://tracker.invalid/issues/9"
+    },
+    {
+      "controllo": "commento-dopo-chiusura",
+      "dove": "#7 commento 9002",
+      "perche": "commento senza marcatore dopo la chiusura di #7 (2026-01-05)",
+      "progetto": "alpha",
+      "testo": "One more thing, after the close.",
+      "url": "https://tracker.invalid/issues/7#issuecomment-9002"
+    },
+    {
+      "controllo": "decisione-senza-flag",
+      "dove": "#6 commento 9001",
+      "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+      "progetto": "alpha",
+      "testo": "Decisione: A, as advised. — regia · chat",
+      "url": "https://tracker.invalid/issues/6#issuecomment-9001"
+    },
+    {
+      "controllo": "inbox-ferma",
+      "dove": "#2",
+      "perche": "in Inbox da 21 giorni (soglia 7)",
+      "progetto": "alpha",
+      "testo": "an idea waiting in the inbox",
+      "url": "https://tracker.invalid/issues/2"
+    },
+    {
+      "controllo": "approvato-mai-partito",
+      "dove": "#3",
+      "perche": "Approvato da almeno 40 giorni (soglia 21), nessun report",
+      "progetto": "alpha",
+      "testo": "an approved task never started",
+      "url": "https://tracker.invalid/issues/3"
+    },
+    {
+      "controllo": "in-corso-fermo",
+      "dove": "#4",
+      "perche": "In corso senza lease viva, issue ferma da 9 giorni (soglia 3)",
+      "progetto": "alpha",
+      "testo": "a task in progress with no live lease",
+      "url": "https://tracker.invalid/issues/4"
+    },
+    {
+      "controllo": "progetto-campo",
+      "dove": "#8",
+      "perche": "l'etichetta è progetto:alpha, il campo «Progetto» dice beta (`regia progetto riempi` lo riallinea)",
+      "progetto": "alpha",
+      "testo": "an issue whose field says another project",
+      "url": "https://tracker.invalid/issues/8"
+    },
+    {
+      "controllo": "percorso-assoluto",
+      "dove": ".regia/stato.md:5",
+      "perche": "percorso assoluto: contratti.md, Riferimenti",
+      "progetto": "alpha",
+      "testo": "C:\\Users\\someone\\notes\\a.md"
+    }
+  ]
+}

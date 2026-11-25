@@ -33,9 +33,6 @@ const SESSION_VARIABLE: &str = "CLAUDE_CODE_SESSION_ID";
 const STEP_TTL_S: u64 = 1800;
 /// What `step finish` renews the lock by, to check it is still the caller's before it writes the cursor.
 const FINISH_TTL_S: u64 = 60;
-/// What the checks of `step finish` answer until they are ported: the protocol lets the step close
-/// without them.
-const CHECKS_NOT_PORTED: &str = "the checks of the step are not ported yet";
 /// The exit of a refusal.
 const REFUSED: u8 = 3;
 
@@ -238,7 +235,7 @@ pub(crate) fn run(command: &str, args: &[String], catalog: &Catalog) -> Option<R
         }),
         "step finish" => parse::<StepFinishArgs>(command, args).map(|args| {
             record(Some(&args.project), None);
-            step_finish(args)
+            step_finish(args, catalog)
         }),
         _ => return None,
     };
@@ -403,8 +400,8 @@ fn step_renew(args: StepArgs) -> Result<u8, String> {
 }
 
 /// `step finish`: the lock checked as the caller's, the events cursor written and the step emptied in one
-/// transaction, the lock released, then the checks and the dossier, which never change the exit code.
-fn step_finish(args: StepFinishArgs) -> Result<u8, String> {
+/// transaction, the lock released, then the checks (#448) and the dossier, which never change the exit code.
+fn step_finish(args: StepFinishArgs, catalog: &Catalog) -> Result<u8, String> {
     let (holder, _) = step_holder(args.holder.as_deref(), false)?;
     let project = project(&args.project)?;
     let clock = Clock::read()?;
@@ -435,7 +432,9 @@ fn step_finish(args: StepFinishArgs) -> Result<u8, String> {
         "lock": status(released.state()),
     });
     if !args.no_push {
-        out["checks"] = json!({"unavailable": CHECKS_NOT_PORTED});
+        // After the cursor and the lock, before the dossier's block: until the dossier is committed, the state file on
+        // disk is compared with HEAD.
+        out["checks"] = crate::check::step_checks(&args.project, args.folder.as_deref().filter(|folder| !folder.is_empty()), catalog);
         let t = match &cursor {
             EventsCursor::Parts(parts) => parts.t.clone().unwrap_or(Value::Null),
             _ => Value::Null,

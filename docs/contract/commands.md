@@ -377,6 +377,30 @@ The prototype's `controlla`: the commitments left outside the tracker, read only
 `open-questions-without-issue`, `remaining-unreconciled`, `comment-after-close`, `decision-without-flag`,
 `inbox-stale`, `approved-never-started`, `in-progress-stalled`, `project-field`.
 
+**Native (#448).** The binary answers `check` itself where the routing says so, with the same keys; the findings'
+`text` and `why` and the `warnings` are the prototype's sentences, as through the facade. Two checks came after #442,
+and their ids are **new proposals** for #223: `absolute-path` (`percorso-assoluto`, #283 of the dossier: an absolute
+path of the machine in `stato.md`, a report or the decisions) and `decisions-over-cap` (`decisioni-oltre-tetto`, #36:
+`decisioni.md` past its cap). The thresholds are the prototype's `policies/controlli.yaml` while a dossier is there,
+else the product's defaults, the same values; a file that does not read gives the defaults and says why on stderr.
+`step finish` runs the same checks, the state file of HEAD against the disk, and its `checks` are no longer
+`unavailable` for want of a port.
+
+### `path`
+
+The prototype's `percorso` (#530 of the dossier): where a reference of the dossier is, for an agent that must not
+join paths by hand. Read only. **New, with names proposed for #223** (#448).
+
+| Command | Prototype | Arguments | Exit |
+|---|---|---|---|
+| `path <reference>` | `percorso` | `--project` (the dossier of its registry; without it the working folder, if it has `.regia/`) | 0; 2 with no `--project` outside a dossier; 1 an unknown project |
+
+**Output**: `reference` (`riferimento`), `kind` (`tipo`), `path` (`percorso`, on this machine, or null), `exists`
+(`esiste`), `is_folder` (`cartella`: whether what exists is a folder; not `folder`, which names a project's folder
+elsewhere), `reason` (`motivo`, the prototype's sentence, or the name of the form of a reference that is no path).
+**Kinds** (`reference_kind`): `relative` (`relativo`), `data` (`dati`), `absolute` (`assoluto`), `outside`
+(`fuori`), `not_a_path` (`non-percorso`, as #593 names it).
+
 ### `budget`
 
 What is left of Claude's and Codex's windows, read only.

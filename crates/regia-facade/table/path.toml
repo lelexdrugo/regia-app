@@ -1,0 +1,28 @@
+# `path` (the prototype's `percorso`, #530 of the dossier): where a reference of the dossier is, its kind, its path on
+# this machine, whether a file or a folder is there, and why it does not resolve. Read only; exit 0, 2 with no
+# `--project` outside a dossier. Names provisional (#448), for the gate of the names (#223) with the rest; the
+# reason is the prototype's sentence, data that pass as they are.
+schema = 1
+
+[commands.path]
+python = ["percorso"]
+group = "state"
+output = "path_outcome"
+positionals = [{}]
+[commands.path.args]
+"--project" = "--progetto"
+
+[enums.reference_kind]
+relativo = "relative"
+dati = "data"
+assoluto = "absolute"
+fuori = "outside"
+"non-percorso" = "not_a_path"
+
+[shapes.path_outcome.fields]
+riferimento = { to = "reference" }
+tipo = { to = "kind", enum = "reference_kind" }
+percorso = { to = "path" }
+esiste = { to = "exists" }
+cartella = { to = "is_folder" }
+motivo = { to = "reason" }

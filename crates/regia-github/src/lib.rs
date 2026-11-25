@@ -1,6 +1,7 @@
 //! The GitHub adapter. Everything GitHub-specific stays in this crate. The user's `gh` does the
 //! authentication, so the product never sees a token (ADR 0001, "GitHub").
 
+mod checks;
 mod history;
 mod init;
 mod issue;
@@ -14,7 +15,7 @@ use std::path::PathBuf;
 
 use chrono::{DateTime, Utc};
 use regia_core::{
-    CloseReason, IssueRef, IssueState, RawComment, RawIssue, StatusHistory, Tracker, TrackerConfigV1, TrackerError,
+    CloseReason, ClosedIssue, IssueRef, IssueState, RawComment, RawIssue, RecentComments, StatusHistory, Tracker, TrackerConfigV1, TrackerError,
 };
 use regia_exec::{Pin, Program};
 use serde::Deserialize;
@@ -242,6 +243,14 @@ impl Tracker for GhTracker {
 
     fn status_histories(&self, label: &str, since: DateTime<Utc>) -> Result<Vec<StatusHistory>, TrackerError> {
         self.read_status_histories(label, since)
+    }
+
+    fn recent_comments(&self, since: DateTime<Utc>) -> Result<Vec<RecentComments>, TrackerError> {
+        self.read_recent_comments(since)
+    }
+
+    fn closed_issues(&self) -> Result<Vec<ClosedIssue>, TrackerError> {
+        self.read_closed_issues()
     }
 
     fn labels(&self, number: u64) -> Result<Vec<String>, TrackerError> {

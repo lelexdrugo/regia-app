@@ -1,0 +1,35 @@
+{
+ "_note": "Synthetic. The same checks in text: the findings on stdout, the warnings on stderr.",
+ "scenario": "dossier",
+ "args": [
+  "check",
+  "--project",
+  "alpha"
+ ],
+ "python": [
+  "controlla",
+  "--progetto",
+  "alpha"
+ ],
+ "tracker": {
+  "progetto_field_id": "FIELD_PROJECT_FIXTURE",
+  "progetto_options": {
+   "alpha": "opt-project-alpha",
+   "beta": "opt-project-beta"
+  }
+ },
+ "dossier": {
+  "files": {
+   ".regia/stato.md": "# Alpha\n\n- ✋ #5 una proposta aspetta il titolare\n- da fare: rileggere il piano\n",
+   "docs/open-questions.md": "# Domande\n\n- [ ] una domanda senza numero\n- [ ] una con il numero #5\n",
+   ".regia/decisioni.md": "# Decisioni\n\n- 2026-11-12 · una decisione di prova, con il suo perché.\n",
+   ".regia/report/2026-11-12-7-figura.md": "---\ntipo: done\nresta:\n  - \"V1: rifare la figura → ?\"\n---\n\nIl corpo del report.\n",
+   ".regia/report/2026-11-12-9-tabella.md": "---\ntipo: done\nresta:\n  - \"V1: la tabella → #10\"\n---\n"
+  },
+  "local_commits": [
+   {
+    ".regia/stato.md": "# Alpha\n\n- ✋ #5 una proposta aspetta il titolare\n- da fare: la tabella dei risultati\n- vedi C:\\Users\\someone\\notes\\a.md\n"
+   }
+  ]
+ }
+}

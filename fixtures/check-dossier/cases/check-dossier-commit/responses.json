@@ -1,0 +1,2202 @@
+{
+  "all_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "<!-- regia:progetto\nid: alpha\ncartella: {dossier}\nplaybook: generico\n-->\n\n## Obiettivo\nA synthetic objective.\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 1,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "In corso",
+                          "optionId": "opt-d4"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "objective of alpha",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/1"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2025-12-20T09:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 2,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
+                          "optionId": "opt-a1"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "an idea waiting in the inbox",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/2"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2025-12-01T09:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 3,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "an approved task never started",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/3"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 4,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "In corso",
+                          "optionId": "opt-d4"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a task in progress with no live lease",
+              "updatedAt": "2026-01-01T00:00:00Z",
+              "url": "https://tracker.invalid/issues/4"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 5,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a proposal for the owner",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/5"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 6,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Decisione",
+                          "optionId": "opt-e5"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a decision answered in chat",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/6"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": "2026-01-05T10:00:00Z",
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 7,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Fatto",
+                        "optionId": "opt-f6"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Fatto",
+                          "optionId": "opt-f6"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a task done, then commented",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/7"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-09T09:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 8,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "beta",
+                        "optionId": "opt-project-beta"
+                      },
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
+                          "optionId": "opt-a1"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "beta",
+                          "optionId": "opt-project-beta"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "an issue whose field says another project",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/8"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": "2026-01-03T10:00:00Z",
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 9,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Fatto",
+                        "optionId": "opt-f6"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Fatto",
+                          "optionId": "opt-f6"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a task done, its remaining item sent to a discarded one",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/9"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": "2026-01-02T10:00:00Z",
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 10,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Scartato",
+                        "optionId": "opt-g7"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Scartato",
+                          "optionId": "opt-g7"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "CLOSED",
+              "stateReason": "NOT_PLANNED",
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a task discarded",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/10"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "blocker_pages": {},
+  "closed_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "closedAt": "2026-01-05T10:00:00Z",
+              "number": 7,
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "url": "https://tracker.invalid/issues/7"
+            },
+            {
+              "closedAt": "2026-01-03T10:00:00Z",
+              "number": 9,
+              "state": "CLOSED",
+              "stateReason": "COMPLETED",
+              "url": "https://tracker.invalid/issues/9"
+            },
+            {
+              "closedAt": "2026-01-02T10:00:00Z",
+              "number": 10,
+              "state": "CLOSED",
+              "stateReason": "NOT_PLANNED",
+              "url": "https://tracker.invalid/issues/10"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "comment_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "closedAt": null,
+              "comments": {
+                "nodes": [
+                  {
+                    "body": "Decisione: A, as advised.\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+                    "createdAt": "2026-01-08T10:00:00Z",
+                    "databaseId": 9001,
+                    "url": "https://tracker.invalid/issues/6#issuecomment-9001"
+                  }
+                ]
+              },
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 6,
+              "state": "OPEN"
+            },
+            {
+              "closedAt": "2026-01-05T10:00:00Z",
+              "comments": {
+                "nodes": [
+                  {
+                    "body": "One more thing, after the close.",
+                    "createdAt": "2026-01-06T10:00:00Z",
+                    "databaseId": 9002,
+                    "url": "https://tracker.invalid/issues/7#issuecomment-9002"
+                  },
+                  {
+                    "body": "The worker's report.\n\n— regia · worker\n<!-- regia:autore ruolo=worker sessione=s2 -->",
+                    "createdAt": "2026-01-06T11:00:00Z",
+                    "databaseId": 9003,
+                    "url": "https://tracker.invalid/issues/7#issuecomment-9003"
+                  }
+                ]
+              },
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 7,
+              "state": "CLOSED"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "issue_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "<!-- regia:progetto\nid: alpha\ncartella: {dossier}\nplaybook: generico\n-->\n\n## Obiettivo\nA synthetic objective.\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 1,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "In corso",
+                          "optionId": "opt-d4"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "objective of alpha",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/1"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2025-12-20T09:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 2,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
+                          "optionId": "opt-a1"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "an idea waiting in the inbox",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/2"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2025-12-01T09:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 3,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "an approved task never started",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/3"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 4,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "In corso",
+                          "optionId": "opt-d4"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a task in progress with no live lease",
+              "updatedAt": "2026-01-01T00:00:00Z",
+              "url": "https://tracker.invalid/issues/4"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 5,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Proposta",
+                        "optionId": "opt-b2"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Proposta",
+                          "optionId": "opt-b2"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a proposal for the owner",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/5"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 6,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "alpha",
+                        "optionId": "opt-project-alpha"
+                      },
+                      "Status": {
+                        "name": "Decisione",
+                        "optionId": "opt-e5"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Decisione",
+                          "optionId": "opt-e5"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "alpha",
+                          "optionId": "opt-project-alpha"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a decision answered in chat",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/6"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-09T09:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 8,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Progetto": {
+                        "name": "beta",
+                        "optionId": "opt-project-beta"
+                      },
+                      "Status": {
+                        "name": "Inbox",
+                        "optionId": "opt-a1"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Inbox",
+                          "optionId": "opt-a1"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_PROJECT_FIXTURE",
+                            "name": "Progetto"
+                          },
+                          "name": "beta",
+                          "optionId": "opt-project-beta"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "an issue whose field says another project",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/8"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "issues": {
+    "1": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_1",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "10": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_10",
+      "lastEditedAt": null,
+      "state": "CLOSED",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "2": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_2",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "3": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_3",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "4": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_4",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "5": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_5",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "6": {
+      "comments": {
+        "nodes": [
+          {
+            "body": "Decisione: A, as advised.\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+            "createdAt": "2026-01-08T10:00:00Z",
+            "databaseId": 9001,
+            "url": "https://tracker.invalid/issues/6#issuecomment-9001"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_6",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "7": {
+      "comments": {
+        "nodes": [
+          {
+            "body": "One more thing, after the close.",
+            "createdAt": "2026-01-06T10:00:00Z",
+            "databaseId": 9002,
+            "url": "https://tracker.invalid/issues/7#issuecomment-9002"
+          },
+          {
+            "body": "The worker's report.\n\n— regia · worker\n<!-- regia:autore ruolo=worker sessione=s2 -->",
+            "createdAt": "2026-01-06T11:00:00Z",
+            "databaseId": 9003,
+            "url": "https://tracker.invalid/issues/7#issuecomment-9003"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_7",
+      "lastEditedAt": null,
+      "state": "CLOSED",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "8": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_8",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "9": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_9",
+      "lastEditedAt": null,
+      "state": "CLOSED",
+      "subIssues": {
+        "totalCount": 0
+      }
+    }
+  },
+  "mutations": {
+    "addBlockedBy": {
+      "addBlockedBy": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "addProjectV2ItemById": {
+      "addProjectV2ItemById": {
+        "item": {
+          "id": "ITEM_ADDED"
+        }
+      }
+    },
+    "addSubIssue": {
+      "addSubIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "closeIssue": {
+      "closeIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "removeBlockedBy": {
+      "removeBlockedBy": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "reopenIssue": {
+      "reopenIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "updateProjectV2ItemFieldValue": {
+      "updateProjectV2ItemFieldValue": {
+        "projectV2Item": {
+          "id": "ITEM_WRITTEN"
+        }
+      }
+    }
+  },
+  "nodes": {
+    "ISSUE_1": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_1",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_10": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_10",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_2": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_2",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_3": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_3",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_4": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_4",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_5": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_5",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_6": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_6",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_7": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_7",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_8": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_8",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_9": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_9",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "PROJECT_FIXTURE": {
+      "fields": {
+        "nodes": [
+          {
+            "__typename": "ProjectV2Field",
+            "id": "FIELD_TITLE",
+            "name": "Title"
+          },
+          {
+            "__typename": "ProjectV2SingleSelectField",
+            "id": "FIELD_FIXTURE",
+            "name": "Status",
+            "options": [
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-c3",
+                "name": "Approvato"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-e5",
+                "name": "Decisione"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-f6",
+                "name": "Fatto"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-d4",
+                "name": "In corso"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-a1",
+                "name": "Inbox"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-b2",
+                "name": "Proposta"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-g7",
+                "name": "Scartato"
+              }
+            ]
+          },
+          {
+            "__typename": "ProjectV2SingleSelectField",
+            "id": "FIELD_PROJECT_FIXTURE",
+            "name": "Progetto",
+            "options": [
+              {
+                "color": "BLUE",
+                "description": "",
+                "id": "opt-project-alpha",
+                "name": "alpha"
+              },
+              {
+                "color": "GREEN",
+                "description": "",
+                "id": "opt-project-beta",
+                "name": "beta"
+              }
+            ]
+          }
+        ]
+      },
+      "items": {
+        "nodes": [
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 1
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_1"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 2
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_2"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 3
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_3"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 4
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_4"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 5
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_5"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 6
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_6"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 7
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_7"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 8
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "beta",
+                "optionId": "opt-project-beta"
+              }
+            },
+            "id": "ITEM_8"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 9
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_9"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  }
+                ]
+              },
+              "number": 10
+            },
+            "fieldValueByName": {
+              "Progetto": {
+                "name": "alpha",
+                "optionId": "opt-project-alpha"
+              }
+            },
+            "id": "ITEM_10"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      }
+    }
+  },
+  "sub_issue_pages": {},
+  "views": {
+    "1": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "tipo:obiettivo"
+        }
+      ]
+    },
+    "10": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "2": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "3": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    },
+    "4": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "5": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "6": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "7": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "8": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "9": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    }
+  }
+}

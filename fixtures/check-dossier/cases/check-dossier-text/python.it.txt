@@ -1,0 +1,13 @@
+controlli: 12 voci (stato-senza-issue 1, stato-righe-tolte 1, domande-aperte-senza-issue 1, resta-non-riconciliato 2, commento-dopo-chiusura 1, decisione-senza-flag 1, inbox-ferma 1, approvato-mai-partito 1, in-corso-fermo 1, progetto-campo 1, percorso-assoluto 1)
+  alpha: [stato-senza-issue] .regia/stato.md:4 · da fare: la tabella dei risultati · impegno senza un #N di un'issue aperta
+  alpha: [stato-righe-tolte] .regia/stato.md:4 · da fare: rileggere il piano · riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta
+  alpha: [domande-aperte-senza-issue] docs/open-questions.md:3 · una domanda senza numero · casella aperta senza un #N: senza, è solo una domanda
+  alpha: [resta-non-riconciliato] .regia/report/2026-11-12-7-figura.md:4 · V1: rifare la figura · #7 chiuso Fatto il 05/01, destino «?», nessuno l'ha riconciliato
+  alpha: [resta-non-riconciliato] .regia/report/2026-11-12-9-tabella.md:4 · V1: la tabella · #9 chiuso Fatto il 03/01, destino #10, chiuso come Scartato
+  alpha: [commento-dopo-chiusura] #7 commento 9002 · One more thing, after the close. · commento senza marcatore dopo la chiusura di #7 (2026-01-05)
+  alpha: [decisione-senza-flag] #6 commento 9001 · Decisione: A, as advised. — regia · chat · «Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede
+  alpha: [inbox-ferma] #2 · an idea waiting in the inbox · in Inbox da 21 giorni (soglia 7)
+  alpha: [approvato-mai-partito] #3 · an approved task never started · Approvato da almeno 40 giorni (soglia 21), nessun report
+  alpha: [in-corso-fermo] #4 · a task in progress with no live lease · In corso senza lease viva, issue ferma da 9 giorni (soglia 3)
+  alpha: [progetto-campo] #8 · an issue whose field says another project · l'etichetta è progetto:alpha, il campo «Progetto» dice beta (`regia progetto riempi` lo riallinea)
+  alpha: [percorso-assoluto] .regia/stato.md:5 · C:\Users\someone\notes\a.md · percorso assoluto: contratti.md, Riferimenti

@@ -4,7 +4,7 @@
 use std::path::Path;
 use std::time::Duration;
 
-use regia_exec::{Args, DossierPath, ExecError, Limits, Pin, Program, Text};
+use regia_exec::{Args, DossierPath, ExecError, GitRef, Limits, Pin, Program, Text};
 
 /// The deadline of every call, the prototype's `GIT_TIMEOUT_S`.
 pub const TIMEOUT: Duration = Duration::from_secs(120);
@@ -80,6 +80,20 @@ impl Git {
     pub fn origin_url(&self, folder: &Path) -> Option<String> {
         let run = self.run(folder, call::origin_url(), None);
         Some(run.stdout.trim().to_owned()).filter(|url| run.ok() && !url.is_empty())
+    }
+
+    /// The text of `path` as the commit `rev` has it (`git show <rev>:<path>`), read as the prototype reads the state
+    /// of a step before (`_stato_precedente`): a run that fails is a version that is not there, with git's stderr.
+    pub fn file_at(&self, folder: &Path, rev: &GitRef, path: &DossierPath) -> Run {
+        match Text::parse(&format!("{}:{}", rev.as_str(), path.as_str())) {
+            Ok(spec) => self.run(folder, call::show_file(&spec), None),
+            Err(error) => Run { code: NOT_RUN, stdout: String::new(), stderr: error.to_string() },
+        }
+    }
+
+    /// The last two commits that touched `path`, newest first, one hash a line (`git log -2 --format=%H -- <path>`).
+    pub fn last_two_commits_of(&self, folder: &Path, path: &DossierPath) -> Run {
+        self.run(folder, call::last_two_commits_of(path), None)
     }
 
     /// Runs `args` in `folder`. `date`, when given, is the date of the commit the call makes.
@@ -175,6 +189,16 @@ pub(crate) mod call {
 
     pub fn head() -> Args {
         Args::new().word("rev-parse").word("HEAD")
+    }
+
+    /// A file at a commit, `<rev>:<path>`: a read.
+    pub fn show_file(spec: &Text) -> Args {
+        Args::new().word("show").value(spec)
+    }
+
+    /// The last two commits that touched `path`: a read.
+    pub fn last_two_commits_of(path: &DossierPath) -> Args {
+        with_paths(Args::new().word("log").word("-2").word("--format=%H"), std::slice::from_ref(path))
     }
 
     pub fn remotes() -> Args {
