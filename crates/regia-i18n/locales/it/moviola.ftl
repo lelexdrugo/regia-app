@@ -240,3 +240,10 @@ moviola-direction-rejoined = Rientrata con
 moviola-direction-no-reason = Nessun motivo registrato.
 moviola-direction-no-record = Nessun record nomina questa corsia: solo i suoi momenti.
 moviola-direction-empty = Ancora nessun momento su questa corsia.
+moviola-groups = { $moments ->
+        [one] Un momento in vista, disegnato come gruppo: ingrandisci per vederlo con i suoi anelli.
+       *[other] { $moments } momenti in vista, disegnati in { $groups ->
+            [one] un gruppo
+           *[other] { $groups } gruppi
+        } per corsia: ingrandisci per vederli uno per uno, con i loro anelli.
+    }

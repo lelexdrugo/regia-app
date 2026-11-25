@@ -120,12 +120,13 @@ export const moviola = {
     console.log(`negative control, a column moved by one pixel: ${caughtMoved ? "caught" : "NOT CAUGHT"}`);
 
     const parts = await renderer(ui, m, s, fixture);
+    const detail = await lodChecks(m, s);
     const frames = await frameChecks(m, fixture);
     const found = await searchChecks(m, fixture);
     const packs = await packChecks(m, fixture);
     const tape = tapeChecks(m, fixture);
     const overview = await overviewChecks(m, fixture);
-    return ok && caughtOrder && caughtMoved && parts && frames && found && packs && tape && overview;
+    return ok && caughtOrder && caughtMoved && parts && detail && frames && found && packs && tape && overview;
   },
 };
 
@@ -476,26 +477,203 @@ function crowded(n) {
   return { project: "crowd", project_url: null, main_direction: "main", milestones, directions: [], aggregates: [] };
 }
 
-/** What a set of labels must hold: the spike's 8x16 cells, each taken once, turning points only, at most the cap. */
-function labelProblems(s, scene, labels, width, cam) {
+/** A label's plate as the renderer draws it (canvas2d.ts): 3 px either side of its text, 8 above and below. */
+const plateOf = (labels, k) => [labels.sx[k] - 3, labels.sy[k] - 8, labels.sx[k] + labels.w[k] + 3, labels.sy[k] + 8];
+const overlap = (a, b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+
+/**
+ * What a set of labels must hold (#489): their plates, where they are drawn, cover neither one another nor a
+ * reserved place, and stay on the stage's height; turning points only, at most the cap, none below the zoom of
+ * labels. The spike tested one 16 px row and the place on the right, then drew a label near the stage's right edge on
+ * its node's left: two plates could overlap, and its own invariant, one label per cell, said nothing.
+ */
+function labelProblems(s, scene, labels, cam, view, reserved = []) {
   const problems = [];
   if (labels.n > s.MAX_LABELS) problems.push(`${labels.n} labels over the cap of ${s.MAX_LABELS}`);
   if (cam.z < s.LABEL_ZOOM && labels.n > 0) problems.push(`${labels.n} labels below the zoom of labels`);
-  const taken = new Set();
   for (let k = 0; k < labels.n; k++) {
     const i = labels.id[k];
+    const plate = plateOf(labels, k);
     if (scene.kind[i] === 0) problems.push(`a label on node ${i}, which is not a turning point`);
-    const row = Math.floor((labels.sy[k] - 8) / 16);
-    for (let c = Math.max(0, Math.floor(labels.sx[k] / 8)); c <= Math.floor((labels.sx[k] + width(i)) / 8); c++) {
-      const cell = `${row}:${c}`;
-      if (taken.has(cell)) {
-        problems.push(`two labels on the cell ${cell}`);
-        break;
-      }
-      taken.add(cell);
-    }
+    if (plate[1] < 0 || plate[3] > view.h) problems.push(`the label of node ${i} off the stage's height`);
+    for (let j = 0; j < k; j++) if (overlap(plate, plateOf(labels, j))) problems.push(`the labels of nodes ${labels.id[j]} and ${i} overlap`);
+    for (const place of reserved) if (overlap(plate, place)) problems.push(`the label of node ${i} over a reserved place`);
   }
   return problems;
+}
+
+/** The renderer spike's picker, as the product had it until #489: left to right, one 16 px row of 8 px cells, the
+ * place on the right tested, and the label moved to its node's left at drawing time when it would leave the stage. */
+function spikeLabels(s, scene, cam, view, width) {
+  const out = s.newLabels();
+  const cols = Math.ceil(view.w / 8);
+  const rows = Math.ceil(view.h / 16);
+  const occupied = new Uint8Array(cols * rows);
+  const lo = s.lowerBound(scene.x, cam.cx - view.w / 2 / cam.z - 40);
+  const hi = s.lowerBound(scene.x, cam.cx + view.w / 2 / cam.z + 40);
+  for (let k = s.lowerBound(scene.labeled, lo); k < scene.labeled.length && out.n < s.MAX_LABELS; k++) {
+    const i = scene.labeled[k];
+    if (i >= hi) break;
+    const sx = s.toScreenX(cam, view, scene.x[i]) + 12;
+    const sy = s.toScreenY(cam, view, scene.y[i]);
+    const c0 = Math.max(0, Math.floor(sx / 8));
+    const c1 = Math.min(cols - 1, Math.floor((sx + width(i)) / 8));
+    const r = Math.floor((sy - 8) / 16);
+    if (r < 0 || r >= rows) continue;
+    let free = true;
+    for (let c = c0; c <= c1; c++) if (occupied[r * cols + c]) free = false;
+    if (!free) continue;
+    for (let c = c0; c <= c1; c++) occupied[r * cols + c] = 1;
+    const w = width(i);
+    out.id[out.n] = i;
+    out.sx[out.n] = sx + w > view.w - 4 ? sx - 24 - w : sx;
+    out.sy[out.n] = sy;
+    out.w[out.n] = w;
+    out.n += 1;
+  }
+  return out;
+}
+
+/** A timeline of `n` moments on two lanes, the kinds in turn: the labels' ranks. */
+function ranked(n) {
+  const kinds = ["decision", "gate", "exception", "exploration", "rejoin", "abandonment", "milestone"];
+  const id = (i) => `01RANK${String(i).padStart(20, "0")}`;
+  const milestones = Array.from({ length: n }, (_, i) => ({
+    id: id(i),
+    ts: new Date(Date.UTC(2026, 9, 1, 9, 10 * i)).toISOString(),
+    kind: kinds[i % kinds.length],
+    title: `A synthetic moment of rank, number ${i}`,
+    direction: i % 2 ? "side" : "main",
+    parents: i ? [id(i - 1)] : [],
+    health: i % 11 === 5 ? "at_risk" : "healthy",
+    opens_direction: null,
+    refs: { issue: [], commit: [], report: [] },
+    process: null,
+    author: null,
+    links: { issue: [], commit: [], report: [] },
+  }));
+  return { project: "rank", project_url: null, main_direction: "main", milestones, directions: [], aggregates: [] };
+}
+
+/** The candidates a set of labels left out, each without a reason: a left out turning point in view is blocked by
+ * a placed plate of a rank at least its own, by a reserved place, by the stage's height, or by the cap. */
+function unblocked(s, scene, labels, cam, view, width, rank, reserved) {
+  const placed = new Set(Array.from(labels.id.subarray(0, labels.n)));
+  if (labels.n >= s.MAX_LABELS) return [];
+  const out = [];
+  for (const i of scene.labeled) {
+    if (placed.has(i)) continue;
+    const nx = s.toScreenX(cam, view, scene.x[i]);
+    const sy = s.toScreenY(cam, view, scene.y[i]);
+    if (nx < -40 || nx > view.w + 40 || Math.abs(scene.y[i] - cam.cy) > view.h / 2 / cam.z + 20) continue;
+    if (sy - 8 < 0 || sy + 8 > view.h) continue;
+    const w = width(i);
+    const sx = nx + 12 + w > view.w - 4 ? nx - 12 - w : nx + 12;
+    const plate = [sx - 3, sy - 8, sx + w + 3, sy + 8];
+    // The picker tests whole 8x16 cells: a plate that shares a cell with another is blocked too.
+    const grown = [Math.floor(plate[0] / 8) * 8, Math.floor(plate[1] / 16) * 16, (Math.floor(plate[2] / 8) + 1) * 8, (Math.floor(plate[3] / 16) + 1) * 16];
+    let blocked = reserved.some((place) => overlap(grown, place));
+    for (let k = 0; k < labels.n && !blocked; k++) {
+      const p = plateOf(labels, k);
+      const cells = [Math.floor(p[0] / 8) * 8, Math.floor(p[1] / 16) * 16, (Math.floor(p[2] / 8) + 1) * 8, (Math.floor(p[3] / 16) + 1) * 16];
+      if (overlap(grown, cells) && rank(labels.id[k]) >= rank(i)) blocked = true;
+    }
+    if (!blocked) out.push(i);
+  }
+  return out;
+}
+
+/**
+ * The level of detail (#489, Acceptance 2), on x10's synthetic story at the stage's size: at every zoom under the
+ * zoom of groups, from the whole stage in view up, every milestone is in exactly one group, of one lane, within one
+ * stretch of `BIN` px; the groups in view hold every milestone in view; each scene edge between two groups is one
+ * group edge; the pointer finds each group in view at its middle; a group's mark is never under the pixel. The negative
+ * control is the renderer spike's level of detail, which drew a node only with a radius of a pixel or more on screen:
+ * at x10's overview it drew none of the milestones in view.
+ */
+async function lodChecks(m, s) {
+  const l = await import("../src/lib/moviola/lod.ts");
+  const c = await import("../src/lib/moviola/camera.ts");
+  const { syntheticTimeline } = await import("../harness/synthetic.ts");
+  const checks = [];
+  const check = (name, ok, detail = "") => checks.push([name, ok, detail]);
+  const model = m.prepare(syntheticTimeline(10), 0);
+  const view = { w: 1280, h: 720 };
+  const lay = m.layout(model, view.w, view.h, null);
+  const scene = s.buildScene(model, lay);
+  const extent = { w: lay.width, h: lay.height };
+  const fit = c.fitZoom(extent, view);
+  const zooms = [fit, fit * 1.3, fit * 2, 0.2, 0.3, l.GROUP_ZOOM * 0.999];
+  /** The milestones in view: a node's centre inside the view. */
+  const inViewNodes = (cam) => {
+    const out = [];
+    for (let k = 0; k < scene.n; k++) {
+      if (Math.abs(scene.x[k] - cam.cx) <= view.w / 2 / cam.z && Math.abs(scene.y[k] - cam.cy) <= view.h / 2 / cam.z) out.push(k);
+    }
+    return out;
+  };
+  const problems = [];
+  let groupsAtFit = 0;
+  for (const z of zooms) {
+    const cam = c.clampCamera({ cx: lay.width / 2, cy: lay.height / 2, z }, extent, view);
+    const cut = l.groupZoom(cam.z);
+    const g = l.groupsAt(scene, model, cut);
+    if (z === fit) groupsAtFit = g.n;
+    const tag = `z ${cam.z.toFixed(3)}`;
+    const count = new Uint8Array(scene.n);
+    for (let q = 0; q < g.n; q++) {
+      const members = Array.from(g.members.subarray(g.start[q], g.start[q + 1]));
+      if (members.length === 0) problems.push(`${tag}: group ${q} empty`);
+      if (q > 0 && g.x0[q] < g.x0[q - 1]) problems.push(`${tag}: groups not by x0 at ${q}`);
+      for (const k of members) {
+        count[k] += 1;
+        if (g.of[k] !== q) problems.push(`${tag}: node ${k} in group ${q} says ${g.of[k]}`);
+        if (scene.lane[k] !== g.lane[q]) problems.push(`${tag}: node ${k} of lane ${scene.lane[k]} in a group of lane ${g.lane[q]}`);
+      }
+      const bins = new Set(members.map((k) => Math.floor(scene.x[k] / (l.BIN / cut))));
+      if (bins.size !== 1) problems.push(`${tag}: group ${q} over ${bins.size} stretches`);
+      // Contiguous in its lane: no milestone of the lane between its first and last outside it.
+      for (let k = 0; k < scene.n; k++) {
+        if (scene.lane[k] === g.lane[q] && scene.x[k] > g.x0[q] && scene.x[k] < g.x1[q] && g.of[k] !== q) problems.push(`${tag}: node ${k} inside group ${q} but not in it`);
+      }
+      const centre = (g.x0[q] + g.x1[q]) / 2;
+      if (l.groupAt(g, centre, g.y[q], 12 / cam.z) < 0) problems.push(`${tag}: the pointer misses group ${q} at its middle`);
+    }
+    const twice = count.findIndex((v) => v !== 1);
+    if (twice >= 0) problems.push(`${tag}: node ${twice} in ${count[twice]} groups`);
+    const nodes = inViewNodes(cam);
+    const shown = l.inView(g, cam, view);
+    const counted = new Set();
+    const [lo, hi] = l.groupRange(g, cam.cx - view.w / 2 / cam.z, cam.cx + view.w / 2 / cam.z);
+    for (let q = lo; q < hi; q++) {
+      if (g.x1[q] < cam.cx - view.w / 2 / cam.z || Math.abs(g.y[q] - cam.cy) > view.h / 2 / cam.z) continue;
+      counted.add(q);
+    }
+    const lost = nodes.filter((k) => !counted.has(g.of[k]));
+    if (lost.length) problems.push(`${tag}: ${lost.length} milestones in view in no group in view`);
+    if (shown.groups !== counted.size || shown.moments < nodes.length) problems.push(`${tag}: the screen's words say ${shown.groups} groups and ${shown.moments} moments for ${counted.size} groups and ${nodes.length} in view`);
+    const pairs = new Set();
+    for (let i = 0; i < g.edges.n; i++) pairs.add(`${g.edges.a[i]} ${g.edges.b[i]}`);
+    if (pairs.size !== g.edges.n) problems.push(`${tag}: a group edge twice`);
+    for (let i = 0; i < scene.edges.n; i++) {
+      const a = g.of[scene.edges.a[i]];
+      const b = g.of[scene.edges.b[i]];
+      if (a !== b && !pairs.has(`${a} ${b}`)) problems.push(`${tag}: the edge ${i} between groups ${a} and ${b} has no group edge`);
+    }
+  }
+  check("every milestone in exactly one group of its lane, within one stretch, contiguous, found by the pointer, at six zooms from the whole stage", problems.length === 0,
+    problems.length ? problems.slice(0, 4).join("; ") : `${groupsAtFit} groups for ${scene.n} milestones at the overview, zoom ${fit.toFixed(3)}`);
+  check("a group's mark is never under the pixel: a group of one at a radius of 2.5 px, a larger one at least 6 px tall",
+    l.SINGLE_RADIUS >= 2.5 && l.groupHalfHeight(2) >= 3, `${l.SINGLE_RADIUS}, ${l.groupHalfHeight(2)}`);
+  check("the groups start under the zoom where a glyph's radius is 2.5 px", Math.abs(l.GROUP_ZOOM * 7 - 2.45) < 0.01, `${l.GROUP_ZOOM}`);
+  // The negative control: the spike's sub-pixel omission at x10's overview.
+  const cam = c.clampCamera({ cx: lay.width / 2, cy: lay.height / 2, z: fit }, extent, view);
+  const nodes = inViewNodes(cam);
+  const spikeDrawn = nodes.filter(() => 7 * cam.z >= 1);
+  const caught = nodes.length > 0 && spikeDrawn.length < nodes.length;
+  for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
+  console.log(`negative control, the spike's level of detail at x10's overview (${spikeDrawn.length} of ${nodes.length} milestones in view drawn): ${caught ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caught;
 }
 
 async function renderer(ui, m, s, fixture) {
@@ -510,16 +688,26 @@ async function renderer(ui, m, s, fixture) {
   check("rings above and below the glyph, as yAnello", JSON.stringify(offsets) === JSON.stringify(fixture.rings.offsets), JSON.stringify(offsets));
   check("a lane's half thickness, as semiSpessore", JSON.stringify(halves) === JSON.stringify(fixture.rings.halfThickness), JSON.stringify(halves));
 
-  // The labels, on a crowded lane, and the control that labels every turning point in view.
+  // The labels (#489), on a crowded lane, with the lanes' names and the days' band reserved: their plates as drawn,
+  // the left-hand ones near the stage's right edge included. The controls: a label on every turning point in view,
+  // and the renderer spike's picker, both caught overlapping.
   const model = m.prepare(crowded(120), 0);
   const lay = m.layout(model, 1280, 720, null);
   const scene = s.buildScene(model, lay);
   const view = { w: 1280, h: 720 };
   const width = (i) => model.nodes[scene.node[i]].milestone.title.length * 6.4;
   const cam = { cx: 640, cy: 360, z: 1 };
-  const labels = s.pickLabels(scene, cam, view, width, s.newLabels());
-  const found = labelProblems(s, scene, labels, width, cam);
-  check("labels on a crowded lane: turning points only, one per cell, at most the cap", labels.n > 0 && found.length === 0, `${labels.n} labels${found.length ? `; ${found.slice(0, 3).join("; ")}` : ""}`);
+  const reserved = [[0, 0, view.w, 22], [4, lay.laneY[0] - 17, 120, lay.laneY[0] + 15]];
+  const labels = s.pickLabels(scene, cam, view, width, s.newLabels(), null, undefined, reserved);
+  const found = labelProblems(s, scene, labels, cam, view, reserved);
+  check("labels on a crowded lane: turning points only, no two plates over each other or over a name, at most the cap", labels.n > 0 && found.length === 0,
+    `${labels.n} labels${found.length ? `; ${found.slice(0, 3).join("; ")}` : ""}`);
+  // A turning point near the stage's right edge: its label on its left, inside the stage, as the renderer draws it.
+  const edge = { cx: scene.x[1] - (view.w - 80 - view.w / 2), cy: 360, z: 1 };
+  const left = s.pickLabels(scene, edge, view, width, s.newLabels());
+  const nx = s.toScreenX(edge, view, scene.x[1]);
+  check("a label that would leave the stage goes to its node's left, inside the stage", left.n >= 1 && left.id[0] === 1 && left.sx[0] + left.w[0] === nx - 12 && left.sx[0] >= 0,
+    `${left.n} labels, the first at ${left.sx[0]?.toFixed(0)} for a node at ${nx.toFixed(0)}`);
   const far = s.pickLabels(scene, { ...cam, z: s.LABEL_ZOOM / 2 }, view, width, s.newLabels());
   check("no label below the zoom of labels", far.n === 0, `${far.n}`);
   const every = s.newLabels();
@@ -528,9 +716,30 @@ async function renderer(ui, m, s, fixture) {
     every.id[every.n] = i;
     every.sx[every.n] = s.toScreenX(cam, view, scene.x[i]) + 12;
     every.sy[every.n] = s.toScreenY(cam, view, scene.y[i]);
+    every.w[every.n] = width(i);
     every.n += 1;
   }
-  const caught = labelProblems(s, scene, every, width, cam).length > 0;
+  const caught = labelProblems(s, scene, every, cam, view).length > 0;
+  const spike = spikeLabels(s, scene, cam, view, width);
+  const spikeFound = labelProblems(s, scene, spike, cam, view);
+  const caughtSpike = spikeFound.some((p) => p.includes("overlap"));
+  // The ranks: on two lanes of every kind in turn, a turning point left out is blocked by a plate of a rank at least
+  // its own, a reserved place, the stage's height or the cap; and the highest rank is never left out for a lower one.
+  const rm = m.prepare(ranked(160), 0);
+  const rl = m.layout(rm, 1280, 720, null);
+  const rs = s.buildScene(rm, rl);
+  const rw = (i) => rm.nodes[rs.node[i]].milestone.title.length * 6.4;
+  const urgent = (i) => rm.nodes[rs.node[i]].milestone.health !== "healthy";
+  const rank = (i) => s.labelRank(rs, i, urgent(i));
+  const rcam = { cx: 900, cy: rl.height / 2, z: 0.7 };
+  const rlabels = s.pickLabels(rs, rcam, view, rw, s.newLabels(), null, rank, reserved);
+  const free = unblocked(s, rs, rlabels, rcam, view, rw, rank, reserved);
+  const kinds = new Set(Array.from(rlabels.id.subarray(0, rlabels.n)).map((i) => rs.kind[i]));
+  check("labels by rank: every turning point left out is blocked by a label of its rank or higher, a name, the edge or the cap",
+    rlabels.n > 0 && free.length === 0 && labelProblems(s, rs, rlabels, rcam, view, reserved).length === 0,
+    `${rlabels.n} labels of ${kinds.size} kinds${free.length ? `; left out with nothing in the way: ${free.slice(0, 5).join(", ")}` : ""}`);
+  // The spike's picker on the same lanes leaves out a higher rank for a lower one met first.
+  const caughtRank = unblocked(s, rs, spikeLabels(s, rs, rcam, view, rw), rcam, view, rw, rank, []).length > 0;
 
   // The camera.
   const extent = { w: 3000, h: 600 };
@@ -575,5 +784,7 @@ async function renderer(ui, m, s, fixture) {
 
   for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
   console.log(`negative control, a label on every turning point in view: ${caught ? "caught" : "NOT CAUGHT"}`);
-  return checks.every(([, ok]) => ok) && caught;
+  console.log(`negative control, the spike's picker (one row, the right-hand place): ${caughtSpike ? "caught" : "NOT CAUGHT"}${spikeFound.length ? `, ${spikeFound[0]}` : ""}`);
+  console.log(`negative control, the spike's picker by rank (left to right only): ${caughtRank ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caught && caughtSpike && caughtRank;
 }

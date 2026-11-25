@@ -1027,6 +1027,22 @@ a.reel-name:hover {
   padding: 2px 10px 8px;
 }
 
+/* The level of detail (#489): zoomed out, what the groups on the stage hold. Its line is kept when empty, so the
+   stage does not change size as the zoom crosses into groups. */
+.screen .stage-groups {
+  max-width: none;
+  min-height: var(--lh-body);
+  margin-top: -4px;
+  padding: 0 10px 8px;
+  box-sizing: content-box;
+  overflow: hidden;
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+  color: var(--faint);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .icon-prev {
   -webkit-mask-image: url("./icons/prev.svg");
   mask-image: url("./icons/prev.svg");
