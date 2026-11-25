@@ -1,0 +1,25 @@
+{
+  "_note": "Synthetic. No lock on alpha: there is nothing to renew, exit 3.",
+  "args": [
+    "lock",
+    "renew",
+    "alpha",
+    "--holder",
+    "worker-a",
+    "--ttl",
+    "60",
+    "--json"
+  ],
+  "exit": 3,
+  "python": [
+    "--json",
+    "lock",
+    "rinnova",
+    "alpha",
+    "--proprietario",
+    "worker-a",
+    "--ttl",
+    "60"
+  ],
+  "state_after": true
+}

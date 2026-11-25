@@ -72,6 +72,16 @@ impl Git {
         Git { pin }
     }
 
+    /// The URL of the remote `origin` of the repo in `folder`, as git gives it: the prototype's `url_remote` reads
+    /// it the same way. `None` when there is no such remote, when `folder` is no repo, or when git does not answer:
+    /// a failure is an absence here, never an error, and its message is not kept, so nothing of the call can reach
+    /// a log. The URL may carry credentials (`https://user:token@host/…`): it is for the caller to reduce to what
+    /// it shows, as `regia_core::moviola::normalize_remote` does, and not to print or to store.
+    pub fn origin_url(&self, folder: &Path) -> Option<String> {
+        let run = self.run(folder, call::origin_url(), None);
+        Some(run.stdout.trim().to_owned()).filter(|url| run.ok() && !url.is_empty())
+    }
+
     /// Runs `args` in `folder`. `date`, when given, is the date of the commit the call makes.
     pub(crate) fn run(&self, folder: &Path, args: Args, date: Option<GitDate>) -> Run {
         let subcommand = args.tokens().next().map_or_else(String::new, |token| token.to_string_lossy().into_owned());
@@ -171,6 +181,11 @@ pub(crate) mod call {
         Args::new().word("remote")
     }
 
+    /// The URL of the remote `origin`; fails when there is none.
+    pub fn origin_url() -> Args {
+        Args::new().word("remote").word("get-url").word("origin")
+    }
+
     /// The value of a configuration key, such as `branch.main.remote`.
     pub fn config(key: &Text) -> Args {
         Args::new().word("config").value(key)
@@ -234,6 +249,14 @@ mod tests {
         assert_eq!(tokens(&call::add(&paths[..1])), ["add", "--", ":(literal).regia/journal"]);
         let status = tokens(&call::status(&paths[1..]));
         assert_eq!(status, ["status", "--porcelain=v1", "-z", "--untracked-files=all", "--", "docs/plan.md"]);
+    }
+
+    /// The URL of `origin` is asked with `get-url`, a read: no `--push`, no other remote, nothing from the folder.
+    #[test]
+    fn the_origin_url_is_a_read_of_origin_alone() {
+        let args = tokens(&call::origin_url());
+        assert_eq!(args, ["remote", "get-url", "origin"]);
+        assert!(!WRITES.contains(&args[0].as_str()));
     }
 
     #[test]

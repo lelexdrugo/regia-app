@@ -1,0 +1,43 @@
+{
+  "_note": "Synthetic. An archive that is also named with --file, twice over, once with a dotted path: it is committed once, and the file named after it follows it.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--file",
+    ".regia/decisioni-2026-01.md",
+    "--file",
+    ".regia/./decisioni-2026-01.md",
+    "--file",
+    "docs/plan.md",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}",
+    "--file",
+    ".regia/decisioni-2026-01.md",
+    "--file",
+    ".regia/./decisioni-2026-01.md",
+    "--file",
+    "docs/plan.md"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n",
+      ".regia/decisioni-2026-01.md": "Decisions of January, archived.\n",
+      "docs/plan.md": "Plan v1\n"
+    },
+    "changes": {
+      ".regia/decisioni-2026-01.md": "Decisions of January, archived, with one more.\n",
+      "docs/plan.md": "Plan v2\n"
+    }
+  }
+}

@@ -6,3 +6,12 @@
 # prototype's `DOSSIER_FILE`. A folder stands for every file under it.
 [named]
 files = [".regia/stato.md", ".regia/decisioni.md", ".regia/journal"]
+
+# The archives of the decisions, which a checkpoint also commits when they changed (ADR 0024 of the
+# dossier, #583): the prototype's `ARCHIVIO_DECISIONI_RE`, `decisioni-[0-9]{4}-[0-9]{2}\.md`. They are
+# listed by name, one read of the folder, because the paths a checkpoint gives git are literal and a
+# pattern would not stand for them. Only files, and only directly in `folder`, not in its subfolders.
+# In `name`, `#` stands for one ASCII digit and any other character for itself.
+[named.archives]
+folder = ".regia"
+name = "decisioni-####-##.md"

@@ -6,12 +6,13 @@ use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::fs::{self, OpenOptions};
 use std::io::{ErrorKind, Write};
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 use std::thread;
 use std::time::{Duration, Instant};
 
 use regia_exec::{AbsolutePath, Detached, Launch, Limits, Pin, Search, claude, codex, secret_shaped};
 use regia_identity::{env_var, prototype_env_var, state_dir};
+use regia_store::{is_within, temporary_folder};
 use serde_json::Value;
 
 use crate::launch::{Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind};
@@ -234,12 +235,31 @@ impl LaunchSurface for Cli {
     fn launch(&self, request: &LaunchRequest) -> Result<Receipt, LaunchError> {
         let service = AgentService::known(request.service);
         let pin = self.pin(&service)?;
-        let files = Files::reserve(&steps_folder(self.state.as_deref(), &request.label)?, &request.prompt)?;
+        let absolute = |path: &Path| AbsolutePath::new(path).map_err(|error| LaunchError::before(error.to_string()));
+        // A `.cmd` takes arguments of a narrow alphabet only (threat model §3.6, rule 9), which is not
+        // widened. The files of the launch are in the state folder and go as arguments; the child's folder
+        // goes as its working folder, which codex uses when it has no `--cd`.
+        let through_batch = request.service == ServiceId::Codex && pin.through_batch();
+        if through_batch {
+            // Before the steps folder is created: the refusal leaves nothing behind. What the state folder
+            // adds to it (`passi`, the project, the file names) is inside the alphabet.
+            let state = state_folder(self.state.as_deref())?;
+            if !absolute(&state)?.fits_batch() {
+                return Err(LaunchError::before(format!(
+                    "the state folder {} has characters that a .cmd does not receive in safety: choose another one with {}",
+                    state.display(),
+                    prototype_env_var("RUNTIME")
+                )));
+            }
+        }
+        let steps = steps_folder(self.state.as_deref(), &request.label)?;
+        let files = Files::reserve(&steps, &request.prompt)?;
         let args = match request.service {
             ServiceId::Claude => claude::print(request.model.as_ref(), request.effort),
             ServiceId::Codex => {
-                let absolute = |path: &Path| AbsolutePath::new(path).map_err(|error| LaunchError::before(error.to_string()));
-                codex::exec(&absolute(&request.folder)?, &absolute(&files.last)?, request.model.as_ref(), request.effort)
+                let folder = absolute(&request.folder)?;
+                let cd = (!through_batch || folder.fits_batch()).then_some(&folder);
+                codex::exec(cd, &absolute(&files.last)?, request.model.as_ref(), request.effort)
             }
         };
         let launch = self.environment(pin.launch(args, &request.folder), &service, request);
@@ -306,7 +326,7 @@ pub(crate) fn state_folder(state: Option<&Path>) -> Result<PathBuf, LaunchError>
     let Some(state) = state else {
         return Err(LaunchError::before(format!("no state folder: set {variable}")));
     };
-    let temporary = std::env::temp_dir();
+    let temporary = temporary_folder();
     if is_within(state, &temporary) {
         return Err(LaunchError::before(format!(
             "the state folder {} is inside the temporary folder {}, which Storage Sense empties: choose another one with {variable}",
@@ -371,42 +391,6 @@ fn tail(log: &Path) -> String {
     lines[start..].iter().map(|line| line.chars().take(300).collect::<String>()).collect::<Vec<_>>().join("\n")
 }
 
-/// Whether `path` is `base` or inside it, both made absolute and resolved where they exist, and on
-/// Windows in one case: the prototype's rule for its state folder, which regia-store keeps for the
-/// database.
-fn is_within(path: &Path, base: &Path) -> bool {
-    resolved(path).starts_with(resolved(base))
-}
-
-fn resolved(path: &Path) -> PathBuf {
-    let absolute = std::path::absolute(path).unwrap_or_else(|_| path.to_path_buf());
-    let mut lexical = PathBuf::new();
-    for component in absolute.components() {
-        match component {
-            Component::CurDir => {}
-            Component::ParentDir => {
-                lexical.pop();
-            }
-            other => lexical.push(other),
-        }
-    }
-    let mut existing = lexical.clone();
-    let mut rest: Vec<OsString> = Vec::new();
-    let real = loop {
-        if let Ok(real) = fs::canonicalize(&existing) {
-            break rest.iter().rev().fold(real, |acc, part| acc.join(part));
-        }
-        match existing.file_name() {
-            Some(name) => {
-                rest.push(name.to_os_string());
-                existing.pop();
-            }
-            None => break lexical,
-        }
-    };
-    if cfg!(windows) { PathBuf::from(real.to_string_lossy().to_lowercase()) } else { real }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -465,13 +449,19 @@ mod tests {
         assert_eq!(wake_outcome(None, "", "").error.as_deref(), Some("exit without a code"));
     }
 
+    /// The rule is `regia-store`'s, not a copy: the state folder is refused wherever the store's own
+    /// rule says it is in the temporary folder, even before it exists and through dots, and accepted
+    /// outside it.
     #[test]
-    fn a_folder_inside_the_temporary_one_is_within_it_even_before_it_exists() {
-        let temporary = std::env::temp_dir();
-        assert!(is_within(&temporary.join("not-yet").join("deeper"), &temporary));
-        assert!(is_within(&temporary, &temporary));
+    fn the_state_folder_follows_the_stores_temporary_folder_rule() {
+        let temporary = temporary_folder();
+        for inside in [temporary.join("not-yet").join("deeper"), temporary.clone(), temporary.join("a").join("..").join("b")] {
+            let refused = state_folder(Some(&inside)).unwrap_err();
+            assert!(refused.before_effect() && refused.to_string().contains("temporary folder"), "{}: {refused}", inside.display());
+        }
         let here = std::env::current_dir().unwrap();
-        assert!(!is_within(&here, &here.join("child")));
-        assert!(is_within(&here.join("a").join("..").join("b"), &here));
+        assert!(!is_within(&here, &temporary), "the test must not run in the temporary folder");
+        assert_eq!(state_folder(Some(&here)).unwrap(), here);
+        assert!(state_folder(None).unwrap_err().to_string().contains("no state folder"));
     }
 }

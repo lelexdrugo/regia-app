@@ -1342,6 +1342,7 @@
         }
       },
       "id": "ISSUE_1",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 4
@@ -1356,6 +1357,7 @@
         }
       },
       "id": "ISSUE_2",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 0
@@ -1370,6 +1372,7 @@
         }
       },
       "id": "ISSUE_3",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 0
@@ -1384,6 +1387,7 @@
         }
       },
       "id": "ISSUE_4",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 0
@@ -1423,6 +1427,7 @@
         }
       },
       "id": "ISSUE_5",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 1
@@ -1437,6 +1442,7 @@
         }
       },
       "id": "ISSUE_6",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 0
@@ -1451,6 +1457,7 @@
         }
       },
       "id": "ISSUE_7",
+      "lastEditedAt": null,
       "state": "CLOSED",
       "subIssues": {
         "totalCount": 0
@@ -1465,6 +1472,7 @@
         }
       },
       "id": "ISSUE_8",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 0

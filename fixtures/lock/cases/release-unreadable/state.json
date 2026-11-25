@@ -1,0 +1,9 @@
+[
+  {
+    "doc": "not a lock document",
+    "generation": 1,
+    "key": "alpha",
+    "kind": "lock",
+    "stamped": false
+  }
+]

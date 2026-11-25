@@ -1,0 +1,23 @@
+{
+  "_note": "Synthetic. The row of alpha's lock is not a lock document: lock status reads it as unreadable and nobody's, not busy, with exit 0 (#442/V5).",
+  "args": [
+    "lock",
+    "status",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "lock",
+    "stato",
+    "alpha"
+  ],
+  "state": [
+    {
+      "kind": "lock",
+      "key": "alpha",
+      "doc": "not a lock document"
+    }
+  ],
+  "state_after": true
+}

@@ -3,9 +3,15 @@
 //! its id, and for the checks the recent comments and the closed issues.
 //! The fixture is named by the environment (the prototype's runs) or by a file beside the fake (the
 //! product's, which do not pass those variables on). Without either it refuses to run, so it can
-//! never pass for the real tool by accident. It returns only what the query selects, and refuses a
-//! query that drops the arguments the brief relies on, so a fixture richer than the query cannot
-//! hide a broken query.
+//! never pass for the real tool by accident. It returns only what the query selects, so a fixture richer
+//! than the query cannot hide a field the query forgot.
+//!
+//! It checks the shape of the reads, and no more: that every connection a query pages through has the
+//! `first`, `last` and `after` the prototype's queries have, that each page selects `pageInfo{hasNextPage
+//! endCursor}`, that a fragment is on a type the prototype uses, and that the list of issues has its
+//! `states` and its order (`check_connections` in the library, with its table). It does not run GraphQL: it
+//! does not cut a fixture's list at `first:N`, it does not know the real schema, and a field of another
+//! name that the fixture happens to hold is an answer. The cursor of a request is read as `page-<n>`.
 //!
 //! It takes the request in both forms: `-f`/`-F` pairs, as the prototype sends it, and the whole
 //! request on stdin with `--input=-`, as the product does, where `n` must be a number.
@@ -84,10 +90,12 @@ fn fixture() -> Result<Fixture, String> {
     Ok(Fixture { responses: responses.into(), log: path("log"), writes: path("writes") })
 }
 
+/// One line to the log, in one write: the product reads the list with several calls at once (#572), and
+/// two lines written in two writes each (`writeln!` writes the text and then the newline) came out mixed.
 fn append(path: Option<&PathBuf>, line: &str) -> Result<(), String> {
     let Some(path) = path else { return Ok(()) };
     let mut file = OpenOptions::new().create(true).append(true).open(path).map_err(|error| error.to_string())?;
-    writeln!(file, "{line}").map_err(|error| error.to_string())
+    file.write_all(format!("{line}\n").as_bytes()).map_err(|error| error.to_string())
 }
 
 fn read_stdin() -> Result<String, String> {
@@ -198,6 +206,8 @@ fn answer(args: &[String]) -> Result<Reply, String> {
         let projected = project_query(&query, data)?;
         return serde_json::to_string(&json!({ "data": projected })).map(Reply::Out).map_err(|error| error.to_string());
     }
+    // The pagination of every connection, the cursors and the types of the fragments, as the prototype's.
+    regia_conformance::check_connections(&query)?;
     let mut number = None;
     let mut after = None;
     let mut node = None;
@@ -225,6 +235,10 @@ fn answer(args: &[String]) -> Result<Reply, String> {
             .and_then(|n| n.parse::<usize>().ok())
             .ok_or_else(|| format!("unknown cursor {cursor}"))?,
     };
+    // A list read for where its pages end and nothing else (no `nodes`): the walk of the cursors that lets the
+    // product read the full pages together (#572). It is logged as its own kind (`issues-walk 0`), so that a
+    // test counts the pages and the walk apart (#559/V19).
+    let walk = if query.contains("issues(first:") && !query.contains("nodes") { "-walk" } else { "" };
     let (kind, page) = if query.contains("blockedBy(first:100") {
         let number = number.ok_or("blockers query without n")?;
         let pages = &responses["blocker_pages"][&number];
@@ -243,25 +257,29 @@ fn answer(args: &[String]) -> Result<Reply, String> {
         // The checks' read of recent comments, on open and closed issues alike.
         (format!("comments {index}"), responses["comment_pages"][index].clone())
     } else if query.contains("states:[CLOSED]") {
-        (format!("closed {index}"), responses["closed_pages"][index].clone())
+        (format!("closed{walk} {index}"), responses["closed_pages"][index].clone())
     } else if query.contains("issues(first:") && !query.contains("states:") {
         // The list with no `states`, closed issues too: only a fixture that holds those pages answers it.
         if !query.contains(REQUIRED_ON_ISSUES[1]) {
             return Err(format!("the issues query lost {}", REQUIRED_ON_ISSUES[1]));
         }
-        (format!("issues-all {index}"), responses["all_pages"][index].clone())
+        (format!("issues-all{walk} {index}"), responses["all_pages"][index].clone())
     } else if query.contains("issues(first:") {
         for required in REQUIRED_ON_ISSUES {
             if !query.contains(required) {
                 return Err(format!("the issues query lost {required}"));
             }
         }
-        (format!("issues {index}"), responses["issue_pages"][index].clone())
+        (format!("issues{walk} {index}"), responses["issue_pages"][index].clone())
     } else if query.contains("issue(number:$n)") {
         // One issue by its number, null if the fixture has none: its id and state, its sub-issues' count,
         // its comments.
+        // The fixture holds all of the comments; they are paged here, a hundred to a page, by the cursor `c`
+        // (the product's `after`), so that an issue with more than a hundred is read as GitHub gives it (#573).
         let number = number.ok_or("issue query without n")?;
-        (format!("issue {number}"), json!({"repository": {"issue": responses["issues"][&number].clone()}}))
+        let issue = page_comments(responses["issues"][&number].clone(), index)?;
+        let kind = if index == 0 { format!("issue {number}") } else { format!("issue {number} {index}") };
+        (kind, json!({"repository": {"issue": issue}}))
     } else if query.contains("repositoryOwner(login:$o)") {
         // The owner's Projects, for `init`: one page, whatever the cursor; or the failure the fixture gives there,
         // of `gh` with its exit code, or of GraphQL with its `errors`.
@@ -287,6 +305,30 @@ fn answer(args: &[String]) -> Result<Reply, String> {
     let projected = project_query(&query, &page)?;
     append(fixture.log.as_ref(), &kind)?;
     serde_json::to_string(&json!({ "data": projected })).map(Reply::Out).map_err(|error| error.to_string())
+}
+
+/// The comments of one issue as GitHub pages them: page `index` of a hundred, with the `pageInfo` of that page
+/// and the cursor of the next (`page-<n>`, as the lists'). An issue the fixture gives no more than a hundred
+/// comments, read from the start, is left as the fixture has it.
+fn page_comments(mut issue: Value, index: usize) -> Result<Value, String> {
+    const PAGE: usize = 100;
+    let Some(comments) = issue.pointer("/comments/nodes").and_then(Value::as_array) else {
+        return Ok(issue);
+    };
+    if comments.len() <= PAGE && index == 0 {
+        return Ok(issue);
+    }
+    if index * PAGE >= comments.len() {
+        return Err(format!("no page {index} of comments: the fixture has {}", comments.len()));
+    }
+    let end = ((index + 1) * PAGE).min(comments.len());
+    let page: Vec<Value> = comments[index * PAGE..end].to_vec();
+    let more = end < comments.len();
+    issue["comments"] = json!({
+        "pageInfo": {"hasNextPage": more, "endCursor": more.then(|| format!("page-{}", index + 1))},
+        "nodes": page,
+    });
+    Ok(issue)
 }
 
 /// The message of the fixture's refusal of a mutation with these variables: the first entry of its

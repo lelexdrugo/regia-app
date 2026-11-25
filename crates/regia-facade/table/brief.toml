@@ -17,6 +17,10 @@ senza-upstream = "no_upstream"
 head-staccato = "detached_head"
 git-guasto = "git_failed"
 non-pushati = "not_pushed"
+# The warnings of the worker branches (#158) and of the product repos (#549): the prototype prints them
+# in the same list as the dossier's own.
+branch-non-pushato = "branch_not_pushed"
+prodotto-senza-clone = "product_without_clone"
 
 [shapes.brief.fields]
 aspetta_me = { to = "waiting_on_owner", items = "task" }
@@ -86,6 +90,11 @@ problema = { to = "problem", enum = "dossier_problem" }
 branch = { to = "branch" }
 avanti = { to = "ahead" }
 dettaglio = { to = "detail" }
+# Only the warnings of a worker branch and of a product repo carry these.
+repo = { to = "repo" }
+task = { to = "task" }
+mai_pushato = { to = "never_pushed" }
+atteso = { to = "expected" }
 
 [shapes.outside_tracker_project.fields]
 totale = { to = "total" }

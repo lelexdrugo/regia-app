@@ -4,6 +4,8 @@
 mod history;
 mod init;
 mod issue;
+mod limit;
+mod read;
 mod write;
 
 pub use init::GhInit;
@@ -13,11 +15,10 @@ use std::path::PathBuf;
 use chrono::{DateTime, Utc};
 use regia_core::{
     CloseReason, IssueRef, IssueState, RawComment, RawIssue, StatusHistory, Tracker, TrackerConfigV1, TrackerError,
-    add_children_from_parents,
 };
 use regia_exec::{Pin, Program};
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
 
 /// The list of issues; `{STATES}` is the filter on their state, empty for every state.
 const ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$after:String){repository(owner:$o,name:$r){
@@ -31,11 +32,19 @@ const ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$after:String){reposit
       projectItems(first:5){nodes{project{id} fieldValues(first:50){nodes{... on ProjectV2ItemFieldSingleSelectValue{optionId name field{... on ProjectV2SingleSelectField{id name}}}}}}}
     }}}}"#;
 
+/// Where the pages of the list end, and nothing else: the walk that gives the full pages their cursors
+/// (`read`). It has the arguments of the list, so the same pages end at the same cursors.
+const ENDS_QUERY: &str = r#"query($o:String!,$r:String!,$after:String){repository(owner:$o,name:$r){
+  issues(first:100,after:$after,{STATES}orderBy:{field:CREATED_AT,direction:ASC}){
+    pageInfo{hasNextPage endCursor}}}}"#;
+
 const BLOCKERS_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
   blockedBy(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{number state}}}}}"#;
 
 const COMMENTS_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
   comments(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{databaseId createdAt url body}}}}}"#;
+
+const EDITED_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){issue(number:$n){lastEditedAt}}}"#;
 
 const SUB_ISSUES_QUERY: &str = r#"query($o:String!,$r:String!,$n:Int!,$after:String){repository(owner:$o,name:$r){issue(number:$n){
   subIssues(first:100,after:$after){pageInfo{hasNextPage endCursor} nodes{number state}}}}}"#;
@@ -48,6 +57,8 @@ pub struct GhTracker {
     repo: String,
     project_id: String,
     status_field_id: String,
+    /// The calls running at once, at most [`limit::MAX_CALLS`].
+    calls: limit::Calls,
 }
 
 impl GhTracker {
@@ -59,6 +70,7 @@ impl GhTracker {
             repo: config.repo.clone(),
             project_id: config.project_id.clone(),
             status_field_id: config.status_field_id.clone(),
+            calls: limit::Calls::new(limit::MAX_CALLS),
         }
     }
 
@@ -79,33 +91,53 @@ impl GhTracker {
         extra: &[(&str, Value)],
         after: Option<&str>,
     ) -> Result<T, TrackerError> {
-        let gh = self.gh.as_ref().map_err(|error| TrackerError::Unavailable(error.clone()))?;
-        // The whole request, with typed variables, goes on stdin: no value reaches gh's argv.
-        let mut variables = json!({"o": self.owner, "r": self.repo});
+        let mut variables = Map::new();
+        variables.insert("o".to_owned(), json!(self.owner));
+        variables.insert("r".to_owned(), json!(self.repo));
         for (name, value) in extra {
-            variables[*name] = value.clone();
+            variables.insert((*name).to_owned(), value.clone());
         }
         if let Some(after) = after {
-            variables["after"] = json!(after);
+            variables.insert("after".to_owned(), json!(after));
         }
-        let body = json!({"query": query, "variables": variables}).to_string();
-        let output = gh
-            .launch(regia_exec::gh::graphql(), &self.work_dir)
-            .stdin(body)
-            .run()
-            .map_err(|error| TrackerError::Unavailable(error.to_string()))?;
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(TrackerError::Unavailable(format!("gh api graphql: {}", stderr.trim())));
-        }
-        Self::data(&output.stdout)
+        Self::data_of(self.envelope(query, &variables)?)
     }
 
-    /// The `data` of what GraphQL answered: an answer that does not read, or that has `errors`, is a bad
-    /// response.
-    fn data<T: for<'de> Deserialize<'de>>(stdout: &[u8]) -> Result<T, TrackerError> {
-        let envelope: Value = serde_json::from_slice(stdout)
-            .map_err(|error| TrackerError::BadResponse(error.to_string()))?;
+    /// The one place that runs `gh api graphql`, for the reads and the writes: `variables` as they are, the
+    /// whole request, with its typed variables, on stdin so that no value reaches gh's argv. What comes back
+    /// is the envelope GraphQL answered, `data` and `errors` as it sent them: what an `errors` means is for
+    /// the caller to say (`data_of` for the reads, `write::answer` for the writes). A call, whichever it is,
+    /// waits for a place among the running ones ([`limit::MAX_CALLS`]).
+    fn envelope(&self, query: &str, variables: &Map<String, Value>) -> Result<Value, TrackerError> {
+        let gh = self.gh.as_ref().map_err(|error| TrackerError::Unavailable(error.clone()))?;
+        self.envelope_through(query, variables, |body| {
+            let output = gh
+                .launch(regia_exec::gh::graphql(), &self.work_dir)
+                .stdin(body)
+                .run()
+                .map_err(|error| TrackerError::Unavailable(error.to_string()))?;
+            Ok(Reply { success: output.status.success(), stdout: output.stdout, stderr: output.stderr })
+        })
+    }
+
+    /// [`envelope`](Self::envelope) with the launch of `gh` given: it gets the body of the request and runs
+    /// while the call holds its place. The tests give it a launch that does not start a process.
+    fn envelope_through(
+        &self,
+        query: &str,
+        variables: &Map<String, Value>,
+        launch: impl FnOnce(String) -> Result<Reply, TrackerError>,
+    ) -> Result<Value, TrackerError> {
+        let body = json!({"query": query, "variables": variables}).to_string();
+        let place = self.calls.start();
+        let reply = launch(body);
+        drop(place);
+        envelope_of(&reply?)
+    }
+
+    /// The `data` of an envelope, for the reads: an answer with `errors`, whatever they are but `null`, is a
+    /// bad response with the errors as JSON, and so is a `data` that does not read.
+    fn data_of<T: for<'de> Deserialize<'de>>(envelope: Value) -> Result<T, TrackerError> {
         if let Some(errors) = envelope.get("errors").filter(|errors| !errors.is_null()) {
             return Err(TrackerError::BadResponse(errors.to_string()));
         }
@@ -113,74 +145,55 @@ impl GhTracker {
             .map_err(|error| TrackerError::BadResponse(error.to_string()))
     }
 
-    /// Reads one connection of an issue from its first page, and adds the nodes the list lacks. A page
-    /// that fails stops the reading and keeps what came before it.
-    fn read_pages(&self, query: &str, number: u64, list: &mut Vec<(u64, IssueState)>) {
-        let mut after: Option<String> = None;
-        loop {
-            let page: Result<ConnectionData, _> = self.graphql(query, Some(number), after.as_deref());
-            let Ok(page) = page else { return };
-            let connection = page.repository.issue.connection;
-            let seen: Vec<u64> = list.iter().map(|(number, _)| *number).collect();
-            list.extend(connection.nodes.into_iter().filter(|node| !seen.contains(&node.number)).map(|n| (n.number, n.state)));
-            if !connection.page_info.has_next_page {
-                return;
-            }
-            after = connection.page_info.end_cursor;
-        }
+    /// The `data` of what `gh` printed, as the reads take it: the envelope, then [`data_of`](Self::data_of).
+    #[cfg(test)]
+    fn data<T: for<'de> Deserialize<'de>>(stdout: &[u8]) -> Result<T, TrackerError> {
+        Self::data_of(parse_envelope(stdout)?)
+    }
+}
+
+/// What a run of `gh api graphql` printed and how it ended.
+struct Reply {
+    success: bool,
+    stdout: Vec<u8>,
+    stderr: Vec<u8>,
+}
+
+/// The envelope of a run, for any caller. A run that fails is `gh` unavailable, with what it said: its
+/// stderr, or its stdout when stderr is empty.
+fn envelope_of(reply: &Reply) -> Result<Value, TrackerError> {
+    if !reply.success {
+        let text = |bytes: &[u8]| String::from_utf8_lossy(bytes).trim().to_owned();
+        let stderr = text(&reply.stderr);
+        let said = if stderr.is_empty() { text(&reply.stdout) } else { stderr };
+        return Err(TrackerError::Unavailable(format!("gh api graphql: {said}")));
+    }
+    parse_envelope(&reply.stdout)
+}
+
+/// An answer that does not read as JSON is a bad response.
+fn parse_envelope(stdout: &[u8]) -> Result<Value, TrackerError> {
+    serde_json::from_slice(stdout).map_err(|error| TrackerError::BadResponse(error.to_string()))
+}
+
+impl read::Wire for GhTracker {
+    fn list(&self, states: &str, after: Option<&str>) -> Result<IssueConnection, TrackerError> {
+        let data: IssuesData = self.graphql(&ISSUES_QUERY.replace("{STATES}", states), None, after)?;
+        Ok(data.repository.issues)
     }
 
-    /// The list query reads the first 20 `blockedBy`. Issues above the limit read the rest here. If
-    /// that fails the total stays above what was read, and the rules treat the task as incomplete.
-    fn complete_blockers(&self, issue: &mut RawIssue) {
-        if issue.blocked_by_total > issue.blocked_by.len() as u64 {
-            self.read_pages(BLOCKERS_QUERY, issue.number, &mut issue.blocked_by);
-        }
+    fn list_ends(&self, states: &str, after: Option<&str>) -> Result<PageInfo, TrackerError> {
+        let data: EndsData = self.graphql(&ENDS_QUERY.replace("{STATES}", states), None, after)?;
+        Ok(data.repository.issues.page_info)
     }
 
-    /// The list query reads the first 50 sub-issues. Issues above the limit read the rest here. If that
-    /// fails, the open children in the list still reach their parent (`add_children_from_parents`).
-    fn complete_sub_issues(&self, issue: &mut RawIssue, total: u64) {
-        if total > issue.sub_issues.len() as u64 {
-            self.read_pages(SUB_ISSUES_QUERY, issue.number, &mut issue.sub_issues);
-        }
-    }
-
-    fn to_raw(&self, node: IssueNode, items_seen: &mut u64) -> RawIssue {
-        // The status field is found by its id, so its name can be anything, in any language. The last
-        // item of the configured Project wins; other Projects and other fields do not count. The other
-        // single-select values keep their field's name, which gives them a meaning in the core.
-        let items: Vec<ProjectItem> =
-            node.project_items.nodes.into_iter().filter(|item| item.project.id == self.project_id).collect();
-        *items_seen += items.len() as u64;
-        let values: Vec<FieldValue> = items.into_iter().flat_map(|item| item.field_values.nodes).collect();
-        let status_option_id = values
-            .iter()
-            .filter(|value| value.field.as_ref().is_some_and(|field| field.id.as_deref() == Some(&self.status_field_id)))
-            .filter_map(|value| value.option_id.clone())
-            .next_back();
-        let field_values = values
-            .into_iter()
-            .filter_map(|value| Some((value.field?.name?, value.name?)))
-            .collect();
-        RawIssue {
-            number: node.number,
-            title: node.title,
-            state: node.state,
-            state_reason: node.state_reason,
-            body: node.body,
-            url: node.url,
-            updated_at: node.updated_at,
-            created_at: node.created_at,
-            closed_at: node.closed_at,
-            labels: node.labels.nodes.into_iter().map(|label| label.name).collect(),
-            parent: node.parent.map(|parent| parent.number),
-            sub_issues: node.sub_issues.nodes.into_iter().map(|n| (n.number, n.state)).collect(),
-            blocked_by_total: node.blocked_by.total_count,
-            blocked_by: node.blocked_by.nodes.into_iter().map(|n| (n.number, n.state)).collect(),
-            status_option_id,
-            field_values,
-        }
+    fn connection(&self, connection: read::Connection, number: u64, after: Option<&str>) -> Result<PagedConnection, TrackerError> {
+        let query = match connection {
+            read::Connection::Blockers => BLOCKERS_QUERY,
+            read::Connection::SubIssues => SUB_ISSUES_QUERY,
+        };
+        let data: ConnectionData = self.graphql(query, Some(number), after)?;
+        Ok(data.repository.issue.connection)
     }
 }
 
@@ -188,35 +201,8 @@ impl GhTracker {
     /// The issues `states` lets through, in tracker order, each with its blockers and sub-issues read in
     /// full where the list cuts them.
     fn issues(&self, states: &str) -> Result<Vec<RawIssue>, TrackerError> {
-        let query = ISSUES_QUERY.replace("{STATES}", states);
-        let mut issues: Vec<RawIssue> = Vec::new();
-        let mut items_seen = 0;
-        let mut after: Option<String> = None;
-        loop {
-            let data: IssuesData = self.graphql(&query, None, after.as_deref())?;
-            let connection = data.repository.issues;
-            for node in connection.nodes {
-                let sub_issues_total = node.sub_issues.total_count;
-                let mut raw = self.to_raw(node, &mut items_seen);
-                self.complete_blockers(&mut raw);
-                self.complete_sub_issues(&mut raw, sub_issues_total);
-                issues.push(raw);
-            }
-            if !connection.page_info.has_next_page {
-                break;
-            }
-            after = connection.page_info.end_cursor;
-        }
-        add_children_from_parents(&mut issues);
-        // Every task in the Project without a status means the config is wrong, not that the plan is
-        // empty: reporting that as an empty brief would be a false all-clear.
-        if items_seen > 0 && issues.iter().all(|issue| issue.status_option_id.is_none()) {
-            return Err(TrackerError::BadResponse(format!(
-                "none of the {items_seen} items in the Project has a value for status field {}: check tracker.json",
-                self.status_field_id
-            )));
-        }
-        Ok(issues)
+        let project = read::Project { id: &self.project_id, status_field_id: &self.status_field_id };
+        read::issues(self, &project, states)
     }
 }
 
@@ -247,6 +233,11 @@ impl Tracker for GhTracker {
             }
             after = page.page_info.end_cursor;
         }
+    }
+
+    fn body_edited_at(&self, number: u64) -> Result<Option<Option<String>>, TrackerError> {
+        let data: EditedData = self.graphql(EDITED_QUERY, Some(number), None)?;
+        Ok(data.repository.issue.map(|issue| issue.last_edited_at))
     }
 
     fn status_histories(&self, label: &str, since: DateTime<Utc>) -> Result<Vec<StatusHistory>, TrackerError> {
@@ -350,6 +341,39 @@ struct CommentNode {
 }
 
 #[derive(Deserialize)]
+struct EditedData {
+    repository: EditedRepository,
+}
+
+#[derive(Deserialize)]
+struct EditedRepository {
+    issue: Option<EditedIssue>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct EditedIssue {
+    last_edited_at: Option<String>,
+}
+
+/// The answer of the walk that only reads where the pages end.
+#[derive(Deserialize)]
+struct EndsData {
+    repository: EndsRepository,
+}
+
+#[derive(Deserialize)]
+struct EndsRepository {
+    issues: EndsConnection,
+}
+
+#[derive(Deserialize)]
+struct EndsConnection {
+    #[serde(rename = "pageInfo")]
+    page_info: PageInfo,
+}
+
+#[derive(Deserialize)]
 struct IssuesData {
     repository: IssuesRepository,
 }
@@ -366,7 +390,7 @@ struct IssueConnection {
     nodes: Vec<IssueNode>,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 struct PageInfo {
     #[serde(rename = "hasNextPage")]
     has_next_page: bool,
@@ -476,6 +500,113 @@ struct PagedConnection {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A tracker that starts no process: the tests give `envelope_through` the launch, and `places` is how
+    /// many calls it lets run at once.
+    pub(crate) fn tracker(places: usize) -> GhTracker {
+        GhTracker {
+            gh: Err("no gh in the unit tests".to_owned()),
+            work_dir: PathBuf::new(),
+            owner: "example".to_owned(),
+            repo: "tracker".to_owned(),
+            project_id: "P".to_owned(),
+            status_field_id: "F".to_owned(),
+            calls: limit::Calls::new(places),
+        }
+    }
+
+    /// The same, with this test binary as the `gh`: it does not know `api graphql --input=-`, so a call
+    /// that runs it fails at once, as `gh` fails without a network.
+    pub(crate) fn tracker_running_this_binary(places: usize) -> GhTracker {
+        let this = std::env::current_exe().expect("the test binary");
+        GhTracker {
+            gh: Pin::at(Program::Gh, &this).map_err(|error| error.to_string()),
+            work_dir: regia_exec::neutral_folder(),
+            ..tracker(places)
+        }
+    }
+
+    fn reply(success: bool, stdout: &str, stderr: &str) -> Reply {
+        Reply { success, stdout: stdout.as_bytes().to_vec(), stderr: stderr.as_bytes().to_vec() }
+    }
+
+    /// Difference 3 of #595, for both sides: a run that ends with an exit code is `gh` unavailable, with
+    /// stderr, or stdout when stderr is empty. The reads used to give stderr only.
+    #[test]
+    fn a_failed_run_says_its_stderr_else_its_stdout() {
+        let said = |stdout: &str, stderr: &str| match envelope_of(&reply(false, stdout, stderr)) {
+            Err(TrackerError::Unavailable(said)) => said,
+            other => panic!("not unavailable: {other:?}"),
+        };
+        assert_eq!(said("out", " err \n"), "gh api graphql: err");
+        assert_eq!(said(" out \n", ""), "gh api graphql: out");
+        assert_eq!(said("", " \n"), "gh api graphql: ");
+        // The failure does not reach the reading of `errors`: whatever stdout holds, the run failed.
+        assert!(matches!(
+            envelope_of(&reply(false, r#"{"errors":[{"message":"m"}]}"#, "")),
+            Err(TrackerError::Unavailable(said)) if said.contains("\"message\":\"m\"")
+        ));
+    }
+
+    /// A run that succeeds gives the envelope whole, `errors` included, for the caller to classify; one that
+    /// does not read is a bad response, for both sides.
+    #[test]
+    fn the_transport_gives_the_envelope_and_judges_no_errors() {
+        let envelope = envelope_of(&reply(true, r#"{"data":{"x":1},"errors":[{"message":"m"}]}"#, "")).unwrap();
+        assert_eq!(envelope, json!({"data": {"x": 1}, "errors": [{"message": "m"}]}));
+        assert!(matches!(envelope_of(&reply(true, "<html>", "")), Err(TrackerError::BadResponse(_))));
+        assert!(matches!(envelope_of(&reply(true, "", "")), Err(TrackerError::BadResponse(_))));
+    }
+
+    /// Difference 2 and 4 of #595, the reads' side: `errors` is a bad response with the errors as JSON, and
+    /// whatever `errors` is but `null` counts: an empty array too.
+    #[test]
+    fn the_reads_take_errors_as_a_bad_response_with_their_json() {
+        let read = |envelope: Value| GhTracker::data_of::<Value>(envelope);
+        let errors = json!([{"type": "NOT_FOUND", "message": "Could not resolve"}]);
+        let as_json = errors.to_string();
+        assert!(matches!(
+            read(json!({"data": null, "errors": errors})),
+            Err(TrackerError::BadResponse(text)) if text == as_json
+        ));
+        assert!(matches!(read(json!({"data": {}, "errors": []})), Err(TrackerError::BadResponse(text)) if text == "[]"));
+        assert!(matches!(read(json!({"data": {}, "errors": {}})), Err(TrackerError::BadResponse(text)) if text == "{}"));
+        assert_eq!(read(json!({"data": {"x": 1}, "errors": null})).unwrap(), json!({"x": 1}));
+        assert_eq!(read(json!({"data": {"x": 1}})).unwrap(), json!({"x": 1}));
+        assert_eq!(read(json!({"errors": null})).unwrap(), Value::Null);
+        assert!(matches!(GhTracker::data_of::<u64>(json!({"data": "text"})), Err(TrackerError::BadResponse(_))));
+    }
+
+    /// Difference 1 of #595: a call takes a place among the running ones, as every call to `gh` does, writes
+    /// included, because they all go through `envelope_through`. With one place, held here, the call does not
+    /// start until it is given back. The wait for "it did not start" can only pass too soon on a slow machine,
+    /// never fail for it.
+    #[test]
+    fn a_call_waits_for_a_place_and_gives_it_back() {
+        use std::sync::mpsc;
+        use std::time::Duration;
+
+        let tracker = tracker(1);
+        let place = tracker.calls.start();
+        let (started, hear) = mpsc::channel();
+        std::thread::scope(|scope| {
+            let call = scope.spawn(|| {
+                tracker.envelope_through("query{x}", &Map::new(), |body| {
+                    started.send(body).unwrap();
+                    Ok(reply(true, r#"{"data":null}"#, ""))
+                })
+            });
+            assert!(hear.recv_timeout(Duration::from_millis(50)).is_err(), "the call ran without a place");
+            drop(place);
+            let body = hear.recv().expect("the call runs once it has a place");
+            assert_eq!(serde_json::from_str::<Value>(&body).unwrap(), json!({"query": "query{x}", "variables": {}}));
+            assert_eq!(call.join().unwrap().unwrap(), json!({"data": null}));
+        });
+        // The place was given back, even by a call whose launch failed: taking it again would wait for ever otherwise.
+        let failed = tracker.envelope_through("q", &Map::new(), |_| Err(TrackerError::Unavailable("down".to_owned())));
+        assert!(matches!(failed, Err(TrackerError::Unavailable(_))));
+        drop(tracker.calls.start());
+    }
 
     /// `TestTaskListJson.test_la_query_chiede_createdAt_e_closedAt` of the dossier: the list reads both dates.
     #[test]

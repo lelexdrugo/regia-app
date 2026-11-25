@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. `--since` on a body edited at 2026-01-09T10:00:00Z, after the instant given: both keys say so.",
+  "scenario": "edited",
+  "args": [
+    "task",
+    "show",
+    "3",
+    "--since",
+    "2026-01-08T00:00:00Z",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "show",
+    "3",
+    "--dal",
+    "2026-01-08T00:00:00Z"
+  ]
+}

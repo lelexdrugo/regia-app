@@ -2,9 +2,10 @@
 //! through the facade table, on recorded fixtures. The negative controls prove the test can fail.
 
 use std::fs;
+use std::path::PathBuf;
 
 use regia_conformance::{
-    Case, bin_dir, fake_gh_for_run, fixture_for_rust, json_diff, prepare_state_dir, project_query, read_json, regia_binary,
+    Case, SYNTHETIC_URLS, bin_dir, fake_gh_for_run, fixture_for_rust, foreign_urls, foreign_urls_in_tree, json_diff, prepare_state_dir, project_query, read_json, regia_binary,
     run_rust, take_not_ported, translate_python,
 };
 use regia_identity::env_var;
@@ -34,6 +35,10 @@ fn write_responses(name: &str, responses: &Value) -> std::path::PathBuf {
 #[test]
 fn rust_and_python_agree_on_every_recorded_case() {
     for case in Case::of_family("brief") {
+        // The case the product declares a difference on: `tests/brief_rules.rs` asserts both sides.
+        if case.name == "nostatus" {
+            continue;
+        }
         let diff = diff_of(&case);
         assert!(diff.is_empty(), "case {}:\n{}", case.name, diff.join("\n"));
     }
@@ -260,7 +265,8 @@ fn fixtures_are_synthetic() {
         for entry in fs::read_dir(&case.dir).unwrap() {
             let path = entry.unwrap().path();
             let file = path.file_name().unwrap().to_string_lossy().into_owned();
-            let mut text = fs::read_to_string(&path).unwrap().replace("https://github.com/example/", "");
+            let text = fs::read_to_string(&path).unwrap();
+            let mut text = text.replace("https://github.com/example/", "");
             if case.command_name() == "init" && file == "python.it.json" {
                 text = text.replace("\"repo\": \"regia-tasks\"", "");
             }
@@ -269,4 +275,61 @@ fn fixtures_are_synthetic() {
             }
         }
     }
+}
+
+/// Every URL of every string, whatever its key (a title or a body can hold one as well, #439/D6), in every
+/// file the repo keeps of a family: its cases, the scenarios the fake `gh` answers from, `RECORDED.json` (D7).
+#[test]
+fn every_file_of_every_family_names_synthetic_hosts_only() {
+    let families: std::collections::BTreeSet<PathBuf> = Case::all().iter().map(Case::family_dir).collect();
+    for family in families {
+        let foreign = foreign_urls_in_tree(&family, &SYNTHETIC_URLS).unwrap_or_else(|error| panic!("{error}"));
+        assert!(foreign.is_empty(), "{} names a host that is not synthetic: {foreign:?}", family.display());
+    }
+}
+
+/// The scan of the whole family reaches what the one of the cases did not, and a file it cannot read is an
+/// error, not an empty text (#559, D7).
+#[test]
+fn the_tree_scan_reaches_scenarios_and_recorded_and_refuses_what_it_cannot_read() {
+    let allowed = ["https://tracker.invalid/"];
+    let dir = bin_dir().join("conformance-state").join("url-tree");
+    let _ = fs::remove_dir_all(&dir);
+    fs::create_dir_all(dir.join("cases/one")).unwrap();
+    fs::create_dir_all(dir.join("scenarios")).unwrap();
+    fs::write(dir.join("cases/one/out.json"), r#"{"url": "https://tracker.invalid/issues/1"}"#).unwrap();
+    assert!(foreign_urls_in_tree(&dir, &allowed).unwrap().is_empty());
+    fs::write(dir.join("scenarios/s.json"), r#"{"title": "https://private.example/s"}"#).unwrap();
+    fs::write(dir.join("RECORDED.json"), r#"{"oracle_repository": "https://private.example/r"}"#).unwrap();
+    let found: Vec<String> = foreign_urls_in_tree(&dir, &allowed)
+        .unwrap()
+        .into_iter()
+        .map(|(path, urls)| format!("{}: {urls:?}", path.file_name().unwrap().to_string_lossy()))
+        .collect();
+    assert_eq!(found, ["RECORDED.json: [\"https://private.example/r\"]", "s.json: [\"https://private.example/s\"]"]);
+    // A URL written in JSON escapes is not in the text as such, and is in the decoded string (D18).
+    fs::write(dir.join("escaped.json"), r#"{"note": "https:\/\/private.example/esc"}"#).unwrap();
+    let escaped = foreign_urls_in_tree(&dir, &allowed).unwrap();
+    let escaped: Vec<&String> = escaped.iter().filter(|(path, _)| path.ends_with("escaped.json")).flat_map(|(_, urls)| urls).collect();
+    assert_eq!(escaped, ["https://private.example/esc"]);
+    fs::remove_file(dir.join("escaped.json")).unwrap();
+    fs::write(dir.join("cases/one/binary.bin"), [0xff_u8, 0xfe, 0x00]).unwrap();
+    let error = foreign_urls_in_tree(&dir, &allowed).expect_err("a file that is not text is an error");
+    assert!(error.contains("binary.bin"), "{error}");
+}
+
+/// The scan of the URLs sees one in a title, in a key and with any scheme, as `record` and the test above use
+/// it; the check it replaced looked at the values of the key `url` only (#439/D6).
+#[test]
+fn the_url_scan_sees_a_foreign_host_wherever_it_is() {
+    let allowed = ["https://tracker.invalid/"];
+    let title = r#"{"title": "see https://private.example/document now", "url": "https://tracker.invalid/issues/1"}"#;
+    assert_eq!(foreign_urls(title, &allowed), ["https://private.example/document"]);
+    assert_eq!(foreign_urls(r#"{"https://private.example/k": 1}"#, &allowed), ["https://private.example/k"]);
+    assert_eq!(foreign_urls("ssh://host.example/repo.git and (ftp://a.example/x)", &allowed), ["ssh://host.example/repo.git", "ftp://a.example/x"]);
+    assert!(foreign_urls(r#"{"url": "https://tracker.invalid/issues/1#issuecomment-2", "body": "no link"}"#, &allowed).is_empty());
+    // A multibyte character right before the scheme is text, and the scan does not stop on it (D19).
+    assert_eq!(foreign_urls("see →https://private.example/x", &allowed), ["https://private.example/x"]);
+    // A second URL inside an allowed one is a URL of its own (D6).
+    assert_eq!(foreign_urls("https://tracker.invalid/redirect?to=https://private.example/inner", &allowed), ["https://private.example/inner"]);
 }

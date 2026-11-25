@@ -2961,7 +2961,6 @@ dependencies = [
  "base64 0.23.1",
  "minisign",
  "regia-core",
- "regia-github",
  "regia-i18n",
  "regia-identity",
  "regia-runtime",
@@ -3007,6 +3006,7 @@ dependencies = [
  "regia-facade",
  "regia-i18n",
  "regia-identity",
+ "regia-runtime",
  "regia-store",
  "rusqlite",
  "serde",
@@ -3037,7 +3037,6 @@ dependencies = [
  "chrono",
  "pulldown-cmark",
  "regex",
- "regia-identity",
  "serde",
  "serde_json",
  "thiserror 2.0.21",
@@ -3114,6 +3113,7 @@ name = "regia-runtime"
 version = "0.0.1"
 dependencies = [
  "regia-core",
+ "regia-git",
  "regia-github",
  "regia-identity",
  "thiserror 2.0.21",

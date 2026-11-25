@@ -174,6 +174,13 @@ impl Pin {
         &self.path
     }
 
+    /// Whether this program runs through `cmd.exe`, as npm's `codex.cmd` does: it reads its arguments
+    /// again, so it takes only the narrow alphabet of threat model §3.6, rule 9
+    /// ([`AbsolutePath::fits_batch`]). Never on a system other than Windows.
+    pub fn through_batch(&self) -> bool {
+        crate::run::batch(&self.path)
+    }
+
     /// The file is still the one that was resolved.
     pub(crate) fn check(&self) -> Result<(), ExecError> {
         if Fingerprint::of(&self.path) == Some(self.seen) {

@@ -21,6 +21,16 @@ struct Format {
 #[serde(deny_unknown_fields)]
 struct Named {
     files: Vec<String>,
+    archives: Archives,
+}
+
+/// Where the archives of the decisions are and what their names look like.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Archives {
+    folder: String,
+    /// `#` is one ASCII digit, any other character itself.
+    name: String,
 }
 
 fn format() -> &'static Format {
@@ -32,6 +42,38 @@ fn format() -> &'static Format {
 pub fn named_files() -> Vec<DossierPath> {
     let files = &format().named.files;
     files.iter().map(|file| DossierPath::parse(file).expect("a named file of format v1 is a dossier path")).collect()
+}
+
+/// Whether `name` is an archive's name by `model`: the whole of it, `#` for one ASCII digit and every other
+/// character for itself, as the prototype's `fullmatch` of `decisioni-[0-9]{4}-[0-9]{2}\.md` does.
+fn fits(model: &str, name: &str) -> bool {
+    let (mut model, mut name) = (model.chars(), name.chars());
+    loop {
+        match (model.next(), name.next()) {
+            (None, None) => return true,
+            (Some('#'), Some(c)) if c.is_ascii_digit() => {}
+            (Some(m), Some(c)) if m != '#' && m == c => {}
+            _ => return false,
+        }
+    }
+}
+
+/// The archives of the decisions that exist in `root`, by name, each as a dossier path: the prototype's
+/// `_archivi_decisioni`. One read of the folder and no call to git; a file only, not a folder that has the
+/// name of one, and nothing from its subfolders. A folder that cannot be read has none.
+fn archives(root: &Path) -> Vec<DossierPath> {
+    let Archives { folder, name } = &format().named.archives;
+    let Ok(entries) = std::fs::read_dir(root.join(folder)) else {
+        return Vec::new();
+    };
+    let mut names: Vec<String> = entries
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_file())
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .filter(|found| fits(name, found))
+        .collect();
+    names.sort();
+    names.iter().map(|found| DossierPath::parse(&format!("{folder}/{found}")).expect("an archive of format v1 is a dossier path")).collect()
 }
 
 /// What happened to the dossier, with the contract's names (`dossier_outcome` of the facade table).
@@ -276,13 +318,14 @@ fn same_folder(top: &Path, folder: &Path) -> bool {
     }
 }
 
-/// The named files, then each of `files` as the prototype's `_percorsi_nominati` takes it: relative to
-/// the folder, inside it once resolved, and neither the folder itself nor `.git`. Each once, in order.
+/// The named files, then the archives of the decisions that exist, then each of `files` as the prototype's
+/// `_percorsi_nominati` takes it: relative to the folder, inside it once resolved, and neither the folder itself nor `.git`. Each once, in order.
 /// The product also types each one as a [`DossierPath`], which is narrower than the prototype: no space,
 /// no letter outside ASCII, no name Windows reserves.
 pub fn named_paths(folder: &Path, files: &[String]) -> Result<Vec<DossierPath>, String> {
     let root = canonical(folder).map_err(|error| format!("the project's folder cannot be read: {error}"))?;
     let mut out = named_files();
+    out.extend(archives(&root));
     for given in files {
         let path = Path::new(given);
         if path.is_absolute() {
@@ -360,6 +403,116 @@ mod tests {
         let named = named_files();
         assert_eq!(named.len(), 3);
         assert!(named.iter().all(|path| path.as_str().starts_with(".regia/")));
+    }
+
+    #[test]
+    fn the_model_of_an_archive_is_the_prototype_s_whole_name() {
+        let model = &format().named.archives.name;
+        for name in ["decisioni-2026-11.md", "decisioni-0000-00.md", "decisioni-9999-99.md"] {
+            assert!(fits(model, name), "{name}");
+        }
+        for name in [
+            "decisioni-2026-1.md",
+            "decisioni-2026-111.md",
+            "decisioni-vecchie.md",
+            "decisioni-2026-11.md.bak",
+            "xdecisioni-2026-11.md",
+            "decisioni-2026-11.MD",
+            "Decisioni-2026-11.md",
+            "decisioni-2026-11.mdx",
+            "decisioni-20a6-11.md",
+            "decisioni-202\u{666}-11.md",
+            "decisioni-2026_11.md",
+            "decisioni.md",
+            "",
+        ] {
+            assert!(!fits(model, name), "{name}");
+        }
+    }
+
+    /// A project's folder with a `.regia/` that holds `entries`: a path ending in `/` is a folder.
+    fn dossier_with(tag: &str, entries: &[&str]) -> PathBuf {
+        let root = std::env::temp_dir().join(format!("regia-git-archives-{}-{tag}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        for entry in entries {
+            let path = root.join(entry);
+            match entry.strip_suffix('/') {
+                Some(_) => std::fs::create_dir_all(&path).unwrap(),
+                None => {
+                    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+                    std::fs::write(&path, "text\n").unwrap();
+                }
+            }
+        }
+        std::fs::create_dir_all(root.join(".regia")).unwrap();
+        root
+    }
+
+    fn names(paths: &[DossierPath]) -> Vec<&str> {
+        paths.iter().map(DossierPath::as_str).collect()
+    }
+
+    #[test]
+    fn the_archives_that_exist_follow_the_named_files_in_name_order() {
+        let root = dossier_with("present", &[".regia/decisioni-2026-11.md", ".regia/decisioni-2025-12.md", ".regia/notes.md"]);
+        let paths = named_paths(&root, &["docs/plan.md".to_owned()]).unwrap();
+        let _ = std::fs::remove_dir_all(&root);
+        let fixed = named_files();
+        assert_eq!(names(&paths)[..3], names(&fixed)[..]);
+        assert_eq!(names(&paths)[3..], [".regia/decisioni-2025-12.md", ".regia/decisioni-2026-11.md", "docs/plan.md"]);
+    }
+
+    #[test]
+    fn a_dossier_without_archives_has_the_named_files_only() {
+        let root = dossier_with("none", &[".regia/notes.md"]);
+        let paths = named_paths(&root, &[]).unwrap();
+        let _ = std::fs::remove_dir_all(&root);
+        assert_eq!(paths, named_files());
+        let bare = std::env::temp_dir().join(format!("regia-git-archives-{}-bare", std::process::id()));
+        std::fs::create_dir_all(&bare).unwrap();
+        let paths = named_paths(&bare, &[]).unwrap();
+        let _ = std::fs::remove_dir_all(&bare);
+        assert_eq!(paths, named_files(), "a folder with no .regia has no archive, and that is no error");
+    }
+
+    #[test]
+    fn a_name_outside_the_model_is_not_an_archive() {
+        let root = dossier_with(
+            "outside",
+            &[
+                ".regia/decisioni-2026-1.md",
+                ".regia/decisioni-vecchie.md",
+                ".regia/decisioni-2026-11.md.bak",
+                ".regia/notes/decisioni-2026-11.md",
+                "decisioni-2026-11.md",
+                ".regia/decisioni-2026-03.md",
+            ],
+        );
+        let paths = named_paths(&root, &[]).unwrap();
+        let _ = std::fs::remove_dir_all(&root);
+        assert_eq!(paths.len(), named_files().len() + 1);
+        assert_eq!(paths.last().unwrap().as_str(), ".regia/decisioni-2026-03.md");
+    }
+
+    #[test]
+    fn a_folder_with_the_name_of_an_archive_is_not_one() {
+        let root = dossier_with("folder", &[".regia/decisioni-2026-02.md/inside.md", ".regia/decisioni-2026-03.md"]);
+        let paths = named_paths(&root, &[]).unwrap();
+        let _ = std::fs::remove_dir_all(&root);
+        assert_eq!(names(&paths)[3..], [".regia/decisioni-2026-03.md"]);
+    }
+
+    #[test]
+    fn an_archive_given_with_file_is_kept_once() {
+        let root = dossier_with("twice", &[".regia/decisioni-2026-11.md", ".regia/decisioni-2026-12.md"]);
+        let given = [".regia/decisioni-2026-11.md".to_owned(), ".regia/./decisioni-2026-11.md".to_owned(), "docs/a.md".to_owned()];
+        let paths = named_paths(&root, &given).unwrap();
+        let _ = std::fs::remove_dir_all(&root);
+        assert_eq!(
+            names(&paths)[3..],
+            [".regia/decisioni-2026-11.md", ".regia/decisioni-2026-12.md", "docs/a.md"],
+            "it keeps its place among the archives, and the --file adds nothing"
+        );
     }
 
     #[test]

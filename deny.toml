@@ -12,6 +12,7 @@ targets = [
 # Every advisory on the graph fails, unless it is accepted here with its reason.
 ignore = [
     { id = "RUSTSEC-2024-0370", reason = "proc-macro-error is unmaintained: a build-time macro of gtk3-macros, under Tauri's GTK 3 webview on Linux, which has no maintained replacement" },
+    { id = "RUSTSEC-2026-0543", reason = "chrono is unmaintained, not vulnerable, and has no safe upgrade: a direct workspace dependency of the regia crates only (clock, serde, std); the move to jiff or time is regia-tasks#669, which removes this line" },
 ]
 
 [licenses]
@@ -40,7 +41,7 @@ deny = [
     # V03: plugins that would let the webview start processes, touch files or reach the network.
     { crate = "tauri-plugin-shell", reason = "processes start from the core, never from the webview (threat model §3.9, V03)" },
     { crate = "tauri-plugin-fs", reason = "the webview reads no file (threat model §3.9, V03)" },
-    { crate = "tauri-plugin-http", reason = "the network is the core's, through gh (threat model §3.9, V03)" },
+    { crate = "tauri-plugin-http", reason = "the network is the core's: gh and, with consent, the usage probes (threat model §3.9, §3.12, V03)" },
     { crate = "tauri-plugin-opener", reason = "links are opened by the core, with its rules (threat model §3.7, V03)" },
     { crate = "tauri-plugin-process", reason = "the webview has no exit or restart (threat model §3.9, V03)" },
     { crate = "tauri-plugin-clipboard-manager", reason = "an XSS would read the clipboard (threat model §3.9, V03)" },

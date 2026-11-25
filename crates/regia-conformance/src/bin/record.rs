@@ -13,7 +13,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use regia_conformance::{
-    Case, FIXTURE_NOW, FIXTURE_TODAY, dossier_after, fixed_now_driver, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
+    Case, FIXTURE_NOW, FIXTURE_TODAY, SYNTHETIC_URLS, dossier_after, fixed_now_driver, foreign_urls, foreign_urls_in_tree, git_double_env, fixture_for_python, fixtures_dir, lf, log_var,
     place_args, prepare_case_state, prepare_dossier, read_json, state_rows, unplace_json, unplace_text, writes_of_run, written_files,
 };
 use regia_core::{TrackerBinding, TrackerConfigV1};
@@ -80,6 +80,10 @@ struct ScenarioIssue {
     /// Recent comments, which the checks read.
     #[serde(default)]
     comments: Vec<ScenarioComment>,
+    /// The instant of the last edit of the body, which `task show --since` reads (#656); without it the
+    /// body was never edited.
+    #[serde(default)]
+    last_edited_at: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -269,6 +273,8 @@ fn issues_by_number(scenario: &Scenario) -> Map<String, Value> {
                 "state": state(issue),
                 "subIssues": {"totalCount": issue.sub_total.unwrap_or(issue.sub.len() as u64)},
                 "comments": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": comments},
+                // `task show --since` asks it (#557): a body never edited has none.
+                "lastEditedAt": issue.last_edited_at,
             });
             (issue.number.to_string(), entry)
         })
@@ -481,9 +487,10 @@ fn main() {
         let recorded = [text.as_str(), stderr.as_str(), &serde_json::to_string(&writes).expect("JSON")].concat();
         // The prototype builds the URL of an issue it creates, and of a repo, from the tracker's owner:
         // those of the fixture's owner are synthetic too.
-        let urls = recorded.matches("https://").count() + recorded.matches("http://").count();
-        let synthetic = recorded.matches(URL_PREFIX).count() + recorded.matches(&owner_url).count();
-        assert_eq!(synthetic, urls, "{}: foreign URL", case.name);
+        // Any `scheme://` of any string counts, whichever the key: a title can hold one as well (#439/D6).
+        let urls = recorded.matches("://").count();
+        let foreign = foreign_urls(&recorded, &[URL_PREFIX, &owner_url]);
+        assert!(foreign.is_empty(), "{}: foreign URL {foreign:?}", case.name);
         // An error prints nothing on stdout, even with `--json`: the facade passes it as text, empty.
         let json = argv.first().is_some_and(|arg| arg == "--json") && table.has_output(&command) && !text.trim().is_empty();
         let parsed = json.then(|| serde_json::from_str::<Value>(&text).expect("the prototype printed JSON"));
@@ -505,6 +512,10 @@ fn main() {
             files
         });
         replace(&case.dir.join("written.json"), written);
+        // What the case keeps on disk, its inputs too: a scenario's title that no output prints is in the
+        // responses, and goes wherever the repo goes.
+        let held = foreign_urls_in_tree(&case.dir, &[URL_PREFIX, &owner_url]).unwrap_or_else(|error| panic!("{}: {error}", case.name));
+        assert!(held.is_empty(), "{}: holds a foreign URL {held:?}", case.name);
         println!(
             "{}/{}: exit {}, {} calls to the fake gh, {} writes, {urls} URLs, all synthetic",
             case.family,
@@ -528,6 +539,9 @@ fn main() {
     });
     for family in families {
         write_json(&family.join("RECORDED.json"), &recorded);
+        // The whole family, its scenarios and RECORDED.json too: the cases were scanned one by one above.
+        let held = foreign_urls_in_tree(&family, &SYNTHETIC_URLS).unwrap_or_else(|error| panic!("{error}"));
+        assert!(held.is_empty(), "{}: holds a foreign URL {held:?}", family.display());
     }
 }
 

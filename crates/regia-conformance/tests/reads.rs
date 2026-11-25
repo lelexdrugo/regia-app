@@ -197,6 +197,17 @@ fn the_read_cases_show_what_they_claim() {
     for role in ["titolare", "chat", "worker"] {
         assert!(roles.contains(&role), "no comment of role {role}: {roles:?}");
     }
+    // `task show --since` (#656): the instant of the last edit of the body and whether it is after `--since`,
+    // for a body never edited, edited after it and edited before it.
+    for (name, edited, after) in [
+        ("show-since-json-unedited", Value::Null, false),
+        ("show-since-json-edited-after", json!("2026-01-09T10:00:00Z"), true),
+        ("show-since-json-edited-before", json!("2026-01-06T10:00:00Z"), false),
+    ] {
+        let shown = translate_python("task show", &Case::named(name).python_output()).unwrap();
+        assert_eq!(shown["body_edited_at"], edited, "{name}");
+        assert_eq!(shown["body_edited_after_since"], json!(after), "{name}");
+    }
     // `TestTaskListJson.test_json_espone_createdAt_e_closedAt_e_i_campi_di_prima` of the dossier: both dates,
     // a closed issue's too, and no body in a list.
     let listed = translate_python("task list", &Case::named("list-all-graph").python_output()).unwrap();

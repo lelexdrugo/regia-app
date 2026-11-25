@@ -14,6 +14,11 @@ export const VIEWS = [
   "#/moviola/frame/01JCF100000000000000000000?data=demo&notes=fail",
   // The search (#487): moments found by a word, by a #number, and none, which says why.
   ...["probe", "%2399", "zzzz", "%23404"].map((q) => `#/moviola/alpha?data=demo&q=${q}`),
+  // The overview (#598): the advanced filters with kinds hidden and a direction chosen; a search the filters empty;
+  // the panel at the playhead with its notes refused.
+  "#/moviola/alpha?data=demo&filters=advanced&hide=gate,exception&lane=probe-b",
+  "#/moviola/alpha?data=demo&q=probe&hide=exploration,abandonment,exception,rejoin",
+  "#/moviola/frame?data=demo&notes=fail&lane=probe",
   // The comfortable density is larger in every measure, and the setup may choose it (#483).
   "#/brief?data=worst&density=comfortable",
   "#/settings?data=demo&density=comfortable&dir=nero",

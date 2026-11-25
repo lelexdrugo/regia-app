@@ -8,6 +8,7 @@ publish.workspace = true
 
 [dependencies]
 regia-core.workspace = true
+regia-git.workspace = true
 regia-github.workspace = true
 regia-identity.workspace = true
 thiserror.workspace = true

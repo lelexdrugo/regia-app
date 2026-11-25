@@ -215,7 +215,9 @@ export const keyboard = {
     await page.send("Input.insertText", { text: "zzzz" });
     await until(`document.querySelector(".noresult") !== null`);
     const nothing = await page.evaluate(`document.querySelector(".noresult")?.textContent.trim() ?? ""`);
-    check("a search with no moment says why", nothing.includes("«zzzz»") && nothing.includes(moviola["moviola-filter-clear"]), nothing.slice(0, 90));
+    // One «Clear the filters» for the search and the filters (#598), right after the field.
+    const clears = await all(page, "button", moviola["moviola-filter-clear"]);
+    check("a search with no moment says why, and offers one «Clear the filters»", nothing.includes("«zzzz»") && clears.length === 1, `${nothing.slice(0, 70)} · ${clears.length}`);
     await page.press("Tab");
     await page.press("Tab");
     const clearing = await focused(page);
@@ -240,6 +242,76 @@ export const keyboard = {
     await until(`document.querySelector(".timecode").dataset.t !== ${JSON.stringify(t1)}`);
     const t2 = await page.evaluate(`document.querySelector(".timecode").dataset.t`);
     check("← on the range moves the playhead", Number(t2) < Number(t1), `${t1} → ${t2}`);
+
+    // The filters and the project at the playhead (#598), from the keyboard alone: Tab from the search reaches the
+    // kinds, Space hides one, the count says how many are left and `.` walks only those; the arrow keys choose the
+    // advanced mode, a lane is chosen from its select, and back to basic clears it; «Clear the filters» shows every
+    // kind again. Home on the range takes the playhead to the first moment: the panel says what the project was then,
+    // and its last moment is a button that opens it.
+    const gate = moviola["type-gate"];
+    const counted = `document.getElementById("moviola-found")?.dataset.count ?? null`;
+    const status = `document.getElementById("moviola-status").dataset.selected`;
+    const rawKey = async (name, code, keyCode) => {
+      await page.send("Input.dispatchKeyEvent", { type: "rawKeyDown", key: name, code, windowsVirtualKeyCode: keyCode });
+      await page.send("Input.dispatchKeyEvent", { type: "keyUp", key: name, code, windowsVirtualKeyCode: keyCode });
+    };
+    await fresh(page, harness, "#/moviola/alpha?data=demo&lang=en");
+    await page.press("/");
+    await until(`document.activeElement?.id === "search"`);
+    let box = null;
+    for (let i = 0; i < 14 && box?.name !== gate; i++) {
+      await page.press("Tab");
+      box = await focused(page);
+    }
+    check("Tab from the search reaches the kinds, each a checkbox", box?.role === "checkbox" && box.name === gate && box.checked === "true", named(box));
+    await page.press(" ");
+    await until(`(${counted}) === "6"`);
+    const unchecked = await find(page, "checkbox", gate);
+    check("Space hides the kind: its box unchecked, 6 moments of 7 counted", unchecked?.checked === "false" && (await page.evaluate(counted)) === "6", `${unchecked?.checked} · ${await page.evaluate(counted)}`);
+    await page.evaluate(`document.querySelector(".stage canvas").focus(), true`);
+    await rawKey("Home", "Home", 36);
+    await until(`(${status}) === "01JCM100000000000000000000"`);
+    const walked = [await page.evaluate(status)];
+    for (let i = 0; i < 7; i++) {
+      await page.press(".");
+      await sleep(40);
+      walked.push(await page.evaluate(status));
+    }
+    const kept = [...new Set(walked)];
+    check("`.` walks the moments the filters keep, never the hidden gate", kept.length === 6 && !kept.includes("01JCM5A0000000000000000000"), kept.map((id) => id.slice(5, 7)).join(" "));
+    await focus(page, await find(page, "radio", moviola["moviola-filter-basic"]));
+    await page.press("ArrowRight");
+    await until(`document.querySelector(".moviola-filters")?.dataset.mode === "advanced"`);
+    const lanes = (await all(page, "combobox")).find((node) => node.name.startsWith(moviola["moviola-filter-lane"]));
+    if (lanes) await focus(page, lanes);
+    await page.press("ArrowDown");
+    await until(`(${counted}) === "3"`);
+    check("the arrow keys choose the advanced mode, and a lane from its select", (await page.evaluate(counted)) === "3", `${named(lanes)} · ${await page.evaluate(counted)}`);
+    await focus(page, await find(page, "radio", moviola["moviola-filter-advanced"]));
+    await page.press("ArrowLeft");
+    await until(`(${counted}) === "6"`);
+    const selects = (await all(page, "combobox")).filter((node) => node.name.startsWith(moviola["moviola-filter-lane"])).length;
+    check("back to basic by the arrow keys lets the lane go, the kind stays hidden", (await page.evaluate(counted)) === "6" && selects === 0, `${await page.evaluate(counted)} · ${selects} lane selects`);
+    await page.evaluate(`document.getElementById("search").focus(), true`);
+    await page.press("Tab");
+    const clearer = await focused(page);
+    await page.press("Enter");
+    await until(`(${counted}) === null`);
+    check("«Clear the filters» from the keyboard shows every kind again", clearer?.name === moviola["moviola-filter-clear"] && (await find(page, "checkbox", gate))?.checked === "true", named(clearer));
+    await page.evaluate(`document.querySelector(".scrub").focus(), true`);
+    await rawKey("Home", "Home", 36);
+    await until(`document.querySelector(".at-date")?.dataset.before === "1"`);
+    const panel = await find(page, "region", moviola["moviola-at"]);
+    const said = await page.evaluate(`(({ before, after, last }) => [before, after, last])(document.querySelector(".at-date").dataset)`);
+    check("Home on the range: the panel at the playhead, 1 before and 6 after, the first moment the last", panel !== undefined && JSON.stringify(said) === '["1","6","01JCM100000000000000000000"]', `${named(panel)} · ${said}`);
+    let jump = null;
+    for (let i = 0; i < 8 && !jump?.name.includes("First synthetic step"); i++) {
+      await page.press("Tab");
+      jump = await focused(page);
+    }
+    await page.press("Enter");
+    await until(`(${frameMoment}) === "01JCM100000000000000000000"`);
+    check("Tab and Enter on the panel's last moment open it", jump?.role === "button" && (await page.evaluate(frameMoment)) === "01JCM100000000000000000000", named(jump));
     // The portfolio has no search: / finds nothing there.
     await fresh(page, harness, "#/moviola?data=demo&lang=en");
     await page.press("/");

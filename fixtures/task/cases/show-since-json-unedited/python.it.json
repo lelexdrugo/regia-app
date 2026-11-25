@@ -1,0 +1,27 @@
+{
+  "bloccato_da": [],
+  "bloccato_da_totale": 0,
+  "body": "A spec.\n",
+  "body_edited_after_dal": false,
+  "body_edited_at": null,
+  "campo_progetto": null,
+  "closedAt": null,
+  "comments": [],
+  "createdAt": "2026-01-01T00:00:00Z",
+  "labels": [
+    "progetto:alpha",
+    "maturità:pronto"
+  ],
+  "maturita": "pronto",
+  "number": 2,
+  "obiettivo": false,
+  "parent": 1,
+  "progetto": "alpha",
+  "state": "OPEN",
+  "stateReason": null,
+  "stato": "Approvato",
+  "sub": [],
+  "title": "a task whose body was never edited",
+  "updatedAt": "2026-01-02T03:04:05Z",
+  "url": "https://tracker.invalid/issues/2"
+}

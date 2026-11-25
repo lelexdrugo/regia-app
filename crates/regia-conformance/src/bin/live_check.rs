@@ -1,8 +1,10 @@
 //! Local only: the Rust and the Python reads against the real tracker, right now: `brief`, `projects`,
 //! `task list` with its filters, and `task show` on issues `task list` names. Issue data is private, so this
 //! prints only JSON paths and counts, with project ids, registry keys and table errors redacted, and writes
-//! nothing. The tracker can change between the two reads, hence the retries. Sections the Rust brief
-//! declares as not ported are excluded by that declaration.
+//! nothing. Neither stdout nor stderr of either side is ever printed, only that a run failed. The tracker
+//! can change between the two reads, hence the retries. Sections the Rust brief declares as not ported are
+//! excluded by that declaration. The Rust side runs without `REGIA_TODAY`, on the real clock, as the
+//! prototype does (a difference of `TZ` on Windows is declared on `BriefOptions::today`).
 //!
 //!     ./target/debug/live-check --dossier <path> [--python <interpreter>]
 //!
@@ -11,9 +13,8 @@
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use regia_conformance::{json_diff, regia_binary, take_not_ported, translate_python};
+use regia_conformance::{json_diff, live_python_launch, live_rust_launch, regia_binary, take_not_ported, translate_python};
 use regia_facade::{PythonPrototype, Table};
-use regia_identity::{env_var, prototype_env_var};
 use serde_json::Value;
 
 /// The keys of the contract a difference path may name; any other key is data and is redacted.
@@ -53,7 +54,7 @@ impl Sides<'_> {
     fn python(&self, args: &[String]) -> Result<Value, String> {
         let (command, rest) = self.table.split_command(args).ok_or("unknown command")?;
         let argv = self.table.python_argv(&command, rest).map_err(|_| "the table refuses the arguments")?;
-        let output = self.prototype.launch(&argv).map_err(|error| error.to_string())?.run().map_err(|error| error.to_string())?;
+        let output = live_python_launch(self.prototype.launch(&argv).map_err(|error| error.to_string())?, self.dossier).run().map_err(|error| error.to_string())?;
         if !output.status.success() {
             return Err(format!("the prototype exited {:?}", output.status.code()));
         }
@@ -67,12 +68,9 @@ impl Sides<'_> {
 
     /// The binary's JSON for `args`, natively.
     fn rust(&self, args: &[String]) -> Result<Value, String> {
-        let output = regia_exec::harness::launch(&regia_binary(), args, self.dossier)
-            .env(&prototype_env_var("HOME"), self.dossier)
-            // With the dossier here, the reads would go to the prototype: this side must be the Rust one.
-            .env(&env_var("ENGINE"), "rust")
-            .run()
-            .map_err(|error| error.to_string())?;
+        let output = live_rust_launch(&regia_binary(), args, self.dossier).run().map_err(|error| error.to_string())?;
+        // Only that it failed goes out, never what it said: an error of the product can carry a value of the
+        // tracker, on stderr as on stdout (#439/D5).
         if !output.status.success() {
             return Err(format!("regia exited {:?}", output.status.code()));
         }

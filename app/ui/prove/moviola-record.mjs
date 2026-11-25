@@ -39,6 +39,8 @@ class Element {
   addEventListener() {}
 }
 const l3 = new Element("section");
+// The directions (`disegnaL1`, #598) are drawn into `l1`, then read back (cardOf, below).
+const l1 = new Element("aside");
 
 // The prototype's viewer in a context with a DOM only as large as loading and the frame need (test_moviola_viewer.py,
 // CARICA).
@@ -46,7 +48,7 @@ const context = {
   console, Intl, URLSearchParams, location: { hash: "", origin: "https://origin.invalid" }, window: {},
   document: {
     addEventListener() {},
-    getElementById: (id) => (id === "l3" ? l3 : null),
+    getElementById: (id) => (id === "l3" ? l3 : id === "l1" ? l1 : null),
     createElement: (tag) => new Element(tag),
     createElementNS: (_, tag) => new Element(tag),
   },
@@ -362,6 +364,132 @@ const portfolio = oracle.portfolio.map((entry) => filled({ title: null }, transl
 
 // The rings' places above and below a glyph, and a lane's half thickness, for the first rings.
 const rings = { offsets: run("[0, 1, 2, 3, 4, 5, 6, 7].map(yAnello)"), halfThickness: run("[0, 1, 2, 3, 4, 5].map(semiSpessore)") };
-const out = { recorded: "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js", portfolio, rings, packWords, cases };
+
+// #598: the tape and the strip on a dense story and on the fixtures (`scalaTempo` as `disegnaNastro` and
+// `disegnaStriscia` call it), the filters (`visibileFiltri`), the state at a date (`statoAlla`), the directions' cards
+// (`disegnaL1`) and the time window (`impostaFinestra`), each under a key of its own: the cases above stay as they were.
+const HOUR = 3600e3;
+const VIEWS = { viewer, alpha: oracle.views.alpha, beta: oracle.views.beta, frame };
+const load = (view) => {
+  context.dati = { ...view, snapshot: view.snapshot ?? {} };
+  run(`S.P = prepara(dati); S.v = "A"; S.t = S.P.t1; S.dopo = false; S.finestra = null;
+    S.filtri = { modo: null, tipi: new Set(TIPI), modello: "", corsia: "", salute: "", dichiarati: false };
+    S.rotta = { progetto: S.P.progetto, dir: null, nodo: null };`);
+  return run("S.P");
+};
+
+// A dense story: four days of moments every half hour from 09:00 to 19:00 UTC, the nights its only joints.
+const denseTimes = [];
+for (let day = 0; day < 4; day++) for (let i = 0; i <= 20; i++) denseTimes.push(Date.UTC(2026, 9, 1 + day, 9, 30 * i));
+const TAPE_WIDTH = 1440;
+const STRIP_WIDTH = 500;
+function scaleOf(times, x0, x1, joint) {
+  context.tempi = times;
+  return JSON.parse(run(`(() => { const f = scalaTempo(tempi, ${x0}, ${x1}, 12 * ORA, ${joint});
+    return JSON.stringify({ x: tempi.map(t => [t, f(t)]), joints: f.giunte.map(g => ({ x: g.x, from: g.da, to: g.a })) }); })()`));
+}
+const stories = [["dense", denseTimes], ...["viewer", "alpha", "frame"].map((name) => [name, VIEWS[name].milestones.map((m) => Date.parse(m.ts))])];
+const tape = {
+  width: TAPE_WIDTH,
+  strip: STRIP_WIDTH,
+  stories: Object.fromEntries(stories.map(([name, times]) => [name, {
+    times, tape: scaleOf(times, 10, TAPE_WIDTH - 10, 26), strip: scaleOf(times, 8, STRIP_WIDTH - 8, 18) }])),
+};
+
+// The filters: kinds hidden, each «who», lane and health of the case, the declared ones, and one of each together.
+function filtersOf(view) {
+  const P = load(view);
+  const uses = new Map();
+  for (const a of view.aggregati || []) for (const v of a.modelli || []) {
+    context.voce = v;
+    uses.set(run("etichettaModello(voce)"), JSON.stringify([v.agente || "", v.modello || "", v.via === "report"]));
+  }
+  const who = (label) => (label === "non dichiarato" ? "none" : uses.get(label));
+  const settings = [
+    { nascondi: ["gate", "eccezione"] },
+    { nascondi: ["milestone"] },
+    { nascondi: Object.keys(KINDS).filter((t) => t !== "decisione") },
+    ...P.modelli.map((chi) => ({ chi })),
+    ...P.corsie.map((c) => ({ corsia: c.id })),
+    ...Object.keys(HEALTH).map((salute) => ({ salute })),
+    { dichiarati: true },
+    { nascondi: ["milestone"], salute: "a rischio", dichiarati: true },
+  ];
+  return {
+    who: P.modelli.map(who),
+    settings: settings.map((s) => {
+      context.impostazione = s;
+      const visible = JSON.parse(run(`(() => { const f = impostazione;
+        Object.assign(S.filtri, { modo: null, tipi: new Set(TIPI.filter(t => !(f.nascondi || []).includes(t))), modello: f.chi || "",
+          corsia: f.corsia || "", salute: f.salute || "", dichiarati: !!f.dichiarati });
+        return JSON.stringify(S.P.ms.filter(visibileFiltri).map(m => m.id)); })()`));
+      return { hide: (s.nascondi || []).map((k) => KINDS[k]), who: s.chi === undefined ? "" : who(s.chi), lane: s.corsia || "",
+        health: s.salute ? HEALTH[s.salute] : "", declared: !!s.dichiarati, visible };
+    }),
+  };
+}
+
+// The state at a date, before the first milestone, at each, between each two, and after the last.
+function statesOf(view) {
+  load(view);
+  return JSON.parse(run(`(() => { const tempi = S.P.ms.map(m => m.t);
+    const campioni = [S.P.t0 - 7 * ORA, ...tempi, ...tempi.slice(1).map((t, i) => (t + tempi[i]) / 2), S.P.t1 + 7 * ORA];
+    return JSON.stringify(campioni.map(t => { const s = statoAlla(S.P, t);
+      return { t, before: s.prima.length, last: s.ultima ? s.ultima.id : null, open: s.aperte.map(c => c.id), decisions: s.decisioni,
+        after: s.dopo }; })); })()`));
+}
+
+// The directions' cards, read back from the small DOM, and each card's moments once it is the one chosen.
+function cardOf(section) {
+  const kids = section.childNodes.filter(isElement);
+  const head = kids.find((n) => n.tagName === "div" && n.childNodes.some((c) => classOf(c).startsWith("chip")));
+  const [chip, facts] = head.childNodes.filter(isElement);
+  const [, id, count] = /^\s*(.*) · (\d+) nod[oi]$/.exec(facts.textContent);
+  const after = (...prefixes) => {
+    const div = kids.find((n) => n.tagName === "div" && typeof n.childNodes[0] === "string" && prefixes.some((p) => n.childNodes[0].startsWith(p)));
+    const a = div ? div.childNodes.find((c) => isElement(c) && c.tagName === "a") : null;
+    return a ? idOf(a.attributes.href) : null;
+  };
+  const list = kids.find((n) => n.tagName === "ol");
+  return {
+    id, title: kids.find((n) => n.tagName === "h3").textContent, status: STATUS[chip.textContent], count: Number(count),
+    reason: kids.find((n) => n.tagName === "p" && classOf(n).includes("motivo")).textContent,
+    openedBy: after("aperta da "), closedBy: after("abbandonata con ", "rientrata con "),
+    expanded: section.attributes["aria-expanded"] === "true",
+    list: list ? list.childNodes.map((li) => idOf(li.childNodes.find((c) => isElement(c) && c.tagName === "a").attributes.href)) : null,
+  };
+}
+function lanesOf(view) {
+  const P = load(view);
+  const read = () => l1.childNodes.filter((n) => isElement(n) && n.tagName === "section").map(cardOf);
+  run("disegnaL1()");
+  const cards = read();
+  const lists = P.corsie.map((c) => {
+    run(`S.rotta.dir = ${JSON.stringify(c.id)}; disegnaL1();`);
+    return read().find((card) => card.expanded)?.list ?? null;
+  });
+  run("S.rotta.dir = null");
+  return cards.map(({ expanded, list, ...card }, i) => ({ ...card, list: lists[i] }));
+}
+
+// The window, as the strip and the stage's brush ask for it: inside, too narrow, the whole story and more, either way
+// round, past the first milestone, one instant.
+function windowsOf(view) {
+  const P = load(view);
+  const [t0, t1, ts] = [P.t0, P.t1, P.ms.map((m) => m.t)];
+  const asks = [[t0 + 2 * HOUR, t0 + 30 * HOUR], [t1 - 10 * 60e3, t1 - 5 * 60e3], [t0 - 10 * HOUR, t1 + 10 * HOUR], [ts[3], ts[2]],
+    [t0 - 5 * HOUR, t0 + HOUR], [ts[1], ts[1]]];
+  return asks.map((ask) => {
+    context.chiesta = ask;
+    return { ask, window: JSON.parse(run("(impostaFinestra(chiesta[0], chiesta[1]), JSON.stringify(S.finestra && { from: S.finestra.dal, to: S.finestra.al }))")) };
+  });
+}
+
+const each = (f) => Object.fromEntries(Object.entries(VIEWS).map(([name, view]) => [name, f(view)]));
+const out = {
+  recorded: "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js", portfolio, rings, packWords, cases,
+  tape, filters: each(filtersOf), states: each(statesOf), lanes: each(lanesOf),
+  windows: { viewer: windowsOf(viewer), alpha: windowsOf(oracle.views.alpha) },
+};
 writeFileSync(join(UI, "harness/moviola.json"), JSON.stringify(out, null, 1) + "\n");
 console.log(`harness/moviola.json: ${cases.map((c) => `${c.name} ${c.timeline.milestones.length}`).join(", ")}`);
