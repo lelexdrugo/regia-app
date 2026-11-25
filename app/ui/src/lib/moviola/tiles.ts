@@ -26,9 +26,11 @@ export class WorldTiles implements WorldSource {
     this.generation += 1;
   }
 
-  /** How many tiles are kept: for the proofs. */
-  get size(): number {
-    return this.tiles.size;
+  /** The stage is gone: the tiles let go of their canvases now, not when the collector comes. */
+  clear(): void {
+    this.drop();
+    this.spare.length = 0;
+    this.key = "";
   }
 
   draw(ctx: CanvasRenderingContext2D, f: Frame): boolean {

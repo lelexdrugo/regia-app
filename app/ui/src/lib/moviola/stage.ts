@@ -178,6 +178,7 @@ export class Stage {
   destroy(): void {
     if (this.pending) cancelAnimationFrame(this.pending);
     for (const undo of this.cleanup.splice(0)) undo();
+    this.tiles.clear();
   }
 
   /** The words of the catalog in use: a new language is a redraw, the lanes' names measured again and the strip's
