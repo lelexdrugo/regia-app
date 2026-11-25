@@ -11,12 +11,14 @@ name: release
 #
 # The updater (#495, the dossier's rilascio.md §4): the jobs that compile leave the packages the
 # updater installs as they are (the NSIS setup, the AppImage, the deb, the rpm), plus the app's
-# tar.gz on macOS and the bare CLI of each system. `finalize`, which runs no build code, signs them
+# tar.gz on macOS and the bare CLI of each system. `sign`, which runs no build code, signs them
 # with `tauri signer sign --app-version` and writes latest.json. It is the only job that reads the
 # signing key: Tauri's own `createUpdaterArtifacts` would have the bundler sign, so the key would sit
-# in every build job, beside every crate's build script. With no key in the secrets there is no
-# latest.json and no signature, and the rest runs as before; at a tag, a key in tauri.conf.json
-# with no secret to sign for it fails the run.
+# in every build job, beside every crate's build script. `sign` runs in the protected environment
+# `release`, which takes deployments from `v*` tags only and waits for the owner's approval, so it
+# runs at a tag only: a run by hand gets the sums from `finalize` and no signature. With no key in the
+# secrets there is no latest.json and no signature, and the rest runs as before; a key in
+# tauri.conf.json with no secret to sign for it fails the run.
 on:
   push:
     tags: ["v*"]
@@ -328,18 +330,13 @@ jobs:
           docker run --rm -e VERSION -v "$PWD/pkg:/pkg:ro" fedora:44 bash -euc "dnf install -y -q /pkg/*.rpm > /dev/null && $check"
 
   finalize:
-    name: SHA256SUMS, sizes against the targets, the updater's signatures and latest.json
+    name: SHA256SUMS and sizes against the targets
     needs: [verify, windows, macos, linux, linux-install]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
       VERSION: ${{ needs.verify.outputs.version }}
     steps:
-      # One file of the repo: the update key the app trusts.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          sparse-checkout: app/src-tauri/tauri.conf.json
-          sparse-checkout-cone-mode: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
@@ -378,14 +375,47 @@ jobs:
               fi
             done
           } | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sha256sums
+          path: dist/SHA256SUMS
+          retention-days: 1
+          if-no-files-found: error
+
+  # Apart from `finalize` because the environment `release` takes deployments from `v*` tags only
+  # (modello-minacce.md §3.10): with it on `finalize`, a run by hand would be refused there. The job
+  # waits for the owner's approval on the run's page before it starts.
+  sign:
+    name: the updater's signatures and latest.json
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: [verify, finalize]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: release
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+    steps:
+      # One file of the repo: the update key the app trusts.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          sparse-checkout: app/src-tauri/tauri.conf.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+      # The job signs only the packages `finalize` summed, byte for byte.
+      - name: The packages are the ones of SHA256SUMS
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
       # The only step of the workflow that reads the signing key, and it runs no build code: the pinned
-      # Tauri CLI, jq and Python. The key has a password, and both are secrets of the repo while it is
-      # private. If it turns public (#601), they move to the protected environment `release`: this job
-      # gets `environment: release`, and the two names below stay.
-      - name: The updater's signatures and latest.json, when the repo holds the signing key
+      # Tauri CLI, jq and Python. The key has a password. `secrets.` reads the environment's secret of
+      # that name and, if it has none, the repo's: the job works before and after the two move into the
+      # environment.
+      - name: The updater's signatures and latest.json, when the environment or the repo holds the signing key
         working-directory: dist
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -394,8 +424,8 @@ jobs:
         run: |
           pubkey=$(jq -r '.plugins.updater.pubkey // ""' ../app/src-tauri/tauri.conf.json)
           if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
-            if [ -n "$pubkey" ] && [ "$GITHUB_REF_TYPE" = tag ]; then
-              echo "::error::tauri.conf.json trusts an update key, and the repo has no TAURI_SIGNING_PRIVATE_KEY to sign for it"
+            if [ -n "$pubkey" ]; then
+              echo "::error::tauri.conf.json trusts an update key, and neither the environment nor the repo has a TAURI_SIGNING_PRIVATE_KEY to sign for it"
               exit 1
             fi
             echo "no signing key in the secrets: no signatures and no latest.json"
@@ -459,12 +489,6 @@ jobs:
             and has("cli-darwin-aarch64") and has("cli-darwin-x86_64") and has("cli-linux-x86_64"))
             and ([.platforms[].url | startswith("https://")] | all)' latest.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: sha256sums
-          path: dist/SHA256SUMS
-          retention-days: 1
-          if-no-files-found: error
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: hashFiles('dist/latest.json') != ''
         with:
           name: updater
@@ -477,7 +501,7 @@ jobs:
   publish:
     name: draft release
     if: github.event_name == 'push' && github.ref_type == 'tag'
-    needs: [verify, finalize]
+    needs: [verify, finalize, sign]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

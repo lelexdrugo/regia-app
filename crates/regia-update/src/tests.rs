@@ -355,7 +355,7 @@ fn over_the_wire_the_storage_never_sees_the_token() {
     assert!(!second.contains("authorization") && !second.contains(&CANARY.to_ascii_lowercase()), "{second}");
 }
 
-/// By hand, on a folder that `finalize` of `release.yml` signed with a throwaway key: `UPDATE_PROBE=<folder>`
+/// By hand, on a folder signed with a throwaway key the way `sign` of `release.yml` signs: `UPDATE_PROBE=<folder>`
 /// holding `latest.json`, the files it names and `key.pub`. What `tauri signer sign --app-version` writes
 /// verifies here, every entry of the manifest maps to its file, and an altered byte fails.
 #[test]
