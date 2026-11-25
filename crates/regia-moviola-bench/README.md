@@ -104,21 +104,39 @@ marks are in view together only near the zoom phase's widest view.
 
 ## Recorded runs
 
-Frame time in ms, median / p95 over all phases, 3 repetitions of 2500 ms per phase, warm-up 1000 ms. Late in pan is
-the share of frames longer than 1.5 refresh intervals. Each row is one machine, not a reference.
+Frame time in ms, median / p95 over all phases, 3 repetitions per phase (2500 ms with a warm-up of 1000 ms for the
+first two rows, 2000 ms and 800 ms for the CI rows). Late in pan is the share of frames longer than 1.5 refresh
+intervals. Each row is one machine, not a reference.
 
 | Run | Engine | x1 | x10 | x100 (zoom p95) | x10 dense (late in pan) | Sanity |
 |---|---|---|---|---|---|---|
 | **Windows**, Intel Core Ultra 9 285H, Intel Arc 140T (ANGLE on Direct3D 11), WebView2 157, 101 Hz, commit db60b74 | gpu | 9.8 / 10.2 | 9.9 / 19.1 | 9.8 / 12.8 (39.1) | 9.9 / 19.6 (19.5 %) | PASS |
 | **WSL**, same processor, Ubuntu 24.04.3 on WSLg, Mesa `llvmpipe` (no GPU), WebKitGTK 2.52.6, 63 Hz, commit e27e942 | software | 21.0 / 23.0 | 23.0 / 29.0 | 25.0 / 34.0 (61.0) | 24.0 / 30.0 (88.2 %) | PASS |
+| **Linux CI runner** (GitHub-hosted virtual machine, AMD EPYC 9V45, 2 threads, Ubuntu 24.04.5, no GPU of its own), WebKitGTK 2.52.6, 63 Hz, commit 90555a6, **not a reference** | classed gpu, see below | 16.0 / 17.0 | 16.0 / 17.0 | 16.0 / 18.0 (33.0) | 16.0 / 17.0 (0.0 %) | PASS |
+| **macOS CI runner** (GitHub-hosted virtual machine, Apple M2 Pro (Virtual), 5 threads, macOS 15.8.2), WKWebView, 59 Hz, commit 90555a6, **not a reference** | gpu | 17.0 / 20.0 | 17.0 / 20.0 | 17.0 / 26.0 (28.0) | 17.0 / 20.0 (0.3 %) | PASS |
 
 - **WSL is not a native Linux with a GPU.** WSLg rasterises on the processor. Its numbers are recorded as
   information, and the one threshold that applies to this engine, x10 with median at most 33 ms and p95 at most
   50 ms, passes (23.0 / 29.0). The rows of T5 that name a GPU are not judged here.
 - On Windows T5 holds at x1 and does not hold at x100 (zoom) nor at x10 dense. That is the level of detail's work.
 - The two machines' frame times do not compare: different display rates, engines and commits.
-- A native Linux with a GPU and a Mac are not measured yet. The CI runners' numbers, when a run exists, are
-  "not a reference" too.
+- **The CI rows are "not a reference".** They come from one run of `moviola-benchmark.yml` on `main`
+  (`-f os=linux-macos`), on virtual machines with no GPU of their own. They prove that the bench builds and runs in the product's webview on both systems, and that the
+  sanity check passes there. They do not judge T5: the per-scale verdicts in their `summary.md` count as
+  information on a runner. For the record, the verdicts are Linux x1 PASS, x100 FAIL (zoom p95 33.0 ms against 17.6),
+  x10 dense PASS; macOS x1 FAIL (p95 20.0 against 18.7), x100 FAIL, x10 dense FAIL.
+- Both CI rows are paced at the refresh rate of a virtual display (63 Hz and 59 Hz), so most frames sit on one
+  interval and the medians say little; read the p95 and the zoom column.
+- **The Linux runner's engine is classed `gpu`, and that is not to be trusted.** The probe could not read a renderer
+  there (`glxinfo` found no display, and WebKit answers "Apple GPU" to any WebGL query), so the bench classed it
+  `gpu`. A standard GitHub Linux runner has no GPU, so the frames are almost certainly software-rasterised, as in the
+  WSL row. This is a limit of the bench, not of the run.
+- **Cost of the CI run.** Job durations from the run, each rounded up to the minute as the billing does, at the
+  list price of 0.008 USD per Linux minute and ten times that on macOS: the Linux job 7 min (0.06 USD) and the macOS
+  job 5 min (0.40 USD), 0.46 USD in all, against the 0.8 USD that was estimated and approved. On the Free plan this is
+  quota and not money; the run's timing endpoint reports 0 billable milliseconds, which is why the figure is
+  computed and not read.
+- A native Linux with a GPU and a Mac with a physical display are not measured yet (the Mac is #496).
 
 ## Options
 
