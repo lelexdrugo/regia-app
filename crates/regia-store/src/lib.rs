@@ -15,6 +15,8 @@ mod declarations;
 mod folder;
 mod lease;
 mod lock;
+#[cfg(test)]
+mod prototype_cases;
 mod state_file;
 mod step;
 mod time;
@@ -134,6 +136,10 @@ pub enum StoreError {
         #[source]
         source: SqliteError,
     },
+    /// The database is not in the rollback journal (`delete`) the lock depends on, and SQLite did not put it
+    /// back: it is in `mode` still, because another connection holds it or for another reason.
+    #[error("the state database {} is in journal mode `{mode}`, not `delete`, and could not be put back", file.display())]
+    JournalMode { file: PathBuf, mode: String },
     #[error("the state is in use by another process")]
     InUse,
     #[error("cannot read the state database")]
