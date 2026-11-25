@@ -26,8 +26,10 @@ export type Scene = {
   lane: Uint16Array;
   /** Nodes whose label may be drawn (the turning points, as the prototype's labels), ascending. */
   labeled: Uint32Array;
-  /** Parent to child, with the scene index of each end (#598: an edge goes with a node filtered out). */
-  edges: { n: number; x1: Float64Array; y1: Float64Array; x2: Float64Array; y2: Float64Array; a: Uint32Array; b: Uint32Array };
+  /** Parent to child, with the scene index of each end (#598: an edge goes with a node filtered out). They come in the
+   * order of the children, so by `x2` ascending; `span` is the longest, from parent to child in x (#489): the edges
+   * that reach into a part of the stage are a binary search away. */
+  edges: { n: number; x1: Float64Array; y1: Float64Array; x2: Float64Array; y2: Float64Array; a: Uint32Array; b: Uint32Array; span: number };
   /** One band per lane, from its opening to its closing or the stage's end. */
   bands: { n: number; x: Float64Array; y: Float64Array; w: Float64Array; h: Float64Array };
   extent: { x0: number; y0: number; x1: number; y1: number };
@@ -111,6 +113,7 @@ export function buildScene(model: Model, layout: Layout): Scene {
       y2: Float64Array.from(ey2),
       a: Uint32Array.from(ea),
       b: Uint32Array.from(eb),
+      span: ex1.reduce((most, x, i) => Math.max(most, Math.abs((ex2[i] as number) - x)), 0),
     },
     bands: {
       n: bands.length,
@@ -193,45 +196,83 @@ export function visibleRange(scene: Scene, cam: Camera, view: View, margin = 60)
 export const LABEL_ZOOM = 0.5;
 export const MAX_LABELS = 120;
 
-export type Labels = { n: number; id: Uint32Array; sx: Float32Array; sy: Float32Array };
+/** The labels of a frame: each one's scene node, its text's left end and its middle on screen, and its width. */
+export type Labels = { n: number; id: Uint32Array; sx: Float32Array; sy: Float32Array; w: Float32Array };
 
-export const newLabels = (): Labels => ({ n: 0, id: new Uint32Array(MAX_LABELS), sx: new Float32Array(MAX_LABELS), sy: new Float32Array(MAX_LABELS) });
+export const newLabels = (): Labels => ({
+  n: 0,
+  id: new Uint32Array(MAX_LABELS),
+  sx: new Float32Array(MAX_LABELS),
+  sy: new Float32Array(MAX_LABELS),
+  w: new Float32Array(MAX_LABELS),
+});
 
-/** The labels to draw this frame: greedy, left to right, skipping one that would overlap one already placed, on a
- * coarse occupancy grid of 8×16 px cells. `width` gives a label's width in pixels; a node filtered out by `fade` has none. */
-export function pickLabels(scene: Scene, cam: Camera, view: View, width: (node: number) => number, out: Labels, fade: Uint8Array | null = null): Labels {
+/** The plate under a label's text, as the renderer draws it (canvas2d.ts): 3 px either side, 8 above and below. */
+export const PLATE = { x: 3, y: 8 } as const;
+/** A label's text starts this far from its node's centre, on its right, or ends as far on its left. */
+export const LABEL_GAP = 12;
+
+/** A label's rank (#489): first a milestone waiting for the owner or at risk, then by kind, a gate, an exception, a
+ * decision, an abandonment, a rejoin, an exploration. Scene kinds are indices of KINDS. */
+const KIND_RANK = [0, 4, 6, 5, 1, 2, 3];
+export const labelRank = (scene: Scene, i: number, urgent = false): number => (urgent ? 10 : 0) + (KIND_RANK[scene.kind[i] as number] as number);
+
+/** A place on screen no label may cover: `[x0, y0, x1, y1]`, in CSS pixels. */
+export type Reserved = readonly (readonly [number, number, number, number])[];
+
+/**
+ * The labels to draw this frame (#489): the turning points in view, the highest rank first (`rank`, `labelRank` by
+ * default) and from left to right within a rank. A label goes to its node's right, or to its left where it would
+ * leave the stage, and is skipped when its plate would cover one already placed or a reserved place. The plates are
+ * tested where they are drawn, rectangle against rectangle: the spike tested one row of a grid of 8×16 px cells and
+ * the place on the right, so two labels could overlap (the dossier's docs/app/moviola/risultati.md, §8). `width`
+ * gives a label's width in pixels; a node filtered out by `fade` has none.
+ */
+export function pickLabels(
+  scene: Scene,
+  cam: Camera,
+  view: View,
+  width: (node: number) => number,
+  out: Labels,
+  fade: Uint8Array | null = null,
+  rank: (node: number) => number = (i) => labelRank(scene, i),
+  reserved: Reserved = [],
+): Labels {
   out.n = 0;
   if (cam.z < LABEL_ZOOM) return out;
-  const cols = Math.ceil(view.w / 8);
-  const rows = Math.ceil(view.h / 16);
-  const occupied = new Uint8Array(cols * rows);
+  // The places taken, as [x0, y0, x1, y1]: the reserved ones, then each plate placed.
+  const taken: (readonly [number, number, number, number])[] = [...reserved];
+  const free = (x0: number, y0: number, x1: number, y1: number): boolean =>
+    taken.every(([a0, b0, a1, b1]) => x1 <= a0 || a1 <= x0 || y1 <= b0 || b1 <= y0);
   const halfW = view.w / 2 / cam.z + 40;
   const halfH = view.h / 2 / cam.z + 20;
   const lo = lowerBound(scene.x, cam.cx - halfW);
   const hi = lowerBound(scene.x, cam.cx + halfW);
-  for (let k = lowerBound(scene.labeled, lo); k < scene.labeled.length && out.n < MAX_LABELS; k++) {
+  const candidates: number[] = [];
+  for (let k = lowerBound(scene.labeled, lo); k < scene.labeled.length; k++) {
     const i = scene.labeled[k] as number;
     if (i >= hi) break;
     if (fade && fade[i] === FILTERED) continue;
     if (Math.abs((scene.y[i] as number) - cam.cy) > halfH) continue;
-    const sx = toScreenX(cam, view, scene.x[i] as number) + 12;
+    candidates.push(i);
+  }
+  const ranks = new Map(candidates.map((i) => [i, rank(i)]));
+  candidates.sort((a, b) => (ranks.get(b) as number) - (ranks.get(a) as number) || a - b);
+  for (const i of candidates) {
+    if (out.n >= MAX_LABELS) break;
+    const nx = toScreenX(cam, view, scene.x[i] as number);
     const sy = toScreenY(cam, view, scene.y[i] as number);
-    const c0 = Math.max(0, Math.floor(sx / 8));
-    const c1 = Math.min(cols - 1, Math.floor((sx + width(i)) / 8));
-    const r = Math.floor((sy - 8) / 16);
-    if (r < 0 || r >= rows) continue;
-    let free = true;
-    for (let c = c0; c <= c1; c++) {
-      if (occupied[r * cols + c]) {
-        free = false;
-        break;
-      }
-    }
-    if (!free) continue;
-    for (let c = c0; c <= c1; c++) occupied[r * cols + c] = 1;
+    if (sy - PLATE.y < 0 || sy + PLATE.y > view.h) continue;
+    const w = width(i);
+    const right = nx + LABEL_GAP;
+    const sx = right + w > view.w - 4 ? nx - LABEL_GAP - w : right;
+    const plate = [sx - PLATE.x, sy - PLATE.y, sx + w + PLATE.x, sy + PLATE.y] as const;
+    if (!free(...plate)) continue;
+    taken.push(plate);
     out.id[out.n] = i;
     out.sx[out.n] = sx;
     out.sy[out.n] = sy;
+    out.w[out.n] = w;
     out.n++;
   }
   return out;

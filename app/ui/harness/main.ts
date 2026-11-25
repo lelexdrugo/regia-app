@@ -26,6 +26,7 @@ import documentsFile from "./documents.json";
 import moviolaFile from "./moviola.json";
 import { pseudo } from "./pseudo";
 import Stopped from "./Stopped.svelte";
+import { syntheticTimeline } from "./synthetic";
 
 declare global {
   interface Window {
@@ -143,6 +144,8 @@ function moviolaOf(data: string, params: URLSearchParams): MoviolaSource {
   if (alpha) {
     timelines.set("gamma", { ...alpha, project: "gamma", milestones: [], directions: [], aggregates: [] });
   }
+  // #/moviola/dense: x10's synthetic story (harness/synthetic.ts), by address only, for the level of detail (#489).
+  timelines.set("dense", syntheticTimeline(10));
   const pending = () => new Promise<never>(() => {});
   if (data === "loading") {
     return { projects: pending, timeline: pending, snapshot: pending };

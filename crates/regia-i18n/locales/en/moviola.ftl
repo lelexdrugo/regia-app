@@ -240,3 +240,10 @@ moviola-direction-rejoined = Rejoined with
 moviola-direction-no-reason = No reason recorded.
 moviola-direction-no-record = No record names this lane: only its moments do.
 moviola-direction-empty = No moment on this lane yet.
+moviola-groups = { $moments ->
+        [one] One moment in view, drawn as a group: zoom in to see it with its rings.
+       *[other] { $moments } moments in view, drawn in { $groups ->
+            [one] one group
+           *[other] { $groups } groups
+        } by lane: zoom in to see each one with its rings.
+    }
