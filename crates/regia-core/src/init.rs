@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::v1::{BaseLabel, base_labels, project_field_name, status_option_names};
+use crate::v1::{BaseLabel, TrackerAnchor, base_labels, project_field_name, status_option_names};
 
 const VOCABULARY: &str = include_str!("../formats/init_v1.toml");
 
@@ -749,6 +749,13 @@ enum Written {
 }
 
 impl LocalConfig {
+    /// The anchor of this configuration, which `derive` writes beside it in the app's configuration folder: its owner,
+    /// repo and Project (T08, V17).
+    #[must_use]
+    pub fn anchor(&self) -> TrackerAnchor {
+        TrackerAnchor { owner: self.owner.clone(), repo: self.repo.clone(), project_number: self.project_number, project_id: self.project_id.clone() }
+    }
+
     /// The keys a derived file is compared on, and their values; the project field's two only when the Project has it.
     fn compared(&self) -> Vec<(String, Written)> {
         let keys = vocabulary().local_file;
@@ -833,7 +840,7 @@ fn quoted(text: &str) -> String {
 }
 
 /// `a == b` on two values Python read from JSON: a number equals a number of the same value, `true` equals 1.
-fn python_equal(a: &Value, b: &Value) -> bool {
+pub(crate) fn python_equal(a: &Value, b: &Value) -> bool {
     /// A number as Python holds it: an exact integer or a float; `true` and `false` are 1 and 0.
     enum Number {
         Int(i128),

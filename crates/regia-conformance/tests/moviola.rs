@@ -626,7 +626,7 @@ fn the_links_take_the_tracker_s_configuration_by_the_prototype_s_rule() {
     let (state, dossier) = (root.join("state"), root.join("dossier"));
     fs::create_dir_all(&state).unwrap();
     fs::create_dir_all(dossier.join("config")).unwrap();
-    let load = || TrackerConfigV1::load_for_links(Some(&state), Some(&dossier));
+    let load = || TrackerConfigV1::load_for_links(Some(&state), Some(&dossier), None);
     assert!(load().unwrap().is_none());
     let shared = dossier.join("config").join("tracker.json");
     fs::write(&shared, "{not json").unwrap();

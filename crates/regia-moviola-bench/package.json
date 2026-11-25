@@ -1,0 +1,20 @@
+{
+  "name": "moviola-bench",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Dev only: the moviola's time per frame, with the product's renderer (app/ui) in the product's webview, on any system",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "bench": "node scripts/run-bench.mjs",
+    "bench:suite": "node scripts/run-suite.mjs",
+    "analyze": "node scripts/analyze.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "devDependencies": {
+    "@fluent/bundle": "0.19.1",
+    "vite": "8.3.5"
+  }
+}

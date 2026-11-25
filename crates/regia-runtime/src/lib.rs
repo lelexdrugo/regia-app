@@ -7,7 +7,7 @@ use regia_core::{
     Brief, BriefOptions, Registry, Tracker, TrackerBinding, TrackerConfigV1, TrackerError, V1Error, build_brief, parse_date,
 };
 use regia_github::GhTracker;
-use regia_identity::{env_var, prototype_env_var, state_dir};
+use regia_identity::{config_dir, env_var, prototype_env_var, state_dir};
 
 mod moviola;
 
@@ -45,7 +45,7 @@ pub fn dossier_dir() -> Option<PathBuf> {
 /// reads it: the first open objective with the project's label. Its status plays no part, so an option
 /// the binding does not know on some issue does not hide the folder.
 pub fn project_folder(project: &str) -> Result<String, FolderError> {
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref())?;
+    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref(), config_dir().as_deref())?;
     let binding = TrackerBinding::new(&config)?;
     for mut issue in GhTracker::new(&config).open_issues()? {
         let body = std::mem::take(&mut issue.body);
@@ -68,7 +68,7 @@ pub fn load_brief(options: &BriefOptions) -> Result<Brief, BriefError> {
     if let (None, Ok(value)) = (options.today, std::env::var(&name)) {
         options.today = Some(parse_date(&value).ok_or(BriefError::Today { name, value })?);
     }
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref())?;
+    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref(), config_dir().as_deref())?;
     let binding = TrackerBinding::new(&config)?;
     let raw = GhTracker::new(&config).open_issues()?;
     let tasks = raw

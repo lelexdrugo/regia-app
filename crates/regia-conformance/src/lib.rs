@@ -30,7 +30,7 @@ use std::sync::OnceLock;
 
 use regia_exec::{Launch, Program};
 use regia_facade::{FacadeError, SCRIPT, Table};
-use regia_identity::{env_var, prototype_env_var};
+use regia_identity::{config_dir_var, env_var, prototype_env_var};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
@@ -726,17 +726,32 @@ pub fn writes_of_run(state: &Path) -> Vec<Value> {
         .collect()
 }
 
-/// What every run against a fixture needs, on either side: its state folder, the fixed day and
-/// instant, and no engine, dossier or session of the machine. The credentials of Claude and Codex
-/// point at files that do not exist: the prototype's brief reads Codex's for a warning, its budget
-/// reads both and would ask the providers with them, and the machine's own must not leak in. The home
-/// is the state folder too: `init` looks for the skills there, and git for its global configuration.
-fn fixture_env(launch: Launch, state: &Path) -> Launch {
-    let launch = SESSION_VARIABLES.iter().fold(launch, |launch, name| launch.without(name));
+/// The app's configuration folder of a run in `state`, where the variable moves it: no run of a test reads or writes
+/// the machine's own, which on Windows no other variable moves (#456, round 2).
+pub fn app_config_dir(state: &Path) -> PathBuf {
+    state.join("app-config")
+}
+
+/// The folders of the machine that a run of the product must not touch, moved into `state`: the home, the state
+/// folder and the app's configuration folder. Every run of the product goes through here, with [`fixture_for_rust`]
+/// or by itself, and a guard of `tests/config.rs` checks it.
+pub fn own_folders(launch: Launch, state: &Path) -> Launch {
     launch
         .env("HOME", state)
         .env("USERPROFILE", state)
         .env(&prototype_env_var("RUNTIME"), state)
+        .env(&config_dir_var(), app_config_dir(state))
+}
+
+/// What every run against a fixture needs, on either side: its state folder, the fixed day and
+/// instant, and no engine, dossier or session of the machine. The credentials of Claude and Codex
+/// point at files that do not exist: the prototype's brief reads Codex's for a warning, its budget
+/// reads both and would ask the providers with them, and the machine's own must not leak in. The home
+/// is the state folder too: `init` looks for the skills there, and git for its global configuration; and so is the
+/// app's configuration folder, where `init derive` writes the anchor and every command reads it.
+fn fixture_env(launch: Launch, state: &Path) -> Launch {
+    let launch = SESSION_VARIABLES.iter().fold(launch, |launch, name| launch.without(name));
+    own_folders(launch, state)
         .env(&prototype_env_var("CODEX_AUTH"), state.join("no-codex-auth.json"))
         .env(&prototype_env_var("CLAUDE_CREDENTIALS"), state.join("no-claude-credentials.json"))
         .env(&env_var("TODAY"), FIXTURE_TODAY)

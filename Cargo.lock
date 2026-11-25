@@ -3109,6 +3109,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "regia-moviola-bench"
+version = "0.0.1"
+dependencies = [
+ "tauri",
+ "tauri-build",
+]
+
+[[package]]
 name = "regia-runtime"
 version = "0.0.1"
 dependencies = [

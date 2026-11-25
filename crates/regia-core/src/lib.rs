@@ -38,6 +38,6 @@ pub use tracker::{
     IssueRef, RawComment, RawIssue, StatusHistory, Tracker, TrackerError, add_children_from_parents, created_issue_number,
 };
 pub use v1::{
-    BaseLabel, TrackerBinding, TrackerConfigV1, V1Error, base_labels, local_config_file, project_field_name, project_label_prefix,
-    project_of_labels, status_option_names,
+    ANCHOR_FILE, BaseLabel, TrackerAnchor, TrackerBinding, TrackerConfigV1, TrackerNames, V1Error, anchor_file, base_labels, local_config_file,
+    project_field_name, project_label_prefix, project_of_labels, status_option_names,
 };

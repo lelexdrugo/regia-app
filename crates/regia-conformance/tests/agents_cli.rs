@@ -7,29 +7,17 @@
 use std::fs;
 use std::path::PathBuf;
 
-use regia_conformance::{prepare_state_dir, regia_binary};
+use regia_conformance::{own_folders, prepare_state_dir, regia_binary};
 use regia_exec::{Launch, harness};
-use regia_identity::{config_dir, prototype_env_var};
 use serde_json::Value;
 
-/// The binary on `args`, in a folder of its own under `target/`, with the user's configuration folder
-/// moved there too where the system lets an environment variable do it (it does not on Windows, see
-/// [`settings_may_apply`]).
+/// The binary on `args`, in a folder of its own under `target/`, with the user's configuration folder moved there
+/// too: the user's own settings never answer for the product's defaults.
 fn regia(label: &str, args: &[&str]) -> (Launch, PathBuf) {
     let state = prepare_state_dir(label);
     let args: Vec<String> = args.iter().map(|arg| (*arg).to_owned()).collect();
-    let launch = harness::launch(&regia_binary(), &args, &state)
-        .env(&prototype_env_var("RUNTIME"), &state)
-        .env("HOME", &state)
-        .env("USERPROFILE", &state)
-        .env("XDG_CONFIG_HOME", state.join("config"));
+    let launch = own_folders(harness::launch(&regia_binary(), &args, &state), &state);
     (launch, state)
-}
-
-/// Whether the user's own `agents.toml` can change what the binary answers: on Windows the configuration
-/// folder is a known folder, which no variable moves. `agents.toml` is the name `regia-agents` gives it.
-fn settings_may_apply() -> bool {
-    cfg!(windows) && config_dir().is_some_and(|dir| dir.join("agents.toml").exists())
 }
 
 fn run(label: &str, args: &[&str]) -> (Option<i32>, String, String) {
@@ -222,16 +210,14 @@ fn agents_show_with_a_writer_answers_with_the_contract_keys() {
         diversity != "met" || assignment["service"] != "codex",
         "{assignment}"
     );
-    if !settings_may_apply() {
-        assert_eq!(
-            (
-                assignment["service"].as_str(),
-                assignment["diversity"].as_str()
-            ),
-            (Some("claude"), Some("met")),
-            "{assignment}"
-        );
-    }
+    assert_eq!(
+        (
+            assignment["service"].as_str(),
+            assignment["diversity"].as_str()
+        ),
+        (Some("claude"), Some("met")),
+        "{assignment}"
+    );
 
     let (code, stdout, stderr) = run(
         "agents-show-text",
@@ -252,12 +238,10 @@ fn agents_show_with_a_writer_answers_with_the_contract_keys() {
             && stdout.lines().any(|line| line.starts_with("service: ")),
         "{stdout}"
     );
-    if !settings_may_apply() {
-        assert!(
-            stdout.lines().any(|line| line == "service: codex"),
-            "{stdout}"
-        );
-    }
+    assert!(
+        stdout.lines().any(|line| line == "service: codex"),
+        "{stdout}"
+    );
 }
 
 /// A service the product does not know, or a role it does not have, is refused by the arguments before

@@ -1,0 +1,81 @@
+name: moviola-benchmark
+
+# The moviola's bench (crates/regia-moviola-bench, README.md there) on the runner images: the same `npm ci` and
+# `npm run bench` as on a desktop, with shorter phases. By hand only, never on a push: minutes are a budget on a
+# private repo, and macOS costs about ten times Linux (one run of Linux and macOS is about 0.8 USD of the monthly
+# allowance). Runners are virtual machines without a GPU of their own: their numbers show that the bench runs in
+# each engine, and are recorded without a verdict (the dossier's docs/app/piano/traguardi.md).
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: "which runner images"
+        type: choice
+        options: [linux-macos, linux, macos, windows, all]
+        default: linux-macos
+
+permissions:
+  contents: read
+
+concurrency:
+  group: moviola-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  bench:
+    name: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        label: ${{ fromJSON(inputs.os == 'all' && '["linux","macos","windows"]' || inputs.os == 'linux-macos' && '["linux","macos"]' || format('["{0}"]', inputs.os)) }}
+    runs-on: ${{ fromJSON('{"linux":"ubuntu-24.04","macos":"macos-15","windows":"windows-2025"}')[matrix.label] }}
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: System packages for Tauri, Xvfb and Mesa's software rasteriser
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev xvfb mesa-utils libgl1-mesa-dri libglx-mesa0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+      - name: The machine
+        run: |
+          uname -a || true
+          if [ "$RUNNER_OS" = "macOS" ]; then sw_vers; system_profiler SPDisplaysDataType | head -20 || true; fi
+          if [ "$RUNNER_OS" = "Linux" ]; then (xvfb-run -a glxinfo -B || true) | head -20; fi
+          node -v; cargo -V
+      - name: The bench's dependencies, from its lockfile, without install scripts (.npmrc)
+        working-directory: crates/regia-moviola-bench
+        run: npm ci
+      - name: The bench's own tests
+        working-directory: crates/regia-moviola-bench
+        run: npm test
+      # T5 at x1, x10, x100 and x10 dense, three repetitions, then the sanity check: a failed check fails the job.
+      - name: Benchmark
+        working-directory: crates/regia-moviola-bench
+        run: npm run bench -- --label ci-${{ matrix.label }} --phase-ms 2000 --warmup-ms 800 --timeout-s 1500
+      - name: Summary in the job page
+        if: always()
+        run: |
+          for f in crates/regia-moviola-bench/results/*/summary.md; do
+            [ -f "$f" ] && { head -c 20000 "$f" >> "$GITHUB_STEP_SUMMARY"; echo >> "$GITHUB_STEP_SUMMARY"; }
+          done || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: moviola-bench-${{ matrix.label }}
+          path: crates/regia-moviola-bench/results/
+          retention-days: 30

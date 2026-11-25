@@ -36,9 +36,22 @@ pub fn prototype_env_var(suffix: &str) -> String {
     format!("{}_{suffix}", PROTOTYPE_NAME.to_uppercase())
 }
 
-/// Per-user configuration: agent services, the primary service, user policy overrides.
+/// Per-user configuration: agent services, the primary service, user policy overrides, the tracker's anchor.
+/// [`config_dir_var`] moves it: on Windows the system's folder is a known folder, which no other variable moves,
+/// and the tests must never read or write the machine's own.
 pub fn config_dir() -> Option<PathBuf> {
-    ProjectDirs::from("", "", PRODUCT_NAME).map(|dirs| dirs.config_dir().to_path_buf())
+    config_dir_by(non_empty_var, || ProjectDirs::from("", "", PRODUCT_NAME).map(|dirs| dirs.config_dir().to_path_buf()))
+}
+
+/// The variable that names the configuration folder in place of the system's: `REGIA_CONFIG_DIR`.
+pub fn config_dir_var() -> String {
+    env_var("CONFIG_DIR")
+}
+
+/// The rule of [`config_dir`] with the environment and the system's folder given: the variable when it is set and
+/// not empty, else the system's folder.
+fn config_dir_by(var: impl Fn(&str) -> Option<String>, system: impl FnOnce() -> Option<PathBuf>) -> Option<PathBuf> {
+    var(&config_dir_var()).map(PathBuf::from).or_else(system)
 }
 
 /// Default parent folder of the dossiers created by the setup.
@@ -86,12 +99,25 @@ mod tests {
         assert!(app_identifier().ends_with(&format!(".{PRODUCT_NAME}")));
         assert!(env_var("X").starts_with(&PRODUCT_NAME.to_uppercase()));
         assert_eq!(prototype_env_var("RUNTIME"), "REGIA_RUNTIME", "the prototype reads this very name");
-        if let Some(dir) = config_dir() {
+        assert!(config_dir_var().starts_with(&PRODUCT_NAME.to_uppercase()));
+        // The system's folder, without the variable a run may be given: the rule below, with no variable set.
+        if let Some(dir) = config_dir_by(|_| None, || ProjectDirs::from("", "", PRODUCT_NAME).map(|dirs| dirs.config_dir().to_path_buf())) {
             assert!(dir.to_string_lossy().contains(PRODUCT_NAME));
         }
         if let Some(dir) = dossiers_dir() {
             assert!(dir.to_string_lossy().contains(PRODUCT_NAME));
         }
+    }
+
+    /// The variable moves the configuration folder, whatever the system's is; an empty one is not set.
+    #[test]
+    fn the_variable_moves_the_configuration_folder() {
+        let system = || Some(PathBuf::from("/system/config"));
+        let set = |value: &'static str| move |name: &str| (name == config_dir_var() && !value.is_empty()).then(|| value.to_owned());
+        assert_eq!(config_dir_by(set("/moved"), system), Some(PathBuf::from("/moved")));
+        assert_eq!(config_dir_by(set(""), system), system());
+        assert_eq!(config_dir_by(|_| None, system), system());
+        assert_eq!(config_dir_by(|_| None, || None), None);
     }
 
     // The state folder's rule against the prototype's tests of the same rule (see PROTOTYPE_CASES.md in this
