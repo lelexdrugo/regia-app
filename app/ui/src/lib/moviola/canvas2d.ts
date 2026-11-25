@@ -6,10 +6,17 @@
 // prototype's (the dossier's tools/moviola/static/moviola.js: `glifo`, the rings of `yAnello`, `badge`, the lanes'
 // envelopes and `arco` of `disegnaPalco`, the tape of `disegnaNastro` with its joints), in the seven shapes and the
 // tokens of the design system. Text is drawn by the system's text engine; its words come from the catalog.
+//
+// The level of detail (#489). Chromium's Canvas rasterises a path in proportion to the area it spans on screen, so
+// one path for every ring in view cost as much as the whole stage, on every frame: the world is drawn part by part
+// (`drawWorldDirect`, cells of `CELL` px), or blitted from tiles drawn once for the zoom (tiles.ts). Under the zoom of
+// groups (lod.ts) each lane's milestones are drawn in groups, a group of one as its glyph. The tape's marks that do
+// not move with the playhead are drawn once, in two layers, for each size, direction and language.
+import { AT_RISK, groupHalfHeight, groupLevel, groupRange, type Groups, SINGLE_RADIUS, size, WAITING } from "./lod";
 import type { Layout, Lane, Envelope, Model, TimeScale } from "./model";
 import { ringOffset } from "./model";
 import type { Palette } from "./palette";
-import { type Camera, KINDS, LABEL_ZOOM, type Labels, lowerBound, type Scene, toScreenX, toScreenY, toWorldX, type View } from "./scene";
+import { type Camera, KINDS, LABEL_ZOOM, type Labels, lowerBound, PLATE, type Reserved, type Scene, toScreenX, toScreenY, toWorldX, type View } from "./scene";
 import type { MilestoneKind } from "./types";
 
 const TAU = Math.PI * 2;
@@ -20,6 +27,8 @@ export const TAPE = 46;
 export const AXIS = 22;
 /** A glyph's radius, in world units: the prototype's in its variant A. */
 export const GLYPH = 7;
+/** The side of a part of the stage drawn on its own, in CSS pixels (#489): a path spans at most one. */
+export const CELL = 256;
 
 /** The words the canvas draws, from the catalog: the frame never formats anything itself. */
 export type CanvasText = {
@@ -30,6 +39,9 @@ export type CanvasText = {
 };
 
 export type Tape = { scale: TimeScale; x0: number; x1: number };
+
+/** The tape's marks that do not move with the playhead (#489): under the part in view, and over it. */
+export type TapeLayers = { under: HTMLCanvasElement; over: HTMLCanvasElement; top: number };
 
 export type Frame = {
   model: Model;
@@ -62,6 +74,17 @@ export type Frame = {
   fade: Uint8Array | null;
   /** The lane chosen in the overview, or -1: the others' envelopes, names and nodes are dimmed. */
   chosen: number;
+  /** The groups of this zoom (#489, lod.ts), or `null` at the zoom of detail, with the lanes' envelopes through
+   * them; the group under the pointer, or -1. */
+  groups: Groups | null;
+  groupEnvelopes: Envelope[] | null;
+  hoverGroup: number;
+  /** The tape's layers once drawn, `null` until the next frame draws them. */
+  tapeLayers: TapeLayers | null;
+  /** Each lane's name and state, measured once in this frame's faces, `null` until the next frame measures them. */
+  nameWidths: Float32Array | null;
+  /** The groups of one's glyphs, drawn once in this frame's tokens and density, `null` until a frame draws one. */
+  sprites: Map<number, HTMLCanvasElement> | null;
 };
 
 /** The alpha of each emphasis (#598): in full, dimmed as the prototype's `attenuato`, filtered out as its
@@ -85,7 +108,8 @@ const STYLE: Record<MilestoneKind, { fill: keyof Palette | null; stroke: keyof P
   abandonment: { fill: null, stroke: "node", dash: false },
 };
 
-/** The tick of each kind on the tape: the turning points in their colour, the steps in the node's. */
+/** The tick of each kind on the tape: the turning points in their colour, the steps in the node's. A group (#489)
+ * takes its most telling kind's. */
 const TICK: Record<MilestoneKind, keyof Palette> = {
   milestone: "node",
   decision: "node",
@@ -164,7 +188,58 @@ function plate(ctx: CanvasRenderingContext2D, colour: string, x: number, y: numb
   ctx.globalAlpha = 1;
 }
 
-export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
+/** The world a mark of a node may reach beyond the node's centre, in world units: rings and the lane's envelope
+ * above and below, badges on the right, a group's mark at a few pixels whatever the zoom. A part of the stage draws
+ * every node within this of it. */
+export function worldMargin(f: Frame): [number, number] {
+  return [Math.max(100, 24 / f.cam.z), Math.max(110, 24 / f.cam.z)];
+}
+
+/** A canvas of its own, off the page. */
+function layer(width: number, height: number): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
+}
+
+/** Where each lane's name and state are drawn this frame, held at the stage's left edge as the stage moves under
+ * them: `[lane, x, y, width]`, the plate's left, the name's line and the plate's width, in CSS pixels. Labels keep off
+ * them (scene.ts's `pickLabels`). */
+export function namePlates(f: Frame, ctx: CanvasRenderingContext2D): [number, number, number, number][] {
+  const { model, layout, cam, view, palette: p } = f;
+  if (!f.nameWidths) {
+    const widths = new Float32Array(model.lanes.length);
+    for (const lane of model.lanes) {
+      ctx.font = `500 12px ${p.font}`;
+      const wName = ctx.measureText(f.text.laneName(lane)).width;
+      ctx.font = `11px ${p.font}`;
+      const wStatus = ctx.measureText(f.text.laneStatus(lane)).width;
+      widths[lane.index] = Math.max(wName, wStatus) + 8;
+    }
+    f.nameWidths = widths;
+  }
+  const nameX = Math.max(8, toScreenX(cam, view, 12));
+  const out: [number, number, number, number][] = [];
+  for (const lane of model.lanes) {
+    const sy = toScreenY(cam, view, layout.laneY[lane.index] as number);
+    if (sy < AXIS || sy > view.h + 12) continue;
+    out.push([lane.index, nameX - 4, sy, f.nameWidths[lane.index] as number]);
+  }
+  return out;
+}
+
+/** The places labels keep off: the lanes' names and the days' band. */
+export function reservedPlaces(f: Frame, ctx: CanvasRenderingContext2D): Reserved {
+  const places: [number, number, number, number][] = [[0, 0, f.view.w, AXIS]];
+  for (const [, x, sy, w] of namePlates(f, ctx)) places.push([x, sy - 17, x + w, sy + 15]);
+  return places;
+}
+
+/** A source of a frame's world drawn already (tiles.ts): `false` when the frame has to draw it itself. */
+export type WorldSource = { draw(ctx: CanvasRenderingContext2D, f: Frame): boolean };
+
+export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame, world: WorldSource | null = null): void {
   const { scene, model, layout, cam, view, palette: p, dpr } = f;
   const { z } = cam;
   const W = view.w;
@@ -193,22 +268,158 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  const x0 = cam.cx - W / 2 / z - 60;
-  const x1 = cam.cx + W / 2 / z + 60;
-  const y0 = cam.cy - H / 2 / z - 60;
-  const y1 = cam.cy + H / 2 / z + 60;
-  ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * (W / 2 - cam.cx * z), dpr * (H / 2 - cam.cy * z));
+  // The world: from tiles drawn at this zoom, or part by part.
+  if (!world || !world.draw(ctx, f)) drawWorldDirect(ctx, f);
+
+  // The screen layer.
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.globalAlpha = 1;
+  const labels = f.labels;
+  if (labels.n) {
+    ctx.font = `12px ${p.font}`;
+    ctx.textBaseline = "middle";
+    for (let i = 0; i < labels.n; i++) {
+      // The picker placed it already, on the node's right or, near the stage's right edge, on its left.
+      const sx = labels.sx[i] as number;
+      const sy = labels.sy[i] as number;
+      plate(ctx, p.surface, sx - PLATE.x, sy - PLATE.y, (labels.w[i] as number) + 2 * PLATE.x, 2 * PLATE.y);
+      ctx.fillStyle = p.muted;
+      ctx.fillText(f.labelText(labels.id[i] as number), sx, sy);
+    }
+    ctx.textBaseline = "alphabetic";
+  }
+
+  // The lanes' names, held at the left edge while the stage moves under them.
+  for (const [index, x, sy, w] of namePlates(f, ctx)) {
+    const lane = model.lanes[index] as Lane;
+    plate(ctx, p.surface, x, sy - 17, w, 32);
+    ctx.globalAlpha = laneAlpha(f, index);
+    ctx.font = `500 12px ${p.font}`;
+    ctx.fillStyle = p.text;
+    ctx.fillText(f.text.laneName(lane), x + 4, sy - 4);
+    ctx.font = `11px ${p.font}`;
+    ctx.fillStyle = p.faint;
+    ctx.fillText(f.text.laneStatus(lane), x + 4, sy + 11);
+    ctx.globalAlpha = 1;
+  }
+
+  // The days' band at the top.
+  plate(ctx, p.surface, 0, 0, W, AXIS);
+  ctx.font = `11px ${p.font}`;
+  ctx.fillStyle = p.faint;
+  let lastX = -1e9;
+  f.days.forEach((i, k) => {
+    const sx = dayX[k] as number;
+    if (sx < -60 || sx > W || sx - lastX < 44) return;
+    lastX = sx;
+    ctx.fillText(f.text.day((model.nodes[i] as Model["nodes"][number]).t), Math.max(4, sx + 4), 15);
+  });
+
+  // The playhead: the future under a veil, the line, its head and the timecode.
+  const px = toScreenX(cam, view, layout.xAt(f.t));
+  if (px < W) {
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = p.ground;
+    ctx.fillRect(Math.max(0, px), AXIS, W - Math.max(0, px), H - AXIS);
+    ctx.globalAlpha = 1;
+  }
+  if (px >= -8 && px <= W + 8) {
+    ctx.fillStyle = p.accent;
+    ctx.fillRect(px - 0.75, AXIS, 1.5, H - AXIS);
+    ctx.beginPath();
+    ctx.moveTo(px - 6, AXIS);
+    ctx.lineTo(px + 6, AXIS);
+    ctx.lineTo(px, AXIS + 9);
+    ctx.closePath();
+    ctx.fill();
+    ctx.font = `500 11px ${p.mono}`;
+    const code = f.text.timecode(f.t);
+    const right = px > W - 140;
+    ctx.textAlign = right ? "end" : "start";
+    ctx.fillText(code, right ? px - 7 : px + 7, AXIS + 16);
+    ctx.textAlign = "start";
+  }
+
+  // The selected node, and the one under the pointer; at the zoom of groups, the group under it.
+  const groups = f.groups;
+  if (groups && f.hoverGroup >= 0 && f.hoverGroup < groups.n) {
+    const g = f.hoverGroup;
+    const hh = groupHalfHeight(size(groups, g)) + 4;
+    const a = toScreenX(cam, view, groups.x0[g] as number);
+    const b = toScreenX(cam, view, groups.x1[g] as number);
+    const sy = toScreenY(cam, view, groups.y[g] as number);
+    ctx.strokeStyle = p.muted;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(a - hh, sy - hh, b - a + 2 * hh, 2 * hh, hh);
+    ctx.stroke();
+  }
+  for (const [index, colour, width] of [[groups ? -1 : f.hover, p.muted, 1], [f.selected, p.accent, 2]] as const) {
+    if (index < 0) continue;
+    const sx = toScreenX(cam, view, scene.x[index] as number);
+    const sy = toScreenY(cam, view, scene.y[index] as number);
+    ctx.strokeStyle = colour;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.arc(sx, sy, Math.max(11, (GLYPH + 4) * z), 0, TAU);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  drawTape(ctx, f, toWorldX(cam, view, 0), toWorldX(cam, view, W));
+}
+
+/** The world under the frame's camera, drawn straight onto the stage one cell at a time: each cell clipped on whole
+ * device pixels, so two cells meet without a seam, and each with paths of its own, so none spans the stage. */
+export function drawWorldDirect(ctx: CanvasRenderingContext2D, f: Frame): void {
+  const { cam, view, dpr } = f;
+  const s = dpr * cam.z;
+  const tx = dpr * (view.w / 2 - cam.cx * cam.z);
+  const ty = dpr * (view.h / 2 - cam.cy * cam.z);
+  const wide = Math.round(view.w * dpr);
+  const high = Math.round(view.h * dpr);
+  const step = Math.max(1, Math.round(CELL * dpr));
+  const [mx, my] = worldMargin(f);
+  for (let dy = 0; dy < high; dy += step) {
+    for (let dx = 0; dx < wide; dx += step) {
+      const w = Math.min(step, wide - dx);
+      const h = Math.min(step, high - dy);
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.beginPath();
+      ctx.rect(dx, dy, w, h);
+      ctx.clip();
+      ctx.setTransform(s, 0, 0, s, tx, ty);
+      drawWorld(ctx, f, (dx - tx) / s - mx, (dx + w - tx) / s + mx, (dy - ty) / s - my, (dy + h - ty) / s + my);
+      ctx.restore();
+    }
+  }
+}
+
+/**
+ * The world between `x0` and `x1`, `y0` and `y1` in world units, under the context's transform, which maps the world
+ * at the frame's zoom: the lanes' envelopes and lines, the edges, then the nodes' marks, or at the zoom of groups the
+ * groups' (lod.ts). Everything a mark of a node in that part may reach is drawn, and nothing else.
+ */
+export function drawWorld(ctx: CanvasRenderingContext2D, f: Frame, x0: number, x1: number, y0: number, y1: number): void {
+  const { scene, model, cam, palette: p } = f;
+  const { z } = cam;
+  const groups = f.groups;
 
   // Lanes: the envelope of their rings, then the line, dashed once abandoned, dotted once rejoined. Only the part
-  // in view is a path: a dash is laid along the whole of one, in view or not.
-  for (const e of f.envelopes) {
+  // in view is a path: a dash is laid along the whole of one, in view or not. At the zoom of groups the envelope
+  // goes through the groups, in straight lines and with no edge: its curves cost more than the rest of the stage.
+  for (const e of groups ? (f.groupEnvelopes ?? f.envelopes) : f.envelopes) {
     const lane = model.lanes[e.lane] as Lane;
     if (e.x1 < x0 || e.x0 > x1) continue;
-    const dim = laneAlpha(f, e.lane);
     const all = e.points;
     const from = Math.max(0, lowerBoundBy(all, x0) - 1);
     const to = Math.min(all.length, lowerBoundBy(all, x1) + 1);
     const pts = all.slice(from, to);
+    if (pts.length === 0) continue;
+    const thick = pts.reduce((most, q) => Math.max(most, q.w), 0);
+    if (e.y + thick < y0 || e.y - thick > y1) continue;
+    const dim = laneAlpha(f, e.lane);
     const a = pts[0] as { x: number; w: number };
     const b = pts[pts.length - 1] as { x: number; w: number };
     ctx.beginPath();
@@ -217,23 +428,27 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
       const p0 = pts[i - 1] as { x: number; w: number };
       const p1 = pts[i] as { x: number; w: number };
       const mx = (p0.x + p1.x) / 2;
-      ctx.bezierCurveTo(mx, e.y - p0.w, mx, e.y - p1.w, p1.x, e.y - p1.w);
+      if (groups) ctx.lineTo(p1.x, e.y - p1.w);
+      else ctx.bezierCurveTo(mx, e.y - p0.w, mx, e.y - p1.w, p1.x, e.y - p1.w);
     }
     ctx.lineTo(b.x, e.y + b.w);
     for (let i = pts.length - 1; i > 0; i--) {
       const p0 = pts[i] as { x: number; w: number };
       const p1 = pts[i - 1] as { x: number; w: number };
       const mx = (p0.x + p1.x) / 2;
-      ctx.bezierCurveTo(mx, e.y + p0.w, mx, e.y + p1.w, p1.x, e.y + p1.w);
+      if (groups) ctx.lineTo(p1.x, e.y + p1.w);
+      else ctx.bezierCurveTo(mx, e.y + p0.w, mx, e.y + p1.w, p1.x, e.y + p1.w);
     }
     ctx.closePath();
     ctx.globalAlpha = dim;
     ctx.fillStyle = p.lane;
     ctx.fill();
-    ctx.globalAlpha = 0.6 * dim;
     ctx.strokeStyle = p.laneEdge;
-    ctx.lineWidth = 0.8 / z;
-    ctx.stroke();
+    if (!groups) {
+      ctx.globalAlpha = 0.6 * dim;
+      ctx.lineWidth = 0.8 / z;
+      ctx.stroke();
+    }
     ctx.globalAlpha = dim;
     const start = Math.max(e.x0, x0);
     ctx.setLineDash(lane.status === "abandoned" ? [5 / z, 4 / z] : lane.status === "rejoined" ? [1 / z, 4 / z] : []);
@@ -249,10 +464,16 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
   }
   ctx.globalAlpha = 1;
 
+  if (groups) {
+    drawGroups(ctx, f, groups, x0, x1, y0, y1);
+    return;
+  }
+
   // Edges, parent to child: within a lane in the lane's mark, across lanes dashed and faint; an edge goes with a
-  // node filtered out.
+  // node filtered out. They come by the child's x: those that reach into this part are a binary search away.
   const edges = scene.edges;
   const fade = f.fade;
+  const first = lowerBound(edges.x2, x0 - edges.span);
   for (const across of [false, true]) {
     ctx.strokeStyle = across ? p.faint : p.muted;
     ctx.lineWidth = 1.3 / z;
@@ -260,13 +481,15 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
     for (const gone of fade ? [false, true] : [false]) {
       ctx.globalAlpha = (across ? 1 : 0.75) * (gone ? FADE[2] : 1);
       ctx.beginPath();
-      for (let i = 0; i < edges.n; i++) {
+      for (let i = first; i < edges.n; i++) {
         const ax = edges.x1[i] as number;
         const ay = edges.y1[i] as number;
         const bx = edges.x2[i] as number;
         const by = edges.y2[i] as number;
+        if (bx > x1 + edges.span) break;
         if ((ay !== by) !== across) continue;
         if ((ax < x0 && bx < x0) || (ax > x1 && bx > x1)) continue;
+        if ((ay < y0 && by < y0) || (ay > y1 && by > y1)) continue;
         if (fade && (fade[edges.a[i] as number] === 2 || fade[edges.b[i] as number] === 2) !== gone) continue;
         const mx = (ax + bx) / 2;
         ctx.moveTo(ax, ay);
@@ -376,164 +599,181 @@ export function drawFrame(ctx: CanvasRenderingContext2D, f: Frame): void {
     ctx.textAlign = "start";
     ctx.textBaseline = "alphabetic";
   }
+}
 
-  // The screen layer.
+/** The side of a group of one's sprite, in CSS pixels: its glyph at `SINGLE_RADIUS` and the halo around it. */
+const SPRITE = 16;
+
+/** A group of one's glyph, in the frame's tokens and density, with the halo of its health: drawn once for each kind
+ * and health, then copied wherever such a group is. At the zoom of groups its size on screen does not change. */
+function sprite(f: Frame, kind: number, health: number): HTMLCanvasElement {
+  const sprites = f.sprites ?? (f.sprites = new Map());
+  const key = kind * 4 + health;
+  const known = sprites.get(key);
+  if (known) return known;
+  const { palette: p, dpr } = f;
+  const side = Math.ceil(SPRITE * dpr);
+  const canvas = layer(side, side);
+  const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const labels = f.labels;
-  if (labels.n) {
-    ctx.font = `12px ${p.font}`;
-    ctx.textBaseline = "middle";
-    for (let i = 0; i < labels.n; i++) {
-      const id = labels.id[i] as number;
-      const text = f.labelText(id);
-      const w = ctx.measureText(text).width;
-      // A label that would leave the stage goes to the node's left.
-      const sx = (labels.sx[i] as number) + w > W - 4 ? (labels.sx[i] as number) - 24 - w : (labels.sx[i] as number);
-      const sy = labels.sy[i] as number;
-      plate(ctx, p.surface, sx - 3, sy - 8, w + 6, 16);
-      ctx.fillStyle = p.muted;
-      ctx.fillText(text, sx, sy);
-    }
-    ctx.textBaseline = "alphabetic";
-  }
-
-  // The lanes' names, held at the left edge while the stage moves under them.
-  const nameX = Math.max(8, toScreenX(cam, view, 12));
-  for (const lane of model.lanes) {
-    const sy = toScreenY(cam, view, layout.laneY[lane.index] as number);
-    if (sy < AXIS || sy > H + 12) continue;
-    const name = f.text.laneName(lane);
-    const status = f.text.laneStatus(lane);
-    const dim = laneAlpha(f, lane.index);
-    ctx.font = `500 12px ${p.font}`;
-    const wName = ctx.measureText(name).width;
-    ctx.font = `11px ${p.font}`;
-    const wStatus = ctx.measureText(status).width;
-    plate(ctx, p.surface, nameX - 4, sy - 17, Math.max(wName, wStatus) + 8, 32);
-    ctx.globalAlpha = dim;
-    ctx.font = `500 12px ${p.font}`;
-    ctx.fillStyle = p.text;
-    ctx.fillText(name, nameX, sy - 4);
-    ctx.font = `11px ${p.font}`;
-    ctx.fillStyle = p.faint;
-    ctx.fillText(status, nameX, sy + 11);
-    ctx.globalAlpha = 1;
-  }
-
-  // The days' band at the top.
-  plate(ctx, p.surface, 0, 0, W, AXIS);
-  ctx.font = `11px ${p.font}`;
-  ctx.fillStyle = p.faint;
-  let lastX = -1e9;
-  f.days.forEach((i, k) => {
-    const sx = dayX[k] as number;
-    if (sx < -60 || sx > W || sx - lastX < 44) return;
-    lastX = sx;
-    ctx.fillText(f.text.day((model.nodes[i] as Model["nodes"][number]).t), Math.max(4, sx + 4), 15);
-  });
-
-  // The playhead: the future under a veil, the line, its head and the timecode.
-  const px = toScreenX(cam, view, layout.xAt(f.t));
-  if (px < W) {
-    ctx.globalAlpha = 0.55;
-    ctx.fillStyle = p.ground;
-    ctx.fillRect(Math.max(0, px), AXIS, W - Math.max(0, px), H - AXIS);
-    ctx.globalAlpha = 1;
-  }
-  if (px >= -8 && px <= W + 8) {
-    ctx.fillStyle = p.accent;
-    ctx.fillRect(px - 0.75, AXIS, 1.5, H - AXIS);
-    ctx.beginPath();
-    ctx.moveTo(px - 6, AXIS);
-    ctx.lineTo(px + 6, AXIS);
-    ctx.lineTo(px, AXIS + 9);
-    ctx.closePath();
-    ctx.fill();
-    ctx.font = `500 11px ${p.mono}`;
-    const code = f.text.timecode(f.t);
-    const right = px > W - 140;
-    ctx.textAlign = right ? "end" : "start";
-    ctx.fillText(code, right ? px - 7 : px + 7, AXIS + 16);
-    ctx.textAlign = "start";
-  }
-
-  // The selected node, and the one under the pointer.
-  for (const [index, colour, width] of [[f.hover, p.muted, 1], [f.selected, p.accent, 2]] as const) {
-    if (index < 0) continue;
-    const sx = toScreenX(cam, view, scene.x[index] as number);
-    const sy = toScreenY(cam, view, scene.y[index] as number);
+  const m = SPRITE / 2;
+  ctx.lineWidth = 1.5;
+  ctx.globalAlpha = 0.7;
+  for (const [bit, colour, r] of [[AT_RISK, p.negative, SINGLE_RADIUS + 3], [WAITING, p.accent, SINGLE_RADIUS + 4.5]] as const) {
+    if (!(health & bit)) continue;
     ctx.strokeStyle = colour;
-    ctx.lineWidth = width;
     ctx.beginPath();
-    ctx.arc(sx, sy, Math.max(11, (GLYPH + 4) * z), 0, TAU);
+    ctx.arc(m, m, r, 0, TAU);
     ctx.stroke();
   }
-  ctx.restore();
+  ctx.globalAlpha = 1;
+  const name = KINDS[kind] as MilestoneKind;
+  const style = STYLE[name];
+  ctx.beginPath();
+  glyph(ctx, name, m, m, SINGLE_RADIUS);
+  if (style.fill) {
+    ctx.fillStyle = p[style.fill];
+    ctx.fill();
+  }
+  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = p[style.stroke];
+  ctx.setLineDash(style.dash ? [1, 1] : []);
+  ctx.stroke();
+  sprites.set(key, canvas);
+  return canvas;
+}
 
-  drawTape(ctx, f, toWorldX(cam, view, 0), toWorldX(cam, view, W));
+/**
+ * The groups' marks (#489), in the primitives the Canvas draws cheapest, since at this zoom the stage is all marks:
+ * the edges across lanes, straight from group to group (within a lane the lane's own line stands for them); a halo,
+ * a rectangle, around a group with a milestone at risk or waiting for the owner; then each group, one pass per
+ * emphasis. A group of one is its milestone's glyph, at `SINGLE_RADIUS` on screen, from a sprite; a larger one a bar
+ * from its first milestone to its last, taller for each doubling, in the tape's ink of its most telling kind.
+ */
+function drawGroups(ctx: CanvasRenderingContext2D, f: Frame, groups: Groups, x0: number, x1: number, y0: number, y1: number): void {
+  const { palette: p, cam } = f;
+  const z = cam.z;
+  const fade = f.fade;
+  const [lo, hi] = groupRange(groups, x0, x1);
+  const centre = (g: number): number => ((groups.x0[g] as number) + (groups.x1[g] as number)) / 2;
+
+  const edges = groups.edges;
+  ctx.strokeStyle = p.faint;
+  ctx.lineWidth = 1.3 / z;
+  ctx.setLineDash([4 / z, 3 / z]);
+  for (const gone of fade ? [false, true] : [false]) {
+    ctx.globalAlpha = gone ? FADE[2] : 1;
+    ctx.beginPath();
+    for (let i = 0; i < edges.n; i++) {
+      const a = edges.a[i] as number;
+      const b = edges.b[i] as number;
+      const ay = groups.y[a] as number;
+      const by = groups.y[b] as number;
+      if (ay === by) continue;
+      const ax = centre(a);
+      const bx = centre(b);
+      if ((ax < x0 && bx < x0) || (ax > x1 && bx > x1)) continue;
+      if ((ay < y0 && by < y0) || (ay > y1 && by > y1)) continue;
+      if (fade && (groupLevel(groups, fade, a) === 2 || groupLevel(groups, fade, b) === 2) !== gone) continue;
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  ctx.setLineDash([]);
+
+  const inPart: number[] = [];
+  for (let g = lo; g < hi; g++) {
+    const y = groups.y[g] as number;
+    if ((groups.x1[g] as number) < x0 || y < y0 || y > y1) continue;
+    inPart.push(g);
+  }
+  const levelOf = fade ? new Map(inPart.map((g) => [g, groupLevel(groups, fade, g)])) : null;
+  // Where the world lands in device pixels: a sprite is copied on whole ones, at its own resolution.
+  const at = ctx.getTransform();
+  const half = Math.ceil(SPRITE * f.dpr) / 2;
+  for (const level of levels(f)) {
+    const mine = levelOf ? inPart.filter((g) => levelOf.get(g) === level) : inPart;
+    if (mine.length === 0) continue;
+    // The halos of the bars.
+    ctx.lineWidth = 1.5 / z;
+    ctx.globalAlpha = 0.7 * FADE[level];
+    for (const [bit, colour] of [[AT_RISK, p.negative], [WAITING, p.accent]] as const) {
+      ctx.strokeStyle = colour;
+      ctx.beginPath();
+      for (const g of mine) {
+        const n = size(groups, g);
+        if (n < 2 || !((groups.health[g] as number) & bit)) continue;
+        const r = (groupHalfHeight(n) + (bit === AT_RISK ? 2.5 : 4)) / z;
+        const a = groups.x0[g] as number;
+        const b = groups.x1[g] as number;
+        ctx.rect(a - r, (groups.y[g] as number) - r, b - a + 2 * r, 2 * r);
+      }
+      ctx.stroke();
+    }
+    // The bars, in their kind's ink.
+    ctx.globalAlpha = FADE[level];
+    for (const g of mine) {
+      const n = size(groups, g);
+      if (n < 2) continue;
+      const hh = groupHalfHeight(n) / z;
+      const a = groups.x0[g] as number;
+      const b = groups.x1[g] as number;
+      ctx.fillStyle = p[TICK[KINDS[groups.kind[g] as number] as MilestoneKind]];
+      ctx.fillRect(a - hh, (groups.y[g] as number) - hh, b - a + 2 * hh, 2 * hh);
+    }
+    // The groups of one.
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    for (const g of mine) {
+      if (size(groups, g) !== 1) continue;
+      const dx = at.a * (groups.x0[g] as number) + at.e;
+      const dy = at.d * (groups.y[g] as number) + at.f;
+      ctx.drawImage(sprite(f, groups.kind[g] as number, groups.health[g] as number), Math.round(dx - half), Math.round(dy - half));
+    }
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
 }
 
 /** The tape under the stage (`disegnaNastro`): the whole story on the time scale, the days, the joints (✂) where
- * nothing happened for more than twelve hours, a tick per milestone, the part of the story in view, the playhead. */
+ * nothing happened for more than twelve hours, a tick per milestone, the part of the story in view, the playhead.
+ * The lines and ticks, which do not move with the playhead, are drawn once, in two layers (#489): under the part in
+ * view, and over it. Its words are drawn on every frame, on the stage's own opaque canvas, as before. */
 function drawTape(ctx: CanvasRenderingContext2D, f: Frame, left: number, right: number): void {
-  const { palette: p, tape, model, layout } = f;
+  const { palette: p, tape, layout, model, dpr } = f;
   const top = f.view.h;
-  const W = f.width;
-  const scale = tape.scale;
-  ctx.fillStyle = p.ground;
-  ctx.fillRect(0, top, W, TAPE);
-  ctx.fillStyle = p.border;
-  ctx.fillRect(0, top, W, 1);
-  // Perforations, above and below: it is film.
-  ctx.fillStyle = p.raised;
-  ctx.beginPath();
-  for (let x = 4; x < W; x += 14) {
-    ctx.roundRect(x, top + 3, 7, 4, 1.5);
-    ctx.roundRect(x, top + TAPE - 7, 7, 4, 1.5);
-  }
-  ctx.fill();
+  const layers = f.tapeLayers ?? (f.tapeLayers = tapeLayers(f));
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(layers.under, 0, layers.top);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   // The part of the story the stage shows.
-  const a = scale.x(layout.tAt(left));
-  const b = scale.x(layout.tAt(right));
+  const a = tape.scale.x(layout.tAt(left));
+  const b = tape.scale.x(layout.tAt(right));
   ctx.globalAlpha = 0.7;
   ctx.fillStyle = p.raised;
   ctx.fillRect(a, top + 9, Math.max(2, b - a), TAPE - 18);
   ctx.globalAlpha = 1;
-  // Days.
-  ctx.strokeStyle = p.rule;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
+  // The days' labels and the joints, where the days' lines are.
+  const scale = tape.scale;
   ctx.font = `10px ${p.font}`;
   ctx.fillStyle = p.faint;
   let lastX = -1e9;
   for (const i of f.days) {
     const t = (model.nodes[i] as Model["nodes"][number]).t;
     const x = Math.round(scale.x(t) - 3) + 0.5;
-    ctx.moveTo(x, top + 10);
-    ctx.lineTo(x, top + TAPE - 10);
-    if (x - lastX >= 44) {
-      lastX = x;
-      ctx.fillText(f.text.day(t), x + 2, top + 19);
-    }
+    if (x - lastX < 44) continue;
+    lastX = x;
+    ctx.fillText(f.text.day(t), x + 2, top + 19);
   }
-  ctx.stroke();
   ctx.textAlign = "center";
   for (const joint of scale.joints) ctx.fillText("✂", joint.x, top + 37);
   ctx.textAlign = "start";
-  // A tick per milestone, in its kind's colour: one path per kind.
-  for (const kind of KINDS) {
-    ctx.strokeStyle = p[TICK[kind]];
-    ctx.lineWidth = kind === "milestone" ? 1 : 2;
-    ctx.beginPath();
-    for (const node of model.nodes) {
-      if (node.milestone.kind !== kind) continue;
-      const x = scale.x(node.t);
-      ctx.moveTo(x, top + 23);
-      ctx.lineTo(x, top + TAPE - 9);
-    }
-    ctx.stroke();
-  }
-  const x = scale.x(f.t);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(layers.over, 0, layers.top);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const x = tape.scale.x(f.t);
   ctx.fillStyle = p.accent;
   ctx.fillRect(x - 0.75, top + 7, 1.5, TAPE - 14);
   ctx.beginPath();
@@ -542,6 +782,61 @@ function drawTape(ctx: CanvasRenderingContext2D, f: Frame, left: number, right: 
   ctx.lineTo(x, top + 14);
   ctx.closePath();
   ctx.fill();
+}
+
+/** The tape's two layers, on whole device pixels from the tape's top down: the ground and its perforations, then the
+ * days' lines and the ticks. */
+function tapeLayers(f: Frame): TapeLayers {
+  const { palette: p, tape, model, dpr } = f;
+  const W = f.width;
+  const oy = f.view.h * dpr;
+  const top = Math.floor(oy);
+  const frac = oy - top;
+  const wide = Math.round(W * dpr);
+  const high = Math.ceil(TAPE * dpr + frac);
+  const under = layer(wide, high);
+  const over = layer(wide, high);
+  const u = under.getContext("2d", { alpha: false }) as CanvasRenderingContext2D;
+  const o = over.getContext("2d") as CanvasRenderingContext2D;
+  u.fillStyle = p.ground;
+  u.fillRect(0, 0, wide, high);
+  u.setTransform(dpr, 0, 0, dpr, 0, frac);
+  o.setTransform(dpr, 0, 0, dpr, 0, frac);
+  u.fillStyle = p.border;
+  u.fillRect(0, 0, W, 1);
+  // Perforations, above and below: it is film.
+  u.fillStyle = p.raised;
+  u.beginPath();
+  for (let x = 4; x < W; x += 14) {
+    u.roundRect(x, 3, 7, 4, 1.5);
+    u.roundRect(x, TAPE - 7, 7, 4, 1.5);
+  }
+  u.fill();
+  // Days.
+  const scale = tape.scale;
+  o.strokeStyle = p.rule;
+  o.lineWidth = 1;
+  o.beginPath();
+  for (const i of f.days) {
+    const x = Math.round(scale.x((model.nodes[i] as Model["nodes"][number]).t) - 3) + 0.5;
+    o.moveTo(x, 10);
+    o.lineTo(x, TAPE - 10);
+  }
+  o.stroke();
+  // A tick per milestone, in its kind's colour: one path per kind.
+  for (const kind of KINDS) {
+    o.strokeStyle = p[TICK[kind]];
+    o.lineWidth = kind === "milestone" ? 1 : 2;
+    o.beginPath();
+    for (const node of model.nodes) {
+      if (node.milestone.kind !== kind) continue;
+      const x = scale.x(node.t);
+      o.moveTo(x, 23);
+      o.lineTo(x, TAPE - 9);
+    }
+    o.stroke();
+  }
+  return { under, over, top };
 }
 
 /** The strip's height (#598), in CSS pixels. */
@@ -563,12 +858,46 @@ export type StripFrame = {
   band: [number, number] | null;
   /** The window a hand is drawing, until it lets go. */
   preview: [number, number] | null;
+  /** The axis, its days, joints and ticks, drawn once (#489), `null` until the next frame draws them. */
+  layer: HTMLCanvasElement | null;
 };
 
 /** `disegnaStriscia`: the axis of the whole story with its days, joints and a tick per milestone, then the window,
  * the rest under a veil, with a handle at each end. Every milestone is on it, whatever the filters keep. */
 export function drawStrip(ctx: CanvasRenderingContext2D, s: StripFrame): void {
+  const { palette: p } = s;
+  const axis = s.layer ?? (s.layer = stripLayer(s));
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(axis, 0, 0);
+  ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
+  // The window: what lies outside it under a veil, its edge in the lamp's colour, and a handle at each end. The whole
+  // story has no handles: a drag anywhere draws a window.
+  const window = s.preview ?? s.band;
+  const [a, b] = window ?? [s.x0, s.x1];
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = p.ground;
+  ctx.fillRect(s.x0, 11, Math.max(0, a - s.x0), 18);
+  ctx.fillRect(b, 11, Math.max(0, s.x1 - b), 18);
+  ctx.globalAlpha = window ? 1 : 0.35;
+  ctx.strokeStyle = p.accent;
+  // The width the ticks of the last kind left, before the axis was drawn once (#489).
+  ctx.lineWidth = 2;
+  ctx.strokeRect(Math.round(a) + 0.5, 11.5, Math.max(1, Math.round(b - a)), 17);
+  ctx.globalAlpha = 1;
+  if (window) {
+    ctx.fillStyle = p.accent;
+    ctx.beginPath();
+    ctx.roundRect(a - 3, 9, 6, 22, 2);
+    ctx.roundRect(b - 3, 9, 6, 22, 2);
+    ctx.fill();
+  }
+}
+
+/** The strip's axis: what does not move with the window. */
+function stripLayer(s: StripFrame): HTMLCanvasElement {
   const { palette: p, scale, model } = s;
+  const canvas = layer(Math.round(s.width * s.dpr), Math.round(STRIP * s.dpr));
+  const ctx = canvas.getContext("2d", { alpha: false }) as CanvasRenderingContext2D;
   ctx.setTransform(s.dpr, 0, 0, s.dpr, 0, 0);
   ctx.fillStyle = p.surface;
   ctx.fillRect(0, 0, s.width, STRIP);
@@ -612,23 +941,5 @@ export function drawStrip(ctx: CanvasRenderingContext2D, s: StripFrame): void {
     }
     ctx.stroke();
   }
-  // The window: what lies outside it under a veil, its edge in the lamp's colour, and a handle at each end. The whole
-  // story has no handles: a drag anywhere draws a window.
-  const window = s.preview ?? s.band;
-  const [a, b] = window ?? [s.x0, s.x1];
-  ctx.globalAlpha = 0.6;
-  ctx.fillStyle = p.ground;
-  ctx.fillRect(s.x0, 11, Math.max(0, a - s.x0), 18);
-  ctx.fillRect(b, 11, Math.max(0, s.x1 - b), 18);
-  ctx.globalAlpha = window ? 1 : 0.35;
-  ctx.strokeStyle = p.accent;
-  ctx.strokeRect(Math.round(a) + 0.5, 11.5, Math.max(1, Math.round(b - a)), 17);
-  ctx.globalAlpha = 1;
-  if (window) {
-    ctx.fillStyle = p.accent;
-    ctx.beginPath();
-    ctx.roundRect(a - 3, 9, 6, 22, 2);
-    ctx.roundRect(b - 3, 9, 6, 22, 2);
-    ctx.fill();
-  }
+  return canvas;
 }
