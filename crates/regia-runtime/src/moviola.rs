@@ -9,7 +9,7 @@ use regia_core::moviola::{LinkSettings, Project, normalize_remote};
 use regia_core::{EntryError, Registry, Tracker, TrackerBinding, TrackerConfigV1, TrackerError, V1Error, project_entry};
 use regia_git::Git;
 use regia_github::GhTracker;
-use regia_identity::state_dir;
+use regia_identity::{config_dir, state_dir};
 
 use crate::dossier_dir;
 
@@ -26,7 +26,7 @@ pub enum MoviolaError {
 /// The projects of the registry whose folder is a folder on this machine, read from the tracker: see
 /// [`registry_projects`].
 pub fn moviola_projects() -> Result<Vec<Project>, MoviolaError> {
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref())?;
+    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref(), config_dir().as_deref())?;
     let binding = TrackerBinding::new(&config)?;
     registry_projects(&GhTracker::new(&config), &binding, &config.owner)
 }
@@ -58,7 +58,7 @@ pub fn registry_projects(tracker: &impl Tracker, binding: &TrackerBinding, owner
 /// configuration that does not read is an error, which names it; with none, or the dossier's unreadable, the links
 /// have no URL. The remote is not here: it is each project's own ([`project_links`]).
 pub fn tracker_links() -> Result<LinkSettings, MoviolaError> {
-    let config = TrackerConfigV1::load_for_links(state_dir().as_deref(), dossier_dir().as_deref())?;
+    let config = TrackerConfigV1::load_for_links(state_dir().as_deref(), dossier_dir().as_deref(), config_dir().as_deref())?;
     Ok(config.map_or_else(LinkSettings::default, |config| LinkSettings {
         owner: Some(config.owner),
         repo: Some(config.repo),

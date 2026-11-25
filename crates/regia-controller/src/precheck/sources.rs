@@ -61,7 +61,7 @@ fn settings_dir() -> Option<PathBuf> {
 ///
 /// When the tracker's configuration cannot be read.
 pub fn live_sources(deadline_s: f64, fixed: Option<WallTime>) -> Result<LiveSources, String> {
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
+    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref(), config_dir().as_deref()).map_err(|error| error.to_string())?;
     let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
     let store = Store::open().map_err(|error| error.to_string());
     let store = store.map(|store| match fixed {

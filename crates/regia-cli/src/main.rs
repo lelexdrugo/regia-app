@@ -18,12 +18,12 @@ use clap::{Parser, Subcommand};
 use regia_agents::{
     Assignment, Diversity, Env, Https, LaunchRequest, Policy, ProbeConsent, Receipt, Role, ServiceId, Settings, SurfaceKind, UsageProbes,
 };
-use regia_core::{Brief, BriefOptions, BriefTask};
+use regia_core::{Brief, BriefOptions, BriefTask, TrackerConfigV1, V1Error};
 use regia_exec::{Effort, ExecError, ModelId, Program};
 use regia_facade::{Engine, FacadeError, Printed, PythonPrototype, Table};
 use regia_i18n::{Catalog, Language};
-use regia_identity::{BIN_NAME, config_dir, env_var};
-use regia_runtime::{dossier_dir, load_brief};
+use regia_identity::{BIN_NAME, config_dir, env_var, state_dir};
+use regia_runtime::{BriefError, dossier_dir, load_brief};
 use regia_store::{MIN_INTERVAL_S, Reading, Store};
 use serde_json::Value;
 
@@ -185,8 +185,10 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
                 }
                 return passthrough(&table, &prototype, "brief", &args, catalog);
             }
-            let brief =
-                load_brief(&BriefOptions { project, ..BriefOptions::default() }).map_err(|error| error.to_string())?;
+            let brief = load_brief(&BriefOptions { project, ..BriefOptions::default() }).map_err(|error| match &error {
+                BriefError::Format(error) => config_error(error, catalog),
+                _ => error.to_string(),
+            })?;
             eprintln!("{}", catalog.message("brief-partial"));
             if json {
                 print_json(&serde_json::to_value(&brief).map_err(|error| error.to_string())?)?;
@@ -325,6 +327,31 @@ fn settings() -> Result<Settings, String> {
         Some(dir) => Settings::load(&dir).map_err(|error| error.to_string()),
         None => Ok(Settings::default()),
     }
+}
+
+/// The tracker's configuration as every command reads it: the state folder's `tracker.json`, else the dossier's,
+/// checked against the anchor of the configuration folder.
+fn tracker_config() -> Result<TrackerConfigV1, String> {
+    TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref(), config_dir().as_deref())
+        .map_err(|error| config_error(&error, &Catalog::new(Language::detect())))
+}
+
+/// An error of the tracker's configuration as the user reads it: a `tracker.json` that names another tracker than the
+/// anchor, in the catalog's words, with both trackers (T08, V17); any other as it is. Each exits 1, as an invalid
+/// local configuration does (`conformita.md` §7.1): 3 is a refusal, which the precheck reads as a lock held.
+fn config_error(error: &V1Error, catalog: &Catalog) -> String {
+    let V1Error::AnchorMismatch { file, anchor, found, anchored } = error else { return error.to_string() };
+    format!(
+        "{}{}
+  {}
+  {}
+  {}",
+        catalog.message_with("init-anchor-mismatch", "file", &file.display().to_string()),
+        catalog.message_with("init-anchor-file", "anchor", &anchor.display().to_string()),
+        catalog.message_with("init-anchor-found", "tracker", &found.to_string()),
+        catalog.message_with("init-anchor-anchored", "tracker", &anchored.to_string()),
+        catalog.message("init-anchor-again"),
+    )
 }
 
 /// `agents show`: what `role` gets under `settings`, for work `writer` wrote.

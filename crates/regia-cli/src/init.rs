@@ -7,6 +7,10 @@
 //! exit codes are the prototype's (`conformita.md` §7.2 of the dossier): 0 when the plan was computed, and for `derive`
 //! when the file was written or was the same already; 1 when the plan cannot be computed; 2 for a wrong argument, as
 //! argparse exits; 3 when the destination exists and differs, without `--overwrite`; 4 when the tracker is not ready.
+//!
+//! `derive` also anchors the app to the tracker it derives, in the app's configuration folder (threat model T08, V17):
+//! from then on every command stops on a `tracker.json` that names another repo or Project. The prototype has no
+//! anchor; nothing it prints changes.
 
 use std::fs;
 use std::io::{self, Write};
@@ -14,12 +18,14 @@ use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use clap::Parser;
-use regia_core::init::{Detail, GhSaid, InitReads, Item, Outcome, Plan, PlanOptions, Scope, SkillCopy, default_project_title, default_repo, plan, skill_homes};
-use regia_core::{local_config_file, pystr};
+use regia_core::init::{
+    Detail, GhSaid, InitReads, Item, LocalConfig, Outcome, Plan, PlanOptions, Scope, SkillCopy, default_project_title, default_repo, plan, skill_homes,
+};
+use regia_core::{anchor_file, local_config_file, pystr};
 use regia_exec::RepoSlug;
 use regia_github::GhInit;
 use regia_i18n::Catalog;
-use regia_identity::{prototype_env_var, state_dir};
+use regia_identity::{config_dir, config_dir_var, prototype_env_var, state_dir};
 use regia_runtime::dossier_dir;
 use serde_json::{Value, json};
 
@@ -169,7 +175,8 @@ fn default_destination() -> Result<PathBuf, String> {
 
 /// What `derive` did: its exit code and its outcome in the table's words. The configuration is written only from a
 /// ready tracker, and over a file that says something else only with `overwrite`; a file that says the same is left
-/// as it is. What it says goes on stdout, or on stderr with `--json`; the refusals always on stderr.
+/// as it is. Both anchor the app to that tracker, after the configuration is in place. What it says goes on stdout, or
+/// on stderr with `--json`; the refusals always on stderr.
 fn derive(plan: &Plan, given: Option<&str>, overwrite: bool, json: bool, catalog: &Catalog) -> Result<(u8, &'static str), String> {
     let say = |line: String| if json { eprintln!("{line}") } else { println!("{line}") };
     let Some(config) = plan.local_config() else {
@@ -183,10 +190,12 @@ fn derive(plan: &Plan, given: Option<&str>, overwrite: bool, json: bool, catalog
         Some(given) => PathBuf::from(given),
         None => default_destination()?,
     };
+    let anchor = anchor_destination()?;
     let shown = python_path(&destination);
     if destination.exists() {
         let existing = fs::read_to_string(&destination).ok().and_then(|text| serde_json::from_str::<Value>(&text).ok());
         if existing.is_some_and(|existing| config.same_as(&existing)) {
+            write_anchor(&anchor, &config)?;
             say(catalog.message_with("init-derive-same", "path", &shown));
             return Ok((0, "same"));
         }
@@ -196,8 +205,20 @@ fn derive(plan: &Plan, given: Option<&str>, overwrite: bool, json: bool, catalog
         }
     }
     write_atomically(&destination, &config.file_text()).map_err(|error| format!("{shown}: {error}"))?;
+    write_anchor(&anchor, &config)?;
     say(catalog.message_with("init-derive-written", "path", &shown));
     Ok((0, "written"))
+}
+
+/// The anchor of the app's configuration folder, where `derive` anchors the app to the tracker it derives.
+fn anchor_destination() -> Result<PathBuf, String> {
+    let dir = config_dir().ok_or_else(|| format!("no configuration folder: set {}", config_dir_var()))?;
+    Ok(anchor_file(&dir))
+}
+
+/// The anchor of `config` at `path`, written as the configuration is: whole or not at all.
+fn write_anchor(path: &Path, config: &LocalConfig) -> Result<(), String> {
+    write_atomically(path, &config.anchor().file_text()).map_err(|error| format!("{}: {error}", python_path(path)))
 }
 
 /// A path as Python's `pathlib` prints it: its parts joined with the system's separator.
