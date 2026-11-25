@@ -146,7 +146,7 @@ pub fn approved_never_started(issues: &[Task], project: &str, now: DateTime<Utc>
 }
 
 /// In progress with no live lease and the issue not updated for more than `days`: the dispatches
-/// of Orca take no lease, so without the second condition every running worker would be a finding.
+/// of the IDE's workers take no lease, so without the second condition every running worker would be a finding.
 pub fn in_progress_stalled(issues: &[Task], project: &str, now: DateTime<Utc>, days: u64, live_leases: &BTreeSet<u64>) -> Vec<Finding> {
     let mut out = Vec::new();
     for task in issues.iter().filter(|task| waiting(task, project, Status::InProgress) && !live_leases.contains(&task.number)) {
