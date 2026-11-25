@@ -83,7 +83,7 @@ impl Git {
     }
 
     /// The text of `path` as the commit `rev` has it (`git show <rev>:<path>`), read as the prototype reads the state
-    /// of a step before (`_stato_precedente`): a run that fails is a version that is not there, with git's stderr.
+    /// of a step before: a run that fails is a version that is not there, with git's stderr.
     pub fn file_at(&self, folder: &Path, rev: &GitRef, path: &DossierPath) -> Run {
         match Text::parse(&format!("{}:{}", rev.as_str(), path.as_str())) {
             Ok(spec) => self.run(folder, call::show_file(&spec), None),

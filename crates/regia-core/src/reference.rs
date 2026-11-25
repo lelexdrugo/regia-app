@@ -163,7 +163,7 @@ impl Reference {
         self.reason
     }
 
-    /// Why it does not resolve, in the prototype's words (`motivo`), as `path` gives it: `None` for a file or a folder
+    /// Why it does not resolve, in the prototype's words, as `path` gives it: `None` for a file or a folder
     /// that is there; the name of its form for a reference that is no path.
     pub fn reason_sentence(&self) -> Option<&'static str> {
         let reasons = &format().reasons;
