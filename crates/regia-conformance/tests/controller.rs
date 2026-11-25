@@ -416,8 +416,12 @@ fn run_case(case: &CaseFiles, alter: impl FnOnce(&mut Value)) -> Run {
         liveness: Arc::new(Processes::new()),
         surface: surface.clone(),
         lock: Arc::new(StoreLock::new(store.clone(), holder.clone())),
-        signals: Arc::new(StoreSignals::new(store.clone())),
-        steps: Arc::new(StoreSteps::load(store.clone()).expect("the registry")),
+        signals: Arc::new(StoreSignals::new(store.clone(), holder.clone())),
+        steps: Arc::new({
+            let steps = StoreSteps::new(store.clone(), holder.clone());
+            steps.load().expect("the registry, read after the lock");
+            steps
+        }),
         ids: Arc::new(random_id),
     };
     let assignment = regia_agents::Policy::new(regia_agents::Settings::parse("").expect("settings")).expect("policy").assign(regia_agents::Role::Replanning, None);
