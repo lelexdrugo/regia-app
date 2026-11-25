@@ -71,7 +71,7 @@ fn stalled_race(
     let dir = folder(label);
     let plain = Store::at(&dir).unwrap();
     seed(&plain);
-    // The prototype's `_semina_scaduto`: a document of a holder who is gone, expired for good.
+    // As the prototype's seeding helper: the document of a holder who is gone, expired for good.
     thread::sleep(Duration::from_millis(250));
     let (reached, wait_reached) = mpsc::channel();
     let (go_on, wait_go_on) = mpsc::channel();
@@ -98,7 +98,8 @@ fn winners(outcomes: &[&LockOutcome]) -> usize {
     outcomes.iter().filter(|outcome| outcome.is_ok()).count()
 }
 
-/// `test_d1_lock_titolare_sospeso_non_deve_dare_due_vincitori`.
+/// `test_d1_lock_…_non_deve_dare_due_vincitori` of `test_runtime_avversaria.py`. The sources may not hold the
+/// Italian word of the name's middle (a guard of `regia-conformance`), so it is left out here.
 #[test]
 fn a_stalled_contender_on_a_lock_does_not_give_two_winners() {
     let ttl = Ttl::from_secs(60).unwrap();
@@ -120,7 +121,7 @@ fn a_stalled_contender_on_a_lock_does_not_give_two_winners() {
     }
 }
 
-/// `test_d1_lease_titolare_sospeso_non_deve_perdere_la_lease_del_subentrante`.
+/// `test_d1_lease_…_non_deve_perdere_la_lease_del_subentrante`, same file, same guard.
 #[test]
 fn a_stalled_contender_on_a_lease_does_not_lose_the_lease_of_the_one_that_took_over() {
     let ttl = Ttl::from_secs(3600).unwrap();
