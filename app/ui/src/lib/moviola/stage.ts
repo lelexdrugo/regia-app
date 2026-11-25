@@ -4,12 +4,21 @@
 // from moment to moment), the playhead (dragged on the stage or on the tape, moved by a selection, as the UX
 // prototype does) and the colours, read again from the tokens when the direction on <html> changes: a new theme is
 // a redraw, not a reload. The canvas carries what the proofs wait on: `data-frames`, the frames drawn, `data-dir`,
-// the direction of the last one, `data-camera`, its camera, and `data-view`, the stage above the tape.
+// the direction of the last one, `data-camera`, its camera, `data-view`, the stage above the tape, `data-groups`,
+// at the zoom of groups (#489) the groups in view and the moments they hold, empty at the zoom of detail, and
+// `data-world`, whether the last frame's world came from tiles or was drawn directly.
+//
+// The level of detail (#489): under lod.ts's zoom of groups each lane's milestones are drawn in groups, which the
+// pointer finds as it finds a node, a click on one opening it at the zoom of detail; the world is blitted from tiles
+// drawn once for the zoom (tiles.ts), dropped whenever the marks change; the labels go by rank and keep off the
+// lanes' names.
 import { clampCamera, type Extent, homeCamera, panBy, reveal, zoomAround } from "./camera";
-import { AXIS, bucketByKind, type CanvasText, cut, drawFrame, drawStrip, type Frame, STRIP, type StripFrame, TAPE, type Tape } from "./canvas2d";
-import { chooseWindow, dayStarts, HOUR, laneEnvelope, type Layout, layout, type Model, tapeScale, type TimeWindow } from "./model";
+import { AXIS, bucketByKind, type CanvasText, cut, drawFrame, drawStrip, type Frame, reservedPlaces, STRIP, type StripFrame, TAPE, type Tape } from "./canvas2d";
+import { GROUP_ZOOM, groupAt, groupEnvelopes, type Groups, groupsAt, groupZoom, inView, size } from "./lod";
+import { chooseWindow, dayStarts, type Envelope, halfThickness, HOUR, laneEnvelope, type Layout, layout, type Model, tapeScale, type TimeWindow } from "./model";
 import { readPalette, type Palette } from "./palette";
-import { buildScene, type Camera, FILTERED, hitTest, newLabels, pickLabels, type Scene, toScreenX, toScreenY, toWorldX, toWorldY, type View } from "./scene";
+import { buildScene, type Camera, FILTERED, hitTest, labelRank, newLabels, pickLabels, type Scene, toScreenX, toScreenY, toWorldX, toWorldY, type View } from "./scene";
+import { WorldTiles } from "./tiles";
 
 export type StageOptions = {
   text: CanvasText;
@@ -22,6 +31,9 @@ export type StageOptions = {
   strip?: HTMLCanvasElement;
   /** Called when the part of the story in view changes. */
   onview?: (view: ViewRange) => void;
+  /** Called when the stage starts or stops drawing groups (#489), or the groups in view change: what the screen says
+   * of them, `null` at the zoom of detail. */
+  ongroups?: (shown: GroupsShown | null) => void;
   /** Off only for the harness's negative control: a stage that does not hear a change of direction. */
   observeTheme?: boolean;
 };
@@ -29,10 +41,16 @@ export type StageOptions = {
 /** The part of the story the stage shows: from one instant to another, or all of it. */
 export type ViewRange = { from: number; to: number; whole: boolean };
 
+/** At the zoom of groups, the groups in view and the moments they hold (#489). */
+export type GroupsShown = { groups: number; moments: number };
+
 type Drag =
-  | { kind: "pan"; x: number; y: number; moved: boolean; node: number }
+  | { kind: "pan"; x: number; y: number; moved: boolean; node: number; group: number }
   | { kind: "playhead" }
   | { kind: "tape" };
+
+/** What is under a point of the stage: a node, as a scene index, and at the zoom of groups the group; -1 for none. */
+type Hit = { node: number; group: number };
 
 const sameCamera = (a: Camera, b: Camera): boolean => Math.abs(a.cx - b.cx) < 1e-6 && Math.abs(a.cy - b.cy) < 1e-6 && Math.abs(a.z - b.z) < 1e-9;
 
@@ -40,6 +58,15 @@ const sameCamera = (a: Camera, b: Camera): boolean => Math.abs(a.cx - b.cx) < 1e
 type StripDrag = { kind: "new" | "from" | "to" | "move"; x: number; a: number; b: number; moved: boolean };
 
 const ZOOM_STEP = 1.25;
+
+/**
+ * The engines that draw the world part by part and from tiles, and a group of one from a sprite (#489): Chromium's,
+ * where the bench measured them pay (WebView2 on Skia Ganesh: x10 dense from 38 % of frames late in pan to none).
+ * WebKit's measured the other way on the CI's macOS runner, a frame that drew parts or tiles costing several times one
+ * drawn in one pass (the dossier's report of #489), so there the world is drawn in one pass, as the bench of #488
+ * measured it, and only the groups are new.
+ */
+const PARTS = typeof navigator !== "undefined" && /Chrome\/\d/.test(navigator.userAgent);
 
 export class Stage {
   readonly model: Model;
@@ -83,6 +110,13 @@ export class Stage {
   private stripFrame: StripFrame | null = null;
   private stripDrag: StripDrag | null = null;
   private lastView: ViewRange | null = null;
+  /** The world in tiles for the zoom in use (#489), the groups of the last zoom under the zoom of groups with the
+   * lanes' envelopes through them, the group under the pointer, and what the screen was last told of the groups. */
+  private readonly tiles = new WorldTiles();
+  private groups: Groups | null = null;
+  private groupEnv: Envelope[] | null = null;
+  private hoverGroup = -1;
+  private lastGroups: string | null = null;
 
   constructor(host: HTMLElement, canvas: HTMLCanvasElement, model: Model, options: StageOptions) {
     this.host = host;
@@ -154,13 +188,21 @@ export class Stage {
   destroy(): void {
     if (this.pending) cancelAnimationFrame(this.pending);
     for (const undo of this.cleanup.splice(0)) undo();
+    this.tiles.clear();
   }
 
-  /** The words of the catalog in use: a new language is a redraw. */
+  /** The words of the catalog in use: a new language is a redraw, the lanes' names measured again and the strip's
+   * days written again. */
   setText(text: CanvasText): void {
     this.text = text;
-    if (this.frame) this.frame.text = text;
-    if (this.stripFrame) this.stripFrame.text = text;
+    if (this.frame) {
+      this.frame.text = text;
+      this.frame.nameWidths = null;
+    }
+    if (this.stripFrame) {
+      this.stripFrame.text = text;
+      this.stripFrame.layer = null;
+    }
     this.render();
   }
 
@@ -182,6 +224,8 @@ export class Stage {
     const frame = this.frame;
     const scene = this.scene;
     if (!frame || !scene) return;
+    // Another emphasis draws other marks: the tiles are drawn again.
+    this.tiles.invalidate();
     frame.chosen = this.chosen;
     if (this.kept === null && this.chosen < 0) {
       frame.fade = null;
@@ -317,14 +361,19 @@ export class Stage {
 
   /** Draws now, with this camera: for the bench, which moves it at every frame. */
   drawNow(camera: Camera = this.camera): void {
-    if (!this.frame) return;
+    const frame = this.frame;
+    if (!frame) return;
     this.camera = camera;
-    this.frame.cam = camera;
-    this.frame.t = this.t;
-    this.frame.selected = this.selected >= 0 ? (this.sceneOf[this.selected] as number) : -1;
-    this.frame.hover = this.hover;
-    pickLabels(this.frame.scene, camera, this.view, (k) => this.labelWidth(k), this.labels, this.frame.fade);
-    drawFrame(this.ctx, this.frame);
+    frame.cam = camera;
+    frame.t = this.t;
+    frame.selected = this.selected >= 0 ? (this.sceneOf[this.selected] as number) : -1;
+    const groups = this.groupsFor(camera.z);
+    frame.groups = groups;
+    frame.groupEnvelopes = groups ? this.groupEnv : null;
+    frame.hover = groups ? -1 : this.hover;
+    frame.hoverGroup = groups ? this.hoverGroup : -1;
+    pickLabels(frame.scene, camera, this.view, (k) => this.labelWidth(k), this.labels, frame.fade, (k) => this.rank(k), reservedPlaces(frame, this.ctx));
+    drawFrame(this.ctx, frame, PARTS ? this.tiles : null);
     const strip = this.stripFrame;
     if (strip && this.stripCtx) {
       const range = this.viewRange();
@@ -348,14 +397,46 @@ export class Stage {
       this.canvas.dataset["dir"] = this.palette.direction;
       this.canvas.dataset["camera"] = `${cx.toFixed(1)} ${cy.toFixed(1)} ${z.toFixed(3)}`;
       this.canvas.dataset["view"] = `${this.view.w} ${this.view.h}`;
+      this.canvas.dataset["world"] = this.tiles.blitted ? "tiles" : "direct";
       const range = this.viewRange();
       const last = this.lastView;
       if (range && (!last || last.from !== range.from || last.to !== range.to || last.whole !== range.whole)) {
         this.lastView = range;
         this.options.onview?.(range);
       }
+      // What the screen says of the groups (#489): nothing is drawn in a group without its words.
+      const groups = this.frame.groups;
+      const shown = groups ? inView(groups, this.camera, this.view) : null;
+      const said = shown ? `${shown.groups} ${shown.moments}` : "";
+      this.canvas.dataset["groups"] = said;
+      if (said !== this.lastGroups) {
+        this.lastGroups = said;
+        this.options.ongroups?.(shown);
+      }
       if (this.fonts) this.settle();
     });
+  }
+
+  /** The groups at zoom `z` (lod.ts), with the lanes' envelopes through them; `null` at the zoom of detail. They are
+   * cut at `groupZoom(z)`, so a zoom keeps them for a quarter of an octave instead of cutting them at every frame. */
+  private groupsFor(z: number): Groups | null {
+    const scene = this.scene;
+    if (z >= GROUP_ZOOM || !scene) return null;
+    const cut = groupZoom(z);
+    if (this.groups?.z !== cut) {
+      this.groups = groupsAt(scene, this.model, cut);
+      this.groupEnv = groupEnvelopes(this.frame?.envelopes ?? [], this.groups, halfThickness);
+      // The group under the pointer was one of the old ones.
+      this.hoverGroup = -1;
+    }
+    return this.groups;
+  }
+
+  /** A label's rank: first a milestone at risk or waiting for the owner, then by kind (scene.ts's `labelRank`). */
+  private rank(k: number): number {
+    const scene = this.scene as Scene;
+    const health = this.model.nodes[scene.node[k] as number]?.milestone.health;
+    return labelRank(scene, k, health === "at_risk" || health === "waiting_on_owner");
   }
 
   private changed(): void {
@@ -366,8 +447,18 @@ export class Stage {
   private retheme(): void {
     this.palette = readPalette();
     this.widths.clear();
-    if (this.frame) this.frame.palette = this.palette;
-    if (this.stripFrame) this.stripFrame.palette = this.palette;
+    // Every mark drawn once is in the old tokens: the tiles, the tape's layers, the strip's axis, the names' widths.
+    this.tiles.invalidate();
+    if (this.frame) {
+      this.frame.palette = this.palette;
+      this.frame.tapeLayers = null;
+      this.frame.nameWidths = null;
+      this.frame.sprites = null;
+    }
+    if (this.stripFrame) {
+      this.stripFrame.palette = this.palette;
+      this.stripFrame.layer = null;
+    }
     this.render();
   }
 
@@ -393,6 +484,7 @@ export class Stage {
       days: dayStarts(this.model, this.options.dayKey),
       band: null,
       preview: null,
+      layer: null,
     };
     this.render();
   }
@@ -515,6 +607,11 @@ export class Stage {
     this.sceneOf = new Int32Array(this.model.nodes.length);
     scene.node.forEach((index, k) => (this.sceneOf[index] = k));
     this.widths.clear();
+    // A new layout: no tile, no group and no group under the pointer holds.
+    this.tiles.invalidate();
+    this.groups = null;
+    this.groupEnv = null;
+    this.hoverGroup = -1;
     const extent = this.extent;
     if (before) {
       const sx = extent.w / Math.max(1, before.extent.w);
@@ -547,6 +644,13 @@ export class Stage {
       tape,
       fade: null,
       chosen: -1,
+      groups: null,
+      groupEnvelopes: null,
+      hoverGroup: -1,
+      tapeLayers: null,
+      nameWidths: null,
+      sprites: null,
+      parts: PARTS,
     };
     this.applyEmphasis();
     if (this.stripFrame && this.stripFrame.dpr !== dpr) {
@@ -563,10 +667,33 @@ export class Stage {
 
   /** The node under a screen point, as a scene index, or -1: within twelve pixels at any zoom. */
   private nodeAt(x: number, y: number): number {
+    return this.pick(x, y).node;
+  }
+
+  /** What is under a screen point, within twelve pixels at any zoom: a node; at the zoom of groups (#489) the group,
+   * and its one node when it has one. */
+  private pick(x: number, y: number): Hit {
     const scene = this.scene;
-    if (!scene || y < AXIS || y > this.view.h) return -1;
+    if (!scene || y < AXIS || y > this.view.h) return { node: -1, group: -1 };
     const radius = 12 / this.camera.z;
-    return hitTest(scene, toWorldX(this.camera, this.view, x), toWorldY(this.camera, this.view, y), radius, this.frame?.fade ?? null);
+    const wx = toWorldX(this.camera, this.view, x);
+    const wy = toWorldY(this.camera, this.view, y);
+    const fade = this.frame?.fade ?? null;
+    const groups = this.groupsFor(this.camera.z);
+    if (!groups) return { node: hitTest(scene, wx, wy, radius, fade), group: -1 };
+    const g = groupAt(groups, wx, wy, radius, fade);
+    const alone = g >= 0 && size(groups, g) === 1 ? (groups.members[groups.start[g] as number] as number) : -1;
+    return { node: alone, group: g };
+  }
+
+  /** A group of several moments clicked (#489): the camera goes to the zoom of detail, on the group. */
+  private openGroup(g: number): void {
+    const groups = this.groups;
+    if (!groups || g < 0 || g >= groups.n) return;
+    const cx = ((groups.x0[g] as number) + (groups.x1[g] as number)) / 2;
+    this.camera = clampCamera({ cx, cy: groups.y[g] as number, z: GROUP_ZOOM * 1.25 }, this.extent, this.view);
+    this.hoverGroup = -1;
+    this.render();
   }
 
   private playheadX(): number {
@@ -593,7 +720,8 @@ export class Stage {
     } else if (Math.abs(x - this.playheadX()) <= 6 && y >= AXIS) {
       this.drag = { kind: "playhead" };
     } else {
-      this.drag = { kind: "pan", x, y, moved: false, node: this.nodeAt(x, y) };
+      const hit = this.pick(x, y);
+      this.drag = { kind: "pan", x, y, moved: false, node: hit.node, group: hit.group };
     }
   }
 
@@ -601,10 +729,11 @@ export class Stage {
     const { x, y } = this.local(event);
     const drag = this.drag;
     if (!drag) {
-      const k = this.nodeAt(x, y);
-      this.setHover(k);
-      this.canvas.classList.toggle("on-node", k >= 0);
-      this.canvas.classList.toggle("on-playhead", k < 0 && Math.abs(x - this.playheadX()) <= 6 && y >= AXIS && y <= this.view.h);
+      const hit = this.pick(x, y);
+      this.setHover(hit.node, hit.group);
+      const on = hit.node >= 0 || hit.group >= 0;
+      this.canvas.classList.toggle("on-node", on);
+      this.canvas.classList.toggle("on-playhead", !on && Math.abs(x - this.playheadX()) <= 6 && y >= AXIS && y <= this.view.h);
       return;
     }
     if (drag.kind === "tape") {
@@ -628,7 +757,8 @@ export class Stage {
     this.capture(event, false);
     this.canvas.classList.remove("panning");
     if (drag?.kind === "pan" && !drag.moved && event.type === "pointerup") {
-      this.select(drag.node >= 0 && this.scene ? (this.scene.node[drag.node] as number) : -1);
+      if (drag.node < 0 && drag.group >= 0) this.openGroup(drag.group);
+      else this.select(drag.node >= 0 && this.scene ? (this.scene.node[drag.node] as number) : -1);
     }
   }
 
@@ -637,9 +767,10 @@ export class Stage {
     if (tape) this.setPlayhead(tape.scale.t(x), true);
   }
 
-  private setHover(k: number): void {
-    if (k === this.hover) return;
+  private setHover(k: number, group = -1): void {
+    if (k === this.hover && group === this.hoverGroup) return;
     this.hover = k;
+    this.hoverGroup = group;
     this.render();
   }
 

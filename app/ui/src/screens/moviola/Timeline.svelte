@@ -8,6 +8,8 @@
   // The overview (#598): the filters under the search, which compose with it into one selection, one count and one
   // «Clear the filters»; the strip «time window» above the stage, which moves its camera; the project at the
   // playhead under it; and, while no moment is open, the project's directions in the frame's place.
+  // The level of detail (#489): zoomed out, the stage draws each lane's moments in groups, and a line under it says
+  // how many moments the groups in view hold, so no moment leaves the view without a word.
   import { onMount, tick, untrack } from "svelte";
 
   import type { Catalog } from "../../lib/i18n";
@@ -16,7 +18,7 @@
   import { frame as frameOf, type Notes } from "../../lib/moviola/frame";
   import { type Model, prepare, stateAt } from "../../lib/moviola/model";
   import { isEmpty, type Names, parseQuery, search, stepWithin } from "../../lib/moviola/search";
-  import { Stage, type ViewRange } from "../../lib/moviola/stage";
+  import { type GroupsShown, Stage, type ViewRange } from "../../lib/moviola/stage";
   import { day, dayKey, KIND_ID, LANE_ID, laneName, timecode } from "../../lib/moviola/text";
   import type { MoviolaSource, Snapshot } from "../../lib/moviola/types";
   import { href } from "../../lib/route";
@@ -58,6 +60,8 @@
   let range = $state(0);
   let selected = $state(-1);
   let shown: ViewRange | null = $state(null);
+  let grouped = $state<GroupsShown | null>(null);
+  const groupsSaid = $derived(grouped ? strings.message("moviola-groups", { moments: grouped.moments, groups: grouped.groups }) : "");
   // The sidecar of the moment chosen: only the answer for the one still chosen counts.
   let notes: Notes = $state({ kind: "loading" });
   let snapshot: Snapshot | null = $state.raw(null);
@@ -265,6 +269,7 @@
         selected = moved.selected;
       },
       onview: (part) => (shown = part),
+      ongroups: (groups) => (grouped = groups),
     });
     stage = made;
     void made.ready.then(async () => {
@@ -436,7 +441,7 @@
           bind:this={canvas}
           tabindex="0"
           aria-label={strings.message("moviola-stage")}
-          aria-describedby="moviola-status"
+          aria-describedby={grouped ? "moviola-status moviola-groups" : "moviola-status"}
         ></canvas>
       </div>
       <div class="transport">
@@ -477,6 +482,8 @@
           <span class="faint">{strings.message("moviola-stage-hint")}</span>
         {/if}
       </p>
+      <!-- Always there, empty at the zoom of detail, one line: the stage keeps its size when the zoom crosses into groups. -->
+      <p class="stage-groups" id="moviola-groups" data-groups={grouped ? `${grouped.groups} ${grouped.moments}` : ""} title={groupsSaid || undefined}>{groupsSaid}</p>
     </section>
     {#if at}
       <AtDate {strings} {model} state={at} {decisions} onselect={(index) => stage?.select(index)} />
