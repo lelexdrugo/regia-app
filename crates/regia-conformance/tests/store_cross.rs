@@ -38,6 +38,10 @@ use serde_json::Value;
 const ATTEMPTS: u64 = 1000;
 const MIN_WINS: u64 = 100;
 const MIN_BUSY: u64 = 100;
+/// How long a winner may hold the lock inside the witness, at most. The verdict rule says an inconclusive run is
+/// repeated with other pacing: 2 ms gave too few refusals in WSL (90 to 129 against the 100 the rule wants, with
+/// no violation), 6 ms gives each side more to be refused by. A longer hold only makes the test harder to pass.
+const HOLD_MS: &str = "6";
 
 struct Sides {
     dossier: PathBuf,
@@ -431,7 +435,7 @@ fn contention_never_gives_two_holders() {
     let args = |holder: &str, done: &Path, peer: &Path| -> Vec<String> {
         let (done, peer) = (done.display().to_string(), peer.display().to_string());
         [
-            "contend", "p437", holder, &attempts, "--witness", &witness, "--start-at-ms", &start, "--hold-ms", "2", "--done",
+            "contend", "p437", holder, &attempts, "--witness", &witness, "--start-at-ms", &start, "--hold-ms", HOLD_MS, "--done",
             &done, "--peer-done", &peer,
         ]
         .map(str::to_owned)
@@ -473,8 +477,8 @@ fn contention_never_gives_two_holders() {
         "rule: each side at least {ATTEMPTS} attempts, at least {MIN_WINS} wins and {MIN_BUSY} busy; 0 violations, 0 anomalies
 "
     ));
-    log.push_str("each attempt: acquire with a 60 s ttl; on a win, a witness folder created, up to 2 ms held, removed, then release
-");
+    log.push_str(&format!("each attempt: acquire with a 60 s ttl; on a win, a witness folder created, up to {HOLD_MS} ms held, removed, then release
+"));
     log.push_str(&format!("rust: exit {} {}
 ", rust.code, rust.json));
     log.push_str(&format!("python: exit {} {}
