@@ -14,11 +14,19 @@
     source: MoviolaSource;
     /** The project the address names, or none for the portfolio. */
     project: string | null;
+    /** The moment the address opens, and the search it asks for, if any. */
+    moment?: string | null;
+    query?: string | null;
+    /** The filters and the lane chosen, as the address asks for them (#598). */
+    filters?: string | null;
+    hide?: string | null;
+    lane?: string | null;
     observeTheme?: boolean;
     onsettled?: () => void;
   }
 
-  let { strings, source, project, observeTheme = true, onsettled }: Props = $props();
+  let { strings, source, project, moment = null, query = null, filters = null, hide = null, lane = null, observeTheme = true, onsettled }: Props =
+    $props();
 
   const names = new SvelteMap<string, string>();
 
@@ -31,6 +39,18 @@
   <Projects {strings} {source} onread={read} {...onsettled ? { onsettled } : {}} />
 {:else}
   {#key project}
-    <Timeline {strings} {source} {project} name={names.get(project) ?? project} {observeTheme} {...onsettled ? { onsettled } : {}} />
+    <Timeline
+      {strings}
+      {source}
+      {project}
+      {moment}
+      {query}
+      filterMode={filters}
+      {hide}
+      {lane}
+      name={names.get(project) ?? project}
+      {observeTheme}
+      {...onsettled ? { onsettled } : {}}
+    />
   {/key}
 {/if}

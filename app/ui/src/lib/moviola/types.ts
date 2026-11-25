@@ -8,7 +8,7 @@ export type Health = "healthy" | "at_risk" | "waiting_on_owner";
 
 export type DirectionStatus = "active" | "abandoned" | "rejoined";
 
-export type ReportKind = "relative" | "data" | "absolute" | "outside";
+export type ReportKind = "relative" | "data" | "absolute" | "outside" | "not_a_path";
 
 export type Refs = { issue: number[]; commit: string[]; report: string[] };
 
@@ -109,6 +109,8 @@ export type Deviation = { plan: string | null; deviation: string | null; reason:
 export interface MoviolaSource {
   projects(): Promise<ProjectSummary[]>;
   timeline(project: string): Promise<Timeline>;
+  /** A milestone's sidecar, `null` when it has none. */
+  snapshot(project: string, milestone: string): Promise<Snapshot | null>;
 }
 
 /** `get_snapshot`: a milestone's sidecar. */

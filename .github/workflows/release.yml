@@ -1,0 +1,394 @@
+name: release
+
+# A tag vX.Y.Z builds the installers on the three systems and leaves them, with the CLI's archives and
+# SHA256SUMS, on a draft release; the owner publishes it by hand after the clean-machine test. A run by
+# hand builds the same packages and keeps them as workflow artifacts for one day, with no release.
+# Nothing runs on a push: macOS costs about ten times Linux. There is no cache: a release builds from
+# scratch, and a tag could not read its own cache anyway.
+#
+# Least privilege: only `publish` can write to the repo, and it runs no build code; the jobs that
+# compile hold a read-only token. No secret is read: macOS signing is ad hoc, and the updater's
+# artifacts wait for their signing key.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Pinned: a published npm version never changes, and the CLI's native binary is an exact dependency.
+  TAURI_CLI: "@tauri-apps/cli@2.12.4"
+
+jobs:
+  verify:
+    name: version, and ci on the commit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: One version for the workspace, the app and the tag
+        id: version
+        run: |
+          version=$(python3 -c 'import tomllib; print(tomllib.load(open("Cargo.toml", "rb"))["workspace"]["package"]["version"])')
+          conf=$(jq -r '.version // empty' app/src-tauri/tauri.conf.json)
+          if [ -n "$conf" ] && [ "$conf" != "$version" ]; then
+            echo "::error::tauri.conf.json says $conf, the workspace $version"
+            exit 1
+          fi
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::the tag is $GITHUB_REF_NAME and the workspace's version is $version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "version $version"
+      # ci holds the tests on Windows and Linux, the smoke test and the supply-chain checks; a tag reuses
+      # its verdict instead of running them a second time.
+      - name: The commit passed ci (required at a tag)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          conclusion=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&status=completed&per_page=1" \
+            --jq '.workflow_runs[0].conclusion // "none"')
+          echo "ci on $GITHUB_SHA: $conclusion"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$conclusion" != success ]; then
+            echo "::error::a tag needs a successful ci run on its commit: run ci on it first"
+            exit 1
+          fi
+
+  windows:
+    name: windows-2025 (NSIS, per user)
+    needs: verify
+    runs-on: windows-2025
+    timeout-minutes: 25
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+      TARGET: x86_64-pc-windows-msvc
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: The frontend the app embeds
+        working-directory: app/ui
+        run: npm ci --ignore-scripts && npm run build
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      # The app's build copies the CLI from binaries/ (tauri.release.conf.json), so the CLI comes first.
+      - name: The CLI, then the installer with the CLI beside the app
+        env:
+          npm_config_ignore_scripts: "true"
+        run: |
+          cargo build --release --locked -p regia-cli
+          mkdir -p app/src-tauri/binaries
+          cp target/release/regia.exe "app/src-tauri/binaries/regia-$TARGET.exe"
+          cd app/src-tauri
+          npx --yes "$TAURI_CLI" build --ci --bundles nsis --config tauri.release.conf.json -- --locked
+      - name: The packages and the CLI's archive
+        run: |
+          mkdir -p dist
+          cp target/release/bundle/nsis/*-setup.exe dist/
+          7z a -tzip "dist/regia-$VERSION-$TARGET.zip" ./target/release/regia.exe > /dev/null
+          ls -l dist
+      # Kept even if a check below fails: the packages are what the run is for.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows
+          path: dist/
+          retention-days: 1
+          if-no-files-found: error
+      - name: A silent install puts app and CLI in the user's folder and on the user's PATH; uninstall removes them
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $uninstallKeys = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
+          function Get-Entry { Get-ChildItem $uninstallKeys | Get-ItemProperty | Where-Object DisplayName -eq 'regia' }
+          function Test-OnUserPath($dir) {
+            $path = [string](Get-Item HKCU:\Environment).GetValue('Path', '', 'DoNotExpandEnvironmentNames')
+            [bool]($path -split ';' | Where-Object { $_ -and $_.TrimEnd('\') -eq $dir })
+          }
+          $setup = (Get-ChildItem dist\*-setup.exe).FullName
+          $run = Start-Process -FilePath $setup -ArgumentList '/S' -Wait -PassThru
+          if ($run.ExitCode -ne 0) { throw "the installer exited with $($run.ExitCode)" }
+          $entry = Get-Entry
+          if (-not $entry) { throw 'no uninstall entry for the current user' }
+          $dir = (Split-Path $entry.UninstallString.Trim('"')).TrimEnd('\')
+          "installed in $dir"
+          if (-not $dir.StartsWith($env:LOCALAPPDATA)) { throw "not a per-user folder: $dir" }
+          Get-ChildItem $dir | Format-Table Name, Length -AutoSize | Out-String
+          if (-not (Test-Path "$dir\regia-app.exe")) { throw 'the app is not in the install folder' }
+          $version = & "$dir\regia.exe" --version
+          "by its path: $version"
+          if ($version -ne "regia $env:VERSION") { throw "regia --version printed '$version'" }
+          if (-not (Test-OnUserPath $dir)) { throw "the install folder is not on the user's PATH" }
+          $last = @(([string](Get-Item HKCU:\Environment).GetValue('Path', '', 'DoNotExpandEnvironmentNames')) -split ';' | Where-Object { $_ })[-1]
+          if ($last.TrimEnd('\') -ne $dir) { throw "the install folder is not the last entry of the user's PATH: '$last'" }
+          # A new shell builds its PATH from the registry: the machine's, then the user's.
+          $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+          $found = (Get-Command regia -CommandType Application | Select-Object -First 1).Source
+          if ($found -ne "$dir\regia.exe") { throw "regia on the PATH is '$found'" }
+          "on the PATH: $(regia --version)"
+          Start-Process -FilePath "$dir\uninstall.exe" -ArgumentList '/S' -Wait
+          # The uninstaller copies itself to a temporary folder and goes on from there: wait for it.
+          for ($i = 0; $i -lt 60 -and ((Test-Path "$dir\regia-app.exe") -or (Test-OnUserPath $dir) -or (Get-Entry)); $i++) {
+            Start-Sleep -Seconds 1
+          }
+          if (Test-Path "$dir\regia-app.exe") { throw 'the app is still there after the uninstall' }
+          if (Test-OnUserPath $dir) { throw "the install folder is still on the user's PATH" }
+          if (Get-Entry) { throw 'the uninstall entry is still there' }
+          'uninstalled: app, PATH entry and uninstall entry are gone'
+
+  macos:
+    name: macos-15 (universal, ad hoc)
+    needs: verify
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: The frontend the app embeds
+        working-directory: app/ui
+        run: npm ci --ignore-scripts && npm run build
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      # Each architecture's build copies its own CLI, and the universal bundle takes the universal one.
+      - name: The CLI for both architectures and as one universal binary, then the app and the dmg
+        env:
+          npm_config_ignore_scripts: "true"
+        run: |
+          cargo build --release --locked -p regia-cli --target aarch64-apple-darwin --target x86_64-apple-darwin
+          mkdir -p app/src-tauri/binaries
+          for arch in aarch64 x86_64; do
+            cp "target/$arch-apple-darwin/release/regia" "app/src-tauri/binaries/regia-$arch-apple-darwin"
+          done
+          lipo -create -output app/src-tauri/binaries/regia-universal-apple-darwin \
+            target/aarch64-apple-darwin/release/regia target/x86_64-apple-darwin/release/regia
+          cd app/src-tauri
+          npx --yes "$TAURI_CLI" build --ci --target universal-apple-darwin --bundles app,dmg --config tauri.release.conf.json -- --locked
+      - name: The packages and the CLI's archive
+        run: |
+          bundle=target/universal-apple-darwin/release/bundle
+          mkdir -p dist
+          cp "$bundle"/dmg/*.dmg dist/
+          # The CLI as the bundler signed it, inside the app.
+          tar -czf "dist/regia-$VERSION-universal-apple-darwin.tar.gz" -C "$bundle/macos/regia.app/Contents/MacOS" regia
+          ls -l dist
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: macos
+          path: dist/
+          retention-days: 1
+          if-no-files-found: error
+      - name: An ad hoc signature on app and CLI, both architectures, what Gatekeeper says, and the dmg
+        run: |
+          app=target/universal-apple-darwin/release/bundle/macos/regia.app
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign -dv "$app" 2>&1 | tee codesign.txt
+          grep -q '^Signature=adhoc' codesign.txt
+          for binary in regia-app regia; do
+            archs=$(lipo -archs "$app/Contents/MacOS/$binary")
+            echo "$binary: $archs"
+            [[ $archs == *arm64* && $archs == *x86_64* ]]
+          done
+          "$app/Contents/MacOS/regia" --version | tee version.txt
+          [ "$(cat version.txt)" = "regia $VERSION" ]
+          # No Developer ID, so Gatekeeper is expected to reject the app: the output is the record of it.
+          spctl --status || true
+          spctl --assess --type execute -vv "$app" || echo "spctl exited with $?"
+          mount=$(mktemp -d)
+          hdiutil attach -nobrowse -readonly -mountpoint "$mount" dist/*.dmg > /dev/null
+          codesign --verify --deep --strict "$mount/regia.app"
+          hdiutil detach "$mount" > /dev/null
+          echo "the dmg holds the same signed app"
+
+  linux:
+    name: ubuntu:22.04 container (deb, rpm, AppImage)
+    needs: verify
+    runs-on: ubuntu-24.04
+    # The packages link against the oldest glibc we support, 2.35, whatever the runner's image becomes.
+    container: ubuntu:22.04
+    timeout-minutes: 25
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+      DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Tools and Tauri's system packages, from Ubuntu 22.04
+        run: |
+          apt-get update
+          apt-get install -y ca-certificates curl wget git file build-essential pkg-config libwebkit2gtk-4.1-dev \
+            libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev xdg-utils
+          ldd --version | head -n 1
+          dpkg-query -W libwebkit2gtk-4.1-0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: The frontend the app embeds
+        working-directory: app/ui
+        run: npm ci --ignore-scripts && npm run build
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - name: The CLI, then the packages with the CLI beside the app
+        env:
+          npm_config_ignore_scripts: "true"
+          # linuxdeploy is an AppImage, and a container has no FUSE.
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+          # linuxdeploy's own strip fails on some libraries; the binaries are stripped by the profile.
+          NO_STRIP: "true"
+        run: |
+          cargo build --release --locked -p regia-cli
+          mkdir -p app/src-tauri/binaries
+          cp target/release/regia app/src-tauri/binaries/regia-x86_64-unknown-linux-gnu
+          cd app/src-tauri
+          npx --yes "$TAURI_CLI" build --ci --bundles deb,rpm,appimage --config tauri.release.conf.json -- --locked
+      - name: The packages and the CLI's archive
+        run: |
+          bundle=target/release/bundle
+          mkdir -p dist
+          cp "$bundle"/deb/*.deb "$bundle"/rpm/*.rpm "$bundle"/appimage/*.AppImage dist/
+          tar -czf "dist/regia-$VERSION-x86_64-unknown-linux-gnu.tar.gz" -C target/release regia
+          ls -l dist
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: linux
+          path: dist/
+          retention-days: 1
+          if-no-files-found: error
+      - name: The deb holds app and CLI in /usr/bin, and the glibc the binaries need
+        run: |
+          # Tauri writes the deb's entries without the leading ./ of dpkg-deb.
+          dpkg-deb -c dist/*.deb | grep -E ' (\./)?usr/bin/'
+          [ "$(dpkg-deb -c dist/*.deb | grep -cE ' (\./)?usr/bin/regia(-app)?$')" -eq 2 ]
+          for binary in regia regia-app; do
+            echo "$binary needs $(objdump -T "target/release/$binary" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -n 1)"
+          done
+
+  linux-install:
+    name: the deb on Ubuntu 22.04 and Debian 12, the rpm on Fedora 44
+    needs: [verify, linux]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: linux
+          path: pkg
+      - name: Each package installs with its dependencies, the CLI is on the PATH and the app's libraries resolve
+        run: |
+          check='regia --version | tee version.txt && [ "$(cat version.txt)" = "regia $VERSION" ] && test -x /usr/bin/regia-app && { ! command -v ldd > /dev/null || ! ldd /usr/bin/regia-app | grep "not found"; }'
+          for image in ubuntu:22.04 debian:12; do
+            echo "== $image"
+            docker run --rm -e VERSION -e DEBIAN_FRONTEND=noninteractive -v "$PWD/pkg:/pkg:ro" "$image" bash -euc \
+              "apt-get update -qq && apt-get install -y -qq /pkg/*.deb > /dev/null && $check"
+          done
+          echo "== fedora:44"
+          docker run --rm -e VERSION -v "$PWD/pkg:/pkg:ro" fedora:44 bash -euc "dnf install -y -q /pkg/*.rpm > /dev/null && $check"
+
+  checksums:
+    name: SHA256SUMS, sizes against the targets, latest.json
+    needs: [verify, windows, macos, linux, linux-install]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      VERSION: ${{ needs.verify.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Every package a release needs, once, with its sum
+        working-directory: dist
+        run: |
+          for pattern in '*_x64-setup.exe' '*_universal.dmg' '*_amd64.deb' '*.x86_64.rpm' '*_amd64.AppImage' \
+              "regia-$VERSION-x86_64-pc-windows-msvc.zip" "regia-$VERSION-universal-apple-darwin.tar.gz" \
+              "regia-$VERSION-x86_64-unknown-linux-gnu.tar.gz"; do
+            count=$(find . -maxdepth 1 -name "$pattern" | wc -l)
+            [ "$count" -eq 1 ] || { echo "::error::$count files match $pattern"; exit 1; }
+          done
+          sha256sum -- * | sort -k 2 > ../SHA256SUMS
+          mv ../SHA256SUMS .
+          cat SHA256SUMS
+      # The targets are T4 of the plan. A package over its target is a warning, written down, not a failure.
+      - name: Sizes against the targets
+        working-directory: dist
+        run: |
+          {
+            echo "| Package | Bytes | MiB | Target |"
+            echo "|---|---|---|---|"
+            for file in *; do
+              case "$file" in
+                *-setup.exe) target=10 ;; *.dmg) target=30 ;; *.deb) target=15 ;; *.AppImage) target=120 ;; *) target= ;;
+              esac
+              bytes=$(stat -c %s "$file")
+              mib=$(awk -v b="$bytes" 'BEGIN { printf "%.2f", b / 1048576 }')
+              echo "| $file | $bytes | $mib | ${target:+$target MB} |"
+              if [ -n "$target" ] && [ "$bytes" -gt $((target * 1000000)) ]; then
+                echo "::warning::$file is $mib MiB, over the $target MB target" >&2
+              fi
+            done
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+      # The updater's manifest exists only with its signing key, which this workflow does not hold yet.
+      - name: latest.json, if there is one, names every platform
+        working-directory: dist
+        run: |
+          if [ ! -f latest.json ]; then
+            echo "no latest.json: the updater's artifacts are not built"
+            exit 0
+          fi
+          jq -e '.platforms | has("windows-x86_64") and has("darwin-aarch64") and has("darwin-x86_64") and has("linux-x86_64")' latest.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: sha256sums
+          path: dist/SHA256SUMS
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    name: draft release
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: [verify, checksums]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+      # A draft is invisible to the updater and to anyone without write access. It is never published here.
+      - name: The draft, with every package and SHA256SUMS
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          sha256sum -c SHA256SUMS
+          prerelease=
+          case "$TAG" in *-*) prerelease=--prerelease ;; esac
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft $prerelease --verify-tag --title "$TAG" \
+            --generate-notes -- ./*

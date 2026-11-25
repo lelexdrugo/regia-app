@@ -173,6 +173,15 @@ fn the_checkpoint_cases_show_what_they_claim() {
     assert_eq!(out("checkpoint-no-upstream-no-retry").1["outcome"], "nothing");
     assert_eq!(out("checkpoint-no-upstream").1["reason"], "il branch main non ha un upstream");
     assert_eq!(out("checkpoint-hook-refuses").1["reason"], "git commit: no");
+    // The archives of the decisions (#583): by the model's name, only the ones that changed, in the folder itself.
+    let (_, mixed, after) = out("checkpoint-archives-mixed");
+    assert_eq!((&mixed["outcome"], &mixed["files"]), (&json!("pushed"), &json!([".regia/decisioni-2026-01.md", ".regia/stato.md"])));
+    assert_eq!(after.unwrap()["status"], json!([" M .regia/decisioni-vecchie.md"]), "a name outside the model stays out");
+    let (_, fresh, after) = out("checkpoint-archives-untracked");
+    assert_eq!(fresh["files"], json!([".regia/decisioni-2026-02.md"]), "a new archive goes in, what only looks like one does not");
+    assert_eq!(after.unwrap()["status"].as_array().unwrap().len(), 4);
+    let (_, named, _) = out("checkpoint-archives-with-file");
+    assert_eq!(named["files"], json!([".regia/decisioni-2026-01.md", "docs/plan.md"]), "an archive named with --file is committed once");
     assert_eq!(out("checkpoint-file-outside").1["reason"], "--file '../outside.md': esce dalla cartella del progetto");
     assert_eq!(out("checkpoint-not-the-root").1["reason"], "la cartella non è la radice di un repo git");
     assert_eq!(out("checkpoint-folder-missing").1["folder"], "{dossier}/missing");

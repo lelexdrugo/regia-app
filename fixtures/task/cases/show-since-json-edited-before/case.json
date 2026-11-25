@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. `--since` on a body edited at 2026-01-06T10:00:00Z, before the instant given: the instant is there, `body_edited_after_since` is false.",
+  "scenario": "edited",
+  "args": [
+    "task",
+    "show",
+    "4",
+    "--since",
+    "2026-01-08T00:00:00Z",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "show",
+    "4",
+    "--dal",
+    "2026-01-08T00:00:00Z"
+  ]
+}

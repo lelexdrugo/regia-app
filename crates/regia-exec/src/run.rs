@@ -208,9 +208,9 @@ impl Launch {
         self
     }
 
-    /// A `git` call that writes: commit, merge, push. It does not get the settings of a read (no optional
-    /// lock, no literal pathspecs, no fsmonitor off), which would reach the user's hooks. Without it a
-    /// call is a read. No other program reads it.
+    /// A `git` call that writes: fetch, merge, add, commit, push (`WRITES` of `regia-git`). It does not
+    /// get the settings of a read (no optional lock, no literal pathspecs, no fsmonitor off), which would
+    /// reach the user's hooks. Without it a call is a read. No other program reads it.
     #[must_use]
     pub fn writing(mut self) -> Self {
         self.writes = true;
@@ -310,8 +310,9 @@ impl Launch {
     /// program when it ends or when the handle is dropped: [`Detached::kill`] does, on request.
     ///
     /// An error means that no process is running: everything that can fail is checked before the
-    /// start, and a tree that cannot be set up afterwards leaves [`Detached::kill`] with the program
-    /// alone.
+    /// start, and a program that was created but could not be started (on Windows, resumed in its
+    /// tree) is killed before the error returns. A tree that cannot be set up leaves
+    /// [`Detached::kill`] with the program alone.
     pub fn detach(self, input: &Path, log: &Path) -> Result<Detached, ExecError> {
         let label = self.program_name();
         let failed = |source| ExecError::Spawn { program: label.clone(), source };
@@ -320,8 +321,16 @@ impl Launch {
         let output = File::create(log).map_err(failed)?;
         let errors = output.try_clone().map_err(failed)?;
         command.stdin(input).stdout(output).stderr(errors);
-        let child = tree::spawn_detached(&mut command).map_err(failed)?;
-        let tree = tree::Tree::adopt_detached(&child).ok();
+        let mut child = tree::spawn_detached(&mut command).map_err(failed)?;
+        let tree = match tree::Tree::adopt_detached(&child) {
+            Ok(tree) => tree,
+            Err(source) => {
+                // Not started (on Windows it is still suspended): nothing is left running.
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(failed(source));
+            }
+        };
         Ok(Detached { child, tree, label })
     }
 }
@@ -389,7 +398,7 @@ pub(crate) fn new_command(path: &Path) -> Command {
 }
 
 /// A `.cmd` or `.bat` runs through `cmd.exe`, which reads its arguments again.
-fn batch(path: &Path) -> bool {
+pub(crate) fn batch(path: &Path) -> bool {
     cfg!(windows)
         && path
             .extension()
@@ -398,7 +407,7 @@ fn batch(path: &Path) -> bool {
 }
 
 /// The alphabet of threat model §3.6, rule 9. Rust refuses more on its own (CVE-2024-24576).
-fn safe_for_batch(arg: &OsStr) -> bool {
+pub(crate) fn safe_for_batch(arg: &OsStr) -> bool {
     arg.to_str().is_some_and(|arg| {
         !arg.is_empty() && arg.chars().all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '_' | ':' | '/' | '=' | '-'))
     })

@@ -1,0 +1,12 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "rest": {
+    "GET user": {
+      "error": "",
+      "exit": 1
+    }
+  }
+}

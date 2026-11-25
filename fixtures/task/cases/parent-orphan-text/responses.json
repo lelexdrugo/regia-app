@@ -340,6 +340,7 @@
         }
       },
       "id": "ISSUE_1",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 0
@@ -354,6 +355,7 @@
         }
       },
       "id": "ISSUE_2",
+      "lastEditedAt": null,
       "state": "OPEN",
       "subIssues": {
         "totalCount": 0

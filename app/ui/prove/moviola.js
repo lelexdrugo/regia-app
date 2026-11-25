@@ -120,9 +120,340 @@ export const moviola = {
     console.log(`negative control, a column moved by one pixel: ${caughtMoved ? "caught" : "NOT CAUGHT"}`);
 
     const parts = await renderer(ui, m, s, fixture);
-    return ok && caughtOrder && caughtMoved && parts;
+    const frames = await frameChecks(m, fixture);
+    const found = await searchChecks(m, fixture);
+    const packs = await packChecks(m, fixture);
+    const tape = tapeChecks(m, fixture);
+    const overview = await overviewChecks(m, fixture);
+    return ok && caughtOrder && caughtMoved && parts && frames && found && packs && tape && overview;
   },
 };
+
+/** How far apart two scales put the same instants, in pixels. */
+const deviation = (expected, scale) => Math.max(0, ...expected.x.map(([t, x]) => Math.abs(scale.x(t) - x)), ...expected.joints.map((j, i) => Math.abs((scale.joints[i]?.x ?? Infinity) - j.x)));
+
+/** The share of the width between the first and the last milestone. */
+const share = (scale, times, x0, x1) => (scale.x(Math.max(...times)) - scale.x(Math.min(...times))) / (x1 - x0);
+
+/**
+ * The tape and the strip (#486/V18, #598): on the dense story the product's scale is the prototype's within a pixel,
+ * on alpha the story takes at least half the tape (with the prototype's, 130 px of 1,420). The negative controls:
+ * the prototype's own scale on alpha must fail the half, and joints always as wide as twelve hours of story (a rule
+ * that widens them on a dense story too) must fail the tolerance.
+ */
+function tapeChecks(m, fixture) {
+  const { width, strip, stories } = fixture.tape;
+  const TOLERANCE = 1;
+  const checks = [];
+  const check = (name, ok, detail = "") => checks.push([name, ok, detail]);
+  const dense = stories.dense;
+  const onTape = m.tapeScale(dense.times, 10, width - 10);
+  const onStrip = m.tapeScale(dense.times, 8, strip - 8, 12 * m.HOUR, 18);
+  const [dTape, dStrip] = [deviation(dense.tape, onTape), deviation(dense.strip, onStrip)];
+  check(`dense story, tape: the prototype's scale within ${TOLERANCE} px`, dTape <= TOLERANCE && onTape.joints.length === dense.tape.joints.length, `${dTape.toFixed(3)} px`);
+  check(`dense story, strip: the prototype's scale within ${TOLERANCE} px`, dStrip <= TOLERANCE, `${dStrip.toFixed(3)} px`);
+  const shares = {};
+  for (const name of ["alpha", "viewer", "frame"]) {
+    const { times } = stories[name];
+    const product = share(m.tapeScale(times, 10, width - 10), times, 10, width - 10);
+    const prototype = share({ x: (t) => stories[name].tape.x.find(([at]) => at === t)[1] }, times, 10, width - 10);
+    const narrow = share(m.tapeScale(times, 8, strip - 8, 12 * m.HOUR, 18), times, 8, strip - 8);
+    shares[name] = { product, prototype, narrow };
+  }
+  const a = shares.alpha;
+  check("alpha: the story takes at least half the tape, and of the strip", a.product >= 0.5 && a.narrow >= 0.5,
+    `tape ${(a.product * 100).toFixed(1)} %, strip ${(a.narrow * 100).toFixed(1)} %; the prototype ${(a.prototype * 100).toFixed(1)} %`);
+  check("viewer and frame, as sparse: at least half too", shares.viewer.product >= 0.5 && shares.frame.product >= 0.5,
+    `${(shares.viewer.product * 100).toFixed(1)} %, ${(shares.frame.product * 100).toFixed(1)} %`);
+  const ends = m.tapeScale(stories.alpha.times, 10, width - 10);
+  check("the tape still runs from end to end, and back", Math.abs(ends.x(-Infinity) - 10) < 1e-6 && Math.abs(ends.x(Infinity) - (width - 10)) < 1e-6
+    && stories.alpha.times.every((t) => Math.abs(ends.t(ends.x(t)) - t) < 1));
+  // The controls.
+  const caughtSparse = a.prototype < 0.5;
+  const twelveHours = (times, x0, x1, threshold = 12 * m.HOUR) => {
+    const ts = [...new Set(times)].sort((p, q) => p - q);
+    const knots = [ts[0] - m.HOUR, ...ts, ts.at(-1) + m.HOUR];
+    const gaps = knots.slice(1).map((t, i) => t - knots[i]);
+    const live = gaps.filter((g) => g <= threshold).reduce((sum, g) => sum + g, 0);
+    const k = (x1 - x0) / (live + gaps.filter((g) => g > threshold).length * threshold);
+    const xs = [x0];
+    for (const g of gaps) xs.push(xs.at(-1) + (g > threshold ? threshold : g) * k);
+    return { x: (t) => m.interpolate(knots, xs, t), joints: [] };
+  };
+  const caughtDense = deviation({ ...dense.tape, joints: [] }, twelveHours(dense.times, 10, width - 10)) > TOLERANCE;
+  for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
+  console.log(`negative control, the prototype's tape on alpha: ${caughtSparse ? "caught" : "NOT CAUGHT"} (${(a.prototype * 100).toFixed(1)} %)`);
+  console.log(`negative control, joints always as wide as twelve hours: ${caughtDense ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caughtSparse && caughtDense;
+}
+
+/**
+ * The overview (#598) against the prototype's answers on every case: the filters (`visibileFiltri`) keep the same
+ * moments for each setting, with the same «who» to choose from; the state at a date (the panel «alla data»), its open
+ * decisions from the last milestone's sidecar; the directions' cards (`disegnaL1`) and each one's moments; the time
+ * window (`impostaFinestra`). Where the prototype's card has a slip, a lane with no record titled «Linea principale»
+ * and a lane with no reason given the main lane's sentence, the product says what it knows instead, and the check
+ * says so. The negative controls: a filter that ignores the kinds hidden, and a state at a date that counts the
+ * milestone at the instant as after it, must both be caught.
+ */
+async function overviewChecks(m, fixture) {
+  const f = await import("../src/lib/moviola/filters.ts");
+  const checks = [];
+  const check = (name, ok, detail = "") => checks.push([name, ok, detail]);
+  const models = Object.fromEntries(fixture.cases.map((c) => [c.name, { model: m.prepare(c.timeline, 0), c }]));
+  const settingOf = (s) => ({ ...f.NO_FILTERS, hidden: s.hide, who: s.who, lane: s.lane, health: s.health, declared: s.declared });
+  const keep = (model, filters, visible = f.visible) => model.nodes.filter((n) => visible(n, filters)).map((n) => n.milestone.id);
+  let filtered = [];
+  let settings = 0;
+  let whoSame = true;
+  for (const [name, { model }] of Object.entries(models)) {
+    const recorded = fixture.filters[name];
+    whoSame &&= JSON.stringify(f.whoOptions(model).slice().sort()) === JSON.stringify(recorded.who.slice().sort());
+    for (const s of recorded.settings) {
+      settings += 1;
+      const ids = keep(model, settingOf(s));
+      if (JSON.stringify(ids) !== JSON.stringify(s.visible)) filtered.push(`${name} ${JSON.stringify({ ...s, visible: undefined })}: ${ids.length} ≠ ${s.visible.length}`);
+    }
+  }
+  check(`filters: the prototype's moments for ${settings} settings on every case`, filtered.length === 0, filtered.slice(0, 3).join("; "));
+  check("filters: the same «who» to choose from, none declared last", whoSame);
+  check("filters: back to basic clears the advanced ones, and an advanced one makes the mode advanced",
+    f.modeOf({ ...f.NO_FILTERS, lane: "x" }) === "advanced" && f.modeOf(f.NO_FILTERS) === "basic" && !f.advancedOn(f.basic({ ...f.NO_FILTERS, who: f.NONE, declared: true })));
+  const address = f.fromAddress("advanced", "gate,nothing,exception");
+  check("filters: an address opens a mode and hides the kinds it names, nothing else", address.mode === "advanced" && JSON.stringify(address.hidden) === '["gate","exception"]'
+    && f.fromAddress("other", null).mode === null);
+
+  let states = [];
+  let samples = 0;
+  for (const [name, { model, c }] of Object.entries(models)) {
+    for (const r of fixture.states[name]) {
+      samples += 1;
+      const s = m.stateAt(model, r.t);
+      const decisions = s.last ? (c.snapshots[s.last.milestone.id]?.open_decisions ?? []) : [];
+      const said = { t: r.t, before: s.before, last: s.last ? s.last.milestone.id : null, open: s.open.map((l) => l.id), decisions, after: s.after };
+      if (JSON.stringify(said) !== JSON.stringify(r)) states.push(`${name} at ${new Date(r.t).toISOString()}: ${JSON.stringify(said)}`);
+    }
+  }
+  check(`the state at a date: the prototype's at ${samples} instants, open decisions from the last sidecar`, states.length === 0, states.slice(0, 2).join("; "));
+
+  const cards = [];
+  let compared = 0;
+  for (const [name, { model }] of Object.entries(models)) {
+    const product = m.laneCards(model);
+    fixture.lanes[name].forEach((r, i) => {
+      compared += 1;
+      const card = product[i];
+      const main = card?.lane.id === model.timeline.main_direction;
+      const said = card && {
+        id: card.lane.id, status: card.lane.status, count: card.lane.nodes.length,
+        openedBy: card.openedBy?.milestone.id ?? null, closedBy: card.closedBy?.milestone.id ?? null,
+        list: card.lane.nodes.map((k) => model.nodes[k].milestone.id),
+      };
+      const same = said && Object.keys(said).every((key) => JSON.stringify(said[key]) === JSON.stringify(r[key]));
+      // The title and the reason: the record's, where there is one; the main lane's are the catalog's words.
+      const title = main ? card.lane.title === null : card.lane.recorded ? card.lane.title === r.title : card.lane.title === null && r.title === "Linea principale";
+      const reason = card && (card.lane.reason ? card.lane.reason === r.reason : r.reason.startsWith("La linea del "));
+      if (!same || !title || !reason) cards.push(`${name}/${r.id}: ${JSON.stringify(said)}`);
+    });
+  }
+  check(`the directions: the prototype's ${compared} cards, each with its moments once chosen`, cards.length === 0, cards.slice(0, 2).join("; "));
+
+  let windows = [];
+  for (const name of ["viewer", "alpha"]) {
+    const { model } = models[name];
+    for (const r of fixture.windows[name]) {
+      const w = m.chooseWindow(model, r.ask[0], r.ask[1]);
+      if (JSON.stringify(w) !== JSON.stringify(r.window)) windows.push(`${name} ${JSON.stringify(r.ask)}: ${JSON.stringify(w)} ≠ ${JSON.stringify(r.window)}`);
+    }
+  }
+  check("the time window: the prototype's for every ask, the whole story as none", windows.length === 0, windows.slice(0, 2).join("; "));
+
+  // The controls.
+  const alpha = models.alpha.model;
+  const deaf = (node, filters) => f.visible(node, { ...filters, hidden: [] });
+  const caughtKinds = fixture.filters.alpha.settings.some((s) => JSON.stringify(keep(alpha, settingOf(s), deaf)) !== JSON.stringify(s.visible));
+  const strict = (model, t) => ({ ...m.stateAt(model, t - 1) });
+  const caughtStrict = fixture.states.alpha.some((r) => strict(alpha, r.t).before !== r.before);
+  for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
+  console.log(`negative control, a filter deaf to the kinds hidden: ${caughtKinds ? "caught" : "NOT CAUGHT"}`);
+  console.log(`negative control, the milestone at the instant counted after it: ${caughtStrict ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caughtKinds && caughtStrict;
+}
+
+/**
+ * The search (#487), which the prototype viewer does not have: by what it must hold on every case. Every moment
+ * found has every word and every #number of the query, every moment left out lacks one; the moments found come
+ * newest first; a #number is the task a moment names or a `#N` of its title, never a longer number; case and
+ * accents do not count; `,` and `.` walk the moments found in time. The negative control: a #number looked for as
+ * a substring of the title, the mistake that finds #12 for #1, must be caught.
+ */
+async function searchChecks(m, fixture) {
+  const q = await import("../src/lib/moviola/search.ts");
+  const checks = [];
+  const check = (name, ok, detail = "") => checks.push([name, ok, detail]);
+  const names = { kind: (node) => node.milestone.kind, lane: () => "" };
+  const queries = ["probe", "PROBE b", "#12", "#14", "#1", "#99 over", "gate", "zzzz", "#12 merged", "probé"];
+  let consistent = true;
+  for (const c of fixture.cases) {
+    const model = m.prepare(c.timeline, 0);
+    for (const text of queries) {
+      const query = q.parseQuery(text);
+      const found = q.search(model, query, names);
+      const ids = new Set(found.map((n) => n.index));
+      const newestFirst = found.every((n, i) => i === 0 || found[i - 1].t >= n.t);
+      const words = (n) => query.words.every((w) => q.fold(`${n.milestone.title} ${n.milestone.kind}`).includes(w));
+      const tasks = (n) => query.tasks.every((t) => n.milestone.refs.issue.includes(t) || new RegExp(`#${t}(?!\\d)`).test(n.milestone.title));
+      const exact = model.nodes.every((n) => ids.has(n.index) === (words(n) && tasks(n)));
+      if (!newestFirst || !exact) {
+        consistent = false;
+        console.log(`  ${c.name} «${text}»: ${newestFirst ? "" : "not newest first; "}${exact ? "" : "not exactly the moments that match"}`);
+      }
+    }
+  }
+  check("every case and query: exactly the moments that match, newest first", consistent);
+  const frameModel = m.prepare(fixture.cases.find((c) => c.name === "frame").timeline, 0);
+  const ids = (text) => q.search(frameModel, q.parseQuery(text), names).map((n) => n.milestone.id);
+  check("#12 finds the moment that names it, #1 none", ids("#12").length === 1 && ids("#1").length === 0, `${ids("#12")} / ${ids("#1")}`);
+  check("case and accents do not count", q.fold("Perché PROBE") === "perche probe" && ids("MERGED").length === 1);
+  check("an empty query is no search", q.isEmpty(q.parseQuery("   ")) && q.search(frameModel, q.parseQuery(""), names).length === 0);
+  const all = q.search(frameModel, q.parseQuery("probe"), names);
+  const [early, late] = [...all].sort((a, b) => a.t - b.t);
+  check("`.` and `,` walk the moments found in time", q.stepWithin(all, -1, 1) === early && q.stepWithin(all, early.index, 1) === late
+    && q.stepWithin(all, late.index, 1) === late && q.stepWithin(all, -1, -1) === late);
+  const naive = frameModel.nodes.filter((n) => n.milestone.title.includes("#1")).length;
+  const caught = naive > 0 && ids("#1").length === 0;
+  for (const [name, ok, detail] of checks) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
+  console.log(`negative control, #1 as a substring of the title: ${caught ? "caught" : "NOT CAUGHT"}`);
+  return checks.every(([, ok]) => ok) && caught;
+}
+
+/**
+ * «Copy for chat» (#487) against the prototype's `pacchetto`: given the prototype's words, its kind and day, and its
+ * page of the snapshot in place of the sidecar's path, the product's `pack` writes the same text, byte for byte, on
+ * every milestone, the long one whose summary is shortened and whose references go included. The negative control:
+ * a package that drops the references before it shortens the summary must be caught on the long one.
+ */
+async function packChecks(m, fixture) {
+  const p = await import("../src/lib/moviola/pack.ts");
+  const w = fixture.packWords;
+  const words = {
+    head: (a) => `regia · ${a.project} · ${w.node} ${a.id} (${a.kind}, ${a.day})`,
+    looking: (what) => w.looking + what,
+    references: (list) => w.references + list,
+    none: w.none,
+    more: (n) => `${w.more}${n}`,
+    question: w.question,
+    skill: w.skill,
+  };
+  const different = [];
+  let longest = null;
+  for (const c of fixture.cases) {
+    const model = m.prepare(c.timeline, 0);
+    c.frames.forEach((f, i) => {
+      const node = model.nodes[i];
+      const moment = { project: c.timeline.project, id: node.milestone.id, kind: f.said.kind, day: f.said.day, title: node.milestone.title };
+      const refs = p.packReferences(node.milestone.links, f.said.page);
+      const text = p.pack(moment, p.packSummary(c.snapshots[node.milestone.id] ?? null), refs, words);
+      if (text !== f.pack) different.push(`${c.name}/${node.milestone.id}`);
+      if (!longest || f.pack.length > longest.f.pack.length) longest = { f, moment, refs, summary: p.packSummary(c.snapshots[node.milestone.id] ?? null) };
+    });
+  }
+  const shortened = longest.f.pack.length <= p.PACK_LIMIT && longest.f.pack.includes(w.more);
+  console.log(`chat packages: ${fixture.cases.reduce((n, c) => n + c.frames.length, 0)}, the prototype's byte for byte: ${different.length ? `NO (${different.join(", ")})` : "yes"}`);
+  console.log(`the longest, ${longest.f.pack.length} characters, shortened with its references counted: ${shortened ? "yes" : "NO"}`);
+  // The control: the references go before the summary is shortened.
+  let naive = "";
+  for (let n = longest.refs.length; n >= 0 && !naive; n--) {
+    const text = p.pack({ ...longest.moment }, longest.summary, longest.refs.slice(0, n), { ...words, more: () => "" });
+    if (text.length <= p.PACK_LIMIT) naive = text;
+  }
+  const caught = naive !== longest.f.pack;
+  console.log(`negative control, the references dropped before the summary is shortened: ${caught ? "caught" : "NOT CAUGHT"}`);
+  return different.length === 0 && shortened && caught;
+}
+
+/** The product's frame in the recording's shape: the prototype's L3, read back by its sections. */
+function neutral(fr) {
+  const runs = (list) => list.map((line) => line.map((r) => (r.url === null ? { text: r.text } : { text: r.text, url: r.url })));
+  const event = (e) => ({ title: e.title, status: e.status, reason: e.reason });
+  const ids = (nodes) => nodes.map((n) => n.milestone.id);
+  return {
+    id: fr.node.milestone.id,
+    title: fr.node.milestone.title,
+    lane: fr.lane.id,
+    health: fr.node.milestone.health,
+    inBrief: fr.inBrief,
+    why: {
+      direction: fr.why.direction,
+      opens: fr.why.opens && { title: fr.why.opens.title, reason: fr.why.opens.reason },
+      closes: fr.why.closes.map(event),
+    },
+    changed: runs(fr.changed),
+    openDecisions: runs(fr.openDecisions),
+    risks: runs(fr.risks),
+    nextStep: fr.next,
+    claims: fr.claims,
+    deviations: fr.deviations.map((d) => [d.plan, d.deviation, d.reason, d.impact]),
+    process: fr.process,
+    work: fr.work.map((w) => ({ task: w.task, aggregate: w.aggregate !== null })),
+    refs: {
+      issue: fr.links.issue.map((x) => ({ text: x.text, url: x.url })),
+      commit: fr.links.commit.map((x) => ({ text: x.url ? x.text : x.hash || x.text, url: x.url })),
+      report: fr.links.report.map((x) => ({ text: x.text, path: x.path, exists: x.exists })),
+      projectUrl: fr.projectUrl,
+    },
+    parents: ids(fr.parents),
+    children: ids(fr.children),
+    previous: fr.previous ? fr.previous.milestone.id : null,
+    following: fr.following ? fr.following.milestone.id : null,
+  };
+}
+
+/**
+ * The frame (L3, #487) against the prototype's: for every milestone of every case, the product's `frame` over the
+ * core's timeline and sidecar says what the prototype's `disegnaL3` drew, section by section, with every `#N` of
+ * the three linked sections at the same address. The negative controls: a frame read with the next milestone's
+ * sidecar, and a `#N` split without the prototype's look-ahead (so `#14a` links), must both be caught.
+ */
+async function frameChecks(m, fixture) {
+  const f = await import("../src/lib/moviola/frame.ts");
+  const recordedKeys = (frame) => Object.fromEntries(Object.entries(frame).filter(([key]) => key !== "pack" && key !== "said"));
+  let ok = true;
+  let compared = 0;
+  for (const c of fixture.cases) {
+    const model = m.prepare(c.timeline, 0);
+    const found = [];
+    c.frames.forEach((expected, i) => {
+      const fr = f.frame(model, i, c.snapshots[expected.id] ?? null);
+      differences(recordedKeys(expected), fr ? neutral(fr) : null, `${c.name}/${expected.id}`, found);
+      compared += 1;
+    });
+    const linked = c.frames.reduce((sum, fr) => sum + [...fr.changed, ...fr.openDecisions, ...fr.risks].flat().filter((r) => r.url).length, 0);
+    console.log(`${c.name}: ${c.frames.length} frames, ${linked} #N links: ${found.length ? "DIFFERENT" : "the prototype's"}`);
+    for (const line of found.slice(0, 12)) console.log(`  ${line}`);
+    ok &&= found.length === 0 && c.frames.length === c.timeline.milestones.length;
+  }
+  const frameCase = fixture.cases.find((c) => c.name === "frame");
+  const sections = ["changed", "openDecisions", "risks"].every((key) => frameCase.frames.some((fr) => fr[key].flat().some((r) => r.url)));
+  console.log(`frames compared: ${compared}; a #N link in each of the three sections: ${sections ? "yes" : "NO"}`);
+
+  // Negative controls.
+  const model = m.prepare(frameCase.timeline, 0);
+  const first = frameCase.frames[0];
+  const swapped = f.frame(model, 0, frameCase.snapshots[frameCase.frames[1].id]);
+  const caughtSidecar = differences(recordedKeys(first), neutral(swapped), "frame", []).length > 0;
+  const naive = (text, issues) => text.split(/(#\d+)/).filter(Boolean).map((piece) => {
+    const hit = issues.find((x) => x.text === piece);
+    return hit && hit.url ? { text: piece, url: hit.url } : { text: piece, url: null };
+  });
+  const loose = neutral(f.frame(model, 0, frameCase.snapshots[first.id]));
+  loose.risks = frameCase.snapshots[first.id].risks.map((text) => naive(text, model.nodes[0].milestone.links.issue))
+    .map((line) => line.map((r) => (r.url === null ? { text: r.text } : r)));
+  const caughtNaive = differences(first.risks, loose.risks, "frame", []).length > 0;
+  console.log(`negative control, a frame with the next milestone's sidecar: ${caughtSidecar ? "caught" : "NOT CAUGHT"}`);
+  console.log(`negative control, #N split without the look-ahead: ${caughtNaive ? "caught" : "NOT CAUGHT"}`);
+  return ok && sections && caughtSidecar && caughtNaive;
+}
 
 /** A timeline of `n` moments on the main lane, ten minutes apart, two in three of them decisions: the crowded
  * lane of the labels' check. */

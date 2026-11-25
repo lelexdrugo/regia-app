@@ -1,26 +1,21 @@
 //! The moviola's commands (threat model §3.4): the portfolio, a project's timeline and one sidecar, in place of the
 //! routes of the prototype's local viewer, which the product does not port (ADR 0001 §9). The core reads and builds
-//! the answers in its own types, made for the view; this module finds the projects and the settings of their
-//! links. The commands' names and their arguments' are provisional until the gate of the names (#223 of the
-//! dossier); `get_snapshot` is the route of a sidecar that #400 of the dossier turned into a command.
-//!
-//! The registry is read here, through the tracker, as `projects` of the CLI reads it: that composition belongs
-//! to `regia-runtime`, where it can move. The project's remote is not read yet, so a commit has no URL.
+//! the answers in its own types, made for the view; this module asks `regia-runtime` for the projects and for the
+//! settings of their links, and starts nothing and reads no tracker itself. The registry is composed there, and so
+//! is the remote of each project's repo, which gives a commit its URL. The commands' names and their arguments' are
+//! provisional until the gate of the names (#223 of the dossier); `get_snapshot` is the route of a sidecar that
+//! #400 of the dossier turned into a command.
 
 use std::sync::{Mutex, MutexGuard, PoisonError};
 
 use regia_core::moviola::{self, LinkSettings, Project, ProjectSummary, Range, Snapshot, Timeline};
-use regia_core::{Registry, Tracker, TrackerBinding, TrackerConfigV1, project_entry};
-use regia_github::GhTracker;
-use regia_identity::state_dir;
-use regia_runtime::dossier_dir;
-use serde_json::Value;
+use regia_runtime::{moviola_projects, project_links, tracker_links};
 use tauri::State;
 
 /// The longest id the webview may send, as the threat model's opaque tokens; an instant of a range is shorter.
 const ID_LIMIT: usize = 64;
 
-/// The projects and the links' settings of the last read. An id from the webview is compared with these
+/// The projects and the tracker's part of the links' settings of the last read. An id from the webview is compared with these
 /// projects, never joined to a path (threat model T05).
 #[derive(Debug, Default)]
 pub struct Moviola {
@@ -48,7 +43,7 @@ impl Moviola {
         }
         let mut known = lock(&self.projects);
         if known.is_none() {
-            *known = Some(read_projects()?);
+            *known = Some(moviola_projects().map_err(|error| error.to_string())?);
         }
         known.iter().flatten().find(|project| project.id == id).cloned().ok_or_else(|| format!("unknown project: {id}"))
     }
@@ -56,55 +51,17 @@ impl Moviola {
     fn links(&self) -> Result<LinkSettings, String> {
         let mut known = lock(&self.links);
         if known.is_none() {
-            *known = Some(read_link_settings()?);
+            *known = Some(tracker_links().map_err(|error| error.to_string())?);
         }
         Ok(known.clone().unwrap_or_default())
     }
-}
-
-/// The projects of the registry whose folder is a folder on this machine, as the prototype's `moviola serve --tutti`
-/// takes them, with the title of their entry: the entry of each open Objective as `projects` builds it, so the
-/// registry's own `id` and title win over the Objective's, and the first of two entries with one id is kept.
-fn read_projects() -> Result<Vec<Project>, String> {
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
-    let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
-    let mut projects: Vec<Project> = Vec::new();
-    for mut issue in GhTracker::new(&config).open_issues().map_err(|error| error.to_string())? {
-        let body = std::mem::take(&mut issue.body);
-        // Only the Objectives count, and their status plays no part: an option the configuration does not bind
-        // on some issue does not stop the list.
-        issue.status_option_id = None;
-        let task = binding.resolve(issue).map_err(|error| error.to_string())?;
-        if !task.objective {
-            continue;
-        }
-        let entry = project_entry(&task, &Registry::parse(&body), &config.owner).map_err(|error| error.to_string())?;
-        let text = |key: &str| entry.get(key).and_then(Value::as_str).filter(|value| !value.is_empty()).map(str::to_owned);
-        let (Some(id), Some(folder)) = (text("id"), text("folder")) else { continue };
-        if std::path::Path::new(&folder).is_dir() && !projects.iter().any(|project| project.id == id) {
-            projects.push(Project { id, folder: folder.into(), title: text("title") });
-        }
-    }
-    Ok(projects)
-}
-
-/// The tracker's owner, repo and Project, by the prototype's rule: a local configuration that does not read is an
-/// error, which names it; with none, or the dossier's unreadable, the links have no URL.
-fn read_link_settings() -> Result<LinkSettings, String> {
-    let config = TrackerConfigV1::load_for_links(state_dir().as_deref(), dossier_dir().as_deref()).map_err(|error| error.to_string())?;
-    Ok(config.map_or_else(LinkSettings::default, |config| LinkSettings {
-        owner: Some(config.owner),
-        repo: Some(config.repo),
-        project_url: config.project_url,
-        remote: None,
-    }))
 }
 
 /// L0: the projects with a folder on this machine, by id, with the health and the last milestone of each.
 /// Reads the tracker, so it runs off the main thread, and keeps the projects for the two commands below.
 #[tauri::command(async)]
 pub fn list_projects(state: State<'_, Moviola>) -> Result<Vec<ProjectSummary>, String> {
-    let projects = read_projects()?;
+    let projects = moviola_projects().map_err(|error| error.to_string())?;
     let portfolio = moviola::portfolio(&projects).map_err(|error| error.to_string())?;
     *lock(&state.projects) = Some(projects);
     Ok(portfolio)
@@ -119,7 +76,9 @@ pub fn get_timeline(state: State<'_, Moviola>, project_id: String, from: Option<
         return Err("not a date or an instant".to_owned());
     }
     let range = Range::parse(from.as_deref(), to.as_deref()).map_err(|error| error.to_string())?;
-    moviola::timeline(&project, &state.links()?, &range).map_err(|error| error.to_string())
+    // The remote is the project's own: read in its folder at each call, as the prototype's view reads it.
+    let settings = project_links(&state.links()?, &project.folder);
+    moviola::timeline(&project, &settings, &range).map_err(|error| error.to_string())
 }
 
 /// The sidecar of a project's milestone, on demand: `null` when the project has no milestone with that id, or the

@@ -19,5 +19,6 @@
     "worker-a",
     "--ttl",
     "600"
-  ]
+  ],
+  "state_after": true
 }

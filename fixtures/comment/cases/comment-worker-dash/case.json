@@ -1,0 +1,8 @@
+{
+  "_note": "Synthetic. A worker's comment whose body starts with a dash, in the `--body=value` form: the value passes joined to the prototype (`--corpo=- a list item`), which reads it as the body and not as an option, and `regia-exec` lets the joined option through (#568/V2, #441/V2). Signed worker, as comment-worker (M3).",
+  "scenario": "tracker",
+  "args": ["comment", "5", "--body=- a list item", "--role", "worker", "--json"],
+  "python": ["--json", "commento", "5", "--corpo=- a list item", "--ruolo", "worker"],
+  "env": {"CLAUDE_CODE_SESSION_ID": "fixture-worker"},
+  "gh": {"cli": {"issue comment": "https://tracker.invalid/issues/5#issuecomment-9214\n"}}
+}

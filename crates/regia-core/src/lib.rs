@@ -7,6 +7,7 @@ pub mod comment;
 pub mod deadline;
 pub mod due;
 pub mod graph;
+pub mod init;
 pub mod link;
 pub mod markdown;
 pub mod model;
@@ -29,11 +30,14 @@ pub use link::{LinkRefusal, LinkTarget, check_link};
 pub use markdown::{Block, Document, Inline, parse_document};
 pub use model::{CloseReason, DueDate, IssueState, Maturity, Status, Task};
 pub use policy::{Lever, LeverValue, Local, LocalStatus, Origin, Policy, PolicyError, Room, Values};
-pub use reads::{ListOptions, ListedTask, ShownTask, task_list};
-pub use reference::{Reference, ReferenceKind, Unresolved, data_root, resolve};
+pub use reads::{BodyEdit, ListOptions, ListedTask, ShownTask, task_list};
+pub use reference::{NotAPathForm, Reference, ReferenceKind, Unresolved, data_root, resolve};
 pub use registry::{EntryError, Registry, full_repo, project_entry, registry_with};
 pub use text::{Normalized, normalize, normalize_document, normalize_title};
 pub use tracker::{
     IssueRef, RawComment, RawIssue, StatusHistory, Tracker, TrackerError, add_children_from_parents, created_issue_number,
 };
-pub use v1::{TrackerBinding, TrackerConfigV1, V1Error, project_of_labels};
+pub use v1::{
+    BaseLabel, TrackerBinding, TrackerConfigV1, V1Error, base_labels, local_config_file, project_field_name, project_label_prefix,
+    project_of_labels, status_option_names,
+};

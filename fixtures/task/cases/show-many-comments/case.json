@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. #2 with its 101 comments, oldest first: the second page of the comments holds the last one.",
+  "scenario": "many-comments",
+  "args": [
+    "task",
+    "show",
+    "2",
+    "--comments",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "show",
+    "2",
+    "--commenti"
+  ]
+}

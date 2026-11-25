@@ -1,7 +1,9 @@
 // Records the prototype's answers for the moviola proof (prove/moviola.js) into harness/moviola.json: the lanes,
 // nodes, layouts and time scale that the prototype's viewer computes on the fixtures, beside the same fixtures in
-// the product's shape. It is the prototype's side, as crates/regia-conformance/oracle/moviola_oracle.py is for the
-// core, so it speaks the prototype's keys; the product's sources never do (the guard of regia-conformance).
+// the product's shape; then, for every milestone, the frame the prototype draws (`disegnaL3`, read back from a
+// small DOM) and its chat package (`pacchetto`), with the sidecars as the core sends them (#487). It is the
+// prototype's side, as crates/regia-conformance/oracle/moviola_oracle.py is for the core, so it speaks the
+// prototype's keys; the product's sources never do (the guard of regia-conformance).
 //
 //   REGIA_HOME=<a copy of the dossier> node prove/moviola-record.mjs
 //
@@ -21,10 +23,35 @@ if (!home) {
   process.exit(2);
 }
 
-// The prototype's viewer in a context with a DOM only as large as loading needs (test_moviola_viewer.py, CARICA).
+// A DOM as small as the prototype's frame (`disegnaL3`) needs: elements with attributes and children, text as
+// strings. The frame is drawn into `l3`, then read back (frameOf, below).
+class Element {
+  constructor(tag) {
+    Object.assign(this, { tagName: tag, attributes: {}, childNodes: [], className: "", style: {}, dataset: {}, hidden: false, scrollTop: 0 });
+  }
+  set textContent(value) { this.childNodes = [String(value)]; }
+  get textContent() { return this.childNodes.map((c) => (typeof c === "string" ? c : c.textContent)).join(""); }
+  append(...nodes) { for (const node of nodes) this.childNodes.push(typeof node === "object" ? node : String(node)); }
+  appendChild(node) { this.childNodes.push(node); return node; }
+  replaceChildren(...nodes) { this.childNodes = []; this.append(...nodes); }
+  setAttribute(name, value) { this.attributes[name] = String(value); }
+  getAttribute(name) { return name in this.attributes ? this.attributes[name] : null; }
+  addEventListener() {}
+}
+const l3 = new Element("section");
+// The directions (`disegnaL1`, #598) are drawn into `l1`, then read back (cardOf, below).
+const l1 = new Element("aside");
+
+// The prototype's viewer in a context with a DOM only as large as loading and the frame need (test_moviola_viewer.py,
+// CARICA).
 const context = {
-  console, Intl, URLSearchParams, location: { hash: "" }, window: {},
-  document: { addEventListener() {}, getElementById() { return null; } },
+  console, Intl, URLSearchParams, location: { hash: "", origin: "https://origin.invalid" }, window: {},
+  document: {
+    addEventListener() {},
+    getElementById: (id) => (id === "l3" ? l3 : id === "l1" ? l1 : null),
+    createElement: (tag) => new Element(tag),
+    createElementNS: (_, tag) => new Element(tag),
+  },
   ResizeObserver: class { observe() {} disconnect() {} },
 };
 vm.createContext(context);
@@ -154,17 +181,315 @@ direzioni: [{ id: "x", titolo: "X", stato: "rientrata", motivo: "because", apert
 aggregati: [{ task: 7, round: 1, modelli: [{ agente: "claude", modello: "claude-opus-5-5", sessioni: 1 }],
   controlli: [{ tipo: "test", esito: "ok" }] }] };
 
+// A frame of every kind the L3 reads (#487): a `#N` in each of the three sections that link them, one the milestone
+// does not point at (the same repository as the others), one followed by a letter, markup in a text, `in_breve` on
+// one sidecar only, a direction opened and then closed, a task with reviews and tokens, one with no session and no
+// tokens (a colleague without sync), and a milestone with no sidecar.
+const issue = (n) => ({ testo: `#${n}`, url: `https://github.com/acme/tasks/issues/${n}` });
+const frame = { progetto: "frame", project_url: "https://github.com/users/acme/projects/7", milestones: [
+  { id: "01JCF000000000000000000000", ts: "2026-10-14T10:00:00Z", tipo: "milestone", titolo: "#12 merged after review", direzione: "principale",
+    salute: "in salute", genitori: [], rif: { issue: [12, 14], commit: ["abc1234"], report: [".regia/report/2026-10-14-12-review.md", ".regia/report/gone.md"] },
+    processo: { round: 2, controlli: ["revisione-avversaria", "test"], difetti: { trovati: 2, chiusi: 2 } },
+    link: { issue: [issue(12), issue(14)], commit: [{ testo: "abc1234", url: "https://github.com/acme/frame/commit/abc1234", hash: "abc1234" }],
+      report: [{ testo: ".regia/report/2026-10-14-12-review.md", percorso: "<root>/projects/frame/.regia/report/2026-10-14-12-review.md", tipo: "relativo", esiste: true },
+        { testo: ".regia/report/gone.md", percorso: "<root>/projects/frame/.regia/report/gone.md", tipo: "relativo", esiste: false }] } },
+  { id: "01JCF100000000000000000000", ts: "2026-10-15T09:00:00Z", tipo: "esplorazione", titolo: "A probe opens its lane", direzione: "probe",
+    apre_direzione: "probe", salute: "a rischio", genitori: ["01JCF000000000000000000000"], rif: { issue: [14] },
+    link: { issue: [issue(14)], commit: [{ testo: "fedcba9", url: null, hash: "fedcba9876543210" }], report: [] } },
+  { id: "01JCF200000000000000000000", ts: "2026-10-16T09:00:00Z", tipo: "abbandono", titolo: "The probe is dropped", direzione: "principale",
+    salute: "in attesa del titolare", genitori: ["01JCF100000000000000000000"], rif: { issue: [] }, link: { issue: [], commit: [], report: [] } }],
+direzioni: [{ id: "probe", titolo: "A probe", aperta_da: "01JCF100000000000000000000", stato: "abbandonata", motivo: "To try the other road." }],
+aggregati: [
+  { task: 12, finestra: ["2026-10-14T08:00:00Z", "2026-10-14T10:00:00Z"], round: 2, sottoagenti_dichiarati: 1,
+    modelli: [{ agente: "claude", modello: "claude-opus-5-5", effort: "max", sessioni: 1 }, { agente: "codex", modello: "gpt-5.5-codex", effort: "high", sessioni: 1 },
+      { agente: "claude", modello: "claude-opus-5-5", effort: null, sessioni: 1, via: "report" }],
+    controlli: [{ tipo: "revisione-avversaria", esito: "difetti", modello: "gpt-5.5-codex", difetti: ["D1", "D2"] }, { tipo: "test", esito: "ok", difetti: [] }],
+    difetti: { trovati: 2, chiusi: 2, chiude: ["#9/D3"] }, token: { in: 120000, out: 8000, cache_lettura: 900000, cache_scrittura: 40000 } },
+  { task: 14, round: 1, sottoagenti_dichiarati: null, modelli: [], controlli: [], difetti: { trovati: null, chiusi: null }, token: null }],
+snapshot: {
+  "01JCF000000000000000000000": { cambiato: ["Merged #12 after two rounds.", "A text with <script>alert(1)</script> & a < b stays text."],
+    direzione: "The review of #12 closed both defects.", decisioni_aperte: ["Pick the probe: #13 or #14."],
+    rischi: ["#14 may slip; #14a and x#14 are not the same."], prossimo: "Open the probe of #14.", in_breve: "The review is done. The project is on time." },
+  "01JCF100000000000000000000": { cambiato: [], direzione: "Try the other road.", decisioni_aperte: [], rischi: ["No #N here."], prossimo: "" },
+  "01JCF200000000000000000000": null,
+} };
+// A moment too long for the chat package (`pacchetto`): its title, its summary and its thirty references do not fit
+// in 1,500 characters, so the summary is shortened and then the references go, from the last.
+const words = (n, w) => Array.from({ length: n }, (_, i) => `${w}${i}`).join(" ");
+frame.milestones.push({ id: "01JCF300000000000000000000", ts: "2026-10-17T09:00:00Z", tipo: "decisione", direzione: "principale",
+  titolo: `A long decision ${words(40, "about")}`, salute: "in salute", genitori: ["01JCF200000000000000000000"],
+  rif: { issue: Array.from({ length: 30 }, (_, i) => 100 + i) }, link: { issue: Array.from({ length: 30 }, (_, i) => issue(100 + i)), commit: [], report: [] } });
+frame.snapshot["01JCF300000000000000000000"] = { cambiato: [], direzione: words(80, "because"), decisioni_aperte: [], rischi: [], prossimo: "",
+  in_breve: words(120, "summary") };
+
+// The sidecars as the core sends them (records.rs, Snapshot): every key, `null` or `[]` for none.
+function sidecar(raw) {
+  if (!raw) return null;
+  const process = raw.processo ? { round: raw.processo.round ?? null, checks: raw.processo.controlli ?? [],
+    defects: raw.processo.difetti ? { found: raw.processo.difetti.trovati ?? null, closed: raw.processo.difetti.chiusi ?? null } : null } : null;
+  return { id: raw.id ?? null, ts: raw.ts ?? null, in_brief: raw.in_breve ?? null, changed: raw.cambiato ?? [], direction: raw.direzione ?? null,
+    open_decisions: raw.decisioni_aperte ?? [], risks: raw.rischi ?? [], next: raw.prossimo ?? null, changed_claims: raw.claim_cambiati ?? [],
+    deviations: (raw.deviazioni ?? []).map((d) => ({ plan: d.piano ?? null, deviation: d.deviazione ?? null, reason: d.motivo ?? null, impact: d.impatto ?? null })),
+    process };
+}
+
+const isElement = (node) => typeof node === "object";
+const classOf = (node) => (isElement(node) ? node.className || node.attributes.class || "" : "");
+const declared = (node) => (node.childNodes.some((c) => classOf(c).includes("nd")) ? null : node.textContent);
+const number = (text) => (text === null ? null : Number(text));
+
+/** A list item's text as runs: text, and links with their address; empty text dropped, neighbours joined. */
+function runs(nodes) {
+  const out = [];
+  for (const node of nodes) {
+    const run = isElement(node) && node.tagName === "a" ? { text: node.textContent, url: node.attributes.href } : { text: isElement(node) ? node.textContent : node };
+    if (!run.text) continue;
+    const last = out[out.length - 1];
+    if (last && !("url" in last) && !("url" in run)) last.text += run.text;
+    else out.push(run);
+  }
+  return out;
+}
+
+const items = (nodes) => {
+  const list = nodes.find((n) => isElement(n) && n.tagName === "ul");
+  return list ? list.childNodes.map((li) => runs(li.childNodes)) : [];
+};
+const idOf = (href) => /\/n\/([^?]+)/.exec(href)[1];
+// The references of a line: a link where the server resolved an address, the text (a commit's whole hash) where not.
+const links = (line) => line.childNodes.filter((n) => isElement(n) && (n.tagName === "a" || n.tagName === "code"))
+  .map((x) => ({ text: x.textContent, url: x.tagName === "a" ? x.attributes.href : null }));
+
+/** The frame the prototype drew in `l3`, read back by its sections: the prototype's own words become the product's
+ * names, so prove/moviola.js compares it with the product's `frame` (src/lib/moviola/frame.ts). */
+function frameOf(m, P) {
+  const sections = { head: [] };
+  let current = "head";
+  for (const node of l3.childNodes) {
+    if (isElement(node) && node.tagName === "h3") sections[(current = node.textContent)] = [];
+    else sections[current].push(node);
+  }
+  const head = sections.head;
+  const chips = head.find((n) => isElement(n) && n.tagName === "div" && !classOf(n)).childNodes.filter(isElement);
+  const why = { direction: null, opens: null, closes: [] };
+  for (const p of sections["Perché"]) {
+    const text = p.textContent;
+    const opens = /^Apre la corsia «(.*)»\. (.*)$/s.exec(text);
+    const closes = /^Chiude la corsia «(.*)» \((.*)\)\. (.*)$/s.exec(text);
+    if (classOf(p).includes("perche")) why.direction = text || null;
+    else if (opens) why.opens = { title: opens[1], reason: opens[2] || null };
+    else if (closes) why.closes.push({ title: closes[1], status: STATUS[closes[2]], reason: closes[3] || null });
+    else throw new Error(`a paragraph of the why the recorder does not know: ${text}`);
+  }
+  const row = sections["Processo (milestone)"][0].childNodes[1].childNodes;
+  const refs = sections["Riferimenti"];
+  const [issues, commits, reports, pages] = refs;
+  const tail = refs.slice(4);
+  const after = (prefix) => {
+    const p = tail.find((n) => n.tagName === "p" && n.childNodes[0] === prefix);
+    return p ? p.childNodes.filter((n) => isElement(n) && n.tagName === "a").map((a) => idOf(a.attributes.href)) : [];
+  };
+  const buttons = tail.find((n) => classOf(n) === "naviga").childNodes.map((b) => b.textContent);
+  const deviation = (runs) => {
+    const [, plan, deviation, reason, impact] = /^(.*) → (.*): (.*) \((.*)\)$/s.exec(runs.map((r) => r.text).join(""));
+    return [plan, deviation, reason, impact].map((x) => (x === "null" || x === "undefined" ? null : x));
+  };
+  const reportList = reports.childNodes.find((n) => isElement(n) && n.tagName === "ul");
+  return {
+    id: m.id,
+    title: head.find((n) => isElement(n) && n.tagName === "h2").textContent,
+    lane: chips[0].textContent,
+    health: HEALTH[chips[1].textContent] ?? null,
+    inBrief: head.find((n) => classOf(n).includes("in-breve"))?.textContent ?? null,
+    why,
+    changed: items(sections["Cambiato"]),
+    openDecisions: items(sections["Decisioni aperte"]),
+    risks: items(sections["Rischi"]),
+    nextStep: sections["Prossimo"][0].textContent || null,
+    claims: sections["Claim cambiati"] ? items(sections["Claim cambiati"]).map((r) => r.map((x) => x.text).join("")) : [],
+    deviations: sections["Deviazioni"] ? items(sections["Deviazioni"]).map(deviation) : [],
+    process: { round: number(declared(row[0])), checks: declared(row[1]) === null ? [] : row[1].textContent.split(", "),
+      found: number(declared(row[2])), closed: number(declared(row[3])) },
+    work: sections["Chi ha lavorato, per task"].filter((n) => classOf(n) === "task").map((div) => ({
+      task: Number(div.childNodes[0].textContent.trim().slice(1)),
+      aggregate: !div.childNodes.some((c) => classOf(c) === "nd" && c.textContent.startsWith("nessun aggregato")) })),
+    refs: {
+      issue: links(issues),
+      commit: links(commits),
+      report: reportList ? reportList.childNodes.map((li) => ({ text: li.childNodes[0].textContent, path: li.childNodes[0].attributes.title ?? null,
+        exists: !li.childNodes.some((c) => classOf(c) === "nd") })) : [],
+      projectUrl: pages.childNodes.find((n) => isElement(n) && n.tagName === "a" && n.textContent === "Project")?.attributes.href ?? null,
+    },
+    parents: after("segue: "),
+    children: after("seguito da: "),
+    previous: buttons.some((b) => b.includes("precedente")) ? P.ms[m.i - 1].id : null,
+    following: buttons.some((b) => b.includes("successivo")) ? P.ms[m.i + 1].id : null,
+  };
+}
+
+// The prototype's frame and chat package of every milestone of a view.
+function frames(view) {
+  context.dati = { ...view, snapshot: view.snapshot ?? {} };
+  run(`S.P = prepara(dati); S.v = "A"; S.t = S.P.t1; S.rotta = { progetto: S.P.progetto, dir: null, nodo: null };`);
+  const P = run("S.P");
+  return P.ms.map((m) => {
+    run(`S.rotta.nodo = ${JSON.stringify(m.id)}; disegnaL3();`);
+    const pack = run(`pacchetto(S.P.perId[${JSON.stringify(m.id)}], S.P.progetto, S.P.snapshot[${JSON.stringify(m.id)}], location.origin)`);
+    // What the package says that the product names otherwise: the contract's word for the kind, the day in
+    // Europe/Rome, and the server's page of the snapshot, which the product replaces with the sidecar's path.
+    const said = { kind: m.tipo, day: run(`chiaveGiorno(${m.t})`), page: m.link && m.link.pagina ? context.location.origin + m.link.pagina : null };
+    return { ...frameOf(m, P), pack, said };
+  });
+}
+
+// The package's fixed words, as the prototype writes them (`pacchetto`), for the product's `pack` in the proofs.
+const packWords = { node: "nodo", looking: "Sto guardando: ", references: "Riferimenti: ", none: "nessuno", more: "… e altri ",
+  question: "Domanda: <da completare>", skill: "Carica la skill regia e leggi i riferimenti prima di rispondere." };
+
 const oracle = JSON.parse(readFileSync(join(ROOT, "fixtures/moviola/oracle.json"), "utf8"));
 const sizes = [[800, 400, null], [1280, 720, null], [800, 400, ["2026-10-15T09:00:00Z", "2026-10-19T10:00:00Z"]]];
 const cases = [
   { name: "viewer", view: viewer },
   { name: "alpha", view: oracle.views.alpha },
   { name: "beta", view: oracle.views.beta },
-].map(({ name, view }) => ({ name, timeline: product(view), expected: expected(view, sizes) }));
+  { name: "frame", view: frame },
+].map(({ name, view }) => ({
+  name,
+  timeline: product(view),
+  snapshots: Object.fromEntries(view.milestones.map((m) => [m.id, sidecar(view.snapshot?.[m.id])])),
+  expected: expected(view, sizes),
+  frames: frames(view),
+}));
 const portfolio = oracle.portfolio.map((entry) => filled({ title: null }, translated(entry)));
 
 // The rings' places above and below a glyph, and a lane's half thickness, for the first rings.
 const rings = { offsets: run("[0, 1, 2, 3, 4, 5, 6, 7].map(yAnello)"), halfThickness: run("[0, 1, 2, 3, 4, 5].map(semiSpessore)") };
-const out = { recorded: "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js", portfolio, rings, cases };
+
+// #598: the tape and the strip on a dense story and on the fixtures (`scalaTempo` as `disegnaNastro` and
+// `disegnaStriscia` call it), the filters (`visibileFiltri`), the state at a date (`statoAlla`), the directions' cards
+// (`disegnaL1`) and the time window (`impostaFinestra`), each under a key of its own: the cases above stay as they were.
+const HOUR = 3600e3;
+const VIEWS = { viewer, alpha: oracle.views.alpha, beta: oracle.views.beta, frame };
+const load = (view) => {
+  context.dati = { ...view, snapshot: view.snapshot ?? {} };
+  run(`S.P = prepara(dati); S.v = "A"; S.t = S.P.t1; S.dopo = false; S.finestra = null;
+    S.filtri = { modo: null, tipi: new Set(TIPI), modello: "", corsia: "", salute: "", dichiarati: false };
+    S.rotta = { progetto: S.P.progetto, dir: null, nodo: null };`);
+  return run("S.P");
+};
+
+// A dense story: four days of moments every half hour from 09:00 to 19:00 UTC, the nights its only joints.
+const denseTimes = [];
+for (let day = 0; day < 4; day++) for (let i = 0; i <= 20; i++) denseTimes.push(Date.UTC(2026, 9, 1 + day, 9, 30 * i));
+const TAPE_WIDTH = 1440;
+const STRIP_WIDTH = 500;
+function scaleOf(times, x0, x1, joint) {
+  context.tempi = times;
+  return JSON.parse(run(`(() => { const f = scalaTempo(tempi, ${x0}, ${x1}, 12 * ORA, ${joint});
+    return JSON.stringify({ x: tempi.map(t => [t, f(t)]), joints: f.giunte.map(g => ({ x: g.x, from: g.da, to: g.a })) }); })()`));
+}
+const stories = [["dense", denseTimes], ...["viewer", "alpha", "frame"].map((name) => [name, VIEWS[name].milestones.map((m) => Date.parse(m.ts))])];
+const tape = {
+  width: TAPE_WIDTH,
+  strip: STRIP_WIDTH,
+  stories: Object.fromEntries(stories.map(([name, times]) => [name, {
+    times, tape: scaleOf(times, 10, TAPE_WIDTH - 10, 26), strip: scaleOf(times, 8, STRIP_WIDTH - 8, 18) }])),
+};
+
+// The filters: kinds hidden, each «who», lane and health of the case, the declared ones, and one of each together.
+function filtersOf(view) {
+  const P = load(view);
+  const uses = new Map();
+  for (const a of view.aggregati || []) for (const v of a.modelli || []) {
+    context.voce = v;
+    uses.set(run("etichettaModello(voce)"), JSON.stringify([v.agente || "", v.modello || "", v.via === "report"]));
+  }
+  const who = (label) => (label === "non dichiarato" ? "none" : uses.get(label));
+  const settings = [
+    { nascondi: ["gate", "eccezione"] },
+    { nascondi: ["milestone"] },
+    { nascondi: Object.keys(KINDS).filter((t) => t !== "decisione") },
+    ...P.modelli.map((chi) => ({ chi })),
+    ...P.corsie.map((c) => ({ corsia: c.id })),
+    ...Object.keys(HEALTH).map((salute) => ({ salute })),
+    { dichiarati: true },
+    { nascondi: ["milestone"], salute: "a rischio", dichiarati: true },
+  ];
+  return {
+    who: P.modelli.map(who),
+    settings: settings.map((s) => {
+      context.impostazione = s;
+      const visible = JSON.parse(run(`(() => { const f = impostazione;
+        Object.assign(S.filtri, { modo: null, tipi: new Set(TIPI.filter(t => !(f.nascondi || []).includes(t))), modello: f.chi || "",
+          corsia: f.corsia || "", salute: f.salute || "", dichiarati: !!f.dichiarati });
+        return JSON.stringify(S.P.ms.filter(visibileFiltri).map(m => m.id)); })()`));
+      return { hide: (s.nascondi || []).map((k) => KINDS[k]), who: s.chi === undefined ? "" : who(s.chi), lane: s.corsia || "",
+        health: s.salute ? HEALTH[s.salute] : "", declared: !!s.dichiarati, visible };
+    }),
+  };
+}
+
+// The state at a date, before the first milestone, at each, between each two, and after the last.
+function statesOf(view) {
+  load(view);
+  return JSON.parse(run(`(() => { const tempi = S.P.ms.map(m => m.t);
+    const campioni = [S.P.t0 - 7 * ORA, ...tempi, ...tempi.slice(1).map((t, i) => (t + tempi[i]) / 2), S.P.t1 + 7 * ORA];
+    return JSON.stringify(campioni.map(t => { const s = statoAlla(S.P, t);
+      return { t, before: s.prima.length, last: s.ultima ? s.ultima.id : null, open: s.aperte.map(c => c.id), decisions: s.decisioni,
+        after: s.dopo }; })); })()`));
+}
+
+// The directions' cards, read back from the small DOM, and each card's moments once it is the one chosen.
+function cardOf(section) {
+  const kids = section.childNodes.filter(isElement);
+  const head = kids.find((n) => n.tagName === "div" && n.childNodes.some((c) => classOf(c).startsWith("chip")));
+  const [chip, facts] = head.childNodes.filter(isElement);
+  const [, id, count] = /^\s*(.*) · (\d+) nod[oi]$/.exec(facts.textContent);
+  const after = (...prefixes) => {
+    const div = kids.find((n) => n.tagName === "div" && typeof n.childNodes[0] === "string" && prefixes.some((p) => n.childNodes[0].startsWith(p)));
+    const a = div ? div.childNodes.find((c) => isElement(c) && c.tagName === "a") : null;
+    return a ? idOf(a.attributes.href) : null;
+  };
+  const list = kids.find((n) => n.tagName === "ol");
+  return {
+    id, title: kids.find((n) => n.tagName === "h3").textContent, status: STATUS[chip.textContent], count: Number(count),
+    reason: kids.find((n) => n.tagName === "p" && classOf(n).includes("motivo")).textContent,
+    openedBy: after("aperta da "), closedBy: after("abbandonata con ", "rientrata con "),
+    expanded: section.attributes["aria-expanded"] === "true",
+    list: list ? list.childNodes.map((li) => idOf(li.childNodes.find((c) => isElement(c) && c.tagName === "a").attributes.href)) : null,
+  };
+}
+function lanesOf(view) {
+  const P = load(view);
+  const read = () => l1.childNodes.filter((n) => isElement(n) && n.tagName === "section").map(cardOf);
+  run("disegnaL1()");
+  const cards = read();
+  const lists = P.corsie.map((c) => {
+    run(`S.rotta.dir = ${JSON.stringify(c.id)}; disegnaL1();`);
+    return read().find((card) => card.expanded)?.list ?? null;
+  });
+  run("S.rotta.dir = null");
+  return cards.map(({ expanded, list, ...card }, i) => ({ ...card, list: lists[i] }));
+}
+
+// The window, as the strip and the stage's brush ask for it: inside, too narrow, the whole story and more, either way
+// round, past the first milestone, one instant.
+function windowsOf(view) {
+  const P = load(view);
+  const [t0, t1, ts] = [P.t0, P.t1, P.ms.map((m) => m.t)];
+  const asks = [[t0 + 2 * HOUR, t0 + 30 * HOUR], [t1 - 10 * 60e3, t1 - 5 * 60e3], [t0 - 10 * HOUR, t1 + 10 * HOUR], [ts[3], ts[2]],
+    [t0 - 5 * HOUR, t0 + HOUR], [ts[1], ts[1]]];
+  return asks.map((ask) => {
+    context.chiesta = ask;
+    return { ask, window: JSON.parse(run("(impostaFinestra(chiesta[0], chiesta[1]), JSON.stringify(S.finestra && { from: S.finestra.dal, to: S.finestra.al }))")) };
+  });
+}
+
+const each = (f) => Object.fromEntries(Object.entries(VIEWS).map(([name, view]) => [name, f(view)]));
+const out = {
+  recorded: "node prove/moviola-record.mjs, from the dossier's tools/moviola/static/moviola.js", portfolio, rings, packWords, cases,
+  tape, filters: each(filtersOf), states: each(statesOf), lanes: each(lanesOf),
+  windows: { viewer: windowsOf(viewer), alpha: windowsOf(oracle.views.alpha) },
+};
 writeFileSync(join(UI, "harness/moviola.json"), JSON.stringify(out, null, 1) + "\n");
 console.log(`harness/moviola.json: ${cases.map((c) => `${c.name} ${c.timeline.milestones.length}`).join(", ")}`);

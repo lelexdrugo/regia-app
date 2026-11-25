@@ -14,7 +14,7 @@ import type { Done } from "../src/lib/brief";
 import DocumentView from "../src/lib/content/Document.svelte";
 import { type Catalog, catalog } from "../src/lib/i18n";
 import { DENSITIES, DIRECTIONS, draw } from "../src/lib/look";
-import type { MoviolaSource, ProjectSummary, Timeline } from "../src/lib/moviola/types";
+import type { MoviolaSource, ProjectSummary, Snapshot, Timeline } from "../src/lib/moviola/types";
 import { bench, type BenchResult } from "./bench";
 import { SECTIONS } from "../src/lib/route";
 import { appRenderer, type Check, type CorpusCase, loadFonts, type Renderer, v07 } from "../src/lib/v07";
@@ -125,31 +125,43 @@ function brief(data: string, params: URLSearchParams): () => Promise<BriefView> 
 
 // The moviola's fixtures, recorded by prove/moviola-record.mjs: fixtures/moviola's portfolio and timelines as the
 // core gives them, and the case of the dossier's test_moviola_viewer.py. JSON widens their kinds to strings.
-const moviolaFixtures = moviolaFile as unknown as { portfolio: ProjectSummary[]; cases: { name: string; timeline: Timeline }[] };
+const moviolaFixtures = moviolaFile as unknown as {
+  portfolio: ProjectSummary[];
+  cases: { name: string; timeline: Timeline; snapshots: Record<string, Snapshot | null> }[];
+};
 
 /**
  * The moviola's answers for the address: `demo` is the portfolio and its timelines (gamma has no moviola, so its
  * timeline is empty, as the core's is), `empty` no project, `loading` an answer that never comes, `error` the
- * command's rejection. An unknown project is refused as the app's command refuses it.
+ * command's rejection. An unknown project is refused as the app's command refuses it; a sidecar is the core's
+ * answer, `null` for a milestone with none. `notes=fail` refuses the sidecars alone, `notes=wait` never answers.
  */
-function moviolaOf(data: string): MoviolaSource {
+function moviolaOf(data: string, params: URLSearchParams): MoviolaSource {
   const timelines = new Map(moviolaFixtures.cases.map((c) => [c.name, c.timeline]));
+  const snapshots = new Map(moviolaFixtures.cases.map((c) => [c.name, c.snapshots]));
   const alpha = timelines.get("alpha");
   if (alpha) {
     timelines.set("gamma", { ...alpha, project: "gamma", milestones: [], directions: [], aggregates: [] });
   }
   const pending = () => new Promise<never>(() => {});
   if (data === "loading") {
-    return { projects: pending, timeline: pending };
+    return { projects: pending, timeline: pending, snapshot: pending };
   }
   if (data === "error") {
-    return { projects: () => Promise.reject(fixtures.error), timeline: () => Promise.reject(fixtures.error) };
+    const refused = () => Promise.reject(fixtures.error);
+    return { projects: refused, timeline: refused, snapshot: refused };
   }
+  const notes = params.get("notes");
   return {
     projects: () => Promise.resolve(data === "empty" ? [] : moviolaFixtures.portfolio),
     timeline: (project) => {
       const found = timelines.get(project);
       return found ? Promise.resolve(found) : Promise.reject(`unknown project: ${project}`);
+    },
+    snapshot: (project, milestone) => {
+      if (notes === "wait") return pending();
+      if (notes === "fail") return Promise.reject(fixtures.error);
+      return Promise.resolve(snapshots.get(project)?.[milestone] ?? null);
     },
   };
 }
@@ -199,7 +211,7 @@ let mounts = 0;
 function parts(route: string) {
   const [path = "", query = ""] = route.replace(/^#\/?/, "").split("?");
   const params = new URLSearchParams(query);
-  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota", "sort", "ported", "theme"].map((name) => params.get(name)).join("&");
+  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota", "sort", "ported", "theme", "notes"].map((name) => params.get(name)).join("&");
   return { view: path.split("/")[0] ?? "", query, params, fixture };
 }
 
@@ -262,7 +274,7 @@ async function show(): Promise<void> {
       done,
       ...settingsOf(params),
       quota,
-      moviola: moviolaOf(data),
+      moviola: moviolaOf(data, params),
       observeTheme,
       onsettled,
     };

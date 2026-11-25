@@ -49,6 +49,19 @@ jobs:
         os: ${{ fromJSON(inputs.only == 'linux' && '["ubuntu-24.04"]' || '["ubuntu-24.04","windows-2025"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # The root disk is this job's limit on Linux (#610): the image leaves about 13 GB of its 72 free, and the
+      # build and the tests took more. What the image brings and the job never uses goes, about 26 GB: .NET,
+      # Android, Haskell, CodeQL and the Docker images. It goes while the next steps run, and the build waits
+      # for it. A sample of the free space every five seconds gives the job's lowest, in its last step.
+      - name: Room on the disk, from what the runner's image brings and this job never uses (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          df -h /
+          nohup bash -c 'sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache/CodeQL; sudo docker image prune --all --force > /dev/null; touch "$RUNNER_TEMP/room"' \
+            > "$RUNNER_TEMP/room.log" 2>&1 &
+          nohup bash -c 'while :; do echo "$(date -u +%T) $(df -B1M --output=avail / | tail -1)"; sleep 5; done' \
+            > "$RUNNER_TEMP/free.log" 2>&1 &
       - name: System packages for Tauri
         if: runner.os == 'Linux'
         run: |
@@ -74,12 +87,24 @@ jobs:
           toolchain: stable
           components: clippy
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+      - name: The room on the disk, before the build (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          for second in $(seq 600); do [ -e "$RUNNER_TEMP/room" ] && break; sleep 1; done
+          cat "$RUNNER_TEMP/room.log"
+          df -h /
       - name: Build CLI, app and tools
         run: cargo build --workspace --locked
       - name: Only regia-exec starts a process (V12)
         run: cargo clippy --workspace --all-targets --locked -- -D clippy::disallowed-methods
       - name: Test, with the brief's conformance, regia-exec's checks and the app's (V01-V05, V08-V10, V27, V28)
         run: cargo test --workspace --locked
+      - name: The disk after the tests (Linux)
+        if: runner.os == 'Linux' && !cancelled()
+        run: |
+          df -h /
+          du -sh target || true
+          du -sh target/debug/conformance-state || true
       - name: Build the app for the smoke test
         run: cargo build -p regia-app --features smoke --locked
       - name: The app shows the CLI's brief, in each language, and passes its engine checks, V07 included (Linux)
@@ -108,6 +133,11 @@ jobs:
         run: |
           google-chrome --version
           npm run prove
+      - name: The disk at the end, and the job's lowest free space (Linux)
+        if: runner.os == 'Linux' && always()
+        run: |
+          df -h /
+          echo "lowest free space, in MB, and when: $(sort -k2 -n "$RUNNER_TEMP/free.log" | head -1)"
 
   macos:
     name: macos-15 (app-smoke)

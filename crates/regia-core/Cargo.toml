@@ -16,7 +16,6 @@ ts = ["dep:ts-rs"]
 chrono.workspace = true
 pulldown-cmark.workspace = true
 regex.workspace = true
-regia-identity.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

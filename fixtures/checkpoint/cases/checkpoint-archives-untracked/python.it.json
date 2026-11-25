@@ -1,0 +1,15 @@
+{
+  "dossier": {
+    "avanti": 0,
+    "branch": "main",
+    "cartella": "{dossier}",
+    "esito": "pushato",
+    "file": [
+      ".regia/decisioni-2026-02.md"
+    ],
+    "motivo": null,
+    "sha": "38acf37db57d302011d6749179be58f5fe934c43"
+  },
+  "ok": true,
+  "progetto": "alpha"
+}

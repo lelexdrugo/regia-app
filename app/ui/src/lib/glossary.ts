@@ -33,3 +33,27 @@ export const GLOSSARY: readonly [string, string][] = [
   ["words-behalf-term", "words-behalf"],
   ["words-fallback-term", "words-fallback"],
 ];
+
+/** The moviola's part (#487): the prototype viewer's guide in the page (`guida.js`, its tour and its glossary),
+ * made again as the help's section: the moviola's keys, then the signs on its stage. */
+export const MOVIOLA_KEYS: readonly [string, string][] = [
+  ["keys-search", "/"],
+  ["keys-moments", ", ."],
+  ["moviola-keys-arrows", "← →"],
+  ["moviola-keys-lanes", "↑ ↓"],
+  ["moviola-keys-ends", "Home · End"],
+  ["moviola-keys-zoom", "+ · − · 0"],
+  ["moviola-keys-enter", "Enter"],
+  ["moviola-keys-escape", "Esc"],
+];
+
+export const MOVIOLA_WORDS: readonly [string, string][] = [
+  ["moviola-word-kinds-term", "moviola-word-kinds"],
+  ["moviola-word-health-term", "moviola-word-health"],
+  ["moviola-word-rings-term", "moviola-word-rings"],
+  ["moviola-word-badges-term", "moviola-word-badges"],
+  ["moviola-word-undeclared-term", "moviola-word-undeclared"],
+  ["moviola-word-lanes-term", "moviola-word-lanes"],
+  ["moviola-word-playhead-term", "moviola-word-playhead"],
+  ["moviola-word-joint-term", "moviola-word-joint"],
+];

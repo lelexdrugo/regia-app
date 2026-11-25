@@ -196,7 +196,18 @@
     {#if route.section === "brief"}
       <Brief strings={words} {load} {done} {...onsettled ? { onsettled } : {}} />
     {:else if route.section === "moviola"}
-      <Moviola strings={words} source={moviola} project={route.project} {observeTheme} {...onsettled ? { onsettled } : {}} />
+      <Moviola
+        strings={words}
+        source={moviola}
+        project={route.project}
+        moment={route.moment}
+        query={route.query}
+        filters={route.filters}
+        hide={route.hide}
+        lane={route.lane}
+        {observeTheme}
+        {...onsettled ? { onsettled } : {}}
+      />
     {:else if route.section === "settings"}
       <Settings strings={words} {catalogFor} {look} {saving} onlook={changeLook} onlanguage={changeLanguage} />
     {:else}

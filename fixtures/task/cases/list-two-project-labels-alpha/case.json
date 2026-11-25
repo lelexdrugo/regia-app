@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. The tasks of alpha: #2 is not among them, as its first project label is beta's.",
+  "scenario": "two-project-labels",
+  "args": [
+    "task",
+    "list",
+    "--project",
+    "alpha",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "task",
+    "list",
+    "--progetto",
+    "alpha"
+  ]
+}

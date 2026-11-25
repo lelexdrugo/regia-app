@@ -1,0 +1,50 @@
+{
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "owner": {
+    "repositoryOwner": null
+  },
+  "rest": {
+    "GET repos/example/tracker": {
+      "body": {
+        "node_id": "R_FIXTURE",
+        "owner": {
+          "node_id": "U_FIXTURE"
+        },
+        "private": true
+      }
+    },
+    "GET repos/example/tracker/labels?per_page=100&page=1": {
+      "body": [
+        {
+          "name": "tipo:obiettivo"
+        },
+        {
+          "name": "maturità:abbozzo"
+        },
+        {
+          "name": "maturità:pronto"
+        },
+        {
+          "name": "parcheggiato"
+        },
+        {
+          "name": "sessione"
+        },
+        {
+          "name": "progetto:alpha"
+        }
+      ]
+    },
+    "GET user": {
+      "body": {
+        "login": "example"
+      },
+      "headers": {
+        "X-Oauth-Scopes": "project, repo"
+      }
+    }
+  }
+}

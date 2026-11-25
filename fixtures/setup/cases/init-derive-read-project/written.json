@@ -1,0 +1,3 @@
+{
+  "tracker.json": "{\n  \"_nota\": \"Generato da `regia init` (python -m tools.inizializza ricava). ID del Project GitHub: non sono segreti. Il token resta in 'gh auth'. Rigenerare se si ricrea il Project.\",\n  \"owner\": \"example\",\n  \"repo\": \"tracker\",\n  \"project_number\": 1,\n  \"project_id\": \"PROJECT_FIXTURE\",\n  \"project_url\": \"https://tracker.invalid/projects/1\",\n  \"status_field_id\": \"FIELD_FIXTURE\",\n  \"status_options\": {\n    \"Inbox\": \"opt-a1\",\n    \"Proposta\": \"opt-b2\",\n    \"Approvato\": \"opt-c3\",\n    \"In corso\": \"opt-d4\",\n    \"Decisione\": \"opt-e5\",\n    \"Fatto\": \"opt-f6\",\n    \"Scartato\": \"opt-g7\"\n  },\n  \"generato_da\": \"regia init\"\n}\n"
+}

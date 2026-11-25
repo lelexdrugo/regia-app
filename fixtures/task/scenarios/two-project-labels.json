@@ -1,0 +1,9 @@
+{
+  "_note": "Synthetic. The objective of alpha and a task that carries two project labels, beta's first: the first one is the task's project (T1).",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {"number": 1, "title": "[alpha] objective of alpha", "status": "In corso", "labels": ["progetto:alpha", "tipo:obiettivo"], "body": "<!-- regia:progetto\nid: alpha\n-->\n"},
+    {"number": 2, "title": "a task with two project labels", "status": "Approvato", "labels": ["progetto:beta", "progetto:alpha", "maturità:pronto"], "parent": 1}
+  ]
+}

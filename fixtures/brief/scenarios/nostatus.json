@@ -1,0 +1,34 @@
+{
+ "_note": "Synthetic. A tracker whose Project has an item for every task and a value for no status: the product refuses it (the status field is probably misconfigured), the prototype prints the brief with every task unset. A declared difference (#435/V7), asserted in tests/brief_rules.rs.",
+ "project_id": "PROJECT_FIXTURE",
+ "page_size": 7,
+ "project_field_options": [
+  "alpha"
+ ],
+ "issues": [
+  {
+   "number": 1,
+   "title": "in the Project, no status",
+   "labels": [
+    "progetto:alpha",
+    "maturità:pronto"
+   ],
+   "project_field": "alpha"
+  },
+  {
+   "number": 2,
+   "title": "in the Project, no status, blocked by the first",
+   "labels": [
+    "progetto:alpha",
+    "maturità:abbozzo"
+   ],
+   "project_field": "alpha",
+   "blocked_by": [
+    [
+     1,
+     "OPEN"
+    ]
+   ]
+  }
+ ]
+}

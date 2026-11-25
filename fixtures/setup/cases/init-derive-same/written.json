@@ -1,0 +1,3 @@
+{
+  "tracker.json": "{\"status_options\": {\"Inbox\": \"opt-a1\", \"Proposta\": \"opt-b2\", \"Approvato\": \"opt-c3\", \"In corso\": \"opt-d4\", \"Decisione\": \"opt-e5\", \"Fatto\": \"opt-f6\", \"Scartato\": \"opt-g7\"}, \"project_url\": \"https://tracker.invalid/projects/1\", \"_nota\": \"by hand\", \"repo\": \"tracker\", \"owner\": \"example\", \"project_number\": 1.0, \"project_id\": \"PROJECT_FIXTURE\", \"status_field_id\": \"FIELD_FIXTURE\", \"progetto_options\": {\"alpha\": \"opt-project-alpha\"}, \"progetto_field_id\": \"FIELD_PROJECT_FIXTURE\"}\n"
+}

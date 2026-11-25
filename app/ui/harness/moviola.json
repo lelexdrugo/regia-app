@@ -64,6 +64,15 @@
    39
   ]
  },
+ "packWords": {
+  "node": "nodo",
+  "looking": "Sto guardando: ",
+  "references": "Riferimenti: ",
+  "none": "nessuno",
+  "more": "… e altri ",
+  "question": "Domanda: <da completare>",
+  "skill": "Carica la skill regia e leggi i riferimenti prima di rispondere."
+ },
  "cases": [
   {
    "name": "viewer",
@@ -237,6 +246,13 @@
       "task": 7
      }
     ]
+   },
+   "snapshots": {
+    "M0": null,
+    "M1": null,
+    "M2": null,
+    "M3": null,
+    "M4": null
    },
    "expected": {
     "lanes": [
@@ -764,7 +780,244 @@
       }
      ]
     }
-   }
+   },
+   "frames": [
+    {
+     "id": "M0",
+     "title": "node 0",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [],
+     "children": [
+      "M1"
+     ],
+     "previous": null,
+     "following": "M1",
+     "pack": "regia · p · nodo M0 (milestone, 2026-10-14)\nSto guardando: node 0.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-14",
+      "page": null
+     }
+    },
+    {
+     "id": "M1",
+     "title": "node 1",
+     "lane": "x",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": {
+       "title": "X",
+       "reason": "because"
+      },
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [
+      "M0"
+     ],
+     "children": [
+      "M2"
+     ],
+     "previous": "M0",
+     "following": "M2",
+     "pack": "regia · p · nodo M1 (esplorazione, 2026-10-15)\nSto guardando: node 1.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "esplorazione",
+      "day": "2026-10-15",
+      "page": null
+     }
+    },
+    {
+     "id": "M2",
+     "title": "node 2",
+     "lane": "x",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": 3,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [
+      "M1"
+     ],
+     "children": [
+      "M3"
+     ],
+     "previous": "M1",
+     "following": "M3",
+     "pack": "regia · p · nodo M2 (milestone, 2026-10-15)\nSto guardando: node 2.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-15",
+      "page": null
+     }
+    },
+    {
+     "id": "M3",
+     "title": "node 3",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": [
+       {
+        "title": "X",
+        "status": "rejoined",
+        "reason": "because"
+       }
+      ]
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [
+      "M2"
+     ],
+     "children": [
+      "M4"
+     ],
+     "previous": "M2",
+     "following": "M4",
+     "pack": "regia · p · nodo M3 (rientro, 2026-10-19)\nSto guardando: node 3.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "rientro",
+      "day": "2026-10-19",
+      "page": null
+     }
+    },
+    {
+     "id": "M4",
+     "title": "node 4",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 7,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": null
+     },
+     "parents": [
+      "M3"
+     ],
+     "children": [],
+     "previous": "M3",
+     "following": null,
+     "pack": "regia · p · nodo M4 (decisione, 2026-10-20)\nSto guardando: node 4.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "decisione",
+      "day": "2026-10-20",
+      "page": null
+     }
+    }
+   ]
   },
   {
    "name": "alpha",
@@ -1261,6 +1514,174 @@
       "task": 27
      }
     ]
+   },
+   "snapshots": {
+    "01JCM100000000000000000000": {
+     "id": "01JCM100000000000000000000",
+     "ts": "2026-10-14T10:00:00Z",
+     "in_brief": "The project starts. Nothing is late.",
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": 1,
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null
+      }
+     }
+    },
+    "01JCM200000000000000000000": {
+     "id": "01JCM200000000000000000000",
+     "ts": "2026-10-15T12:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [
+       "test"
+      ],
+      "defects": {
+       "found": 0,
+       "closed": 0
+      }
+     }
+    },
+    "01JCM300000000000000000000": {
+     "id": "01JCM300000000000000000000",
+     "ts": "2026-10-16T09:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [
+      "C1 is weaker."
+     ],
+     "deviations": [
+      {
+       "plan": "Run A",
+       "deviation": "Ran B",
+       "reason": "A broke",
+       "impact": "One day"
+      }
+     ],
+     "process": {
+      "round": 2,
+      "checks": [
+       "revisione-avversaria"
+      ],
+      "defects": {
+       "found": 3,
+       "closed": null
+      }
+     }
+    },
+    "01JCM400000000000000000000": null,
+    "01JCM5A0000000000000000000": {
+     "id": "01JCM5A0000000000000000000",
+     "ts": "2026-10-20T09:00:00Z",
+     "in_brief": "A gate is open.",
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": 3,
+      "checks": [
+       "test"
+      ],
+      "defects": {
+       "found": 1,
+       "closed": 1
+      }
+     }
+    },
+    "01JCM5B0000000000000000000": {
+     "id": "01JCM5B0000000000000000000",
+     "ts": "2026-10-20T09:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null
+      }
+     }
+    },
+    "01JCM600000000000000000000": {
+     "id": "01JCM600000000000000000000",
+     "ts": "2026-10-21T07:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null
+      }
+     }
+    }
    },
    "expected": {
     "lanes": [
@@ -2005,7 +2426,599 @@
       }
      ]
     }
-   }
+   },
+   "frames": [
+    {
+     "id": "01JCM100000000000000000000",
+     "title": "First synthetic step",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": "The project starts. Nothing is late.",
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": 1,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 12,
+       "aggregate": true
+      },
+      {
+       "task": 27,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "#27",
+        "url": "https://github.com/acme/tasks/issues/27"
+       }
+      ],
+      "commit": [],
+      "report": [
+       {
+        "text": ".regia/report/2026-10-19-12-present.md",
+        "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "exists": true
+       },
+       {
+        "text": ".regia/report/2026-10-20-13-absent.md",
+        "path": "<root>/projects/alpha/.regia/report/2026-10-20-13-absent.md",
+        "exists": false
+       }
+      ],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [],
+     "children": [
+      "01JCM200000000000000000000"
+     ],
+     "previous": null,
+     "following": "01JCM200000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM100000000000000000000 (milestone, 2026-10-14)\nSto guardando: First synthetic step. The project starts. Nothing is late.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/tasks/issues/27, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, .regia/report/2026-10-20-13-absent.md, https://origin.invalid/p/alpha/snapshot/01JCM100000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-14",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM100000000000000000000.html"
+     }
+    },
+    {
+     "id": "01JCM200000000000000000000",
+     "title": "A choice waits for the owner",
+     "lane": "principale",
+     "health": "waiting_on_owner",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with #12."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [
+       "test",
+       "rilettura"
+      ],
+      "found": 0,
+      "closed": 0
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [
+       {
+        "text": "abc1234",
+        "url": "https://github.com/acme/alpha/commit/abc1234"
+       }
+      ],
+      "report": [
+       {
+        "text": "{dati}/EXP-1/results.md",
+        "path": null,
+        "exists": false
+       },
+       {
+        "text": "C:\\Users\\someone\\x.md",
+        "path": null,
+        "exists": false
+       },
+       {
+        "text": "/home/someone/x.md",
+        "path": null,
+        "exists": false
+       },
+       {
+        "text": "../outside.md",
+        "path": null,
+        "exists": false
+       },
+       {
+        "text": ".regia\\report\\2026-10-19-12-present.md",
+        "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "exists": true
+       }
+      ],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM100000000000000000000"
+     ],
+     "children": [
+      "01JCM300000000000000000000",
+      "01JCM400000000000000000000"
+     ],
+     "previous": "01JCM100000000000000000000",
+     "following": "01JCM300000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM200000000000000000000 (decisione, 2026-10-15)\nSto guardando: A choice waits for the owner. Keep the main line.\nRiferimenti: https://github.com/acme/alpha/commit/abc1234, {dati}/EXP-1/results.md, C:\\Users\\someone\\x.md, /home/someone/x.md, ../outside.md, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, https://origin.invalid/p/alpha/snapshot/01JCM200000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "decisione",
+      "day": "2026-10-15",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM200000000000000000000.html"
+     }
+    },
+    {
+     "id": "01JCM300000000000000000000",
+     "title": "#14 probe B opens",
+     "lane": "probe-b",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": {
+       "title": "Probe B",
+       "reason": "It worked and came back."
+      },
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [
+      "C1 is weaker."
+     ],
+     "deviations": [
+      [
+       "Run A",
+       "Ran B",
+       "A broke",
+       "One day"
+      ]
+     ],
+     "process": {
+      "round": 2,
+      "checks": [
+       "revisione-avversaria"
+      ],
+      "found": 3,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 14,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       }
+      ],
+      "commit": [
+       {
+        "text": "0123456",
+        "url": "https://github.com/acme/alpha/commit/0123456789abcdef0123456789abcdef01234567"
+       }
+      ],
+      "report": [
+       {
+        "text": ".regia/report/2026-10-19-12-present.md",
+        "path": "<root>/projects/alpha/.regia/report/2026-10-19-12-present.md",
+        "exists": true
+       }
+      ],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM200000000000000000000"
+     ],
+     "children": [
+      "01JCM400000000000000000000"
+     ],
+     "previous": "01JCM200000000000000000000",
+     "following": "01JCM400000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM300000000000000000000 (esplorazione, 2026-10-16)\nSto guardando: #14 probe B opens. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/14, https://github.com/acme/alpha/commit/0123456789abcdef0123456789abcdef01234567, <root>/projects/alpha/.regia/report/2026-10-19-12-present.md, https://origin.invalid/p/alpha/snapshot/01JCM300000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "esplorazione",
+      "day": "2026-10-16",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM300000000000000000000.html"
+     }
+    },
+    {
+     "id": "01JCM400000000000000000000",
+     "title": "Probe B comes back",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": [
+       {
+        "title": "Probe B",
+        "status": "rejoined",
+        "reason": "It worked and came back."
+       }
+      ]
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM300000000000000000000",
+      "01JCM200000000000000000000"
+     ],
+     "children": [
+      "01JCM5A0000000000000000000",
+      "01JCM5B0000000000000000000"
+     ],
+     "previous": "01JCM300000000000000000000",
+     "following": "01JCM5A0000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM400000000000000000000 (rientro, 2026-10-19)\nSto guardando: Probe B comes back.\nRiferimenti: https://origin.invalid/p/alpha/snapshot/01JCM400000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "rientro",
+      "day": "2026-10-19",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM400000000000000000000.html"
+     }
+    },
+    {
+     "id": "01JCM5A0000000000000000000",
+     "title": "A gate on the same instant",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": "A gate is open.",
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": 3,
+      "checks": [
+       "test"
+      ],
+      "found": 1,
+      "closed": 1
+     },
+     "work": [
+      {
+       "task": 12,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       }
+      ],
+      "commit": [
+       {
+        "text": "fedcba9",
+        "url": "https://github.com/acme/alpha/commit/fedcba9876543210"
+       }
+      ],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM400000000000000000000"
+     ],
+     "children": [
+      "01JCM600000000000000000000"
+     ],
+     "previous": "01JCM400000000000000000000",
+     "following": "01JCM5B0000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM5A0000000000000000000 (gate, 2026-10-20)\nSto guardando: A gate on the same instant. A gate is open.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/alpha/commit/fedcba9876543210, https://origin.invalid/p/alpha/snapshot/01JCM5A0000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "gate",
+      "day": "2026-10-20",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM5A0000000000000000000.html"
+     }
+    },
+    {
+     "id": "01JCM5B0000000000000000000",
+     "title": "Probe D is dropped",
+     "lane": "probe-d",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 27,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#27",
+        "url": "https://github.com/acme/tasks/issues/27"
+       }
+      ],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM400000000000000000000"
+     ],
+     "children": [],
+     "previous": "01JCM5A0000000000000000000",
+     "following": "01JCM600000000000000000000",
+     "pack": "regia · alpha · nodo 01JCM5B0000000000000000000 (abbandono, 2026-10-20)\nSto guardando: Probe D is dropped. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/27, https://origin.invalid/p/alpha/snapshot/01JCM5B0000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "abbandono",
+      "day": "2026-10-20",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM5B0000000000000000000.html"
+     }
+    },
+    {
+     "id": "01JCM600000000000000000000",
+     "title": "Over budget on a lane with no record",
+     "lane": "probe-c",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 99,
+       "aggregate": false
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#99",
+        "url": "https://github.com/acme/tasks/issues/99"
+       }
+      ],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCM5A0000000000000000000"
+     ],
+     "children": [],
+     "previous": "01JCM5B0000000000000000000",
+     "following": null,
+     "pack": "regia · alpha · nodo 01JCM600000000000000000000 (eccezione, 2026-10-21)\nSto guardando: Over budget on a lane with no record. Keep the main line.\nRiferimenti: https://github.com/acme/tasks/issues/99, https://origin.invalid/p/alpha/snapshot/01JCM600000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "eccezione",
+      "day": "2026-10-21",
+      "page": "https://origin.invalid/p/alpha/snapshot/01JCM600000000000000000000.html"
+     }
+    }
+   ]
   },
   {
    "name": "beta",
@@ -2075,6 +3088,26 @@
     ],
     "directions": [],
     "aggregates": []
+   },
+   "snapshots": {
+    "01JCB100000000000000000000": {
+     "id": "01JCB100000000000000000000",
+     "ts": "2026-10-18T08:00:00Z",
+     "in_brief": null,
+     "changed": [
+      "One thing changed.",
+      "Another one, with #12."
+     ],
+     "direction": "Keep the main line.",
+     "open_decisions": [
+      "Which probe next?"
+     ],
+     "risks": [],
+     "next": "Run the probe.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": null
+    }
    },
    "expected": {
     "lanes": [
@@ -2271,7 +3304,4131 @@
      ],
      "joints": []
     }
+   },
+   "frames": [
+    {
+     "id": "01JCB100000000000000000000",
+     "title": "Beta's only milestone",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": null,
+     "why": {
+      "direction": "Keep the main line.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "One thing changed."
+       }
+      ],
+      [
+       {
+        "text": "Another one, with #12."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Which probe next?"
+       }
+      ]
+     ],
+     "risks": [],
+     "nextStep": "Run the probe.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": 1,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 5,
+       "aggregate": false
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#5",
+        "url": null
+       }
+      ],
+      "commit": [
+       {
+        "text": "1111111",
+        "url": null
+       }
+      ],
+      "report": [
+       {
+        "text": ".regia/report/none.md",
+        "path": "<root>/projects/beta/.regia/report/none.md",
+        "exists": false
+       }
+      ],
+      "projectUrl": null
+     },
+     "parents": [],
+     "children": [],
+     "previous": null,
+     "following": null,
+     "pack": "regia · beta · nodo 01JCB100000000000000000000 (milestone, 2026-10-18)\nSto guardando: Beta's only milestone. Keep the main line.\nRiferimenti: #5, 1111111, .regia/report/none.md, https://origin.invalid/p/beta/snapshot/01JCB100000000000000000000.html\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-18",
+      "page": "https://origin.invalid/p/beta/snapshot/01JCB100000000000000000000.html"
+     }
+    }
+   ]
+  },
+  {
+   "name": "frame",
+   "timeline": {
+    "project": "frame",
+    "project_url": "https://github.com/users/acme/projects/7",
+    "main_direction": "principale",
+    "milestones": [
+     {
+      "opens_direction": null,
+      "process": {
+       "round": 2,
+       "checks": [
+        "revisione-avversaria",
+        "test"
+       ],
+       "defects": {
+        "found": 2,
+        "closed": 2
+       }
+      },
+      "author": null,
+      "id": "01JCF000000000000000000000",
+      "ts": "2026-10-14T10:00:00Z",
+      "kind": "milestone",
+      "title": "#12 merged after review",
+      "direction": "principale",
+      "health": "healthy",
+      "parents": [],
+      "refs": {
+       "issue": [
+        12,
+        14
+       ],
+       "commit": [
+        "abc1234"
+       ],
+       "report": [
+        ".regia/report/2026-10-14-12-review.md",
+        ".regia/report/gone.md"
+       ]
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#12",
+         "url": "https://github.com/acme/tasks/issues/12"
+        },
+        {
+         "text": "#14",
+         "url": "https://github.com/acme/tasks/issues/14"
+        }
+       ],
+       "commit": [
+        {
+         "text": "abc1234",
+         "url": "https://github.com/acme/frame/commit/abc1234",
+         "hash": "abc1234"
+        }
+       ],
+       "report": [
+        {
+         "text": ".regia/report/2026-10-14-12-review.md",
+         "path": "<root>/projects/frame/.regia/report/2026-10-14-12-review.md",
+         "kind": "relative",
+         "exists": true
+        },
+        {
+         "text": ".regia/report/gone.md",
+         "path": "<root>/projects/frame/.regia/report/gone.md",
+         "kind": "relative",
+         "exists": false
+        }
+       ]
+      }
+     },
+     {
+      "opens_direction": "probe",
+      "process": null,
+      "author": null,
+      "id": "01JCF100000000000000000000",
+      "ts": "2026-10-15T09:00:00Z",
+      "kind": "exploration",
+      "title": "A probe opens its lane",
+      "direction": "probe",
+      "health": "at_risk",
+      "parents": [
+       "01JCF000000000000000000000"
+      ],
+      "refs": {
+       "issue": [
+        14
+       ],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#14",
+         "url": "https://github.com/acme/tasks/issues/14"
+        }
+       ],
+       "commit": [
+        {
+         "text": "fedcba9",
+         "url": null,
+         "hash": "fedcba9876543210"
+        }
+       ],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "01JCF200000000000000000000",
+      "ts": "2026-10-16T09:00:00Z",
+      "kind": "abandonment",
+      "title": "The probe is dropped",
+      "direction": "principale",
+      "health": "waiting_on_owner",
+      "parents": [
+       "01JCF100000000000000000000"
+      ],
+      "refs": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [],
+       "commit": [],
+       "report": []
+      }
+     },
+     {
+      "opens_direction": null,
+      "process": null,
+      "author": null,
+      "id": "01JCF300000000000000000000",
+      "ts": "2026-10-17T09:00:00Z",
+      "kind": "decision",
+      "direction": "principale",
+      "title": "A long decision about0 about1 about2 about3 about4 about5 about6 about7 about8 about9 about10 about11 about12 about13 about14 about15 about16 about17 about18 about19 about20 about21 about22 about23 about24 about25 about26 about27 about28 about29 about30 about31 about32 about33 about34 about35 about36 about37 about38 about39",
+      "health": "healthy",
+      "parents": [
+       "01JCF200000000000000000000"
+      ],
+      "refs": {
+       "issue": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129
+       ],
+       "commit": [],
+       "report": []
+      },
+      "links": {
+       "issue": [
+        {
+         "text": "#100",
+         "url": "https://github.com/acme/tasks/issues/100"
+        },
+        {
+         "text": "#101",
+         "url": "https://github.com/acme/tasks/issues/101"
+        },
+        {
+         "text": "#102",
+         "url": "https://github.com/acme/tasks/issues/102"
+        },
+        {
+         "text": "#103",
+         "url": "https://github.com/acme/tasks/issues/103"
+        },
+        {
+         "text": "#104",
+         "url": "https://github.com/acme/tasks/issues/104"
+        },
+        {
+         "text": "#105",
+         "url": "https://github.com/acme/tasks/issues/105"
+        },
+        {
+         "text": "#106",
+         "url": "https://github.com/acme/tasks/issues/106"
+        },
+        {
+         "text": "#107",
+         "url": "https://github.com/acme/tasks/issues/107"
+        },
+        {
+         "text": "#108",
+         "url": "https://github.com/acme/tasks/issues/108"
+        },
+        {
+         "text": "#109",
+         "url": "https://github.com/acme/tasks/issues/109"
+        },
+        {
+         "text": "#110",
+         "url": "https://github.com/acme/tasks/issues/110"
+        },
+        {
+         "text": "#111",
+         "url": "https://github.com/acme/tasks/issues/111"
+        },
+        {
+         "text": "#112",
+         "url": "https://github.com/acme/tasks/issues/112"
+        },
+        {
+         "text": "#113",
+         "url": "https://github.com/acme/tasks/issues/113"
+        },
+        {
+         "text": "#114",
+         "url": "https://github.com/acme/tasks/issues/114"
+        },
+        {
+         "text": "#115",
+         "url": "https://github.com/acme/tasks/issues/115"
+        },
+        {
+         "text": "#116",
+         "url": "https://github.com/acme/tasks/issues/116"
+        },
+        {
+         "text": "#117",
+         "url": "https://github.com/acme/tasks/issues/117"
+        },
+        {
+         "text": "#118",
+         "url": "https://github.com/acme/tasks/issues/118"
+        },
+        {
+         "text": "#119",
+         "url": "https://github.com/acme/tasks/issues/119"
+        },
+        {
+         "text": "#120",
+         "url": "https://github.com/acme/tasks/issues/120"
+        },
+        {
+         "text": "#121",
+         "url": "https://github.com/acme/tasks/issues/121"
+        },
+        {
+         "text": "#122",
+         "url": "https://github.com/acme/tasks/issues/122"
+        },
+        {
+         "text": "#123",
+         "url": "https://github.com/acme/tasks/issues/123"
+        },
+        {
+         "text": "#124",
+         "url": "https://github.com/acme/tasks/issues/124"
+        },
+        {
+         "text": "#125",
+         "url": "https://github.com/acme/tasks/issues/125"
+        },
+        {
+         "text": "#126",
+         "url": "https://github.com/acme/tasks/issues/126"
+        },
+        {
+         "text": "#127",
+         "url": "https://github.com/acme/tasks/issues/127"
+        },
+        {
+         "text": "#128",
+         "url": "https://github.com/acme/tasks/issues/128"
+        },
+        {
+         "text": "#129",
+         "url": "https://github.com/acme/tasks/issues/129"
+        }
+       ],
+       "commit": [],
+       "report": []
+      }
+     }
+    ],
+    "directions": [
+     {
+      "opened_by": "01JCF100000000000000000000",
+      "reason": "To try the other road.",
+      "id": "probe",
+      "title": "A probe",
+      "status": "abandoned"
+     }
+    ],
+    "aggregates": [
+     {
+      "project": null,
+      "window": [
+       "2026-10-14T08:00:00Z",
+       "2026-10-14T10:00:00Z"
+      ],
+      "round": 2,
+      "declared_subagents": 1,
+      "models": [
+       {
+        "agent": "claude",
+        "model": "claude-opus-5-5",
+        "effort": "max",
+        "sessions": 1,
+        "via": null
+       },
+       {
+        "agent": "codex",
+        "model": "gpt-5.5-codex",
+        "effort": "high",
+        "sessions": 1,
+        "via": null
+       },
+       {
+        "agent": "claude",
+        "model": "claude-opus-5-5",
+        "effort": null,
+        "sessions": 1,
+        "via": "report"
+       }
+      ],
+      "checks": [
+       {
+        "kind": "revisione-avversaria",
+        "outcome": "difetti",
+        "defects": [
+         "D1",
+         "D2"
+        ],
+        "model": "gpt-5.5-codex"
+       },
+       {
+        "kind": "test",
+        "outcome": "ok",
+        "defects": [],
+        "model": null
+       }
+      ],
+      "defects": {
+       "found": 2,
+       "closed": 2,
+       "closes": [
+        "#9/D3"
+       ]
+      },
+      "tokens": {
+       "input": 120000,
+       "output": 8000,
+       "cache_read": 900000,
+       "cache_write": 40000
+      },
+      "task": 12
+     },
+     {
+      "project": null,
+      "window": [],
+      "round": 1,
+      "declared_subagents": null,
+      "models": [],
+      "checks": [],
+      "defects": {
+       "found": null,
+       "closed": null,
+       "closes": []
+      },
+      "tokens": null,
+      "task": 14
+     }
+    ]
+   },
+   "snapshots": {
+    "01JCF000000000000000000000": {
+     "id": null,
+     "ts": null,
+     "in_brief": "The review is done. The project is on time.",
+     "changed": [
+      "Merged #12 after two rounds.",
+      "A text with <script>alert(1)</script> & a < b stays text."
+     ],
+     "direction": "The review of #12 closed both defects.",
+     "open_decisions": [
+      "Pick the probe: #13 or #14."
+     ],
+     "risks": [
+      "#14 may slip; #14a and x#14 are not the same."
+     ],
+     "next": "Open the probe of #14.",
+     "changed_claims": [],
+     "deviations": [],
+     "process": null
+    },
+    "01JCF100000000000000000000": {
+     "id": null,
+     "ts": null,
+     "in_brief": null,
+     "changed": [],
+     "direction": "Try the other road.",
+     "open_decisions": [],
+     "risks": [
+      "No #N here."
+     ],
+     "next": "",
+     "changed_claims": [],
+     "deviations": [],
+     "process": null
+    },
+    "01JCF200000000000000000000": null,
+    "01JCF300000000000000000000": {
+     "id": null,
+     "ts": null,
+     "in_brief": "summary0 summary1 summary2 summary3 summary4 summary5 summary6 summary7 summary8 summary9 summary10 summary11 summary12 summary13 summary14 summary15 summary16 summary17 summary18 summary19 summary20 summary21 summary22 summary23 summary24 summary25 summary26 summary27 summary28 summary29 summary30 summary31 summary32 summary33 summary34 summary35 summary36 summary37 summary38 summary39 summary40 summary41 summary42 summary43 summary44 summary45 summary46 summary47 summary48 summary49 summary50 summary51 summary52 summary53 summary54 summary55 summary56 summary57 summary58 summary59 summary60 summary61 summary62 summary63 summary64 summary65 summary66 summary67 summary68 summary69 summary70 summary71 summary72 summary73 summary74 summary75 summary76 summary77 summary78 summary79 summary80 summary81 summary82 summary83 summary84 summary85 summary86 summary87 summary88 summary89 summary90 summary91 summary92 summary93 summary94 summary95 summary96 summary97 summary98 summary99 summary100 summary101 summary102 summary103 summary104 summary105 summary106 summary107 summary108 summary109 summary110 summary111 summary112 summary113 summary114 summary115 summary116 summary117 summary118 summary119",
+     "changed": [],
+     "direction": "because0 because1 because2 because3 because4 because5 because6 because7 because8 because9 because10 because11 because12 because13 because14 because15 because16 because17 because18 because19 because20 because21 because22 because23 because24 because25 because26 because27 because28 because29 because30 because31 because32 because33 because34 because35 because36 because37 because38 because39 because40 because41 because42 because43 because44 because45 because46 because47 because48 because49 because50 because51 because52 because53 because54 because55 because56 because57 because58 because59 because60 because61 because62 because63 because64 because65 because66 because67 because68 because69 because70 because71 because72 because73 because74 because75 because76 because77 because78 because79",
+     "open_decisions": [],
+     "risks": [],
+     "next": "",
+     "changed_claims": [],
+     "deviations": [],
+     "process": null
+    }
+   },
+   "expected": {
+    "lanes": [
+     {
+      "id": "principale",
+      "index": 0,
+      "status": "active",
+      "recorded": false,
+      "opened": 1791972000000,
+      "closed": null,
+      "closedBy": null,
+      "tone": {
+       "kind": "main"
+      },
+      "nodes": [
+       "01JCF000000000000000000000",
+       "01JCF200000000000000000000",
+       "01JCF300000000000000000000"
+      ]
+     },
+     {
+      "id": "probe",
+      "index": 1,
+      "status": "abandoned",
+      "recorded": true,
+      "opened": 1792054800000,
+      "closed": 1792141200000,
+      "closedBy": "01JCF200000000000000000000",
+      "tone": {
+       "kind": "abandoned"
+      },
+      "nodes": [
+       "01JCF100000000000000000000"
+      ]
+     }
+    ],
+    "nodes": [
+     {
+      "id": "01JCF000000000000000000000",
+      "lane": 0,
+      "t": 1791972000000,
+      "children": [
+       "01JCF100000000000000000000"
+      ],
+      "rings": [
+       {
+        "declared": true,
+        "model": "claude-opus-5-5"
+       },
+       {
+        "declared": true,
+        "model": "gpt-5.5-codex"
+       },
+       {
+        "declared": true,
+        "model": null
+       }
+      ],
+      "badges": [
+       "✓",
+       "2/2"
+      ],
+      "declared": true
+     },
+     {
+      "id": "01JCF100000000000000000000",
+      "lane": 1,
+      "t": 1792054800000,
+      "children": [
+       "01JCF200000000000000000000"
+      ],
+      "rings": [
+       {
+        "declared": true,
+        "model": null
+       }
+      ],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "01JCF200000000000000000000",
+      "lane": 0,
+      "t": 1792141200000,
+      "children": [
+       "01JCF300000000000000000000"
+      ],
+      "rings": [],
+      "badges": [],
+      "declared": false
+     },
+     {
+      "id": "01JCF300000000000000000000",
+      "lane": 0,
+      "t": 1792227600000,
+      "children": [],
+      "rings": [
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       },
+       {
+        "declared": false,
+        "model": null
+       }
+      ],
+      "badges": [],
+      "declared": false
+     }
+    ],
+    "layouts": [
+     {
+      "width": 800,
+      "height": 400,
+      "window": null,
+      "x": [
+       150,
+       358,
+       566,
+       774
+      ],
+      "y": [
+       217,
+       409,
+       217,
+       217
+      ],
+      "laneY": [
+       217,
+       409
+      ],
+      "step": 208,
+      "left": 150,
+      "i0": 0,
+      "i1": 3,
+      "clip": null,
+      "stageWidth": 800,
+      "stageHeight": 450,
+      "xAt": [
+       [
+        1791946800000,
+        46
+       ],
+       [
+        1791961200000,
+        98
+       ],
+       [
+        1791972000000,
+        150
+       ],
+       [
+        1792054800000,
+        358
+       ],
+       [
+        1792141200000,
+        566
+       ],
+       [
+        1792227600000,
+        774
+       ],
+       [
+        1792013400000,
+        254
+       ],
+       [
+        1792098000000,
+        462
+       ],
+       [
+        1792184400000,
+        670
+       ],
+       [
+        1792238400000,
+        826
+       ],
+       [
+        1792252800000,
+        878
+       ]
+      ],
+      "tAt": [
+       [
+        145,
+        1791972000000
+       ],
+       [
+        157,
+        1791974786538.4614
+       ],
+       [
+        365,
+        1792057707692.3076
+       ],
+       [
+        573,
+        1792144107692.3076
+       ],
+       [
+        781,
+        1792227600000
+       ],
+       [
+        779,
+        1792227600000
+       ]
+      ]
+     },
+     {
+      "width": 1280,
+      "height": 720,
+      "window": null,
+      "x": [
+       150,
+       518,
+       886,
+       1254
+      ],
+      "y": [
+       236,
+       452,
+       236,
+       236
+      ],
+      "laneY": [
+       236,
+       452
+      ],
+      "step": 368,
+      "left": 150,
+      "i0": 0,
+      "i1": 3,
+      "clip": null,
+      "stageWidth": 1280,
+      "stageHeight": 720,
+      "xAt": [
+       [
+        1791946800000,
+        -34
+       ],
+       [
+        1791961200000,
+        58
+       ],
+       [
+        1791972000000,
+        150
+       ],
+       [
+        1792054800000,
+        518
+       ],
+       [
+        1792141200000,
+        886
+       ],
+       [
+        1792227600000,
+        1254
+       ],
+       [
+        1792013400000,
+        334
+       ],
+       [
+        1792098000000,
+        702
+       ],
+       [
+        1792184400000,
+        1070
+       ],
+       [
+        1792238400000,
+        1346
+       ],
+       [
+        1792252800000,
+        1438
+       ]
+      ],
+      "tAt": [
+       [
+        145,
+        1791972000000
+       ],
+       [
+        157,
+        1791973575000
+       ],
+       [
+        525,
+        1792056443478.261
+       ],
+       [
+        893,
+        1792142843478.261
+       ],
+       [
+        1261,
+        1792227600000
+       ],
+       [
+        1259,
+        1792227600000
+       ]
+      ]
+     },
+     {
+      "width": 800,
+      "height": 400,
+      "window": {
+       "from": 1792054800000,
+       "to": 1792231200000
+      },
+      "x": [
+       -74,
+       194,
+       462,
+       730
+      ],
+      "y": [
+       217,
+       409,
+       217,
+       217
+      ],
+      "laneY": [
+       217,
+       409
+      ],
+      "step": 268,
+      "left": 150,
+      "i0": 1,
+      "i1": 3,
+      "clip": [
+       128,
+       800
+      ],
+      "stageWidth": 800,
+      "stageHeight": 450,
+      "xAt": [
+       [
+        1791946800000,
+        -208
+       ],
+       [
+        1791961200000,
+        -141
+       ],
+       [
+        1791972000000,
+        -74
+       ],
+       [
+        1792054800000,
+        194
+       ],
+       [
+        1792141200000,
+        462
+       ],
+       [
+        1792227600000,
+        730
+       ],
+       [
+        1792013400000,
+        60
+       ],
+       [
+        1792098000000,
+        328
+       ],
+       [
+        1792184400000,
+        596
+       ],
+       [
+        1792238400000,
+        797
+       ],
+       [
+        1792252800000,
+        864
+       ]
+      ],
+      "tAt": [
+       [
+        -79,
+        1791972000000
+       ],
+       [
+        -67,
+        1791974162686.5671
+       ],
+       [
+        201,
+        1792057056716.418
+       ],
+       [
+        469,
+        1792143456716.418
+       ],
+       [
+        737,
+        1792227600000
+       ],
+       [
+        735,
+        1792227600000
+       ]
+      ]
+     }
+    ],
+    "scale": {
+     "x0": 0,
+     "x1": 800,
+     "x": [
+      [
+       1791946800000,
+       0
+      ],
+      [
+       1791961200000,
+       0
+      ],
+      [
+       1791972000000,
+       349
+      ],
+      [
+       1792054800000,
+       383
+      ],
+      [
+       1792141200000,
+       417
+      ],
+      [
+       1792227600000,
+       451
+      ],
+      [
+       1792013400000,
+       366
+      ],
+      [
+       1792098000000,
+       400
+      ],
+      [
+       1792184400000,
+       434
+      ],
+      [
+       1792238400000,
+       800
+      ],
+      [
+       1792252800000,
+       800
+      ]
+     ],
+     "joints": [
+      {
+       "x": 366,
+       "from": 1791972000000,
+       "to": 1792054800000
+      },
+      {
+       "x": 400,
+       "from": 1792054800000,
+       "to": 1792141200000
+      },
+      {
+       "x": 434,
+       "from": 1792141200000,
+       "to": 1792227600000
+      }
+     ]
+    }
+   },
+   "frames": [
+    {
+     "id": "01JCF000000000000000000000",
+     "title": "#12 merged after review",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": "The review is done. The project is on time.",
+     "why": {
+      "direction": "The review of #12 closed both defects.",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [
+      [
+       {
+        "text": "Merged "
+       },
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": " after two rounds."
+       }
+      ],
+      [
+       {
+        "text": "A text with <script>alert(1)</script> & a < b stays text."
+       }
+      ]
+     ],
+     "openDecisions": [
+      [
+       {
+        "text": "Pick the probe: "
+       },
+       {
+        "text": "#13",
+        "url": "https://github.com/acme/tasks/issues/13"
+       },
+       {
+        "text": " or "
+       },
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       },
+       {
+        "text": "."
+       }
+      ]
+     ],
+     "risks": [
+      [
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       },
+       {
+        "text": " may slip; #14a and x"
+       },
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       },
+       {
+        "text": " are not the same."
+       }
+      ]
+     ],
+     "nextStep": "Open the probe of #14.",
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": 2,
+      "checks": [
+       "revisione-avversaria",
+       "test"
+      ],
+      "found": 2,
+      "closed": 2
+     },
+     "work": [
+      {
+       "task": 12,
+       "aggregate": true
+      },
+      {
+       "task": 14,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#12",
+        "url": "https://github.com/acme/tasks/issues/12"
+       },
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       }
+      ],
+      "commit": [
+       {
+        "text": "abc1234",
+        "url": "https://github.com/acme/frame/commit/abc1234"
+       }
+      ],
+      "report": [
+       {
+        "text": ".regia/report/2026-10-14-12-review.md",
+        "path": "<root>/projects/frame/.regia/report/2026-10-14-12-review.md",
+        "exists": true
+       },
+       {
+        "text": ".regia/report/gone.md",
+        "path": "<root>/projects/frame/.regia/report/gone.md",
+        "exists": false
+       }
+      ],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [],
+     "children": [
+      "01JCF100000000000000000000"
+     ],
+     "previous": null,
+     "following": "01JCF100000000000000000000",
+     "pack": "regia · frame · nodo 01JCF000000000000000000000 (milestone, 2026-10-14)\nSto guardando: #12 merged after review. The review is done. The project is on time.\nRiferimenti: https://github.com/acme/tasks/issues/12, https://github.com/acme/tasks/issues/14, https://github.com/acme/frame/commit/abc1234, <root>/projects/frame/.regia/report/2026-10-14-12-review.md, .regia/report/gone.md\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "milestone",
+      "day": "2026-10-14",
+      "page": null
+     }
+    },
+    {
+     "id": "01JCF100000000000000000000",
+     "title": "A probe opens its lane",
+     "lane": "probe",
+     "health": "at_risk",
+     "inBrief": null,
+     "why": {
+      "direction": "Try the other road.",
+      "opens": {
+       "title": "A probe",
+       "reason": "To try the other road."
+      },
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [
+      [
+       {
+        "text": "No #N here."
+       }
+      ]
+     ],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 14,
+       "aggregate": true
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#14",
+        "url": "https://github.com/acme/tasks/issues/14"
+       }
+      ],
+      "commit": [
+       {
+        "text": "fedcba9876543210",
+        "url": null
+       }
+      ],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCF000000000000000000000"
+     ],
+     "children": [
+      "01JCF200000000000000000000"
+     ],
+     "previous": "01JCF000000000000000000000",
+     "following": "01JCF200000000000000000000",
+     "pack": "regia · frame · nodo 01JCF100000000000000000000 (esplorazione, 2026-10-15)\nSto guardando: A probe opens its lane. Try the other road.\nRiferimenti: https://github.com/acme/tasks/issues/14, fedcba9\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "esplorazione",
+      "day": "2026-10-15",
+      "page": null
+     }
+    },
+    {
+     "id": "01JCF200000000000000000000",
+     "title": "The probe is dropped",
+     "lane": "principale",
+     "health": "waiting_on_owner",
+     "inBrief": null,
+     "why": {
+      "direction": null,
+      "opens": null,
+      "closes": [
+       {
+        "title": "A probe",
+        "status": "abandoned",
+        "reason": "To try the other road."
+       }
+      ]
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [],
+     "refs": {
+      "issue": [],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCF100000000000000000000"
+     ],
+     "children": [
+      "01JCF300000000000000000000"
+     ],
+     "previous": "01JCF100000000000000000000",
+     "following": "01JCF300000000000000000000",
+     "pack": "regia · frame · nodo 01JCF200000000000000000000 (abbandono, 2026-10-16)\nSto guardando: The probe is dropped.\nRiferimenti: nessuno\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "abbandono",
+      "day": "2026-10-16",
+      "page": null
+     }
+    },
+    {
+     "id": "01JCF300000000000000000000",
+     "title": "A long decision about0 about1 about2 about3 about4 about5 about6 about7 about8 about9 about10 about11 about12 about13 about14 about15 about16 about17 about18 about19 about20 about21 about22 about23 about24 about25 about26 about27 about28 about29 about30 about31 about32 about33 about34 about35 about36 about37 about38 about39",
+     "lane": "principale",
+     "health": "healthy",
+     "inBrief": "summary0 summary1 summary2 summary3 summary4 summary5 summary6 summary7 summary8 summary9 summary10 summary11 summary12 summary13 summary14 summary15 summary16 summary17 summary18 summary19 summary20 summary21 summary22 summary23 summary24 summary25 summary26 summary27 summary28 summary29 summary30 summary31 summary32 summary33 summary34 summary35 summary36 summary37 summary38 summary39 summary40 summary41 summary42 summary43 summary44 summary45 summary46 summary47 summary48 summary49 summary50 summary51 summary52 summary53 summary54 summary55 summary56 summary57 summary58 summary59 summary60 summary61 summary62 summary63 summary64 summary65 summary66 summary67 summary68 summary69 summary70 summary71 summary72 summary73 summary74 summary75 summary76 summary77 summary78 summary79 summary80 summary81 summary82 summary83 summary84 summary85 summary86 summary87 summary88 summary89 summary90 summary91 summary92 summary93 summary94 summary95 summary96 summary97 summary98 summary99 summary100 summary101 summary102 summary103 summary104 summary105 summary106 summary107 summary108 summary109 summary110 summary111 summary112 summary113 summary114 summary115 summary116 summary117 summary118 summary119",
+     "why": {
+      "direction": "because0 because1 because2 because3 because4 because5 because6 because7 because8 because9 because10 because11 because12 because13 because14 because15 because16 because17 because18 because19 because20 because21 because22 because23 because24 because25 because26 because27 because28 because29 because30 because31 because32 because33 because34 because35 because36 because37 because38 because39 because40 because41 because42 because43 because44 because45 because46 because47 because48 because49 because50 because51 because52 because53 because54 because55 because56 because57 because58 because59 because60 because61 because62 because63 because64 because65 because66 because67 because68 because69 because70 because71 because72 because73 because74 because75 because76 because77 because78 because79",
+      "opens": null,
+      "closes": []
+     },
+     "changed": [],
+     "openDecisions": [],
+     "risks": [],
+     "nextStep": null,
+     "claims": [],
+     "deviations": [],
+     "process": {
+      "round": null,
+      "checks": [],
+      "found": null,
+      "closed": null
+     },
+     "work": [
+      {
+       "task": 100,
+       "aggregate": false
+      },
+      {
+       "task": 101,
+       "aggregate": false
+      },
+      {
+       "task": 102,
+       "aggregate": false
+      },
+      {
+       "task": 103,
+       "aggregate": false
+      },
+      {
+       "task": 104,
+       "aggregate": false
+      },
+      {
+       "task": 105,
+       "aggregate": false
+      },
+      {
+       "task": 106,
+       "aggregate": false
+      },
+      {
+       "task": 107,
+       "aggregate": false
+      },
+      {
+       "task": 108,
+       "aggregate": false
+      },
+      {
+       "task": 109,
+       "aggregate": false
+      },
+      {
+       "task": 110,
+       "aggregate": false
+      },
+      {
+       "task": 111,
+       "aggregate": false
+      },
+      {
+       "task": 112,
+       "aggregate": false
+      },
+      {
+       "task": 113,
+       "aggregate": false
+      },
+      {
+       "task": 114,
+       "aggregate": false
+      },
+      {
+       "task": 115,
+       "aggregate": false
+      },
+      {
+       "task": 116,
+       "aggregate": false
+      },
+      {
+       "task": 117,
+       "aggregate": false
+      },
+      {
+       "task": 118,
+       "aggregate": false
+      },
+      {
+       "task": 119,
+       "aggregate": false
+      },
+      {
+       "task": 120,
+       "aggregate": false
+      },
+      {
+       "task": 121,
+       "aggregate": false
+      },
+      {
+       "task": 122,
+       "aggregate": false
+      },
+      {
+       "task": 123,
+       "aggregate": false
+      },
+      {
+       "task": 124,
+       "aggregate": false
+      },
+      {
+       "task": 125,
+       "aggregate": false
+      },
+      {
+       "task": 126,
+       "aggregate": false
+      },
+      {
+       "task": 127,
+       "aggregate": false
+      },
+      {
+       "task": 128,
+       "aggregate": false
+      },
+      {
+       "task": 129,
+       "aggregate": false
+      }
+     ],
+     "refs": {
+      "issue": [
+       {
+        "text": "#100",
+        "url": "https://github.com/acme/tasks/issues/100"
+       },
+       {
+        "text": "#101",
+        "url": "https://github.com/acme/tasks/issues/101"
+       },
+       {
+        "text": "#102",
+        "url": "https://github.com/acme/tasks/issues/102"
+       },
+       {
+        "text": "#103",
+        "url": "https://github.com/acme/tasks/issues/103"
+       },
+       {
+        "text": "#104",
+        "url": "https://github.com/acme/tasks/issues/104"
+       },
+       {
+        "text": "#105",
+        "url": "https://github.com/acme/tasks/issues/105"
+       },
+       {
+        "text": "#106",
+        "url": "https://github.com/acme/tasks/issues/106"
+       },
+       {
+        "text": "#107",
+        "url": "https://github.com/acme/tasks/issues/107"
+       },
+       {
+        "text": "#108",
+        "url": "https://github.com/acme/tasks/issues/108"
+       },
+       {
+        "text": "#109",
+        "url": "https://github.com/acme/tasks/issues/109"
+       },
+       {
+        "text": "#110",
+        "url": "https://github.com/acme/tasks/issues/110"
+       },
+       {
+        "text": "#111",
+        "url": "https://github.com/acme/tasks/issues/111"
+       },
+       {
+        "text": "#112",
+        "url": "https://github.com/acme/tasks/issues/112"
+       },
+       {
+        "text": "#113",
+        "url": "https://github.com/acme/tasks/issues/113"
+       },
+       {
+        "text": "#114",
+        "url": "https://github.com/acme/tasks/issues/114"
+       },
+       {
+        "text": "#115",
+        "url": "https://github.com/acme/tasks/issues/115"
+       },
+       {
+        "text": "#116",
+        "url": "https://github.com/acme/tasks/issues/116"
+       },
+       {
+        "text": "#117",
+        "url": "https://github.com/acme/tasks/issues/117"
+       },
+       {
+        "text": "#118",
+        "url": "https://github.com/acme/tasks/issues/118"
+       },
+       {
+        "text": "#119",
+        "url": "https://github.com/acme/tasks/issues/119"
+       },
+       {
+        "text": "#120",
+        "url": "https://github.com/acme/tasks/issues/120"
+       },
+       {
+        "text": "#121",
+        "url": "https://github.com/acme/tasks/issues/121"
+       },
+       {
+        "text": "#122",
+        "url": "https://github.com/acme/tasks/issues/122"
+       },
+       {
+        "text": "#123",
+        "url": "https://github.com/acme/tasks/issues/123"
+       },
+       {
+        "text": "#124",
+        "url": "https://github.com/acme/tasks/issues/124"
+       },
+       {
+        "text": "#125",
+        "url": "https://github.com/acme/tasks/issues/125"
+       },
+       {
+        "text": "#126",
+        "url": "https://github.com/acme/tasks/issues/126"
+       },
+       {
+        "text": "#127",
+        "url": "https://github.com/acme/tasks/issues/127"
+       },
+       {
+        "text": "#128",
+        "url": "https://github.com/acme/tasks/issues/128"
+       },
+       {
+        "text": "#129",
+        "url": "https://github.com/acme/tasks/issues/129"
+       }
+      ],
+      "commit": [],
+      "report": [],
+      "projectUrl": "https://github.com/users/acme/projects/7"
+     },
+     "parents": [
+      "01JCF200000000000000000000"
+     ],
+     "children": [],
+     "previous": "01JCF200000000000000000000",
+     "following": null,
+     "pack": "regia · frame · nodo 01JCF300000000000000000000 (decisione, 2026-10-17)\nSto guardando: A long decision about0 about1 about2 about3 about4 about5 about6 about7 about8 about9 about10 about11 about12 about13 about14 about15 about16 about17 about18 about19 about20 about21 about22 about23… summary0 summary1 summary2 summary3 summary4 summary5 summary6 summary7 summary8 summary9…\nRiferimenti: https://github.com/acme/tasks/issues/100, https://github.com/acme/tasks/issues/101, https://github.com/acme/tasks/issues/102, https://github.com/acme/tasks/issues/103, https://github.com/acme/tasks/issues/104, https://github.com/acme/tasks/issues/105, https://github.com/acme/tasks/issues/106, https://github.com/acme/tasks/issues/107, https://github.com/acme/tasks/issues/108, https://github.com/acme/tasks/issues/109, https://github.com/acme/tasks/issues/110, https://github.com/acme/tasks/issues/111, https://github.com/acme/tasks/issues/112, https://github.com/acme/tasks/issues/113, https://github.com/acme/tasks/issues/114, https://github.com/acme/tasks/issues/115, https://github.com/acme/tasks/issues/116, https://github.com/acme/tasks/issues/117, https://github.com/acme/tasks/issues/118, https://github.com/acme/tasks/issues/119, https://github.com/acme/tasks/issues/120, https://github.com/acme/tasks/issues/121, https://github.com/acme/tasks/issues/122, https://github.com/acme/tasks/issues/123, … e altri 6\nDomanda: <da completare>\nCarica la skill regia e leggi i riferimenti prima di rispondere.",
+     "said": {
+      "kind": "decisione",
+      "day": "2026-10-17",
+      "page": null
+     }
+    }
+   ]
+  }
+ ],
+ "tape": {
+  "width": 1440,
+  "strip": 500,
+  "stories": {
+   "dense": {
+    "times": [
+     1790845200000,
+     1790847000000,
+     1790848800000,
+     1790850600000,
+     1790852400000,
+     1790854200000,
+     1790856000000,
+     1790857800000,
+     1790859600000,
+     1790861400000,
+     1790863200000,
+     1790865000000,
+     1790866800000,
+     1790868600000,
+     1790870400000,
+     1790872200000,
+     1790874000000,
+     1790875800000,
+     1790877600000,
+     1790879400000,
+     1790881200000,
+     1790931600000,
+     1790933400000,
+     1790935200000,
+     1790937000000,
+     1790938800000,
+     1790940600000,
+     1790942400000,
+     1790944200000,
+     1790946000000,
+     1790947800000,
+     1790949600000,
+     1790951400000,
+     1790953200000,
+     1790955000000,
+     1790956800000,
+     1790958600000,
+     1790960400000,
+     1790962200000,
+     1790964000000,
+     1790965800000,
+     1790967600000,
+     1791018000000,
+     1791019800000,
+     1791021600000,
+     1791023400000,
+     1791025200000,
+     1791027000000,
+     1791028800000,
+     1791030600000,
+     1791032400000,
+     1791034200000,
+     1791036000000,
+     1791037800000,
+     1791039600000,
+     1791041400000,
+     1791043200000,
+     1791045000000,
+     1791046800000,
+     1791048600000,
+     1791050400000,
+     1791052200000,
+     1791054000000,
+     1791104400000,
+     1791106200000,
+     1791108000000,
+     1791109800000,
+     1791111600000,
+     1791113400000,
+     1791115200000,
+     1791117000000,
+     1791118800000,
+     1791120600000,
+     1791122400000,
+     1791124200000,
+     1791126000000,
+     1791127800000,
+     1791129600000,
+     1791131400000,
+     1791133200000,
+     1791135000000,
+     1791136800000,
+     1791138600000,
+     1791140400000
+    ],
+    "tape": {
+     "x": [
+      [
+       1790845200000,
+       41.95238095238095
+      ],
+      [
+       1790847000000,
+       57.92857142857142
+      ],
+      [
+       1790848800000,
+       73.9047619047619
+      ],
+      [
+       1790850600000,
+       89.88095238095238
+      ],
+      [
+       1790852400000,
+       105.85714285714286
+      ],
+      [
+       1790854200000,
+       121.83333333333334
+      ],
+      [
+       1790856000000,
+       137.80952380952382
+      ],
+      [
+       1790857800000,
+       153.7857142857143
+      ],
+      [
+       1790859600000,
+       169.7619047619048
+      ],
+      [
+       1790861400000,
+       185.73809523809527
+      ],
+      [
+       1790863200000,
+       201.71428571428575
+      ],
+      [
+       1790865000000,
+       217.69047619047623
+      ],
+      [
+       1790866800000,
+       233.6666666666667
+      ],
+      [
+       1790868600000,
+       249.6428571428572
+      ],
+      [
+       1790870400000,
+       265.61904761904765
+      ],
+      [
+       1790872200000,
+       281.59523809523813
+      ],
+      [
+       1790874000000,
+       297.5714285714286
+      ],
+      [
+       1790875800000,
+       313.5476190476191
+      ],
+      [
+       1790877600000,
+       329.5238095238096
+      ],
+      [
+       1790879400000,
+       345.50000000000006
+      ],
+      [
+       1790881200000,
+       361.47619047619054
+      ],
+      [
+       1790931600000,
+       387.47619047619054
+      ],
+      [
+       1790933400000,
+       403.452380952381
+      ],
+      [
+       1790935200000,
+       419.4285714285715
+      ],
+      [
+       1790937000000,
+       435.404761904762
+      ],
+      [
+       1790938800000,
+       451.38095238095246
+      ],
+      [
+       1790940600000,
+       467.35714285714295
+      ],
+      [
+       1790942400000,
+       483.3333333333334
+      ],
+      [
+       1790944200000,
+       499.3095238095239
+      ],
+      [
+       1790946000000,
+       515.2857142857143
+      ],
+      [
+       1790947800000,
+       531.2619047619048
+      ],
+      [
+       1790949600000,
+       547.2380952380953
+      ],
+      [
+       1790951400000,
+       563.2142857142858
+      ],
+      [
+       1790953200000,
+       579.1904761904763
+      ],
+      [
+       1790955000000,
+       595.1666666666667
+      ],
+      [
+       1790956800000,
+       611.1428571428572
+      ],
+      [
+       1790958600000,
+       627.1190476190477
+      ],
+      [
+       1790960400000,
+       643.0952380952382
+      ],
+      [
+       1790962200000,
+       659.0714285714287
+      ],
+      [
+       1790964000000,
+       675.0476190476192
+      ],
+      [
+       1790965800000,
+       691.0238095238096
+      ],
+      [
+       1790967600000,
+       707.0000000000001
+      ],
+      [
+       1791018000000,
+       733.0000000000001
+      ],
+      [
+       1791019800000,
+       748.9761904761906
+      ],
+      [
+       1791021600000,
+       764.9523809523811
+      ],
+      [
+       1791023400000,
+       780.9285714285716
+      ],
+      [
+       1791025200000,
+       796.904761904762
+      ],
+      [
+       1791027000000,
+       812.8809523809525
+      ],
+      [
+       1791028800000,
+       828.857142857143
+      ],
+      [
+       1791030600000,
+       844.8333333333335
+      ],
+      [
+       1791032400000,
+       860.809523809524
+      ],
+      [
+       1791034200000,
+       876.7857142857144
+      ],
+      [
+       1791036000000,
+       892.7619047619049
+      ],
+      [
+       1791037800000,
+       908.7380952380954
+      ],
+      [
+       1791039600000,
+       924.7142857142859
+      ],
+      [
+       1791041400000,
+       940.6904761904764
+      ],
+      [
+       1791043200000,
+       956.6666666666669
+      ],
+      [
+       1791045000000,
+       972.6428571428573
+      ],
+      [
+       1791046800000,
+       988.6190476190478
+      ],
+      [
+       1791048600000,
+       1004.5952380952383
+      ],
+      [
+       1791050400000,
+       1020.5714285714288
+      ],
+      [
+       1791052200000,
+       1036.5476190476193
+      ],
+      [
+       1791054000000,
+       1052.5238095238096
+      ],
+      [
+       1791104400000,
+       1078.5238095238096
+      ],
+      [
+       1791106200000,
+       1094.5
+      ],
+      [
+       1791108000000,
+       1110.4761904761904
+      ],
+      [
+       1791109800000,
+       1126.4523809523807
+      ],
+      [
+       1791111600000,
+       1142.428571428571
+      ],
+      [
+       1791113400000,
+       1158.4047619047615
+      ],
+      [
+       1791115200000,
+       1174.3809523809518
+      ],
+      [
+       1791117000000,
+       1190.3571428571422
+      ],
+      [
+       1791118800000,
+       1206.3333333333326
+      ],
+      [
+       1791120600000,
+       1222.309523809523
+      ],
+      [
+       1791122400000,
+       1238.2857142857133
+      ],
+      [
+       1791124200000,
+       1254.2619047619037
+      ],
+      [
+       1791126000000,
+       1270.238095238094
+      ],
+      [
+       1791127800000,
+       1286.2142857142844
+      ],
+      [
+       1791129600000,
+       1302.1904761904748
+      ],
+      [
+       1791131400000,
+       1318.1666666666652
+      ],
+      [
+       1791133200000,
+       1334.1428571428555
+      ],
+      [
+       1791135000000,
+       1350.119047619046
+      ],
+      [
+       1791136800000,
+       1366.0952380952363
+      ],
+      [
+       1791138600000,
+       1382.0714285714266
+      ],
+      [
+       1791140400000,
+       1398.047619047617
+      ]
+     ],
+     "joints": [
+      {
+       "x": 374.47619047619054,
+       "from": 1790881200000,
+       "to": 1790931600000
+      },
+      {
+       "x": 720.0000000000001,
+       "from": 1790967600000,
+       "to": 1791018000000
+      },
+      {
+       "x": 1065.5238095238096,
+       "from": 1791054000000,
+       "to": 1791104400000
+      }
+     ]
+    },
+    "strip": {
+     "x": [
+      [
+       1790845200000,
+       18.238095238095237
+      ],
+      [
+       1790847000000,
+       23.357142857142854
+      ],
+      [
+       1790848800000,
+       28.476190476190474
+      ],
+      [
+       1790850600000,
+       33.595238095238095
+      ],
+      [
+       1790852400000,
+       38.714285714285715
+      ],
+      [
+       1790854200000,
+       43.833333333333336
+      ],
+      [
+       1790856000000,
+       48.952380952380956
+      ],
+      [
+       1790857800000,
+       54.07142857142858
+      ],
+      [
+       1790859600000,
+       59.1904761904762
+      ],
+      [
+       1790861400000,
+       64.30952380952381
+      ],
+      [
+       1790863200000,
+       69.42857142857143
+      ],
+      [
+       1790865000000,
+       74.54761904761905
+      ],
+      [
+       1790866800000,
+       79.66666666666667
+      ],
+      [
+       1790868600000,
+       84.78571428571429
+      ],
+      [
+       1790870400000,
+       89.90476190476191
+      ],
+      [
+       1790872200000,
+       95.02380952380953
+      ],
+      [
+       1790874000000,
+       100.14285714285715
+      ],
+      [
+       1790875800000,
+       105.26190476190477
+      ],
+      [
+       1790877600000,
+       110.3809523809524
+      ],
+      [
+       1790879400000,
+       115.50000000000001
+      ],
+      [
+       1790881200000,
+       120.61904761904763
+      ],
+      [
+       1790931600000,
+       138.61904761904765
+      ],
+      [
+       1790933400000,
+       143.73809523809527
+      ],
+      [
+       1790935200000,
+       148.8571428571429
+      ],
+      [
+       1790937000000,
+       153.9761904761905
+      ],
+      [
+       1790938800000,
+       159.09523809523813
+      ],
+      [
+       1790940600000,
+       164.21428571428575
+      ],
+      [
+       1790942400000,
+       169.33333333333337
+      ],
+      [
+       1790944200000,
+       174.452380952381
+      ],
+      [
+       1790946000000,
+       179.5714285714286
+      ],
+      [
+       1790947800000,
+       184.69047619047623
+      ],
+      [
+       1790949600000,
+       189.80952380952385
+      ],
+      [
+       1790951400000,
+       194.92857142857147
+      ],
+      [
+       1790953200000,
+       200.0476190476191
+      ],
+      [
+       1790955000000,
+       205.1666666666667
+      ],
+      [
+       1790956800000,
+       210.28571428571433
+      ],
+      [
+       1790958600000,
+       215.40476190476195
+      ],
+      [
+       1790960400000,
+       220.52380952380958
+      ],
+      [
+       1790962200000,
+       225.6428571428572
+      ],
+      [
+       1790964000000,
+       230.76190476190482
+      ],
+      [
+       1790965800000,
+       235.88095238095244
+      ],
+      [
+       1790967600000,
+       241.00000000000006
+      ],
+      [
+       1791018000000,
+       259.00000000000006
+      ],
+      [
+       1791019800000,
+       264.11904761904765
+      ],
+      [
+       1791021600000,
+       269.23809523809524
+      ],
+      [
+       1791023400000,
+       274.35714285714283
+      ],
+      [
+       1791025200000,
+       279.4761904761904
+      ],
+      [
+       1791027000000,
+       284.595238095238
+      ],
+      [
+       1791028800000,
+       289.7142857142856
+      ],
+      [
+       1791030600000,
+       294.8333333333332
+      ],
+      [
+       1791032400000,
+       299.9523809523808
+      ],
+      [
+       1791034200000,
+       305.0714285714284
+      ],
+      [
+       1791036000000,
+       310.190476190476
+      ],
+      [
+       1791037800000,
+       315.30952380952357
+      ],
+      [
+       1791039600000,
+       320.42857142857116
+      ],
+      [
+       1791041400000,
+       325.54761904761875
+      ],
+      [
+       1791043200000,
+       330.66666666666634
+      ],
+      [
+       1791045000000,
+       335.78571428571394
+      ],
+      [
+       1791046800000,
+       340.90476190476153
+      ],
+      [
+       1791048600000,
+       346.0238095238091
+      ],
+      [
+       1791050400000,
+       351.1428571428567
+      ],
+      [
+       1791052200000,
+       356.2619047619043
+      ],
+      [
+       1791054000000,
+       361.3809523809519
+      ],
+      [
+       1791104400000,
+       379.3809523809519
+      ],
+      [
+       1791106200000,
+       384.4999999999995
+      ],
+      [
+       1791108000000,
+       389.6190476190471
+      ],
+      [
+       1791109800000,
+       394.7380952380947
+      ],
+      [
+       1791111600000,
+       399.85714285714226
+      ],
+      [
+       1791113400000,
+       404.97619047618986
+      ],
+      [
+       1791115200000,
+       410.09523809523745
+      ],
+      [
+       1791117000000,
+       415.21428571428504
+      ],
+      [
+       1791118800000,
+       420.33333333333263
+      ],
+      [
+       1791120600000,
+       425.4523809523802
+      ],
+      [
+       1791122400000,
+       430.5714285714278
+      ],
+      [
+       1791124200000,
+       435.6904761904754
+      ],
+      [
+       1791126000000,
+       440.809523809523
+      ],
+      [
+       1791127800000,
+       445.9285714285706
+      ],
+      [
+       1791129600000,
+       451.0476190476182
+      ],
+      [
+       1791131400000,
+       456.1666666666658
+      ],
+      [
+       1791133200000,
+       461.28571428571337
+      ],
+      [
+       1791135000000,
+       466.40476190476096
+      ],
+      [
+       1791136800000,
+       471.52380952380855
+      ],
+      [
+       1791138600000,
+       476.64285714285614
+      ],
+      [
+       1791140400000,
+       481.76190476190374
+      ]
+     ],
+     "joints": [
+      {
+       "x": 129.61904761904765,
+       "from": 1790881200000,
+       "to": 1790931600000
+      },
+      {
+       "x": 250.00000000000006,
+       "from": 1790967600000,
+       "to": 1791018000000
+      },
+      {
+       "x": 370.3809523809519,
+       "from": 1791054000000,
+       "to": 1791104400000
+      }
+     ]
+    }
+   },
+   "viewer": {
+    "times": [
+     1791972000000,
+     1792058400000,
+     1792065600000,
+     1792400400000,
+     1792486800000
+    ],
+    "tape": {
+     "x": [
+      [
+       1791972000000,
+       345.5
+      ],
+      [
+       1792058400000,
+       371.5
+      ],
+      [
+       1792065600000,
+       1042.5
+      ],
+      [
+       1792400400000,
+       1068.5
+      ],
+      [
+       1792486800000,
+       1094.5
+      ]
+     ],
+     "joints": [
+      {
+       "x": 358.5,
+       "from": 1791972000000,
+       "to": 1792058400000
+      },
+      {
+       "x": 1055.5,
+       "from": 1792065600000,
+       "to": 1792400400000
+      },
+      {
+       "x": 1081.5,
+       "from": 1792400400000,
+       "to": 1792486800000
+      }
+     ]
+    },
+    "strip": {
+     "x": [
+      [
+       1791972000000,
+       115.5
+      ],
+      [
+       1792058400000,
+       133.5
+      ],
+      [
+       1792065600000,
+       348.5
+      ],
+      [
+       1792400400000,
+       366.5
+      ],
+      [
+       1792486800000,
+       384.5
+      ]
+     ],
+     "joints": [
+      {
+       "x": 124.5,
+       "from": 1791972000000,
+       "to": 1792058400000
+      },
+      {
+       "x": 357.5,
+       "from": 1792065600000,
+       "to": 1792400400000
+      },
+      {
+       "x": 375.5,
+       "from": 1792400400000,
+       "to": 1792486800000
+      }
+     ]
+    }
+   },
+   "alpha": {
+    "times": [
+     1791972000000,
+     1792065600000,
+     1792141200000,
+     1792400400000,
+     1792486800000,
+     1792486800000,
+     1792566000000
+    ],
+    "tape": {
+     "x": [
+      [
+       1791972000000,
+       655
+      ],
+      [
+       1792065600000,
+       681
+      ],
+      [
+       1792141200000,
+       707
+      ],
+      [
+       1792400400000,
+       733
+      ],
+      [
+       1792486800000,
+       759
+      ],
+      [
+       1792486800000,
+       759
+      ],
+      [
+       1792566000000,
+       785
+      ]
+     ],
+     "joints": [
+      {
+       "x": 668,
+       "from": 1791972000000,
+       "to": 1792065600000
+      },
+      {
+       "x": 694,
+       "from": 1792065600000,
+       "to": 1792141200000
+      },
+      {
+       "x": 720,
+       "from": 1792141200000,
+       "to": 1792400400000
+      },
+      {
+       "x": 746,
+       "from": 1792400400000,
+       "to": 1792486800000
+      },
+      {
+       "x": 772,
+       "from": 1792486800000,
+       "to": 1792566000000
+      }
+     ]
+    },
+    "strip": {
+     "x": [
+      [
+       1791972000000,
+       205
+      ],
+      [
+       1792065600000,
+       223
+      ],
+      [
+       1792141200000,
+       241
+      ],
+      [
+       1792400400000,
+       259
+      ],
+      [
+       1792486800000,
+       277
+      ],
+      [
+       1792486800000,
+       277
+      ],
+      [
+       1792566000000,
+       295
+      ]
+     ],
+     "joints": [
+      {
+       "x": 214,
+       "from": 1791972000000,
+       "to": 1792065600000
+      },
+      {
+       "x": 232,
+       "from": 1792065600000,
+       "to": 1792141200000
+      },
+      {
+       "x": 250,
+       "from": 1792141200000,
+       "to": 1792400400000
+      },
+      {
+       "x": 268,
+       "from": 1792400400000,
+       "to": 1792486800000
+      },
+      {
+       "x": 286,
+       "from": 1792486800000,
+       "to": 1792566000000
+      }
+     ]
+    }
+   },
+   "frame": {
+    "times": [
+     1791972000000,
+     1792054800000,
+     1792141200000,
+     1792227600000
+    ],
+    "tape": {
+     "x": [
+      [
+       1791972000000,
+       681
+      ],
+      [
+       1792054800000,
+       707
+      ],
+      [
+       1792141200000,
+       733
+      ],
+      [
+       1792227600000,
+       759
+      ]
+     ],
+     "joints": [
+      {
+       "x": 694,
+       "from": 1791972000000,
+       "to": 1792054800000
+      },
+      {
+       "x": 720,
+       "from": 1792054800000,
+       "to": 1792141200000
+      },
+      {
+       "x": 746,
+       "from": 1792141200000,
+       "to": 1792227600000
+      }
+     ]
+    },
+    "strip": {
+     "x": [
+      [
+       1791972000000,
+       223
+      ],
+      [
+       1792054800000,
+       241
+      ],
+      [
+       1792141200000,
+       259
+      ],
+      [
+       1792227600000,
+       277
+      ]
+     ],
+     "joints": [
+      {
+       "x": 232,
+       "from": 1791972000000,
+       "to": 1792054800000
+      },
+      {
+       "x": 250,
+       "from": 1792054800000,
+       "to": 1792141200000
+      },
+      {
+       "x": 268,
+       "from": 1792141200000,
+       "to": 1792227600000
+      }
+     ]
+    }
    }
   }
- ]
+ },
+ "filters": {
+  "viewer": {
+   "who": [
+    "[\"claude\",\"claude-opus-5-5\",false]",
+    "none"
+   ],
+   "settings": [
+    {
+     "hide": [
+      "gate",
+      "exception"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "M0",
+      "M1",
+      "M2",
+      "M3",
+      "M4"
+     ]
+    },
+    {
+     "hide": [
+      "milestone"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "M1",
+      "M3",
+      "M4"
+     ]
+    },
+    {
+     "hide": [
+      "milestone",
+      "gate",
+      "exception",
+      "exploration",
+      "rejoin",
+      "abandonment"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "M4"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "[\"claude\",\"claude-opus-5-5\",false]",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "M4"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "none",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "M0",
+      "M1",
+      "M2",
+      "M3"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "principale",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "M0",
+      "M3",
+      "M4"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "x",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "M1",
+      "M2"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "healthy",
+     "declared": false,
+     "visible": [
+      "M0",
+      "M1",
+      "M3",
+      "M4"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "at_risk",
+     "declared": false,
+     "visible": [
+      "M2"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "waiting_on_owner",
+     "declared": false,
+     "visible": []
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": true,
+     "visible": [
+      "M2",
+      "M4"
+     ]
+    },
+    {
+     "hide": [
+      "milestone"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "at_risk",
+     "declared": true,
+     "visible": []
+    }
+   ]
+  },
+  "alpha": {
+   "who": [
+    "[\"\",\"\",false]",
+    "[\"claude\",\"claude-opus-5-5\",false]",
+    "[\"claude\",\"claude-opus-5-5\",true]",
+    "none"
+   ],
+   "settings": [
+    {
+     "hide": [
+      "gate",
+      "exception"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM100000000000000000000",
+      "01JCM200000000000000000000",
+      "01JCM300000000000000000000",
+      "01JCM400000000000000000000",
+      "01JCM5B0000000000000000000"
+     ]
+    },
+    {
+     "hide": [
+      "milestone"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM200000000000000000000",
+      "01JCM300000000000000000000",
+      "01JCM400000000000000000000",
+      "01JCM5A0000000000000000000",
+      "01JCM5B0000000000000000000",
+      "01JCM600000000000000000000"
+     ]
+    },
+    {
+     "hide": [
+      "milestone",
+      "gate",
+      "exception",
+      "exploration",
+      "rejoin",
+      "abandonment"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM200000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "[\"\",\"\",false]",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM300000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "[\"claude\",\"claude-opus-5-5\",false]",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM100000000000000000000",
+      "01JCM5A0000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "[\"claude\",\"claude-opus-5-5\",true]",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM100000000000000000000",
+      "01JCM5A0000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "none",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM200000000000000000000",
+      "01JCM400000000000000000000",
+      "01JCM5B0000000000000000000",
+      "01JCM600000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "principale",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM100000000000000000000",
+      "01JCM200000000000000000000",
+      "01JCM400000000000000000000",
+      "01JCM5A0000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "probe-e",
+     "health": "",
+     "declared": false,
+     "visible": []
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "probe-d",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM5B0000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "probe-b",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM300000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "probe-c",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCM600000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "healthy",
+     "declared": false,
+     "visible": [
+      "01JCM100000000000000000000",
+      "01JCM400000000000000000000",
+      "01JCM5A0000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "at_risk",
+     "declared": false,
+     "visible": [
+      "01JCM300000000000000000000",
+      "01JCM5B0000000000000000000",
+      "01JCM600000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "waiting_on_owner",
+     "declared": false,
+     "visible": [
+      "01JCM200000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": true,
+     "visible": [
+      "01JCM100000000000000000000",
+      "01JCM200000000000000000000",
+      "01JCM300000000000000000000",
+      "01JCM5A0000000000000000000"
+     ]
+    },
+    {
+     "hide": [
+      "milestone"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "at_risk",
+     "declared": true,
+     "visible": [
+      "01JCM300000000000000000000"
+     ]
+    }
+   ]
+  },
+  "beta": {
+   "who": [
+    "none"
+   ],
+   "settings": [
+    {
+     "hide": [
+      "gate",
+      "exception"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCB100000000000000000000"
+     ]
+    },
+    {
+     "hide": [
+      "milestone"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": []
+    },
+    {
+     "hide": [
+      "milestone",
+      "gate",
+      "exception",
+      "exploration",
+      "rejoin",
+      "abandonment"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": []
+    },
+    {
+     "hide": [],
+     "who": "none",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCB100000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "principale",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCB100000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "healthy",
+     "declared": false,
+     "visible": [
+      "01JCB100000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "at_risk",
+     "declared": false,
+     "visible": []
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "waiting_on_owner",
+     "declared": false,
+     "visible": []
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": true,
+     "visible": []
+    },
+    {
+     "hide": [
+      "milestone"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "at_risk",
+     "declared": true,
+     "visible": []
+    }
+   ]
+  },
+  "frame": {
+   "who": [
+    "[\"claude\",\"claude-opus-5-5\",false]",
+    "[\"claude\",\"claude-opus-5-5\",true]",
+    "[\"codex\",\"gpt-5.5-codex\",false]",
+    "none"
+   ],
+   "settings": [
+    {
+     "hide": [
+      "gate",
+      "exception"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF000000000000000000000",
+      "01JCF100000000000000000000",
+      "01JCF200000000000000000000",
+      "01JCF300000000000000000000"
+     ]
+    },
+    {
+     "hide": [
+      "milestone"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF100000000000000000000",
+      "01JCF200000000000000000000",
+      "01JCF300000000000000000000"
+     ]
+    },
+    {
+     "hide": [
+      "milestone",
+      "gate",
+      "exception",
+      "exploration",
+      "rejoin",
+      "abandonment"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF300000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "[\"claude\",\"claude-opus-5-5\",false]",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF000000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "[\"claude\",\"claude-opus-5-5\",true]",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF000000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "[\"codex\",\"gpt-5.5-codex\",false]",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF000000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "none",
+     "lane": "",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF100000000000000000000",
+      "01JCF200000000000000000000",
+      "01JCF300000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "principale",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF000000000000000000000",
+      "01JCF200000000000000000000",
+      "01JCF300000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "probe",
+     "health": "",
+     "declared": false,
+     "visible": [
+      "01JCF100000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "healthy",
+     "declared": false,
+     "visible": [
+      "01JCF000000000000000000000",
+      "01JCF300000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "at_risk",
+     "declared": false,
+     "visible": [
+      "01JCF100000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "waiting_on_owner",
+     "declared": false,
+     "visible": [
+      "01JCF200000000000000000000"
+     ]
+    },
+    {
+     "hide": [],
+     "who": "",
+     "lane": "",
+     "health": "",
+     "declared": true,
+     "visible": [
+      "01JCF000000000000000000000"
+     ]
+    },
+    {
+     "hide": [
+      "milestone"
+     ],
+     "who": "",
+     "lane": "",
+     "health": "at_risk",
+     "declared": true,
+     "visible": []
+    }
+   ]
+  }
+ },
+ "states": {
+  "viewer": [
+   {
+    "t": 1791946800000,
+    "before": 0,
+    "last": null,
+    "open": [],
+    "decisions": [],
+    "after": 5
+   },
+   {
+    "t": 1791972000000,
+    "before": 1,
+    "last": "M0",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 4
+   },
+   {
+    "t": 1792058400000,
+    "before": 2,
+    "last": "M1",
+    "open": [
+     "principale",
+     "x"
+    ],
+    "decisions": [],
+    "after": 3
+   },
+   {
+    "t": 1792065600000,
+    "before": 3,
+    "last": "M2",
+    "open": [
+     "principale",
+     "x"
+    ],
+    "decisions": [],
+    "after": 2
+   },
+   {
+    "t": 1792400400000,
+    "before": 4,
+    "last": "M3",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 1
+   },
+   {
+    "t": 1792486800000,
+    "before": 5,
+    "last": "M4",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 0
+   },
+   {
+    "t": 1792015200000,
+    "before": 1,
+    "last": "M0",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 4
+   },
+   {
+    "t": 1792062000000,
+    "before": 2,
+    "last": "M1",
+    "open": [
+     "principale",
+     "x"
+    ],
+    "decisions": [],
+    "after": 3
+   },
+   {
+    "t": 1792233000000,
+    "before": 3,
+    "last": "M2",
+    "open": [
+     "principale",
+     "x"
+    ],
+    "decisions": [],
+    "after": 2
+   },
+   {
+    "t": 1792443600000,
+    "before": 4,
+    "last": "M3",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 1
+   },
+   {
+    "t": 1792512000000,
+    "before": 5,
+    "last": "M4",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 0
+   }
+  ],
+  "alpha": [
+   {
+    "t": 1791946800000,
+    "before": 0,
+    "last": null,
+    "open": [],
+    "decisions": [],
+    "after": 7
+   },
+   {
+    "t": 1791972000000,
+    "before": 1,
+    "last": "01JCM100000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 6
+   },
+   {
+    "t": 1792065600000,
+    "before": 2,
+    "last": "01JCM200000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 5
+   },
+   {
+    "t": 1792141200000,
+    "before": 3,
+    "last": "01JCM300000000000000000000",
+    "open": [
+     "principale",
+     "probe-b"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 4
+   },
+   {
+    "t": 1792400400000,
+    "before": 4,
+    "last": "01JCM400000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 3
+   },
+   {
+    "t": 1792486800000,
+    "before": 6,
+    "last": "01JCM5B0000000000000000000",
+    "open": [
+     "principale",
+     "probe-d"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 1
+   },
+   {
+    "t": 1792486800000,
+    "before": 6,
+    "last": "01JCM5B0000000000000000000",
+    "open": [
+     "principale",
+     "probe-d"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 1
+   },
+   {
+    "t": 1792566000000,
+    "before": 7,
+    "last": "01JCM600000000000000000000",
+    "open": [
+     "principale",
+     "probe-d",
+     "probe-c"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 0
+   },
+   {
+    "t": 1792018800000,
+    "before": 1,
+    "last": "01JCM100000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 6
+   },
+   {
+    "t": 1792103400000,
+    "before": 2,
+    "last": "01JCM200000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 5
+   },
+   {
+    "t": 1792270800000,
+    "before": 3,
+    "last": "01JCM300000000000000000000",
+    "open": [
+     "principale",
+     "probe-b"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 4
+   },
+   {
+    "t": 1792443600000,
+    "before": 4,
+    "last": "01JCM400000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 3
+   },
+   {
+    "t": 1792486800000,
+    "before": 6,
+    "last": "01JCM5B0000000000000000000",
+    "open": [
+     "principale",
+     "probe-d"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 1
+   },
+   {
+    "t": 1792526400000,
+    "before": 6,
+    "last": "01JCM5B0000000000000000000",
+    "open": [
+     "principale",
+     "probe-d"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 1
+   },
+   {
+    "t": 1792591200000,
+    "before": 7,
+    "last": "01JCM600000000000000000000",
+    "open": [
+     "principale",
+     "probe-d",
+     "probe-c"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 0
+   }
+  ],
+  "beta": [
+   {
+    "t": 1792285200000,
+    "before": 0,
+    "last": null,
+    "open": [],
+    "decisions": [],
+    "after": 1
+   },
+   {
+    "t": 1792310400000,
+    "before": 1,
+    "last": "01JCB100000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 0
+   },
+   {
+    "t": 1792335600000,
+    "before": 1,
+    "last": "01JCB100000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [
+     "Which probe next?"
+    ],
+    "after": 0
+   }
+  ],
+  "frame": [
+   {
+    "t": 1791946800000,
+    "before": 0,
+    "last": null,
+    "open": [],
+    "decisions": [],
+    "after": 4
+   },
+   {
+    "t": 1791972000000,
+    "before": 1,
+    "last": "01JCF000000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [
+     "Pick the probe: #13 or #14."
+    ],
+    "after": 3
+   },
+   {
+    "t": 1792054800000,
+    "before": 2,
+    "last": "01JCF100000000000000000000",
+    "open": [
+     "principale",
+     "probe"
+    ],
+    "decisions": [],
+    "after": 2
+   },
+   {
+    "t": 1792141200000,
+    "before": 3,
+    "last": "01JCF200000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 1
+   },
+   {
+    "t": 1792227600000,
+    "before": 4,
+    "last": "01JCF300000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 0
+   },
+   {
+    "t": 1792013400000,
+    "before": 1,
+    "last": "01JCF000000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [
+     "Pick the probe: #13 or #14."
+    ],
+    "after": 3
+   },
+   {
+    "t": 1792098000000,
+    "before": 2,
+    "last": "01JCF100000000000000000000",
+    "open": [
+     "principale",
+     "probe"
+    ],
+    "decisions": [],
+    "after": 2
+   },
+   {
+    "t": 1792184400000,
+    "before": 3,
+    "last": "01JCF200000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 1
+   },
+   {
+    "t": 1792252800000,
+    "before": 4,
+    "last": "01JCF300000000000000000000",
+    "open": [
+     "principale"
+    ],
+    "decisions": [],
+    "after": 0
+   }
+  ]
+ },
+ "lanes": {
+  "viewer": [
+   {
+    "id": "principale",
+    "title": "Linea principale",
+    "status": "active",
+    "count": 3,
+    "reason": "La linea del progetto: le altre corsie se ne staccano e vi rientrano.",
+    "openedBy": null,
+    "closedBy": null,
+    "list": [
+     "M0",
+     "M3",
+     "M4"
+    ]
+   },
+   {
+    "id": "x",
+    "title": "X",
+    "status": "rejoined",
+    "count": 2,
+    "reason": "because",
+    "openedBy": "M1",
+    "closedBy": "M3",
+    "list": [
+     "M1",
+     "M2"
+    ]
+   }
+  ],
+  "alpha": [
+   {
+    "id": "principale",
+    "title": "Linea principale",
+    "status": "active",
+    "count": 4,
+    "reason": "La linea del progetto: le altre corsie se ne staccano e vi rientrano.",
+    "openedBy": null,
+    "closedBy": null,
+    "list": [
+     "01JCM100000000000000000000",
+     "01JCM200000000000000000000",
+     "01JCM400000000000000000000",
+     "01JCM5A0000000000000000000"
+    ]
+   },
+   {
+    "id": "probe-e",
+    "title": "Probe E",
+    "status": "active",
+    "count": 0,
+    "reason": "La linea del progetto: le altre corsie se ne staccano e vi rientrano.",
+    "openedBy": "01JCM100000000000000000000",
+    "closedBy": null,
+    "list": []
+   },
+   {
+    "id": "probe-d",
+    "title": "Probe D",
+    "status": "abandoned",
+    "count": 1,
+    "reason": "Too slow.",
+    "openedBy": "01JCM200000000000000000000",
+    "closedBy": null,
+    "list": [
+     "01JCM5B0000000000000000000"
+    ]
+   },
+   {
+    "id": "probe-b",
+    "title": "Probe B",
+    "status": "rejoined",
+    "count": 1,
+    "reason": "It worked and came back.",
+    "openedBy": "01JCM300000000000000000000",
+    "closedBy": "01JCM400000000000000000000",
+    "list": [
+     "01JCM300000000000000000000"
+    ]
+   },
+   {
+    "id": "probe-c",
+    "title": "Linea principale",
+    "status": "active",
+    "count": 1,
+    "reason": "La linea del progetto: le altre corsie se ne staccano e vi rientrano.",
+    "openedBy": null,
+    "closedBy": null,
+    "list": [
+     "01JCM600000000000000000000"
+    ]
+   }
+  ],
+  "beta": [
+   {
+    "id": "principale",
+    "title": "Linea principale",
+    "status": "active",
+    "count": 1,
+    "reason": "La linea del progetto: le altre corsie se ne staccano e vi rientrano.",
+    "openedBy": null,
+    "closedBy": null,
+    "list": [
+     "01JCB100000000000000000000"
+    ]
+   }
+  ],
+  "frame": [
+   {
+    "id": "principale",
+    "title": "Linea principale",
+    "status": "active",
+    "count": 3,
+    "reason": "La linea del progetto: le altre corsie se ne staccano e vi rientrano.",
+    "openedBy": null,
+    "closedBy": null,
+    "list": [
+     "01JCF000000000000000000000",
+     "01JCF200000000000000000000",
+     "01JCF300000000000000000000"
+    ]
+   },
+   {
+    "id": "probe",
+    "title": "A probe",
+    "status": "abandoned",
+    "count": 1,
+    "reason": "To try the other road.",
+    "openedBy": "01JCF100000000000000000000",
+    "closedBy": "01JCF200000000000000000000",
+    "list": [
+     "01JCF100000000000000000000"
+    ]
+   }
+  ]
+ },
+ "windows": {
+  "viewer": [
+   {
+    "ask": [
+     1791979200000,
+     1792080000000
+    ],
+    "window": {
+     "from": 1791979200000,
+     "to": 1792080000000
+    }
+   },
+   {
+    "ask": [
+     1792486200000,
+     1792486500000
+    ],
+    "window": {
+     "from": 1792485750000,
+     "to": 1792486950000
+    }
+   },
+   {
+    "ask": [
+     1791936000000,
+     1792522800000
+    ],
+    "window": null
+   },
+   {
+    "ask": [
+     1792400400000,
+     1792065600000
+    ],
+    "window": {
+     "from": 1792065600000,
+     "to": 1792400400000
+    }
+   },
+   {
+    "ask": [
+     1791954000000,
+     1791975600000
+    ],
+    "window": {
+     "from": 1791968400000,
+     "to": 1791975600000
+    }
+   },
+   {
+    "ask": [
+     1792058400000,
+     1792058400000
+    ],
+    "window": {
+     "from": 1792057800000,
+     "to": 1792059000000
+    }
+   }
+  ],
+  "alpha": [
+   {
+    "ask": [
+     1791979200000,
+     1792080000000
+    ],
+    "window": {
+     "from": 1791979200000,
+     "to": 1792080000000
+    }
+   },
+   {
+    "ask": [
+     1792565400000,
+     1792565700000
+    ],
+    "window": {
+     "from": 1792564950000,
+     "to": 1792566150000
+    }
+   },
+   {
+    "ask": [
+     1791936000000,
+     1792602000000
+    ],
+    "window": null
+   },
+   {
+    "ask": [
+     1792400400000,
+     1792141200000
+    ],
+    "window": {
+     "from": 1792141200000,
+     "to": 1792400400000
+    }
+   },
+   {
+    "ask": [
+     1791954000000,
+     1791975600000
+    ],
+    "window": {
+     "from": 1791968400000,
+     "to": 1791975600000
+    }
+   },
+   {
+    "ask": [
+     1792065600000,
+     1792065600000
+    ],
+    "window": {
+     "from": 1792065000000,
+     "to": 1792066200000
+    }
+   }
+  ]
+ }
 }

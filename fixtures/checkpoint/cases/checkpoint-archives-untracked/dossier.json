@@ -1,0 +1,16 @@
+{
+  "log": [
+    "38acf37db57d302011d6749179be58f5fe934c43 alpha: checkpoint 2026-01-10T09:00:00Z",
+    "9bf0fcff305ec10dc1e7d8dd39be4552291a44f5 fixture: the dossier before the run"
+  ],
+  "remote": [
+    "38acf37db57d302011d6749179be58f5fe934c43 alpha: checkpoint 2026-01-10T09:00:00Z",
+    "9bf0fcff305ec10dc1e7d8dd39be4552291a44f5 fixture: the dossier before the run"
+  ],
+  "status": [
+    "?? .regia/decisioni-2026-03.md/part.md",
+    "?? .regia/decisioni-2026-6.md",
+    "?? .regia/old/decisioni-2026-04.md",
+    "?? decisioni-2026-05.md"
+  ]
+}

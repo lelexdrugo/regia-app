@@ -94,3 +94,149 @@ moviola-lane-main = main
 moviola-lane-active = active
 moviola-lane-abandoned = abandoned
 moviola-lane-rejoined = rejoined
+
+## The frame of a moment (#487): its summary first, the why, what changed, how it got there, the references.
+
+moviola-frame-close = Close the moment
+moviola-in-brief = In brief
+moviola-changed = What changed
+moviola-open-decisions = Open decisions
+moviola-risks = Risks
+moviola-next-step = Next step
+moviola-claims = Claims that changed
+moviola-deviations = Deviations from the plan
+moviola-deviation = { $plan } → { $deviation }: { $reason } ({ $impact })
+moviola-none = nothing written
+moviola-not-declared = not declared
+moviola-opens-lane = Opens the lane «{ $lane }». { $reason }
+moviola-closes-lane = Closes the lane «{ $lane }» ({ $status }). { $reason }
+moviola-process = Process
+moviola-checks = Checks
+moviola-found = Defects found
+moviola-closed = Closed
+moviola-work = How it got here
+moviola-work-sub = Who worked, by task, from the moviola's aggregates.
+moviola-no-tasks = The moment names no task.
+moviola-no-aggregate = No aggregate for this task: its process is not declared.
+moviola-task-head = #{ $task } · round { $round } · subagents { $subagents }
+moviola-model-use = { $agent } · { $model } · effort { $effort } · { $sessions ->
+        [one] one dispatch
+       *[other] { $sessions } dispatches
+    }
+moviola-model-cited = { $agent } · { $model } · effort { $effort } · { $sessions ->
+        [one] one session cited by the report, work done in session
+       *[other] { $sessions } sessions cited by the report, work done in session
+    }
+moviola-no-session = No session recorded here: who worked is not known on this machine.
+moviola-check = check { $kind }: { $outcome }
+moviola-check-model = check { $kind }: { $outcome } · { $model }
+moviola-task-defects = defects found { $found } · closed { $closed }
+moviola-task-closes = closes { $refs }
+moviola-tokens = tokens: in { $input } · out { $output } · cache read { $read } · cache written { $written }
+moviola-no-tokens = Tokens not recorded here: they come from the sessions this machine reads.
+moviola-issues = Issues
+moviola-commits = Commits
+moviola-reports = Reports
+moviola-not-here = not on this machine
+moviola-tracker-project = The tracker's Project
+moviola-notes-loading = Reading the moment's notes…
+moviola-notes-failed = The moment's notes could not be read:
+moviola-notes-none = The chronicler wrote no notes for this moment.
+moviola-link-note = This version does not open the browser yet. The address:
+
+## The search of a moment (#487): a word, a #number; Esc empties it, Enter opens the first found.
+
+moviola-search-count = { $n ->
+        [one] one moment of { $total }
+       *[other] { $n } moments of { $total }
+    }
+moviola-results = Moments found
+moviola-search-none = No moment matches «{ $query }». The search wants each word in a moment's title, kind or lane, and each #number among the tasks it names.
+moviola-search-none-task = No moment names task #{ $task }.
+
+## «Copy for chat» in the frame (#487): five lines, pointers only, under 1,500 characters.
+
+moviola-pack-head = { -product } · { $project } · node { $id } ({ $kind }, { $day })
+moviola-pack-looking = I'm looking at: { $what }
+moviola-pack-references = References: { $list }
+moviola-pack-none = none
+moviola-pack-more = … and { $n } more
+moviola-pack-question = Question: <to complete>
+moviola-pack-skill = Load the { -product } skill and read the references before answering.
+moviola-pack-label = The package for the chat
+moviola-pack-note = The package is selected: copy it and paste it into a chat. The app does not write to the clipboard yet.
+
+## The moviola's part of the help on ? (#487): its keys and the signs of its stage, as the prototype's guide had them.
+
+moviola-help-title = The moviola
+moviola-keys-arrows = On the stage: the moment before or after
+moviola-keys-lanes = On the stage: the nearest moment in the lane above or below
+moviola-keys-ends = On the stage: the first or the last moment
+moviola-keys-zoom = On the stage: zoom in, zoom out, the whole story
+moviola-keys-enter = In the search: open the first moment found
+moviola-keys-escape = Empty the search; on the stage or in the frame, let the moment go
+moviola-word-kinds-term = The seven kinds
+moviola-word-kinds = A filled circle is a milestone, a diamond a decision made, an amber square a decision that waits for you, a red triangle an exception, a dashed circle an exploration, an arrowhead a return to the main lane, a cross a road abandoned.
+moviola-word-health-term = Health
+moviola-word-health = A halo around a moment at risk, or one that waits for you. A healthy moment has none: the colour signals, it does not decorate.
+moviola-word-rings-term = Rings
+moviola-word-rings = One ring per round of each task the moment names, above and below it; dashed when the task does not declare its round. Work in parallel makes the lane wider.
+moviola-word-badges-term = Badges
+moviola-word-badges = ✓ a check passed, ? a check did not conclude, D3 three defects found, 1/3 one of three closed.
+moviola-word-undeclared-term = Not declared
+moviola-word-undeclared = A value nobody wrote. The stage draws nothing for it, the frame says «not declared»: it never means zero.
+moviola-word-lanes-term = Lanes
+moviola-word-lanes = One for each direction the project took. A solid line is still open, a dashed one was abandoned, a dotted one came back into the main lane.
+moviola-word-playhead-term = Playhead
+moviola-word-playhead = The amber line with its time: the date you are reading. Drag it on the stage or on the tape.
+moviola-word-joint-term = Joint
+moviola-word-joint = ✂ on the tape: days with no moment, cut out as in an edit.
+
+## The overview of a project (#598): the filters, the time window, the state at the playhead, the directions.
+
+moviola-filters = Filters
+moviola-filter-mode = How finely to filter
+moviola-filter-basic = Basic
+moviola-filter-advanced = Advanced
+moviola-filter-who = Who worked
+moviola-filter-who-any = Anyone
+moviola-filter-who-use = { $agent } · { $model }
+moviola-filter-who-cited = { $agent } · { $model } (in session)
+moviola-filter-lane = Lane
+moviola-filter-lane-any = Every lane
+moviola-filter-lane-option = { $lane } · { $status }
+moviola-filter-health-any = Any health
+moviola-filter-declared = With checks or defects declared
+moviola-filter-hidden = The filters hide every moment the search finds.
+moviola-window = Time window
+moviola-window-range = { $from } → { $to }
+moviola-window-whole = The whole story, { $from } → { $to }
+moviola-window-hint = Drag on the strip for a window of time, its ends to widen it, its middle to move it; a double click shows the whole story.
+moviola-at = At the playhead
+moviola-at-counts = { $before } before · { $after } after
+moviola-at-none = No moment yet
+moviola-at-last = Last moment
+moviola-at-open = Open directions
+moviola-at-open-hint = Derived: a direction closes at the first abandonment or return with a parent in its lane.
+moviola-at-open-none = none
+moviola-at-decisions = Open decisions in its notes
+moviola-at-decisions-count = { $n ->
+        [one] { $first }
+       *[other] { $n } · the first: { $first }
+    }
+moviola-at-decisions-none = none in its notes
+moviola-at-decisions-reading = reading its notes…
+moviola-at-decisions-failed = its notes could not be read
+moviola-directions = Directions
+moviola-direction-main-title = Main line
+moviola-direction-main = The project's line: the other lanes leave it and come back to it.
+moviola-direction-count = { $n ->
+        [one] one moment
+       *[other] { $n } moments
+    }
+moviola-direction-opened = Opened by
+moviola-direction-abandoned = Abandoned with
+moviola-direction-rejoined = Rejoined with
+moviola-direction-no-reason = No reason recorded.
+moviola-direction-no-record = No record names this lane: only its moments do.
+moviola-direction-empty = No moment on this lane yet.

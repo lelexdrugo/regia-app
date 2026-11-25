@@ -77,3 +77,30 @@ summary_max = 240
 "Decisione" = "decision"
 "Fatto" = "done"
 "Scartato" = "discarded"
+
+# The labels `setup` and `init` create on the tracker, in this order, each with a fixed color and description (T6 of
+# the dossier's conformance study). The first three and the last are the labels of `[labels]`.
+[[base_labels]]
+name = "tipo:obiettivo"
+color = "0e8a16"
+description = "Issue Obiettivo di un progetto (contiene il registro)"
+
+[[base_labels]]
+name = "maturità:abbozzo"
+color = "c5def5"
+description = "Segnaposto: spec da scrivere"
+
+[[base_labels]]
+name = "maturità:pronto"
+color = "1d76db"
+description = "Spec completa: eseguibile se Approvato e sbloccato"
+
+[[base_labels]]
+name = "parcheggiato"
+color = "fbca04"
+description = "Fuori dall'arretrato da scodare: il motivo sta in un commento"
+
+[[base_labels]]
+name = "sessione"
+color = "d93f0b"
+description = "Il memo propone una sessione di approfondimento con il titolare"

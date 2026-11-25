@@ -5,7 +5,20 @@ export const VIEWS = [
   ...["daily", "moviola", "console", "settings"].map((section) => `#/${section}?data=demo`),
   // The moviola: the portfolio in each state, then each project's lanes, one with no milestone, one unknown.
   ...["empty", "error", "loading"].map((data) => `#/moviola?data=${data}`),
-  ...["alpha", "beta", "gamma", "viewer", "nowhere"].map((project) => `#/moviola/${project}?data=demo`),
+  ...["alpha", "beta", "gamma", "viewer", "frame", "nowhere"].map((project) => `#/moviola/${project}?data=demo`),
+  // A moment open (#487): every section with links and markup in a text, no notes, notes refused, reviews with a
+  // paper's deviations, a task with no session and no tokens. Not alpha's second moment: its `{dati}` reference
+  // reads as a parameter left in braces to the limits proof, which cannot tell the two apart.
+  ...["frame/01JCF000000000000000000000", "frame/01JCF200000000000000000000", "alpha/01JCM300000000000000000000", "alpha/01JCM5B0000000000000000000"]
+    .map((moment) => `#/moviola/${moment}?data=demo`),
+  "#/moviola/frame/01JCF100000000000000000000?data=demo&notes=fail",
+  // The search (#487): moments found by a word, by a #number, and none, which says why.
+  ...["probe", "%2399", "zzzz", "%23404"].map((q) => `#/moviola/alpha?data=demo&q=${q}`),
+  // The overview (#598): the advanced filters with kinds hidden and a direction chosen; a search the filters empty;
+  // the panel at the playhead with its notes refused.
+  "#/moviola/alpha?data=demo&filters=advanced&hide=gate,exception&lane=probe-b",
+  "#/moviola/alpha?data=demo&q=probe&hide=exploration,abandonment,exception,rejoin",
+  "#/moviola/frame?data=demo&notes=fail&lane=probe",
   // The comfortable density is larger in every measure, and the setup may choose it (#483).
   "#/brief?data=worst&density=comfortable",
   "#/settings?data=demo&density=comfortable&dir=nero",

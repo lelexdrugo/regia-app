@@ -1,0 +1,30 @@
+[
+  {
+    "bloccato_da": [],
+    "bloccato_da_totale": 0,
+    "campo_progetto": null,
+    "catena": 1,
+    "ciclo": false,
+    "closedAt": null,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "labels": [
+      "progetto:beta",
+      "progetto:alpha",
+      "maturità:pronto"
+    ],
+    "maturita": "pronto",
+    "number": 2,
+    "obiettivo": false,
+    "parent": 1,
+    "progetto": "beta",
+    "sblocca": 0,
+    "sblocca_totale": 0,
+    "state": "OPEN",
+    "stateReason": null,
+    "stato": "Approvato",
+    "sub": [],
+    "title": "a task with two project labels",
+    "updatedAt": "2026-01-02T03:04:05Z",
+    "url": "https://tracker.invalid/issues/2"
+  }
+]

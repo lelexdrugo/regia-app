@@ -1,0 +1,753 @@
+{
+  "aspetta_me": [],
+  "in_corso": [],
+  "per_progetto": {
+    "alpha": {
+      "Approvato": 7,
+      "Fatto": 1,
+      "Inbox": 1,
+      "Scartato": 1
+    },
+    "beta": {
+      "Approvato": 1
+    }
+  },
+  "pronti": [
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 2,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 1,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "sblocca_totale": 4,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "root, ready: five tasks downstream, of which Done and Discarded still count in the total",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/1"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "maturità:pronto",
+        "maturità:abbozzo",
+        "progetto:beta",
+        "progetto:alpha"
+      ],
+      "maturita": "pronto",
+      "number": 7,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "beta",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "the same two of each, the other way round",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/7"
+    },
+    {
+      "bloccato_da": [
+        [
+          201,
+          "CLOSED"
+        ],
+        [
+          202,
+          "CLOSED"
+        ],
+        [
+          203,
+          "CLOSED"
+        ],
+        [
+          204,
+          "CLOSED"
+        ],
+        [
+          205,
+          "CLOSED"
+        ],
+        [
+          206,
+          "CLOSED"
+        ],
+        [
+          207,
+          "CLOSED"
+        ],
+        [
+          208,
+          "CLOSED"
+        ],
+        [
+          209,
+          "CLOSED"
+        ],
+        [
+          210,
+          "CLOSED"
+        ],
+        [
+          211,
+          "CLOSED"
+        ],
+        [
+          212,
+          "CLOSED"
+        ],
+        [
+          213,
+          "CLOSED"
+        ],
+        [
+          214,
+          "CLOSED"
+        ],
+        [
+          215,
+          "CLOSED"
+        ],
+        [
+          216,
+          "CLOSED"
+        ],
+        [
+          217,
+          "CLOSED"
+        ],
+        [
+          218,
+          "CLOSED"
+        ],
+        [
+          219,
+          "CLOSED"
+        ],
+        [
+          220,
+          "CLOSED"
+        ]
+      ],
+      "bloccato_da_totale": 20,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 8,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "twenty blockers, all the list reads: no call for the rest",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/8"
+    },
+    {
+      "bloccato_da": [
+        [
+          301,
+          "CLOSED"
+        ],
+        [
+          302,
+          "CLOSED"
+        ],
+        [
+          303,
+          "CLOSED"
+        ],
+        [
+          304,
+          "CLOSED"
+        ],
+        [
+          305,
+          "CLOSED"
+        ],
+        [
+          306,
+          "CLOSED"
+        ],
+        [
+          307,
+          "CLOSED"
+        ],
+        [
+          308,
+          "CLOSED"
+        ],
+        [
+          309,
+          "CLOSED"
+        ],
+        [
+          310,
+          "CLOSED"
+        ],
+        [
+          311,
+          "CLOSED"
+        ],
+        [
+          312,
+          "CLOSED"
+        ],
+        [
+          313,
+          "CLOSED"
+        ],
+        [
+          314,
+          "CLOSED"
+        ],
+        [
+          315,
+          "CLOSED"
+        ],
+        [
+          316,
+          "CLOSED"
+        ],
+        [
+          317,
+          "CLOSED"
+        ],
+        [
+          318,
+          "CLOSED"
+        ],
+        [
+          319,
+          "CLOSED"
+        ],
+        [
+          320,
+          "CLOSED"
+        ],
+        [
+          321,
+          "CLOSED"
+        ]
+      ],
+      "bloccato_da_totale": 21,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 9,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [],
+      "title": "twenty-one blockers: the twenty-first is read in a page of its own",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/9"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 10,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [
+        [
+          401,
+          "CLOSED"
+        ],
+        [
+          402,
+          "CLOSED"
+        ],
+        [
+          403,
+          "CLOSED"
+        ],
+        [
+          404,
+          "CLOSED"
+        ],
+        [
+          405,
+          "CLOSED"
+        ],
+        [
+          406,
+          "CLOSED"
+        ],
+        [
+          407,
+          "CLOSED"
+        ],
+        [
+          408,
+          "CLOSED"
+        ],
+        [
+          409,
+          "CLOSED"
+        ],
+        [
+          410,
+          "CLOSED"
+        ],
+        [
+          411,
+          "CLOSED"
+        ],
+        [
+          412,
+          "CLOSED"
+        ],
+        [
+          413,
+          "CLOSED"
+        ],
+        [
+          414,
+          "CLOSED"
+        ],
+        [
+          415,
+          "CLOSED"
+        ],
+        [
+          416,
+          "CLOSED"
+        ],
+        [
+          417,
+          "CLOSED"
+        ],
+        [
+          418,
+          "CLOSED"
+        ],
+        [
+          419,
+          "CLOSED"
+        ],
+        [
+          420,
+          "CLOSED"
+        ],
+        [
+          421,
+          "CLOSED"
+        ],
+        [
+          422,
+          "CLOSED"
+        ],
+        [
+          423,
+          "CLOSED"
+        ],
+        [
+          424,
+          "CLOSED"
+        ],
+        [
+          425,
+          "CLOSED"
+        ],
+        [
+          426,
+          "CLOSED"
+        ],
+        [
+          427,
+          "CLOSED"
+        ],
+        [
+          428,
+          "CLOSED"
+        ],
+        [
+          429,
+          "CLOSED"
+        ],
+        [
+          430,
+          "CLOSED"
+        ],
+        [
+          431,
+          "CLOSED"
+        ],
+        [
+          432,
+          "CLOSED"
+        ],
+        [
+          433,
+          "CLOSED"
+        ],
+        [
+          434,
+          "CLOSED"
+        ],
+        [
+          435,
+          "CLOSED"
+        ],
+        [
+          436,
+          "CLOSED"
+        ],
+        [
+          437,
+          "CLOSED"
+        ],
+        [
+          438,
+          "CLOSED"
+        ],
+        [
+          439,
+          "CLOSED"
+        ],
+        [
+          440,
+          "CLOSED"
+        ],
+        [
+          441,
+          "CLOSED"
+        ],
+        [
+          442,
+          "CLOSED"
+        ],
+        [
+          443,
+          "CLOSED"
+        ],
+        [
+          444,
+          "CLOSED"
+        ],
+        [
+          445,
+          "CLOSED"
+        ],
+        [
+          446,
+          "CLOSED"
+        ],
+        [
+          447,
+          "CLOSED"
+        ],
+        [
+          448,
+          "CLOSED"
+        ],
+        [
+          449,
+          "CLOSED"
+        ],
+        [
+          450,
+          "CLOSED"
+        ]
+      ],
+      "title": "fifty sub-issues, all the list reads: no call for the rest",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/10"
+    },
+    {
+      "bloccato_da": [],
+      "bloccato_da_totale": 0,
+      "campo_progetto": null,
+      "catena": 1,
+      "ciclo": false,
+      "closedAt": null,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "maturita": "pronto",
+      "number": 11,
+      "obiettivo": false,
+      "parent": null,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "sblocca_totale": 0,
+      "state": "OPEN",
+      "stateReason": null,
+      "stato": "Approvato",
+      "sub": [
+        [
+          501,
+          "CLOSED"
+        ],
+        [
+          502,
+          "CLOSED"
+        ],
+        [
+          503,
+          "CLOSED"
+        ],
+        [
+          504,
+          "CLOSED"
+        ],
+        [
+          505,
+          "CLOSED"
+        ],
+        [
+          506,
+          "CLOSED"
+        ],
+        [
+          507,
+          "CLOSED"
+        ],
+        [
+          508,
+          "CLOSED"
+        ],
+        [
+          509,
+          "CLOSED"
+        ],
+        [
+          510,
+          "CLOSED"
+        ],
+        [
+          511,
+          "CLOSED"
+        ],
+        [
+          512,
+          "CLOSED"
+        ],
+        [
+          513,
+          "CLOSED"
+        ],
+        [
+          514,
+          "CLOSED"
+        ],
+        [
+          515,
+          "CLOSED"
+        ],
+        [
+          516,
+          "CLOSED"
+        ],
+        [
+          517,
+          "CLOSED"
+        ],
+        [
+          518,
+          "CLOSED"
+        ],
+        [
+          519,
+          "CLOSED"
+        ],
+        [
+          520,
+          "CLOSED"
+        ],
+        [
+          521,
+          "CLOSED"
+        ],
+        [
+          522,
+          "CLOSED"
+        ],
+        [
+          523,
+          "CLOSED"
+        ],
+        [
+          524,
+          "CLOSED"
+        ],
+        [
+          525,
+          "CLOSED"
+        ],
+        [
+          526,
+          "CLOSED"
+        ],
+        [
+          527,
+          "CLOSED"
+        ],
+        [
+          528,
+          "CLOSED"
+        ],
+        [
+          529,
+          "CLOSED"
+        ],
+        [
+          530,
+          "CLOSED"
+        ],
+        [
+          531,
+          "CLOSED"
+        ],
+        [
+          532,
+          "CLOSED"
+        ],
+        [
+          533,
+          "CLOSED"
+        ],
+        [
+          534,
+          "CLOSED"
+        ],
+        [
+          535,
+          "CLOSED"
+        ],
+        [
+          536,
+          "CLOSED"
+        ],
+        [
+          537,
+          "CLOSED"
+        ],
+        [
+          538,
+          "CLOSED"
+        ],
+        [
+          539,
+          "CLOSED"
+        ],
+        [
+          540,
+          "CLOSED"
+        ],
+        [
+          541,
+          "CLOSED"
+        ],
+        [
+          542,
+          "CLOSED"
+        ],
+        [
+          543,
+          "CLOSED"
+        ],
+        [
+          544,
+          "CLOSED"
+        ],
+        [
+          545,
+          "CLOSED"
+        ],
+        [
+          546,
+          "CLOSED"
+        ],
+        [
+          547,
+          "CLOSED"
+        ],
+        [
+          548,
+          "CLOSED"
+        ],
+        [
+          549,
+          "CLOSED"
+        ],
+        [
+          550,
+          "CLOSED"
+        ],
+        [
+          551,
+          "CLOSED"
+        ]
+      ],
+      "title": "fifty-one sub-issues: the fifty-first is read in a page of its own",
+      "updatedAt": "2026-01-02T03:04:05Z",
+      "url": "https://tracker.invalid/issues/11"
+    }
+  ]
+}

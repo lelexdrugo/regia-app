@@ -1,0 +1,25 @@
+piano di init: example/tracker, Project «Fixture»
+  [presente] gh  (azione: nessuna)
+             autenticato come example, scope project, repo
+  [presente] repo  (azione: nessuna)
+             example/tracker, privato
+  [presente] project  (azione: nessuna)
+             #1 PROJECT_FIXTURE https://tracker.invalid/projects/1
+  [presente] status  (azione: nessuna)
+             FIELD_FIXTURE, 7 opzioni
+  [presente] progetto  (azione: nessuna)
+             FIELD_PROJECT_FIXTURE, 1 opzioni
+  [presente] etichetta:tipo:obiettivo  (azione: nessuna)
+             Issue Obiettivo di un progetto (contiene il registro)
+  [presente] etichetta:maturità:abbozzo  (azione: nessuna)
+             Segnaposto: spec da scrivere
+  [presente] etichetta:maturità:pronto  (azione: nessuna)
+             Spec completa: eseguibile se Approvato e sbloccato
+  [presente] etichetta:parcheggiato  (azione: nessuna)
+             Fuori dall'arretrato da scodare: il motivo sta in un commento
+  [presente] etichetta:sessione  (azione: nessuna)
+             Il memo propone una sessione di approfondimento con il titolare
+  [mancante] skill:regia  (azione: installa)
+             ~/.claude/skills/regia: mancante, ~/.agents/skills/regia: mancante. Esegui `python tools/install_skills.py`.
+  [mancante] manuale:viste-del-project  (azione: manuale)
+             Le viste del Project non si creano né si leggono via API (ADR 0013 §3): apri il Project su GitHub e crea a mano le viste che usi (per esempio una tabella raggruppata per Status e una bacheca).

@@ -26,7 +26,8 @@ export type Scene = {
   lane: Uint16Array;
   /** Nodes whose label may be drawn (the turning points, as the prototype's labels), ascending. */
   labeled: Uint32Array;
-  edges: { n: number; x1: Float64Array; y1: Float64Array; x2: Float64Array; y2: Float64Array };
+  /** Parent to child, with the scene index of each end (#598: an edge goes with a node filtered out). */
+  edges: { n: number; x1: Float64Array; y1: Float64Array; x2: Float64Array; y2: Float64Array; a: Uint32Array; b: Uint32Array };
   /** One band per lane, from its opening to its closing or the stage's end. */
   bands: { n: number; x: Float64Array; y: Float64Array; w: Float64Array; h: Float64Array };
   extent: { x0: number; y0: number; x1: number; y1: number };
@@ -72,6 +73,8 @@ export function buildScene(model: Model, layout: Layout): Scene {
   const ey1: number[] = [];
   const ex2: number[] = [];
   const ey2: number[] = [];
+  const ea: number[] = [];
+  const eb: number[] = [];
   for (const node of model.nodes) {
     for (const parent of node.milestone.parents) {
       const from = model.byId.get(parent);
@@ -80,6 +83,8 @@ export function buildScene(model: Model, layout: Layout): Scene {
       ey1.push(layout.y[from.index] as number);
       ex2.push(layout.x[node.index] as number);
       ey2.push(layout.y[node.index] as number);
+      ea.push(at[from.index] as number);
+      eb.push(at[node.index] as number);
     }
   }
   const end = layout.width - 8;
@@ -98,7 +103,15 @@ export function buildScene(model: Model, layout: Layout): Scene {
     kind,
     lane,
     labeled: Uint32Array.from(labeled),
-    edges: { n: ex1.length, x1: Float64Array.from(ex1), y1: Float64Array.from(ey1), x2: Float64Array.from(ex2), y2: Float64Array.from(ey2) },
+    edges: {
+      n: ex1.length,
+      x1: Float64Array.from(ex1),
+      y1: Float64Array.from(ey1),
+      x2: Float64Array.from(ex2),
+      y2: Float64Array.from(ey2),
+      a: Uint32Array.from(ea),
+      b: Uint32Array.from(eb),
+    },
     bands: {
       n: bands.length,
       x: Float64Array.from(bands.map((b) => b.x)),
@@ -135,8 +148,11 @@ function buildGrid(scene: Scene): Grid {
   return { cw, ch, start, items };
 }
 
-/** The nearest node within `radius` world units of (wx, wy), as a scene index, or -1. */
-export function hitTest(scene: Scene, wx: number, wy: number, radius: number): number {
+/** A scene node's emphasis that takes it off the stage for the pointer and the labels: filtered out (#598). */
+export const FILTERED = 2;
+
+/** The nearest node within `radius` world units of (wx, wy), as a scene index, or -1; none filtered out by `fade`. */
+export function hitTest(scene: Scene, wx: number, wy: number, radius: number, fade: Uint8Array | null = null): number {
   const g = scene.grid;
   const c0 = Math.max(0, Math.floor((wx - radius) / CELL));
   const c1 = Math.min(g.cw - 1, Math.floor((wx + radius) / CELL));
@@ -149,6 +165,7 @@ export function hitTest(scene: Scene, wx: number, wy: number, radius: number): n
       const cell = r * g.cw + c;
       for (let k = g.start[cell] as number; k < (g.start[cell + 1] as number); k++) {
         const i = g.items[k] as number;
+        if (fade && fade[i] === FILTERED) continue;
         const dx = (scene.x[i] as number) - wx;
         const dy = (scene.y[i] as number) - wy;
         const d = dx * dx + dy * dy;
@@ -181,8 +198,8 @@ export type Labels = { n: number; id: Uint32Array; sx: Float32Array; sy: Float32
 export const newLabels = (): Labels => ({ n: 0, id: new Uint32Array(MAX_LABELS), sx: new Float32Array(MAX_LABELS), sy: new Float32Array(MAX_LABELS) });
 
 /** The labels to draw this frame: greedy, left to right, skipping one that would overlap one already placed, on a
- * coarse occupancy grid of 8×16 px cells. `width` gives a label's width in pixels. */
-export function pickLabels(scene: Scene, cam: Camera, view: View, width: (node: number) => number, out: Labels): Labels {
+ * coarse occupancy grid of 8×16 px cells. `width` gives a label's width in pixels; a node filtered out by `fade` has none. */
+export function pickLabels(scene: Scene, cam: Camera, view: View, width: (node: number) => number, out: Labels, fade: Uint8Array | null = null): Labels {
   out.n = 0;
   if (cam.z < LABEL_ZOOM) return out;
   const cols = Math.ceil(view.w / 8);
@@ -195,6 +212,7 @@ export function pickLabels(scene: Scene, cam: Camera, view: View, width: (node: 
   for (let k = lowerBound(scene.labeled, lo); k < scene.labeled.length && out.n < MAX_LABELS; k++) {
     const i = scene.labeled[k] as number;
     if (i >= hi) break;
+    if (fade && fade[i] === FILTERED) continue;
     if (Math.abs((scene.y[i] as number) - cam.cy) > halfH) continue;
     const sx = toScreenX(cam, view, scene.x[i] as number) + 12;
     const sy = toScreenY(cam, view, scene.y[i] as number);

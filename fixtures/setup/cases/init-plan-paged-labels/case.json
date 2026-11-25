@@ -1,0 +1,495 @@
+{
+  "_note": "Synthetic. The repo has more labels than a page holds: the second page is read, and the plan finds the five on the first. Ready, exit 0.",
+  "args": [
+    "init",
+    "plan",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--project-title",
+    "Fixture",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "init",
+    "piano",
+    "--owner",
+    "example",
+    "--repo",
+    "tracker",
+    "--progetto-titolo",
+    "Fixture"
+  ],
+  "gh": {
+    "rest": {
+      "GET user": {
+        "body": {
+          "login": "example"
+        },
+        "headers": {
+          "X-Oauth-Scopes": "project, repo"
+        }
+      },
+      "GET repos/example/tracker": {
+        "body": {
+          "node_id": "R_FIXTURE",
+          "private": true,
+          "owner": {
+            "node_id": "U_FIXTURE"
+          }
+        }
+      },
+      "GET repos/example/tracker/labels?per_page=100&page=1": {
+        "body": [
+          {
+            "name": "tipo:obiettivo"
+          },
+          {
+            "name": "maturità:abbozzo"
+          },
+          {
+            "name": "maturità:pronto"
+          },
+          {
+            "name": "parcheggiato"
+          },
+          {
+            "name": "sessione"
+          },
+          {
+            "name": "x-001"
+          },
+          {
+            "name": "x-002"
+          },
+          {
+            "name": "x-003"
+          },
+          {
+            "name": "x-004"
+          },
+          {
+            "name": "x-005"
+          },
+          {
+            "name": "x-006"
+          },
+          {
+            "name": "x-007"
+          },
+          {
+            "name": "x-008"
+          },
+          {
+            "name": "x-009"
+          },
+          {
+            "name": "x-010"
+          },
+          {
+            "name": "x-011"
+          },
+          {
+            "name": "x-012"
+          },
+          {
+            "name": "x-013"
+          },
+          {
+            "name": "x-014"
+          },
+          {
+            "name": "x-015"
+          },
+          {
+            "name": "x-016"
+          },
+          {
+            "name": "x-017"
+          },
+          {
+            "name": "x-018"
+          },
+          {
+            "name": "x-019"
+          },
+          {
+            "name": "x-020"
+          },
+          {
+            "name": "x-021"
+          },
+          {
+            "name": "x-022"
+          },
+          {
+            "name": "x-023"
+          },
+          {
+            "name": "x-024"
+          },
+          {
+            "name": "x-025"
+          },
+          {
+            "name": "x-026"
+          },
+          {
+            "name": "x-027"
+          },
+          {
+            "name": "x-028"
+          },
+          {
+            "name": "x-029"
+          },
+          {
+            "name": "x-030"
+          },
+          {
+            "name": "x-031"
+          },
+          {
+            "name": "x-032"
+          },
+          {
+            "name": "x-033"
+          },
+          {
+            "name": "x-034"
+          },
+          {
+            "name": "x-035"
+          },
+          {
+            "name": "x-036"
+          },
+          {
+            "name": "x-037"
+          },
+          {
+            "name": "x-038"
+          },
+          {
+            "name": "x-039"
+          },
+          {
+            "name": "x-040"
+          },
+          {
+            "name": "x-041"
+          },
+          {
+            "name": "x-042"
+          },
+          {
+            "name": "x-043"
+          },
+          {
+            "name": "x-044"
+          },
+          {
+            "name": "x-045"
+          },
+          {
+            "name": "x-046"
+          },
+          {
+            "name": "x-047"
+          },
+          {
+            "name": "x-048"
+          },
+          {
+            "name": "x-049"
+          },
+          {
+            "name": "x-050"
+          },
+          {
+            "name": "x-051"
+          },
+          {
+            "name": "x-052"
+          },
+          {
+            "name": "x-053"
+          },
+          {
+            "name": "x-054"
+          },
+          {
+            "name": "x-055"
+          },
+          {
+            "name": "x-056"
+          },
+          {
+            "name": "x-057"
+          },
+          {
+            "name": "x-058"
+          },
+          {
+            "name": "x-059"
+          },
+          {
+            "name": "x-060"
+          },
+          {
+            "name": "x-061"
+          },
+          {
+            "name": "x-062"
+          },
+          {
+            "name": "x-063"
+          },
+          {
+            "name": "x-064"
+          },
+          {
+            "name": "x-065"
+          },
+          {
+            "name": "x-066"
+          },
+          {
+            "name": "x-067"
+          },
+          {
+            "name": "x-068"
+          },
+          {
+            "name": "x-069"
+          },
+          {
+            "name": "x-070"
+          },
+          {
+            "name": "x-071"
+          },
+          {
+            "name": "x-072"
+          },
+          {
+            "name": "x-073"
+          },
+          {
+            "name": "x-074"
+          },
+          {
+            "name": "x-075"
+          },
+          {
+            "name": "x-076"
+          },
+          {
+            "name": "x-077"
+          },
+          {
+            "name": "x-078"
+          },
+          {
+            "name": "x-079"
+          },
+          {
+            "name": "x-080"
+          },
+          {
+            "name": "x-081"
+          },
+          {
+            "name": "x-082"
+          },
+          {
+            "name": "x-083"
+          },
+          {
+            "name": "x-084"
+          },
+          {
+            "name": "x-085"
+          },
+          {
+            "name": "x-086"
+          },
+          {
+            "name": "x-087"
+          },
+          {
+            "name": "x-088"
+          },
+          {
+            "name": "x-089"
+          },
+          {
+            "name": "x-090"
+          },
+          {
+            "name": "x-091"
+          },
+          {
+            "name": "x-092"
+          },
+          {
+            "name": "x-093"
+          },
+          {
+            "name": "x-094"
+          },
+          {
+            "name": "x-095"
+          }
+        ]
+      },
+      "GET repos/example/tracker/labels?per_page=100&page=2": {
+        "body": [
+          {
+            "name": "progetto:alpha"
+          }
+        ]
+      }
+    },
+    "owner": {
+      "repositoryOwner": {
+        "projectsV2": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": null
+          },
+          "nodes": [
+            {
+              "number": 1,
+              "id": "PROJECT_FIXTURE",
+              "title": "Fixture",
+              "url": "https://tracker.invalid/projects/1",
+              "field": {
+                "__typename": "ProjectV2SingleSelectField",
+                "id": "FIELD_FIXTURE",
+                "name": "Status",
+                "options": [
+                  {
+                    "id": "opt-a1",
+                    "name": "Inbox",
+                    "color": "GRAY",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-b2",
+                    "name": "Proposta",
+                    "color": "YELLOW",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-c3",
+                    "name": "Approvato",
+                    "color": "BLUE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-d4",
+                    "name": "In corso",
+                    "color": "ORANGE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-e5",
+                    "name": "Decisione",
+                    "color": "PURPLE",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-f6",
+                    "name": "Fatto",
+                    "color": "GREEN",
+                    "description": ""
+                  },
+                  {
+                    "id": "opt-g7",
+                    "name": "Scartato",
+                    "color": "RED",
+                    "description": ""
+                  }
+                ]
+              },
+              "fields": {
+                "nodes": [
+                  {
+                    "__typename": "ProjectV2Field",
+                    "id": "FIELD_TITLE",
+                    "name": "Title"
+                  },
+                  {
+                    "__typename": "ProjectV2SingleSelectField",
+                    "id": "FIELD_FIXTURE",
+                    "name": "Status",
+                    "options": [
+                      {
+                        "id": "opt-a1",
+                        "name": "Inbox",
+                        "color": "GRAY",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-b2",
+                        "name": "Proposta",
+                        "color": "YELLOW",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-c3",
+                        "name": "Approvato",
+                        "color": "BLUE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-d4",
+                        "name": "In corso",
+                        "color": "ORANGE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-e5",
+                        "name": "Decisione",
+                        "color": "PURPLE",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-f6",
+                        "name": "Fatto",
+                        "color": "GREEN",
+                        "description": ""
+                      },
+                      {
+                        "id": "opt-g7",
+                        "name": "Scartato",
+                        "color": "RED",
+                        "description": ""
+                      }
+                    ]
+                  },
+                  {
+                    "__typename": "ProjectV2SingleSelectField",
+                    "id": "FIELD_PROJECT_FIXTURE",
+                    "name": "Progetto",
+                    "options": [
+                      {
+                        "id": "opt-project-alpha",
+                        "name": "alpha",
+                        "color": "BLUE",
+                        "description": ""
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

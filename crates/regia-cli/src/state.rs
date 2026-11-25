@@ -1,7 +1,8 @@
-//! The state commands, natively: a task's lease (`lease acquire`, `heartbeat`, `release`, `list`) and the
-//! orchestrator's step (`step start`, `renew`, `finish`), with the arguments of the facade table
-//! (`table/lease.toml`, `table/step.toml`). They are not subcommands of the CLI's parser: while their group
-//! runs on the prototype, the facade takes their argv as it is.
+//! The state commands, natively: the project's lock (`lock acquire`, `renew`, `release`, `status`), a
+//! task's lease (`lease acquire`, `heartbeat`, `release`, `list`) and the orchestrator's step (`step start`,
+//! `renew`, `finish`), with the arguments of the facade table (`table/lock.toml`, `table/lease.toml`,
+//! `table/step.toml`). They are not subcommands of the CLI's parser: while their group runs on the
+//! prototype, the facade takes their argv as it is.
 //!
 //! The JSON is the contract, with the table's names. A refusal exits with 3, which the precheck and the
 //! orchestrator's prompt tell apart from an error, 1. The text is the JSON's keys, one leaf a line, as
@@ -14,8 +15,8 @@ use std::time::UNIX_EPOCH;
 use clap::{ArgAction, Parser};
 use regia_i18n::Catalog;
 use regia_store::{
-    EventsCursor, Holder, LeaseEntry, LockOutcome, LockState, LockView, ProjectId, StepClosing, StepOpening, TaskNumber, Ttl, ViewField,
-    WallTime, generated_holder, reports_folder, step_commit_message,
+    EventsCursor, Holder, LeaseEntry, LockOutcome, LockState, LockStatus, LockView, ProjectId, StepClosing, StepOpening, TaskNumber, Ttl,
+    ViewField, WallTime, generated_holder, reports_folder, step_commit_message,
 };
 use serde_json::{Map, Value, json};
 
@@ -51,6 +52,44 @@ const VIEW_FIELDS: [(ViewField, &str); 10] = [
     (ViewField::StolenAt, "stolen_at"),
     (ViewField::RenewedAt, "renewed_at"),
 ];
+
+/// `lock acquire` and `lock renew`.
+#[derive(Parser)]
+#[command(name = "lock", args_override_self = true)]
+struct LockArgs {
+    /// The project.
+    project: String,
+    #[arg(long)]
+    holder: String,
+    /// Seconds.
+    #[arg(long)]
+    ttl: String,
+    /// Machine-readable output: this is the contract the agents use.
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Parser)]
+#[command(name = "lock release", args_override_self = true)]
+struct LockReleaseArgs {
+    /// The project.
+    project: String,
+    #[arg(long)]
+    holder: String,
+    /// Machine-readable output: this is the contract the agents use.
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Parser)]
+#[command(name = "lock status", args_override_self = true)]
+struct LockStatusArgs {
+    /// The project.
+    project: String,
+    /// Machine-readable output: this is the contract the agents use.
+    #[arg(long)]
+    json: bool,
+}
 
 #[derive(Parser)]
 #[command(name = "lease acquire", args_override_self = true)]
@@ -156,6 +195,18 @@ struct StepFinishArgs {
 pub(crate) fn run(command: &str, args: &[String], catalog: &Catalog) -> Option<Result<u8, String>> {
     let record = |project: Option<&str>, task: Option<i64>| record_activity(command, project, task, catalog);
     let outcome = match command {
+        "lock acquire" | "lock renew" => parse::<LockArgs>(command, args).map(|args| {
+            if reads_as_seconds(&args.ttl) {
+                record(Some(&args.project), None);
+            }
+            if command == "lock acquire" { lock_acquire(&args) } else { lock_renew(&args) }
+        }),
+        "lock release" => parse::<LockReleaseArgs>(command, args).map(|args| {
+            record(Some(&args.project), None);
+            lock_release(&args)
+        }),
+        // A read: nothing to record.
+        "lock status" => parse::<LockStatusArgs>(command, args).map(|args| lock_status(&args)),
         "lease acquire" => parse::<LeaseAcquireArgs>(command, args).map(|args| {
             if let Some(task) = python_int(&args.task)
                 && reads_as_seconds(&args.ttl)
@@ -192,6 +243,52 @@ pub(crate) fn run(command: &str, args: &[String], catalog: &Catalog) -> Option<R
         _ => return None,
     };
     Some(outcome.unwrap_or_else(Ok))
+}
+
+/// `lock acquire`: the project's lock taken, renewed if the caller holds it, taken over from another holder
+/// once expired. The arguments are checked in the prototype's order, before the state is opened.
+fn lock_acquire(args: &LockArgs) -> Result<u8, String> {
+    let (project, holder, ttl) = (project(&args.project)?, holder(&args.holder)?, seconds(&args.ttl)?);
+    let done = Clock::read()?.store()?.acquire_lock(&project, &holder, ttl).map_err(|error| error.to_string())?;
+    print(&outcome(&done, Slot::Lock), args.json)?;
+    Ok(done.exit_code())
+}
+
+/// `lock renew`: the caller's lock extended, even an expired one nobody took.
+fn lock_renew(args: &LockArgs) -> Result<u8, String> {
+    let (project, holder, ttl) = (project(&args.project)?, holder(&args.holder)?, seconds(&args.ttl)?);
+    let done = Clock::read()?.store()?.renew_lock(&project, &holder, ttl).map_err(|error| error.to_string())?;
+    print(&outcome(&done, Slot::Lock), args.json)?;
+    Ok(done.exit_code())
+}
+
+/// `lock release`: the caller's lock deleted, expired or not; none is already free, which is a success.
+fn lock_release(args: &LockReleaseArgs) -> Result<u8, String> {
+    let (project, holder) = (project(&args.project)?, holder(&args.holder)?);
+    let done = Clock::read()?.store()?.release_lock(&project, &holder).map_err(|error| error.to_string())?;
+    print(&outcome(&done, Slot::Lock), args.json)?;
+    Ok(done.exit_code())
+}
+
+/// `lock status`: the view of the lock, with the project as given, whether someone may hold it, and its
+/// state (`lock_status_view`). It reads under the write lock, as the prototype does: a database held by
+/// another transaction beyond the wait reads as busy and unreadable, and the check fails closed (L8). A
+/// row that is not a lock document is unreadable and nobody's. Informative: always exit 0.
+fn lock_status(args: &LockStatusArgs) -> Result<u8, String> {
+    let project = project(&args.project)?;
+    let found = Clock::read()?.store()?.lock_status(&project).map_err(|error| error.to_string())?;
+    let state = match &found {
+        LockStatus::Free => "free",
+        LockStatus::Held(_) => "busy",
+        LockStatus::Expired(_) => "expired",
+        LockStatus::Unreadable | LockStatus::Contended => "unreadable",
+    };
+    let mut out = found.lock().map(view).unwrap_or_default();
+    out.insert("project".to_owned(), project.as_str().into());
+    out.insert("busy".to_owned(), found.is_busy().into());
+    out.insert("status".to_owned(), state.into());
+    print(&Value::Object(out), args.json)?;
+    Ok(0)
 }
 
 fn lease_acquire(args: LeaseAcquireArgs) -> Result<u8, String> {
@@ -591,6 +688,9 @@ mod tests {
         assert!(empty.reports_processed.is_empty());
         assert!(args::<StepArgs>("step start", &["--holder", "w"]).is_err(), "--project is required");
         assert!(args::<LeaseAcquireArgs>("lease acquire", &["7", "--project", "a", "--holder", "w"]).is_err(), "--ttl is required");
+        assert!(args::<LockArgs>("lock acquire", &["a", "--holder", "w"]).is_err(), "--ttl is required");
+        assert!(args::<LockReleaseArgs>("lock release", &["a"]).is_err(), "--holder is required");
+        assert!(args::<LockStatusArgs>("lock status", &[]).is_err(), "the project is required");
         assert_eq!(args::<LeaseListArgs>("lease list", &["--help"]).err(), Some(0));
     }
 

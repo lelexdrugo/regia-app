@@ -1,0 +1,1806 @@
+{
+  "all_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "<!-- regia:progetto\nid: alpha\n-->\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 1,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "In corso",
+                          "optionId": "opt-d4"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "[alpha] objective of alpha",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/1"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 2,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a task with 101 comments",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/2"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "blocker_pages": {},
+  "closed_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "comment_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "closedAt": null,
+              "comments": {
+                "nodes": [
+                  {
+                    "body": "Synthetic comment 1.",
+                    "createdAt": "2026-01-02T01:00:00Z",
+                    "databaseId": 9001,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9001"
+                  },
+                  {
+                    "body": "Synthetic comment 2.",
+                    "createdAt": "2026-01-02T02:00:00Z",
+                    "databaseId": 9002,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9002"
+                  },
+                  {
+                    "body": "Synthetic comment 3.",
+                    "createdAt": "2026-01-02T03:00:00Z",
+                    "databaseId": 9003,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9003"
+                  },
+                  {
+                    "body": "Synthetic comment 4.",
+                    "createdAt": "2026-01-02T04:00:00Z",
+                    "databaseId": 9004,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9004"
+                  },
+                  {
+                    "body": "Synthetic comment 5.",
+                    "createdAt": "2026-01-02T05:00:00Z",
+                    "databaseId": 9005,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9005"
+                  },
+                  {
+                    "body": "Synthetic comment 6.",
+                    "createdAt": "2026-01-02T06:00:00Z",
+                    "databaseId": 9006,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9006"
+                  },
+                  {
+                    "body": "Synthetic comment 7.",
+                    "createdAt": "2026-01-02T07:00:00Z",
+                    "databaseId": 9007,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9007"
+                  },
+                  {
+                    "body": "Synthetic comment 8.",
+                    "createdAt": "2026-01-02T08:00:00Z",
+                    "databaseId": 9008,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9008"
+                  },
+                  {
+                    "body": "Synthetic comment 9.",
+                    "createdAt": "2026-01-02T09:00:00Z",
+                    "databaseId": 9009,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9009"
+                  },
+                  {
+                    "body": "Synthetic comment 10.",
+                    "createdAt": "2026-01-02T10:00:00Z",
+                    "databaseId": 9010,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9010"
+                  },
+                  {
+                    "body": "Synthetic comment 11.",
+                    "createdAt": "2026-01-02T11:00:00Z",
+                    "databaseId": 9011,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9011"
+                  },
+                  {
+                    "body": "Synthetic comment 12.",
+                    "createdAt": "2026-01-02T12:00:00Z",
+                    "databaseId": 9012,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9012"
+                  },
+                  {
+                    "body": "Synthetic comment 13.",
+                    "createdAt": "2026-01-02T13:00:00Z",
+                    "databaseId": 9013,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9013"
+                  },
+                  {
+                    "body": "Synthetic comment 14.",
+                    "createdAt": "2026-01-02T14:00:00Z",
+                    "databaseId": 9014,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9014"
+                  },
+                  {
+                    "body": "Synthetic comment 15.",
+                    "createdAt": "2026-01-02T15:00:00Z",
+                    "databaseId": 9015,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9015"
+                  },
+                  {
+                    "body": "Synthetic comment 16.",
+                    "createdAt": "2026-01-02T16:00:00Z",
+                    "databaseId": 9016,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9016"
+                  },
+                  {
+                    "body": "Synthetic comment 17.",
+                    "createdAt": "2026-01-02T17:00:00Z",
+                    "databaseId": 9017,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9017"
+                  },
+                  {
+                    "body": "Synthetic comment 18.",
+                    "createdAt": "2026-01-02T18:00:00Z",
+                    "databaseId": 9018,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9018"
+                  },
+                  {
+                    "body": "Synthetic comment 19.",
+                    "createdAt": "2026-01-02T19:00:00Z",
+                    "databaseId": 9019,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9019"
+                  },
+                  {
+                    "body": "Synthetic comment 20.",
+                    "createdAt": "2026-01-02T20:00:00Z",
+                    "databaseId": 9020,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9020"
+                  },
+                  {
+                    "body": "Synthetic comment 21.",
+                    "createdAt": "2026-01-02T21:00:00Z",
+                    "databaseId": 9021,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9021"
+                  },
+                  {
+                    "body": "Synthetic comment 22.",
+                    "createdAt": "2026-01-02T22:00:00Z",
+                    "databaseId": 9022,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9022"
+                  },
+                  {
+                    "body": "Synthetic comment 23.",
+                    "createdAt": "2026-01-02T23:00:00Z",
+                    "databaseId": 9023,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9023"
+                  },
+                  {
+                    "body": "Synthetic comment 24.",
+                    "createdAt": "2026-01-03T00:00:00Z",
+                    "databaseId": 9024,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9024"
+                  },
+                  {
+                    "body": "Synthetic comment 25.",
+                    "createdAt": "2026-01-03T01:00:00Z",
+                    "databaseId": 9025,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9025"
+                  },
+                  {
+                    "body": "Synthetic comment 26.",
+                    "createdAt": "2026-01-03T02:00:00Z",
+                    "databaseId": 9026,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9026"
+                  },
+                  {
+                    "body": "Synthetic comment 27.",
+                    "createdAt": "2026-01-03T03:00:00Z",
+                    "databaseId": 9027,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9027"
+                  },
+                  {
+                    "body": "Synthetic comment 28.",
+                    "createdAt": "2026-01-03T04:00:00Z",
+                    "databaseId": 9028,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9028"
+                  },
+                  {
+                    "body": "Synthetic comment 29.",
+                    "createdAt": "2026-01-03T05:00:00Z",
+                    "databaseId": 9029,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9029"
+                  },
+                  {
+                    "body": "Synthetic comment 30.",
+                    "createdAt": "2026-01-03T06:00:00Z",
+                    "databaseId": 9030,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9030"
+                  },
+                  {
+                    "body": "Synthetic comment 31.",
+                    "createdAt": "2026-01-03T07:00:00Z",
+                    "databaseId": 9031,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9031"
+                  },
+                  {
+                    "body": "Synthetic comment 32.",
+                    "createdAt": "2026-01-03T08:00:00Z",
+                    "databaseId": 9032,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9032"
+                  },
+                  {
+                    "body": "Synthetic comment 33.",
+                    "createdAt": "2026-01-03T09:00:00Z",
+                    "databaseId": 9033,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9033"
+                  },
+                  {
+                    "body": "Synthetic comment 34.",
+                    "createdAt": "2026-01-03T10:00:00Z",
+                    "databaseId": 9034,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9034"
+                  },
+                  {
+                    "body": "Synthetic comment 35.",
+                    "createdAt": "2026-01-03T11:00:00Z",
+                    "databaseId": 9035,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9035"
+                  },
+                  {
+                    "body": "Synthetic comment 36.",
+                    "createdAt": "2026-01-03T12:00:00Z",
+                    "databaseId": 9036,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9036"
+                  },
+                  {
+                    "body": "Synthetic comment 37.",
+                    "createdAt": "2026-01-03T13:00:00Z",
+                    "databaseId": 9037,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9037"
+                  },
+                  {
+                    "body": "Synthetic comment 38.",
+                    "createdAt": "2026-01-03T14:00:00Z",
+                    "databaseId": 9038,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9038"
+                  },
+                  {
+                    "body": "Synthetic comment 39.",
+                    "createdAt": "2026-01-03T15:00:00Z",
+                    "databaseId": 9039,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9039"
+                  },
+                  {
+                    "body": "Synthetic comment 40.",
+                    "createdAt": "2026-01-03T16:00:00Z",
+                    "databaseId": 9040,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9040"
+                  },
+                  {
+                    "body": "Synthetic comment 41.",
+                    "createdAt": "2026-01-03T17:00:00Z",
+                    "databaseId": 9041,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9041"
+                  },
+                  {
+                    "body": "Synthetic comment 42.",
+                    "createdAt": "2026-01-03T18:00:00Z",
+                    "databaseId": 9042,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9042"
+                  },
+                  {
+                    "body": "Synthetic comment 43.",
+                    "createdAt": "2026-01-03T19:00:00Z",
+                    "databaseId": 9043,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9043"
+                  },
+                  {
+                    "body": "Synthetic comment 44.",
+                    "createdAt": "2026-01-03T20:00:00Z",
+                    "databaseId": 9044,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9044"
+                  },
+                  {
+                    "body": "Synthetic comment 45.",
+                    "createdAt": "2026-01-03T21:00:00Z",
+                    "databaseId": 9045,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9045"
+                  },
+                  {
+                    "body": "Synthetic comment 46.",
+                    "createdAt": "2026-01-03T22:00:00Z",
+                    "databaseId": 9046,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9046"
+                  },
+                  {
+                    "body": "Synthetic comment 47.",
+                    "createdAt": "2026-01-03T23:00:00Z",
+                    "databaseId": 9047,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9047"
+                  },
+                  {
+                    "body": "Synthetic comment 48.",
+                    "createdAt": "2026-01-04T00:00:00Z",
+                    "databaseId": 9048,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9048"
+                  },
+                  {
+                    "body": "Synthetic comment 49.",
+                    "createdAt": "2026-01-04T01:00:00Z",
+                    "databaseId": 9049,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9049"
+                  },
+                  {
+                    "body": "Synthetic comment 50.",
+                    "createdAt": "2026-01-04T02:00:00Z",
+                    "databaseId": 9050,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9050"
+                  },
+                  {
+                    "body": "Synthetic comment 51.",
+                    "createdAt": "2026-01-04T03:00:00Z",
+                    "databaseId": 9051,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9051"
+                  },
+                  {
+                    "body": "Synthetic comment 52.",
+                    "createdAt": "2026-01-04T04:00:00Z",
+                    "databaseId": 9052,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9052"
+                  },
+                  {
+                    "body": "Synthetic comment 53.",
+                    "createdAt": "2026-01-04T05:00:00Z",
+                    "databaseId": 9053,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9053"
+                  },
+                  {
+                    "body": "Synthetic comment 54.",
+                    "createdAt": "2026-01-04T06:00:00Z",
+                    "databaseId": 9054,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9054"
+                  },
+                  {
+                    "body": "Synthetic comment 55.",
+                    "createdAt": "2026-01-04T07:00:00Z",
+                    "databaseId": 9055,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9055"
+                  },
+                  {
+                    "body": "Synthetic comment 56.",
+                    "createdAt": "2026-01-04T08:00:00Z",
+                    "databaseId": 9056,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9056"
+                  },
+                  {
+                    "body": "Synthetic comment 57.",
+                    "createdAt": "2026-01-04T09:00:00Z",
+                    "databaseId": 9057,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9057"
+                  },
+                  {
+                    "body": "Synthetic comment 58.",
+                    "createdAt": "2026-01-04T10:00:00Z",
+                    "databaseId": 9058,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9058"
+                  },
+                  {
+                    "body": "Synthetic comment 59.",
+                    "createdAt": "2026-01-04T11:00:00Z",
+                    "databaseId": 9059,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9059"
+                  },
+                  {
+                    "body": "Synthetic comment 60.",
+                    "createdAt": "2026-01-04T12:00:00Z",
+                    "databaseId": 9060,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9060"
+                  },
+                  {
+                    "body": "Synthetic comment 61.",
+                    "createdAt": "2026-01-04T13:00:00Z",
+                    "databaseId": 9061,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9061"
+                  },
+                  {
+                    "body": "Synthetic comment 62.",
+                    "createdAt": "2026-01-04T14:00:00Z",
+                    "databaseId": 9062,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9062"
+                  },
+                  {
+                    "body": "Synthetic comment 63.",
+                    "createdAt": "2026-01-04T15:00:00Z",
+                    "databaseId": 9063,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9063"
+                  },
+                  {
+                    "body": "Synthetic comment 64.",
+                    "createdAt": "2026-01-04T16:00:00Z",
+                    "databaseId": 9064,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9064"
+                  },
+                  {
+                    "body": "Synthetic comment 65.",
+                    "createdAt": "2026-01-04T17:00:00Z",
+                    "databaseId": 9065,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9065"
+                  },
+                  {
+                    "body": "Synthetic comment 66.",
+                    "createdAt": "2026-01-04T18:00:00Z",
+                    "databaseId": 9066,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9066"
+                  },
+                  {
+                    "body": "Synthetic comment 67.",
+                    "createdAt": "2026-01-04T19:00:00Z",
+                    "databaseId": 9067,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9067"
+                  },
+                  {
+                    "body": "Synthetic comment 68.",
+                    "createdAt": "2026-01-04T20:00:00Z",
+                    "databaseId": 9068,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9068"
+                  },
+                  {
+                    "body": "Synthetic comment 69.",
+                    "createdAt": "2026-01-04T21:00:00Z",
+                    "databaseId": 9069,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9069"
+                  },
+                  {
+                    "body": "Synthetic comment 70.",
+                    "createdAt": "2026-01-04T22:00:00Z",
+                    "databaseId": 9070,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9070"
+                  },
+                  {
+                    "body": "Synthetic comment 71.",
+                    "createdAt": "2026-01-04T23:00:00Z",
+                    "databaseId": 9071,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9071"
+                  },
+                  {
+                    "body": "Synthetic comment 72.",
+                    "createdAt": "2026-01-05T00:00:00Z",
+                    "databaseId": 9072,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9072"
+                  },
+                  {
+                    "body": "Synthetic comment 73.",
+                    "createdAt": "2026-01-05T01:00:00Z",
+                    "databaseId": 9073,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9073"
+                  },
+                  {
+                    "body": "Synthetic comment 74.",
+                    "createdAt": "2026-01-05T02:00:00Z",
+                    "databaseId": 9074,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9074"
+                  },
+                  {
+                    "body": "Synthetic comment 75.",
+                    "createdAt": "2026-01-05T03:00:00Z",
+                    "databaseId": 9075,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9075"
+                  },
+                  {
+                    "body": "Synthetic comment 76.",
+                    "createdAt": "2026-01-05T04:00:00Z",
+                    "databaseId": 9076,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9076"
+                  },
+                  {
+                    "body": "Synthetic comment 77.",
+                    "createdAt": "2026-01-05T05:00:00Z",
+                    "databaseId": 9077,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9077"
+                  },
+                  {
+                    "body": "Synthetic comment 78.",
+                    "createdAt": "2026-01-05T06:00:00Z",
+                    "databaseId": 9078,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9078"
+                  },
+                  {
+                    "body": "Synthetic comment 79.",
+                    "createdAt": "2026-01-05T07:00:00Z",
+                    "databaseId": 9079,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9079"
+                  },
+                  {
+                    "body": "Synthetic comment 80.",
+                    "createdAt": "2026-01-05T08:00:00Z",
+                    "databaseId": 9080,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9080"
+                  },
+                  {
+                    "body": "Synthetic comment 81.",
+                    "createdAt": "2026-01-05T09:00:00Z",
+                    "databaseId": 9081,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9081"
+                  },
+                  {
+                    "body": "Synthetic comment 82.",
+                    "createdAt": "2026-01-05T10:00:00Z",
+                    "databaseId": 9082,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9082"
+                  },
+                  {
+                    "body": "Synthetic comment 83.",
+                    "createdAt": "2026-01-05T11:00:00Z",
+                    "databaseId": 9083,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9083"
+                  },
+                  {
+                    "body": "Synthetic comment 84.",
+                    "createdAt": "2026-01-05T12:00:00Z",
+                    "databaseId": 9084,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9084"
+                  },
+                  {
+                    "body": "Synthetic comment 85.",
+                    "createdAt": "2026-01-05T13:00:00Z",
+                    "databaseId": 9085,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9085"
+                  },
+                  {
+                    "body": "Synthetic comment 86.",
+                    "createdAt": "2026-01-05T14:00:00Z",
+                    "databaseId": 9086,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9086"
+                  },
+                  {
+                    "body": "Synthetic comment 87.",
+                    "createdAt": "2026-01-05T15:00:00Z",
+                    "databaseId": 9087,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9087"
+                  },
+                  {
+                    "body": "Synthetic comment 88.",
+                    "createdAt": "2026-01-05T16:00:00Z",
+                    "databaseId": 9088,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9088"
+                  },
+                  {
+                    "body": "Synthetic comment 89.",
+                    "createdAt": "2026-01-05T17:00:00Z",
+                    "databaseId": 9089,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9089"
+                  },
+                  {
+                    "body": "Synthetic comment 90.",
+                    "createdAt": "2026-01-05T18:00:00Z",
+                    "databaseId": 9090,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9090"
+                  },
+                  {
+                    "body": "Synthetic comment 91.",
+                    "createdAt": "2026-01-05T19:00:00Z",
+                    "databaseId": 9091,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9091"
+                  },
+                  {
+                    "body": "Synthetic comment 92.",
+                    "createdAt": "2026-01-05T20:00:00Z",
+                    "databaseId": 9092,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9092"
+                  },
+                  {
+                    "body": "Synthetic comment 93.",
+                    "createdAt": "2026-01-05T21:00:00Z",
+                    "databaseId": 9093,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9093"
+                  },
+                  {
+                    "body": "Synthetic comment 94.",
+                    "createdAt": "2026-01-05T22:00:00Z",
+                    "databaseId": 9094,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9094"
+                  },
+                  {
+                    "body": "Synthetic comment 95.",
+                    "createdAt": "2026-01-05T23:00:00Z",
+                    "databaseId": 9095,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9095"
+                  },
+                  {
+                    "body": "Synthetic comment 96.",
+                    "createdAt": "2026-01-06T00:00:00Z",
+                    "databaseId": 9096,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9096"
+                  },
+                  {
+                    "body": "Synthetic comment 97.",
+                    "createdAt": "2026-01-06T01:00:00Z",
+                    "databaseId": 9097,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9097"
+                  },
+                  {
+                    "body": "Synthetic comment 98.",
+                    "createdAt": "2026-01-06T02:00:00Z",
+                    "databaseId": 9098,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9098"
+                  },
+                  {
+                    "body": "Synthetic comment 99.",
+                    "createdAt": "2026-01-06T03:00:00Z",
+                    "databaseId": 9099,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9099"
+                  },
+                  {
+                    "body": "Synthetic comment 100.",
+                    "createdAt": "2026-01-06T04:00:00Z",
+                    "databaseId": 9100,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9100"
+                  },
+                  {
+                    "body": "Synthetic comment 101.",
+                    "createdAt": "2026-01-06T05:00:00Z",
+                    "databaseId": 9101,
+                    "url": "https://tracker.invalid/issues/2#issuecomment-9101"
+                  }
+                ]
+              },
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 2,
+              "state": "OPEN"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "expect": {
+    "o": "example",
+    "r": "tracker"
+  },
+  "issue_pages": [
+    {
+      "repository": {
+        "issues": {
+          "nodes": [
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "<!-- regia:progetto\nid: alpha\n-->\n",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 1,
+              "parent": null,
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "In corso",
+                        "optionId": "opt-d4"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "In corso",
+                          "optionId": "opt-d4"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "[alpha] objective of alpha",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/1"
+            },
+            {
+              "blockedBy": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "body": "",
+              "closedAt": null,
+              "createdAt": "2026-01-01T00:00:00Z",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 2,
+              "parent": {
+                "number": 1
+              },
+              "projectItems": {
+                "nodes": [
+                  {
+                    "fieldValueByName": {
+                      "Status": {
+                        "name": "Approvato",
+                        "optionId": "opt-c3"
+                      }
+                    },
+                    "fieldValues": {
+                      "nodes": [
+                        {
+                          "title": "a text field, not a single select"
+                        },
+                        {
+                          "field": {
+                            "id": "OTHER_FIELD",
+                            "name": "Priority"
+                          },
+                          "name": "Medium",
+                          "optionId": "opt-another-select"
+                        },
+                        {
+                          "field": {
+                            "id": "FIELD_FIXTURE",
+                            "name": "Status"
+                          },
+                          "name": "Approvato",
+                          "optionId": "opt-c3"
+                        }
+                      ]
+                    },
+                    "project": {
+                      "id": "PROJECT_FIXTURE"
+                    }
+                  }
+                ]
+              },
+              "state": "OPEN",
+              "stateReason": null,
+              "subIssues": {
+                "nodes": [],
+                "totalCount": 0
+              },
+              "title": "a task with 101 comments",
+              "updatedAt": "2026-01-02T03:04:05Z",
+              "url": "https://tracker.invalid/issues/2"
+            }
+          ],
+          "pageInfo": {
+            "endCursor": null,
+            "hasNextPage": false
+          }
+        }
+      }
+    }
+  ],
+  "issues": {
+    "1": {
+      "comments": {
+        "nodes": [],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_1",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    },
+    "2": {
+      "comments": {
+        "nodes": [
+          {
+            "body": "Synthetic comment 1.",
+            "createdAt": "2026-01-02T01:00:00Z",
+            "databaseId": 9001,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9001"
+          },
+          {
+            "body": "Synthetic comment 2.",
+            "createdAt": "2026-01-02T02:00:00Z",
+            "databaseId": 9002,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9002"
+          },
+          {
+            "body": "Synthetic comment 3.",
+            "createdAt": "2026-01-02T03:00:00Z",
+            "databaseId": 9003,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9003"
+          },
+          {
+            "body": "Synthetic comment 4.",
+            "createdAt": "2026-01-02T04:00:00Z",
+            "databaseId": 9004,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9004"
+          },
+          {
+            "body": "Synthetic comment 5.",
+            "createdAt": "2026-01-02T05:00:00Z",
+            "databaseId": 9005,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9005"
+          },
+          {
+            "body": "Synthetic comment 6.",
+            "createdAt": "2026-01-02T06:00:00Z",
+            "databaseId": 9006,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9006"
+          },
+          {
+            "body": "Synthetic comment 7.",
+            "createdAt": "2026-01-02T07:00:00Z",
+            "databaseId": 9007,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9007"
+          },
+          {
+            "body": "Synthetic comment 8.",
+            "createdAt": "2026-01-02T08:00:00Z",
+            "databaseId": 9008,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9008"
+          },
+          {
+            "body": "Synthetic comment 9.",
+            "createdAt": "2026-01-02T09:00:00Z",
+            "databaseId": 9009,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9009"
+          },
+          {
+            "body": "Synthetic comment 10.",
+            "createdAt": "2026-01-02T10:00:00Z",
+            "databaseId": 9010,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9010"
+          },
+          {
+            "body": "Synthetic comment 11.",
+            "createdAt": "2026-01-02T11:00:00Z",
+            "databaseId": 9011,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9011"
+          },
+          {
+            "body": "Synthetic comment 12.",
+            "createdAt": "2026-01-02T12:00:00Z",
+            "databaseId": 9012,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9012"
+          },
+          {
+            "body": "Synthetic comment 13.",
+            "createdAt": "2026-01-02T13:00:00Z",
+            "databaseId": 9013,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9013"
+          },
+          {
+            "body": "Synthetic comment 14.",
+            "createdAt": "2026-01-02T14:00:00Z",
+            "databaseId": 9014,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9014"
+          },
+          {
+            "body": "Synthetic comment 15.",
+            "createdAt": "2026-01-02T15:00:00Z",
+            "databaseId": 9015,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9015"
+          },
+          {
+            "body": "Synthetic comment 16.",
+            "createdAt": "2026-01-02T16:00:00Z",
+            "databaseId": 9016,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9016"
+          },
+          {
+            "body": "Synthetic comment 17.",
+            "createdAt": "2026-01-02T17:00:00Z",
+            "databaseId": 9017,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9017"
+          },
+          {
+            "body": "Synthetic comment 18.",
+            "createdAt": "2026-01-02T18:00:00Z",
+            "databaseId": 9018,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9018"
+          },
+          {
+            "body": "Synthetic comment 19.",
+            "createdAt": "2026-01-02T19:00:00Z",
+            "databaseId": 9019,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9019"
+          },
+          {
+            "body": "Synthetic comment 20.",
+            "createdAt": "2026-01-02T20:00:00Z",
+            "databaseId": 9020,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9020"
+          },
+          {
+            "body": "Synthetic comment 21.",
+            "createdAt": "2026-01-02T21:00:00Z",
+            "databaseId": 9021,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9021"
+          },
+          {
+            "body": "Synthetic comment 22.",
+            "createdAt": "2026-01-02T22:00:00Z",
+            "databaseId": 9022,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9022"
+          },
+          {
+            "body": "Synthetic comment 23.",
+            "createdAt": "2026-01-02T23:00:00Z",
+            "databaseId": 9023,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9023"
+          },
+          {
+            "body": "Synthetic comment 24.",
+            "createdAt": "2026-01-03T00:00:00Z",
+            "databaseId": 9024,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9024"
+          },
+          {
+            "body": "Synthetic comment 25.",
+            "createdAt": "2026-01-03T01:00:00Z",
+            "databaseId": 9025,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9025"
+          },
+          {
+            "body": "Synthetic comment 26.",
+            "createdAt": "2026-01-03T02:00:00Z",
+            "databaseId": 9026,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9026"
+          },
+          {
+            "body": "Synthetic comment 27.",
+            "createdAt": "2026-01-03T03:00:00Z",
+            "databaseId": 9027,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9027"
+          },
+          {
+            "body": "Synthetic comment 28.",
+            "createdAt": "2026-01-03T04:00:00Z",
+            "databaseId": 9028,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9028"
+          },
+          {
+            "body": "Synthetic comment 29.",
+            "createdAt": "2026-01-03T05:00:00Z",
+            "databaseId": 9029,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9029"
+          },
+          {
+            "body": "Synthetic comment 30.",
+            "createdAt": "2026-01-03T06:00:00Z",
+            "databaseId": 9030,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9030"
+          },
+          {
+            "body": "Synthetic comment 31.",
+            "createdAt": "2026-01-03T07:00:00Z",
+            "databaseId": 9031,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9031"
+          },
+          {
+            "body": "Synthetic comment 32.",
+            "createdAt": "2026-01-03T08:00:00Z",
+            "databaseId": 9032,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9032"
+          },
+          {
+            "body": "Synthetic comment 33.",
+            "createdAt": "2026-01-03T09:00:00Z",
+            "databaseId": 9033,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9033"
+          },
+          {
+            "body": "Synthetic comment 34.",
+            "createdAt": "2026-01-03T10:00:00Z",
+            "databaseId": 9034,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9034"
+          },
+          {
+            "body": "Synthetic comment 35.",
+            "createdAt": "2026-01-03T11:00:00Z",
+            "databaseId": 9035,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9035"
+          },
+          {
+            "body": "Synthetic comment 36.",
+            "createdAt": "2026-01-03T12:00:00Z",
+            "databaseId": 9036,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9036"
+          },
+          {
+            "body": "Synthetic comment 37.",
+            "createdAt": "2026-01-03T13:00:00Z",
+            "databaseId": 9037,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9037"
+          },
+          {
+            "body": "Synthetic comment 38.",
+            "createdAt": "2026-01-03T14:00:00Z",
+            "databaseId": 9038,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9038"
+          },
+          {
+            "body": "Synthetic comment 39.",
+            "createdAt": "2026-01-03T15:00:00Z",
+            "databaseId": 9039,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9039"
+          },
+          {
+            "body": "Synthetic comment 40.",
+            "createdAt": "2026-01-03T16:00:00Z",
+            "databaseId": 9040,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9040"
+          },
+          {
+            "body": "Synthetic comment 41.",
+            "createdAt": "2026-01-03T17:00:00Z",
+            "databaseId": 9041,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9041"
+          },
+          {
+            "body": "Synthetic comment 42.",
+            "createdAt": "2026-01-03T18:00:00Z",
+            "databaseId": 9042,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9042"
+          },
+          {
+            "body": "Synthetic comment 43.",
+            "createdAt": "2026-01-03T19:00:00Z",
+            "databaseId": 9043,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9043"
+          },
+          {
+            "body": "Synthetic comment 44.",
+            "createdAt": "2026-01-03T20:00:00Z",
+            "databaseId": 9044,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9044"
+          },
+          {
+            "body": "Synthetic comment 45.",
+            "createdAt": "2026-01-03T21:00:00Z",
+            "databaseId": 9045,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9045"
+          },
+          {
+            "body": "Synthetic comment 46.",
+            "createdAt": "2026-01-03T22:00:00Z",
+            "databaseId": 9046,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9046"
+          },
+          {
+            "body": "Synthetic comment 47.",
+            "createdAt": "2026-01-03T23:00:00Z",
+            "databaseId": 9047,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9047"
+          },
+          {
+            "body": "Synthetic comment 48.",
+            "createdAt": "2026-01-04T00:00:00Z",
+            "databaseId": 9048,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9048"
+          },
+          {
+            "body": "Synthetic comment 49.",
+            "createdAt": "2026-01-04T01:00:00Z",
+            "databaseId": 9049,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9049"
+          },
+          {
+            "body": "Synthetic comment 50.",
+            "createdAt": "2026-01-04T02:00:00Z",
+            "databaseId": 9050,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9050"
+          },
+          {
+            "body": "Synthetic comment 51.",
+            "createdAt": "2026-01-04T03:00:00Z",
+            "databaseId": 9051,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9051"
+          },
+          {
+            "body": "Synthetic comment 52.",
+            "createdAt": "2026-01-04T04:00:00Z",
+            "databaseId": 9052,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9052"
+          },
+          {
+            "body": "Synthetic comment 53.",
+            "createdAt": "2026-01-04T05:00:00Z",
+            "databaseId": 9053,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9053"
+          },
+          {
+            "body": "Synthetic comment 54.",
+            "createdAt": "2026-01-04T06:00:00Z",
+            "databaseId": 9054,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9054"
+          },
+          {
+            "body": "Synthetic comment 55.",
+            "createdAt": "2026-01-04T07:00:00Z",
+            "databaseId": 9055,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9055"
+          },
+          {
+            "body": "Synthetic comment 56.",
+            "createdAt": "2026-01-04T08:00:00Z",
+            "databaseId": 9056,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9056"
+          },
+          {
+            "body": "Synthetic comment 57.",
+            "createdAt": "2026-01-04T09:00:00Z",
+            "databaseId": 9057,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9057"
+          },
+          {
+            "body": "Synthetic comment 58.",
+            "createdAt": "2026-01-04T10:00:00Z",
+            "databaseId": 9058,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9058"
+          },
+          {
+            "body": "Synthetic comment 59.",
+            "createdAt": "2026-01-04T11:00:00Z",
+            "databaseId": 9059,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9059"
+          },
+          {
+            "body": "Synthetic comment 60.",
+            "createdAt": "2026-01-04T12:00:00Z",
+            "databaseId": 9060,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9060"
+          },
+          {
+            "body": "Synthetic comment 61.",
+            "createdAt": "2026-01-04T13:00:00Z",
+            "databaseId": 9061,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9061"
+          },
+          {
+            "body": "Synthetic comment 62.",
+            "createdAt": "2026-01-04T14:00:00Z",
+            "databaseId": 9062,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9062"
+          },
+          {
+            "body": "Synthetic comment 63.",
+            "createdAt": "2026-01-04T15:00:00Z",
+            "databaseId": 9063,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9063"
+          },
+          {
+            "body": "Synthetic comment 64.",
+            "createdAt": "2026-01-04T16:00:00Z",
+            "databaseId": 9064,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9064"
+          },
+          {
+            "body": "Synthetic comment 65.",
+            "createdAt": "2026-01-04T17:00:00Z",
+            "databaseId": 9065,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9065"
+          },
+          {
+            "body": "Synthetic comment 66.",
+            "createdAt": "2026-01-04T18:00:00Z",
+            "databaseId": 9066,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9066"
+          },
+          {
+            "body": "Synthetic comment 67.",
+            "createdAt": "2026-01-04T19:00:00Z",
+            "databaseId": 9067,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9067"
+          },
+          {
+            "body": "Synthetic comment 68.",
+            "createdAt": "2026-01-04T20:00:00Z",
+            "databaseId": 9068,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9068"
+          },
+          {
+            "body": "Synthetic comment 69.",
+            "createdAt": "2026-01-04T21:00:00Z",
+            "databaseId": 9069,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9069"
+          },
+          {
+            "body": "Synthetic comment 70.",
+            "createdAt": "2026-01-04T22:00:00Z",
+            "databaseId": 9070,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9070"
+          },
+          {
+            "body": "Synthetic comment 71.",
+            "createdAt": "2026-01-04T23:00:00Z",
+            "databaseId": 9071,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9071"
+          },
+          {
+            "body": "Synthetic comment 72.",
+            "createdAt": "2026-01-05T00:00:00Z",
+            "databaseId": 9072,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9072"
+          },
+          {
+            "body": "Synthetic comment 73.",
+            "createdAt": "2026-01-05T01:00:00Z",
+            "databaseId": 9073,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9073"
+          },
+          {
+            "body": "Synthetic comment 74.",
+            "createdAt": "2026-01-05T02:00:00Z",
+            "databaseId": 9074,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9074"
+          },
+          {
+            "body": "Synthetic comment 75.",
+            "createdAt": "2026-01-05T03:00:00Z",
+            "databaseId": 9075,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9075"
+          },
+          {
+            "body": "Synthetic comment 76.",
+            "createdAt": "2026-01-05T04:00:00Z",
+            "databaseId": 9076,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9076"
+          },
+          {
+            "body": "Synthetic comment 77.",
+            "createdAt": "2026-01-05T05:00:00Z",
+            "databaseId": 9077,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9077"
+          },
+          {
+            "body": "Synthetic comment 78.",
+            "createdAt": "2026-01-05T06:00:00Z",
+            "databaseId": 9078,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9078"
+          },
+          {
+            "body": "Synthetic comment 79.",
+            "createdAt": "2026-01-05T07:00:00Z",
+            "databaseId": 9079,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9079"
+          },
+          {
+            "body": "Synthetic comment 80.",
+            "createdAt": "2026-01-05T08:00:00Z",
+            "databaseId": 9080,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9080"
+          },
+          {
+            "body": "Synthetic comment 81.",
+            "createdAt": "2026-01-05T09:00:00Z",
+            "databaseId": 9081,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9081"
+          },
+          {
+            "body": "Synthetic comment 82.",
+            "createdAt": "2026-01-05T10:00:00Z",
+            "databaseId": 9082,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9082"
+          },
+          {
+            "body": "Synthetic comment 83.",
+            "createdAt": "2026-01-05T11:00:00Z",
+            "databaseId": 9083,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9083"
+          },
+          {
+            "body": "Synthetic comment 84.",
+            "createdAt": "2026-01-05T12:00:00Z",
+            "databaseId": 9084,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9084"
+          },
+          {
+            "body": "Synthetic comment 85.",
+            "createdAt": "2026-01-05T13:00:00Z",
+            "databaseId": 9085,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9085"
+          },
+          {
+            "body": "Synthetic comment 86.",
+            "createdAt": "2026-01-05T14:00:00Z",
+            "databaseId": 9086,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9086"
+          },
+          {
+            "body": "Synthetic comment 87.",
+            "createdAt": "2026-01-05T15:00:00Z",
+            "databaseId": 9087,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9087"
+          },
+          {
+            "body": "Synthetic comment 88.",
+            "createdAt": "2026-01-05T16:00:00Z",
+            "databaseId": 9088,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9088"
+          },
+          {
+            "body": "Synthetic comment 89.",
+            "createdAt": "2026-01-05T17:00:00Z",
+            "databaseId": 9089,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9089"
+          },
+          {
+            "body": "Synthetic comment 90.",
+            "createdAt": "2026-01-05T18:00:00Z",
+            "databaseId": 9090,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9090"
+          },
+          {
+            "body": "Synthetic comment 91.",
+            "createdAt": "2026-01-05T19:00:00Z",
+            "databaseId": 9091,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9091"
+          },
+          {
+            "body": "Synthetic comment 92.",
+            "createdAt": "2026-01-05T20:00:00Z",
+            "databaseId": 9092,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9092"
+          },
+          {
+            "body": "Synthetic comment 93.",
+            "createdAt": "2026-01-05T21:00:00Z",
+            "databaseId": 9093,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9093"
+          },
+          {
+            "body": "Synthetic comment 94.",
+            "createdAt": "2026-01-05T22:00:00Z",
+            "databaseId": 9094,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9094"
+          },
+          {
+            "body": "Synthetic comment 95.",
+            "createdAt": "2026-01-05T23:00:00Z",
+            "databaseId": 9095,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9095"
+          },
+          {
+            "body": "Synthetic comment 96.",
+            "createdAt": "2026-01-06T00:00:00Z",
+            "databaseId": 9096,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9096"
+          },
+          {
+            "body": "Synthetic comment 97.",
+            "createdAt": "2026-01-06T01:00:00Z",
+            "databaseId": 9097,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9097"
+          },
+          {
+            "body": "Synthetic comment 98.",
+            "createdAt": "2026-01-06T02:00:00Z",
+            "databaseId": 9098,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9098"
+          },
+          {
+            "body": "Synthetic comment 99.",
+            "createdAt": "2026-01-06T03:00:00Z",
+            "databaseId": 9099,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9099"
+          },
+          {
+            "body": "Synthetic comment 100.",
+            "createdAt": "2026-01-06T04:00:00Z",
+            "databaseId": 9100,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9100"
+          },
+          {
+            "body": "Synthetic comment 101.",
+            "createdAt": "2026-01-06T05:00:00Z",
+            "databaseId": 9101,
+            "url": "https://tracker.invalid/issues/2#issuecomment-9101"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      },
+      "id": "ISSUE_2",
+      "lastEditedAt": null,
+      "state": "OPEN",
+      "subIssues": {
+        "totalCount": 0
+      }
+    }
+  },
+  "mutations": {
+    "addBlockedBy": {
+      "addBlockedBy": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "addProjectV2ItemById": {
+      "addProjectV2ItemById": {
+        "item": {
+          "id": "ITEM_ADDED"
+        }
+      }
+    },
+    "addSubIssue": {
+      "addSubIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "closeIssue": {
+      "closeIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "removeBlockedBy": {
+      "removeBlockedBy": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "reopenIssue": {
+      "reopenIssue": {
+        "issue": {
+          "id": "ISSUE_WRITTEN"
+        }
+      }
+    },
+    "updateProjectV2ItemFieldValue": {
+      "updateProjectV2ItemFieldValue": {
+        "projectV2Item": {
+          "id": "ITEM_WRITTEN"
+        }
+      }
+    }
+  },
+  "nodes": {
+    "ISSUE_1": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_1",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "ISSUE_2": {
+      "projectItems": {
+        "nodes": [
+          {
+            "id": "ITEM_2",
+            "project": {
+              "id": "PROJECT_FIXTURE"
+            }
+          }
+        ]
+      }
+    },
+    "PROJECT_FIXTURE": {
+      "fields": {
+        "nodes": [
+          {
+            "__typename": "ProjectV2Field",
+            "id": "FIELD_TITLE",
+            "name": "Title"
+          },
+          {
+            "__typename": "ProjectV2SingleSelectField",
+            "id": "FIELD_FIXTURE",
+            "name": "Status",
+            "options": [
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-c3",
+                "name": "Approvato"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-e5",
+                "name": "Decisione"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-f6",
+                "name": "Fatto"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-d4",
+                "name": "In corso"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-a1",
+                "name": "Inbox"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-b2",
+                "name": "Proposta"
+              },
+              {
+                "color": "GRAY",
+                "description": "",
+                "id": "opt-g7",
+                "name": "Scartato"
+              }
+            ]
+          }
+        ]
+      },
+      "items": {
+        "nodes": [
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "tipo:obiettivo"
+                  }
+                ]
+              },
+              "number": 1
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_1"
+          },
+          {
+            "content": {
+              "__typename": "Issue",
+              "labels": {
+                "nodes": [
+                  {
+                    "name": "progetto:alpha"
+                  },
+                  {
+                    "name": "maturità:pronto"
+                  }
+                ]
+              },
+              "number": 2
+            },
+            "fieldValueByName": {},
+            "id": "ITEM_2"
+          }
+        ],
+        "pageInfo": {
+          "endCursor": null,
+          "hasNextPage": false
+        }
+      }
+    }
+  },
+  "sub_issue_pages": {},
+  "views": {
+    "1": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "tipo:obiettivo"
+        }
+      ]
+    },
+    "2": {
+      "labels": [
+        {
+          "name": "progetto:alpha"
+        },
+        {
+          "name": "maturità:pronto"
+        }
+      ]
+    }
+  }
+}

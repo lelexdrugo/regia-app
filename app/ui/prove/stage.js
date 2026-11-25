@@ -65,6 +65,149 @@ async function waitFrames(page, after) {
   await page.waitFor(`Number(${CANVAS}.dataset.frames) > ${after}`, 5_000);
 }
 
+const OUTPUT = `document.querySelector("output.strip-range")`;
+const PANEL = `document.querySelector(".at-date")`;
+const distance = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+const light = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+/**
+ * The overview (#598) on alpha, in a fresh page. The tape, measured on the canvas at density 2, where a tick of one
+ * pixel covers a whole device pixel: from alpha's first milestone, in the node's ink, to its last, an exception in
+ * the negative ink, the story takes at least half the tape (the prototype's scale gave it 130 px of 1,420). A kind
+ * hidden: the first moment, a milestone, loses its ink and the pointer's reach, «Clear the filters» brings it back.
+ * Its ink is read just under its centre, where no edge and no label passes. The project
+ * at the playhead, at three places of it, is what the prototype's panel «alla data» says, with the open decisions of the last moment's
+ * notes. A window drawn on the strip becomes the stage's view; a double click shows the whole story. A direction
+ * chosen lists its moments and dims the other lanes.
+ */
+async function overview(page, harness, m, fixture, model, check) {
+  const snapshots = fixture.cases.find((c) => c.name === "alpha").snapshots;
+  // A real load each time: an address that differs only after # would keep the page, and its playhead.
+  let loads = 0;
+  const fresh = async () => {
+    loads += 1;
+    await page.goto(`${harness}?load=${loads}${ROUTE}`);
+    await page.waitFor(`document.documentElement.dataset.settled === ${JSON.stringify(ROUTE)}`);
+    // The screen settles a line or so after its first frame: the backing store at its box, and a frame drawn in it.
+    const settled = `(() => { const c = ${CANVAS}; const k = devicePixelRatio || 1;
+      return c.width === Math.round(c.clientWidth * k) && c.height === Math.round(c.clientHeight * k); })()`;
+    await page.waitFor(settled, 5_000).catch(() => {});
+    await sleep(150);
+    await page.waitFor(settled, 5_000).catch(() => {});
+  };
+  // The tape first, on the page as the checks above left it, the playhead at the tape's left end: at density 2, which
+  // the next frame finds (Chromium 156 announces an emulated density to no listener).
+  let at = await box(page);
+  await page.send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 2, mobile: false });
+  await mouse(page, "mouseWheel", at.left + at.w / 2, at.top + at.h / 2, { deltaX: 0, deltaY: 0, buttons: 0 });
+  await page.waitFor(`${CANVAS}.width === 2 * ${CANVAS}.clientWidth`, 5_000).catch(() => {});
+  at = await box(page);
+  const [k, row] = await page.evaluate(`(() => {
+    const canvas = ${CANVAS};
+    const k = canvas.width / canvas.clientWidth;
+    return [k, Array.from(canvas.getContext("2d").getImageData(0, Math.floor((${at.h} + 30) * k), canvas.width, 1).data)];
+  })()`);
+  const xs = (colour) => {
+    const out = [];
+    for (let i = 0; i < row.length; i += 4) if (near([row[i], row[i + 1], row[i + 2]], colour)) out.push(i / 4 / k);
+    return out;
+  };
+  const first = Math.min(...xs(rgb(await token(page, "--node"))));
+  const last = Math.max(...xs(rgb(await token(page, "--negative"))));
+  const tape = m.tapeScale(model.nodes.map((n) => n.t), 10, at.width - 10);
+  const measured = (last - first) / (at.width - 20);
+  check("alpha's story takes at least half the tape, measured on the canvas", measured >= 0.5
+    && Math.abs(first - tape.x(model.t0)) < 2 && Math.abs(last - tape.x(model.t1)) < 2, `${(measured * 100).toFixed(1)} %, from ${first} to ${last} of ${at.width}`);
+  await page.resize(1440, 900);
+  await fresh();
+  at = await box(page);
+  const lay = m.layout(model, at.w, at.h, null);
+
+  // The filters on the canvas: the first moment, with the playhead at the end of the story.
+  const ids = model.nodes.map((n) => n.milestone.id);
+  const [ink, surface] = [rgb(await token(page, "--node")), rgb(await token(page, "--surface"))];
+  const selected = () => page.evaluate(`document.getElementById("moviola-status").dataset.selected`);
+  const under = () => pixel(page, lay.x[0], lay.y[0] + 4);
+  const shown = await under();
+  let before = await frames(page);
+  await page.evaluate(`document.querySelector('[data-kind="milestone"] input').click(), true`);
+  await waitFrames(page, before).catch(() => {});
+  const hidden = await under();
+  await mouse(page, "mousePressed", at.left + lay.x[0], at.top + lay.y[0]);
+  await mouse(page, "mouseReleased", at.left + lay.x[0], at.top + lay.y[0]);
+  await sleep(60);
+  const reached = await selected();
+  const count = await page.evaluate(`document.getElementById("moviola-found")?.dataset.count ?? null`);
+  check("a kind hidden: the milestone loses its ink and the pointer's reach, 6 of 7 counted",
+    near(shown, ink) && distance(hidden, ink) > 60 && reached !== ids[0] && count === "6", `${shown} → ${hidden}; a click selects «${reached}»`);
+  before = await frames(page);
+  await page.evaluate(`document.getElementById("moviola-clear").click(), true`);
+  await waitFrames(page, before).catch(() => {});
+  check("«Clear the filters» brings it back", near(await under(), ink), `${await under()}`);
+
+  // The project at the playhead: at the first moment, at the fourth, and between the fourth and the fifth.
+  const said = async () => {
+    await page.waitFor(`${PANEL}.dataset.decisions !== "loading"`, 5_000).catch(() => {});
+    return page.evaluate(`(({ before, after, last, open, decisions }) => ({ before: +before, after: +after, last, open, decisions }))(${PANEL}.dataset)`);
+  };
+  const wanted = (t) => {
+    const s = m.stateAt(model, t);
+    const last = s.last ? s.last.milestone.id : "";
+    const decisions = s.last ? String(snapshots[last]?.open_decisions?.length ?? 0) : "none";
+    return { before: s.before, after: s.after, last, open: s.open.map((l) => l.id).join(","), decisions };
+  };
+  const places = [];
+  await page.evaluate(`${CANVAS}.focus()`);
+  await key(page, "Home", "Home", 36);
+  places.push([model.nodes[0].t, await said()]);
+  for (let i = 0; i < 3; i++) await key(page, "ArrowRight", "ArrowRight", 39);
+  places.push([model.nodes[3].t, await said()]);
+  await key(page, "Escape", "Escape", 27);
+  const between = (model.nodes[3].t + model.nodes[4].t) / 2;
+  await page.evaluate(`(() => { const r = document.querySelector(".scrub"); r.value = String(Math.round(${(between - model.t0) / (model.t1 - model.t0)} * 1000)); r.dispatchEvent(new Event("input", { bubbles: true })); })()`);
+  const tNow = await page.evaluate(`Number(document.querySelector("output.timecode").dataset.t)`);
+  places.push([tNow, await said()]);
+  const wrong = places.filter(([t, got]) => JSON.stringify(got) !== JSON.stringify(wanted(t)));
+  check("the project at the playhead is the prototype's, at three places, with its notes' open decisions", wrong.length === 0,
+    places.map(([, got]) => `${got.before}/${got.after} ${got.last.slice(5, 7)} [${got.open}] ${got.decisions}`).join("; "));
+
+  // The strip: a window from the second moment to the fifth, drawn by hand, becomes the view; a double click, the
+  // whole story.
+  await page.evaluate(`${CANVAS}.focus()`);
+  await page.press("0");
+  await page.waitFor(`${OUTPUT}.dataset.whole === "true"`, 5_000).catch(() => {});
+  const [sl, st, sw] = await page.evaluate(`(() => { const r = document.querySelector("canvas.strip").getBoundingClientRect(); return [r.left, r.top, r.width]; })()`);
+  const strip = m.tapeScale(model.nodes.map((n) => n.t), 8, sw - 8, 12 * m.HOUR, 18);
+  const [xa, xb] = [strip.x(model.nodes[1].t) - 4, strip.x(model.nodes[4].t) + 4];
+  await mouse(page, "mousePressed", sl + xa, st + 20);
+  await mouse(page, "mouseMoved", sl + (xa + xb) / 2, st + 20);
+  await mouse(page, "mouseMoved", sl + xb, st + 20);
+  await mouse(page, "mouseReleased", sl + xb, st + 20);
+  await page.waitFor(`${OUTPUT}.dataset.whole === "false"`, 5_000).catch(() => {});
+  // The pointer lands on whole pixels: the window is the one drawn within a pixel of the strip.
+  const [from, to] = await page.evaluate(`[Number(${OUTPUT}.dataset.from), Number(${OUTPUT}.dataset.to)]`);
+  const zoomed = Number((await data(page, "camera")).split(" ")[2]);
+  check("a window drawn on the strip: the stage shows it", Math.abs(strip.x(from) - xa) <= 1 && Math.abs(strip.x(to) - xb) <= 1 && zoomed > 1,
+    `${new Date(from).toISOString()} → ${new Date(to).toISOString()} at zoom ${zoomed}; on the strip ${strip.x(from).toFixed(1)}, ${strip.x(to).toFixed(1)} for ${xa.toFixed(1)}, ${xb.toFixed(1)}`);
+  await mouse(page, "mousePressed", sl + sw / 2, st + 20);
+  await mouse(page, "mouseReleased", sl + sw / 2, st + 20);
+  await mouse(page, "mousePressed", sl + sw / 2, st + 20, { clickCount: 2 });
+  await mouse(page, "mouseReleased", sl + sw / 2, st + 20, { clickCount: 2 });
+  await page.waitFor(`${OUTPUT}.dataset.whole === "true"`, 5_000).catch(() => {});
+  check("a double click on the strip shows the whole story", (await page.evaluate(`${OUTPUT}.dataset.whole`)) === "true" && Number((await data(page, "camera")).split(" ")[2]) === 1);
+
+  // The directions: probe-b chosen lists its one moment and dims the main lane's first node.
+  const main = await under();
+  before = await frames(page);
+  await page.evaluate(`document.querySelector('[data-lane="probe-b"] .lane-toggle').click(), true`);
+  await waitFrames(page, before).catch(() => {});
+  const dimmed = await under();
+  const listed = await page.evaluate(`[document.querySelector('[data-lane="probe-b"] .lane-toggle').getAttribute("aria-expanded"),
+    document.querySelectorAll('[data-lane="probe-b"] .lane-moments li').length]`);
+  check("a direction chosen lists its moments and dims the other lanes", listed[0] === "true" && listed[1] === 1 && light(dimmed) < 0.5 * light(main) && distance(dimmed, surface) < distance(main, surface),
+    `${JSON.stringify(listed)}; the main lane's first node ${main} → ${dimmed}`);
+}
+
 export const stage = {
   browser: true,
   async run({ ui, page, harness }) {
@@ -195,6 +338,8 @@ export const stage = {
     await sleep(60);
     const tTape = await page.evaluate(`Number(document.querySelector("output.timecode").dataset.t)`);
     check("a click on the tape moves the playhead", tTape < model.t0, new Date(tTape).toISOString());
+
+    await overview(page, harness, m, fixture, model, check);
 
     // The portfolio (Acceptance 2): each project of the fixture with its health and its last milestone.
     await open(page, harness, "#/moviola?data=demo&lang=en");

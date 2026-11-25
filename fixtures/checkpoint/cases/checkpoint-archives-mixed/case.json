@@ -1,0 +1,33 @@
+{
+  "_note": "Synthetic. Three files of the decisions' folder in the same dossier: an archive named by the model that changed (it goes in), one that did not (nothing to commit), and a changed file whose name is outside the model (it stays out, like the notes). The record shows what the commit holds.",
+  "args": [
+    "checkpoint",
+    "--project",
+    "alpha",
+    "--folder",
+    "{dossier}",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "checkpoint",
+    "--progetto",
+    "alpha",
+    "--cartella",
+    "{dossier}"
+  ],
+  "dossier": {
+    "files": {
+      ".regia/stato.md": "# Alpha\n\nState before.\n",
+      ".regia/decisioni.md": "# Decisions\n",
+      ".regia/decisioni-2025-12.md": "Decisions of December, archived.\n",
+      ".regia/decisioni-2026-01.md": "Decisions of January, archived.\n",
+      ".regia/decisioni-vecchie.md": "Old decisions, a name outside the model.\n"
+    },
+    "changes": {
+      ".regia/stato.md": "# Alpha\n\nState after the step.\n",
+      ".regia/decisioni-2026-01.md": "Decisions of January, archived, with one more.\n",
+      ".regia/decisioni-vecchie.md": "Old decisions, edited.\n"
+    }
+  }
+}

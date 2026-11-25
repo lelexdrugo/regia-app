@@ -139,6 +139,10 @@ createdAt = { to = "created_at" }
 closedAt = { to = "closed_at" }
 body = { to = "body" }
 comments = { to = "comments", items = "task_comment" }
+# `--since` only (#557): the instant of the last edit of the body, or null, and whether it is after the
+# instant given. The name keeps the prototype's `dal` for the flag it answers.
+body_edited_at = { to = "body_edited_at" }
+body_edited_after_dal = { to = "body_edited_after_since" }
 
 # A comment, oldest first. `firma` is the role of its signature as the comment carries it (`titolare`
 # for one with no signature): data, as the markers already published are. A worker's body is shortened

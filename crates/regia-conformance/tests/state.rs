@@ -1,7 +1,12 @@
-//! Acceptance 1 of #449: `lease` and `step` in the binary, natively, give on each case of their families what
-//! the prototype gave, refusals with exit 3 included, and leave the state database and the dossier's repo
-//! as the prototype left them. The run is the real binary with no prototype, so the native engine answers,
-//! on the case's rows and dossier, at the fixtures' instant.
+//! Acceptance 1 of #449 and of #562: `lock`, `lease` and `step` in the binary, natively, give on each case of
+//! their families what the prototype gave, refusals with exit 3 included, and leave the state database and
+//! the dossier's repo as the prototype left them. The run is the real binary with no prototype, so the
+//! native engine answers, on the case's rows and dossier, at the fixtures' instant.
+//!
+//! A database held by another transaction beyond the wait (#442/V5) has no recorded case: a case cannot
+//! hold a transaction while `record` runs the prototype. Here another process holds it during the run, and
+//! the tests compare the product with what the prototype's code answers then; an ignored test runs the
+//! prototype under the same hold.
 //!
 //! The normalizations, declared:
 //! - **The reasons** are the product's own sentences, in English: the prototype's are translated by the
@@ -20,21 +25,30 @@
 
 mod words;
 
+use std::ffi::OsString;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
+
 use regia_conformance::{
-    Case, CliRun, Recorded, generated_holders_as_one as generated_text, generated_holders_as_one_in as generated, json_diff, lf,
-    run_case_on_dossier, state_rows, translate_python, unplace_json, unplace_text,
+    Case, CliRun, Recorded, fixture_for_rust, generated_holders_as_one as generated_text, generated_holders_as_one_in as generated,
+    json_diff, lf, prepare_state_dir, prototype_at_fixture_now, regia_binary, run_case_on_dossier, state_rows, translate_python,
+    unplace_json, unplace_text,
 };
+use regia_exec::harness::{self, Running};
 use regia_i18n::{Catalog, Language};
-use regia_identity::env_var;
+use regia_identity::{env_var, prototype_env_var};
 use serde_json::{Value, json};
 use words::{in_the_product_s_words, outcome_of_line, state_reason_in_the_product_s_words};
+
+const STORE_PROBE: &str = env!("CARGO_BIN_EXE_store-probe");
 
 /// The cases where the product differs from the prototype on purpose, each with a test below that says
 /// how: an events cursor in the old form, the instant alone, which the facade cannot translate (#442/V7).
 const DIVERGENT: [&str; 1] = ["step-start-old-cursor"];
 
 fn state_cases() -> Vec<Case> {
-    [Case::of_family("lease"), Case::of_family("step")].concat()
+    [Case::of_family("lock"), Case::of_family("lease"), Case::of_family("step")].concat()
 }
 
 /// The real binary on `case`, natively: no prototype is named, so the table's group falls back on it.
@@ -87,7 +101,7 @@ fn text_facts(command: &str, python: &str) -> Vec<String> {
         // The catalog's word for an empty list, in the language both the binary and this test detect.
         "lease list" if python.starts_with("(nessuna lease") => vec![Catalog::new(Language::detect()).message("brief-nothing")],
         "lease list" => python.lines().map(|line| format!("{} *", line.split_whitespace().next().unwrap_or_default())).collect(),
-        "step start" | "lease acquire" => {
+        "step start" | "lease acquire" | "lock acquire" => {
             let mut lines = python.lines();
             let first = lines.next().unwrap_or_default();
             let (state, rest) = first.split_once(": ").and_then(|(_, rest)| rest.split_once(" da ")).unwrap_or_default();
@@ -101,6 +115,9 @@ fn text_facts(command: &str, python: &str) -> Vec<String> {
                 format!("expires_at: {until}"),
                 format!("expires_in_s: {seconds}"),
             ];
+            if let Some((_, replaced)) = rest.split_once(", al posto di ") {
+                facts.push(format!("replaced: {replaced}"));
+            }
             for line in lines {
                 if let Some(t) = line.strip_prefix("t del passo: ") {
                     facts.push(format!("t: {t}"));
@@ -132,6 +149,24 @@ fn text_facts(command: &str, python: &str) -> Vec<String> {
             }
             facts
         }
+        "lock status" => {
+            let line = python.lines().next().unwrap_or_default();
+            let rest = line.split_once(": ").map_or(line, |(_, rest)| rest);
+            if let Some(rest) = rest.strip_prefix("occupato da ") {
+                let (holder, rest) = rest.split_once(", scade ").unwrap_or_default();
+                let (until, rest) = rest.split_once(" (tra ").unwrap_or_default();
+                let seconds = rest.split_once(" s)").map_or("", |(seconds, _)| seconds);
+                let facts = ["status: busy", "busy: true"].map(str::to_owned);
+                [facts.to_vec(), vec![format!("holder: {holder}"), format!("expires_at: {until}"), format!("expires_in_s: {seconds}")]].concat()
+            } else if let Some(holder) = rest.strip_prefix("scaduto (era di ").and_then(|rest| rest.strip_suffix(')')) {
+                vec!["status: expired".to_owned(), "busy: false".to_owned(), format!("holder: {holder}")]
+            } else {
+                let state = [("libero", "free"), ("illeggibile", "unreadable")].iter().find(|(python, _)| *python == rest).map_or(rest, |(_, product)| product);
+                vec![format!("status: {state}")]
+            }
+        }
+        // `rilasciato` also when the lock was already free: the line says no more than that it succeeded.
+        "lock release" => vec!["ok: true".to_owned()],
         _ => vec![format!("(no facts for the text of {command})")],
     }
 }
@@ -196,9 +231,9 @@ fn native_differences(case: &Case, run: &CliRun) -> Vec<String> {
 }
 
 #[test]
-fn every_lease_and_step_case_natively_gives_the_prototype_s_outcome() {
+fn every_lock_lease_and_step_case_natively_gives_the_prototype_s_outcome() {
     let cases = state_cases();
-    assert!(cases.len() >= 30, "the cases of the prototype's tests are missing: {}", cases.len());
+    assert!(cases.len() >= 58, "the cases of the prototype's tests are missing: {}", cases.len());
     for case in &cases {
         assert!(case.spec.state_after, "{}: a case of the state must record the rows after it", case.name);
     }
@@ -254,7 +289,8 @@ fn the_comparison_notices_a_difference() {
 #[test]
 fn the_state_cases_show_what_they_claim() {
     let rows = |name: &str| Case::named(name).state_after().expect("state.json");
-    for name in ["lease-acquire-busy", "lease-release-foreign", "step-start-busy", "step-renew-foreign", "step-finish-foreign"] {
+    let refusals = ["acquire-busy", "release-foreign", "renew-foreign", "renew-absent", "release-unreadable", "lease-acquire-busy"];
+    for name in refusals.into_iter().chain(["lease-release-foreign", "step-start-busy", "step-renew-foreign", "step-finish-foreign"]) {
         let case = Case::named(name);
         assert_eq!(case.spec.exit, 3, "{name}");
         let before: Vec<Value> = case.spec.state.iter().map(|row| json!([row.kind, row.key, row.doc])).collect();
@@ -272,4 +308,144 @@ fn the_state_cases_show_what_they_claim() {
     let no_step = rows("step-finish-no-step");
     let lock = no_step.as_array().unwrap().iter().find(|row| row["kind"] == "lock").expect("the lock stays");
     assert_eq!((lock["doc"]["ttl_s"].clone(), lock["generation"].clone(), lock["stamped"].clone()), (json!(60), json!(2), json!(true)));
+    // A row that is not a lock document is nobody's: not busy, not anyone's to release, and taken by the
+    // first who asks, in place of no holder. A renewal moves the expiry and keeps when the lock was taken.
+    let words = |name: &str| {
+        let case = Case::named(name);
+        python_in_the_product_s_words(&case, &case.python_output()).expect("the table covers it")
+    };
+    assert_eq!(words("status-unreadable"), json!({"project": "alpha", "busy": false, "status": "unreadable"}));
+    assert_eq!(words("release-unreadable"), json!({"ok": false, "status": "foreign"}));
+    let taken = words("acquire-unreadable");
+    assert_eq!((&taken["status"], &taken["replaced"], &rows("acquire-unreadable")[0]["generation"]), (&json!("stolen"), &Value::Null, &json!(2)));
+    let renewed = words("renew-own");
+    assert_eq!(
+        (&renewed["renewed_at"], &renewed["taken_at"], &renewed["ttl_s"]),
+        (&json!("2026-01-10T09:00:00.000+00:00"), &json!("2026-01-10T08:55:00.000+00:00"), &json!(60.0))
+    );
+}
+
+/// A write transaction on the state database of `state`, held by another process until it ends: a holder
+/// stopped halfway through a mutation.
+fn hold(state: &Path) -> Running {
+    let args = ["--dir".to_owned(), state.display().to_string(), "hold-tx".to_owned()];
+    let mut running = harness::start(harness::launch(Path::new(STORE_PROBE), &args, state)).expect("the holder starts");
+    assert_eq!(running.read_line().expect("a line").trim(), "\"ready\"", "the transaction is held");
+    running
+}
+
+/// The real binary on `case`, with the variables of `extra`, while another process holds the state
+/// database's write transaction; and how long the run took, from its launch.
+fn held(label: &str, case: &Case, extra: impl FnOnce(&Path) -> Vec<(String, OsString)>) -> (CliRun, Duration) {
+    let (mut holder, mut started) = (None, None);
+    let run = run_case_on_dossier(label, case, |state| {
+        holder = Some(hold(state));
+        started = Some(Instant::now());
+        extra(state)
+    });
+    let took = started.expect("the run started").elapsed();
+    let ended = holder.expect("the holder started").finish().expect("the holder ends");
+    assert!(ended.success(), "the holder ended with {ended:?}");
+    (run, took)
+}
+
+/// What the prototype answers to a mutation of the lock that `case` records refused as busy, when the
+/// transaction stays held beyond the wait (`_esito_slot`): busy and contended, with the lock as a read
+/// without the write lock finds it, the one the case recorded.
+fn contended(case: &Case) -> Value {
+    let Recorded::Json(mut python) = case.recorded() else { panic!("{} is recorded in JSON", case.name) };
+    python["motivo"] = json!("lock in contesa, riprova");
+    python_in_the_product_s_words(case, &python).expect("the table covers it")
+}
+
+/// What the prototype's `lock status` answers when the transaction stays held beyond the wait (`stato_lock`):
+/// the check fails closed, busy and unreadable.
+fn contended_status() -> Value {
+    translate_python("lock status", &json!({"progetto": "alpha", "occupato": true, "stato": "illeggibile"})).expect("the table covers it")
+}
+
+/// #442/V5: a transaction held beyond the wait makes `lock acquire` refuse with 3, busy and contended, after
+/// waiting it out, and writes nothing.
+#[test]
+fn a_transaction_held_beyond_the_wait_refuses_a_mutation() {
+    let case = Case::named("acquire-busy");
+    let (run, took) = held("native-held-acquire", &case, |_| Vec::new());
+    assert_eq!(run.exit, Some(3), "{}", run.stderr);
+    assert!(took >= Duration::from_millis(2900), "the busy wait was not waited out: {took:?}");
+    let rust: Value = serde_json::from_slice(&run.stdout).expect("JSON");
+    assert_eq!(json_diff(&rust, &contended(&case)), Vec::<String>::new());
+    assert_eq!(rust["reason"], "lock contended, try again");
+    assert_eq!(json_diff(&state_rows(&run.state), &case.state_after().expect("state.json")), Vec::<String>::new(), "nothing written");
+}
+
+/// #442/V5: under the same hold `lock status` answers busy and unreadable, with exit 0.
+#[test]
+fn a_transaction_held_beyond_the_wait_makes_the_status_busy_and_unreadable() {
+    let (run, took) = held("native-held-status", &Case::named("status-free"), |_| Vec::new());
+    assert_eq!(run.exit, Some(0), "{}", run.stderr);
+    assert!(took >= Duration::from_millis(2900), "the busy wait was not waited out: {took:?}");
+    let rust: Value = serde_json::from_slice(&run.stdout).expect("JSON");
+    assert_eq!(json_diff(&rust, &contended_status()), Vec::<String>::new());
+}
+
+/// #442/V5 on the prototype: under the same hold, the real prototype through the binary, at the fixtures'
+/// instant, answers what the two tests above expect of it. Local only:
+///
+///     REGIA_HOME=<dossier> cargo test -p regia-conformance --test state -- --ignored
+#[test]
+#[ignore = "needs the prototype's dossier in REGIA_HOME"]
+fn the_prototype_under_a_held_transaction_answers_as_the_product() {
+    let dossier = PathBuf::from(std::env::var_os(prototype_env_var("HOME")).expect("REGIA_HOME names the dossier"));
+    let prototype = |state: &Path| vec![(prototype_env_var("HOME"), prototype_at_fixture_now(state, &dossier).into_os_string())];
+    let reason_in_words = |mut value: Value| {
+        if let Some(Value::String(reason)) = value.get("reason") {
+            value["reason"] = json!(state_reason_in_the_product_s_words(reason));
+        }
+        value
+    };
+    let case = Case::named("acquire-busy");
+    let (run, took) = held("live-held-acquire", &case, prototype);
+    assert_eq!(run.exit, Some(3), "{}", run.stderr);
+    assert!(took >= Duration::from_millis(2900), "the busy wait was not waited out: {took:?}");
+    let python = reason_in_words(serde_json::from_slice(&run.stdout).expect("JSON through the facade"));
+    assert_eq!(json_diff(&python, &contended(&case)), Vec::<String>::new());
+    assert_eq!(json_diff(&state_rows(&run.state), &case.state_after().expect("state.json")), Vec::<String>::new(), "nothing written");
+    let (run, _) = held("live-held-status", &Case::named("status-free"), prototype);
+    assert_eq!(run.exit, Some(0), "{}", run.stderr);
+    let python: Value = serde_json::from_slice(&run.stdout).expect("JSON through the facade");
+    assert_eq!(json_diff(&python, &contended_status()), Vec::<String>::new());
+}
+
+/// The lock's writes record a line each in the sessions' log, with the prototype's words for the command and
+/// the project as given, before they run and also when they refuse; `lock status`, a read, records nothing,
+/// and neither does a ttl the prototype's parser refuses (`ATTIVITA_REGISTRATA`, `_registra_attivita`).
+#[test]
+fn the_lock_s_writes_record_a_line_each() {
+    let dir = prepare_state_dir("native-lock-activity");
+    let responses = Case::named("status-free").responses_path();
+    let commands: [(&[&str], i32); 6] = [
+        (&["lock", "acquire", "alpha", "--holder", "x", "--ttl", "60"], 0),
+        (&["lock", "acquire", "alpha", "--holder", "y", "--ttl", "60"], 3),
+        (&["lock", "acquire", "alpha", "--holder", "y", "--ttl", "soon"], 1),
+        (&["lock", "status", "alpha"], 0),
+        (&["lock", "renew", "alpha", "--holder", "x", "--ttl", "60"], 0),
+        (&["lock", "release", "alpha", "--holder", "x"], 0),
+    ];
+    for (args, exit) in commands {
+        let argv: Vec<String> = args.iter().map(|arg| (*arg).to_owned()).collect();
+        let (launch, _) = fixture_for_rust(harness::launch(&regia_binary(), &argv, &dir), &responses, &dir);
+        let output = launch.env("CLAUDE_CODE_SESSION_ID", "claude-1").run().expect("run regia");
+        assert_eq!(output.status.code(), Some(exit), "{args:?}: {}", String::from_utf8_lossy(&output.stderr));
+    }
+    let mut summary: Vec<Value> = fs::read_dir(dir.join("dichiarazioni"))
+        .expect("the sessions' log")
+        .flat_map(|entry| fs::read_to_string(entry.expect("a log file").path()).expect("a log file").lines().map(str::to_owned).collect::<Vec<_>>())
+        .map(|line| {
+            let event: Value = serde_json::from_str(&line).expect("a JSON line");
+            json!([event["comando"], event["progetto"], event.get("task").cloned().unwrap_or(Value::Null), event["sessione"]])
+        })
+        .collect();
+    summary.sort_by_key(Value::to_string);
+    let line = |command: &str| json!([command, "alpha", null, "claude-1"]);
+    assert_eq!(summary, [line("lock prendi"), line("lock prendi"), line("lock rilascia"), line("lock rinnova")]);
 }
