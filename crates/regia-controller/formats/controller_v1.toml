@@ -1,0 +1,195 @@
+# Format v1 of the controller's tick (F140-F147 of the dossier's inventory): the words of the prototype's
+# `tools/controller.py` in the line of `controller.log`, in `controller-stato.json`, in the cursor of a
+# postponement and in the steps registry. The Python brief, the precheck and the moviola read them, so they
+# are data, not identifiers, and stay out of the Rust sources. Both controllers write the same words while
+# they coexist on one state folder.
+
+version = 1
+
+# A step counts as alive for at most this long; a step without a pid for this long after its launch.
+step_limit_s = 3600.0
+grace_without_pid_s = 300.0
+
+# The project the controller's own rows belong to: its lock, its registry, its global postponement.
+reserved_project = "controller"
+
+# The line of a tick, in `controller.log`, one JSON object per tick.
+[record]
+v = "v"
+t = "t"
+round = "giro"
+wakeup = "risveglio"
+precheck = "precheck"
+decision = "decisione"
+projects = "progetti"
+launched = "lanciati"
+budget = "budget"
+wake = "sveglia"
+finished = "passi_finiti"
+alive = "passi_vivi"
+postpone_errors = "rinvio_errore"
+
+# What the tick keeps of the precheck's run: its exit, the outcome and reason of its line, its `t`, and the
+# error of a run that gave no line.
+[record.precheck_keys]
+exit = "exit"
+outcome = "outcome"
+reason = "motivo"
+t = "t"
+error = "errore"
+
+# The decision of a tick.
+[decisions]
+launch = "lancio"
+no_launch = "nessun-lancio"
+precheck_broken = "attesa-precheck-guasto"
+idle = "attesa-idle"
+error = "attesa-errore"
+unexpected_exit = "attesa-exit-inatteso"
+incoherent = "attesa-incoerente"
+truncated = "attesa-payload-troncato"
+
+# A candidate of the tick, and what the tick did with it.
+[row]
+project = "progetto"
+outcome = "esito"
+reason = "motivo"
+action = "azione"
+error = "errore"
+
+[actions]
+launched = "lanciato"
+skipped_alive = "saltato-passo-vivo"
+skipped_suspended = "saltato-sospesa"
+postponed = "rinviato-limite-giro"
+launch_error = "errore-lancio"
+
+# A launch, as the prototype's receipt names it. `adapter` takes the words below: a `Dry` surface is the
+# prototype's fake launcher, which starts nothing either.
+[launched]
+adapter = "adapter"
+agent = "agente"
+model = "modello"
+effort = "effort"
+session = "sessione"
+transcript = "transcript"
+pid = "pid"
+log = "log"
+started = "avviato"
+project = "progetto"
+
+[adapters]
+fake = "finto"
+cli = "cli"
+orca = "orca"
+
+# A step no longer alive, and why.
+[finished]
+project = "progetto"
+why = "perche"
+
+[finished.notes]
+not_launched = "non lanciato"
+limit = "tetto"
+grace = "senza pid: in finestra di grazia"
+grace_over = "senza pid: grazia finita"
+alive = "vivo"
+ended = "terminato"
+
+# The budget as the tick saw it in the precheck's payload, and the count of the ticks in a row it was unknown.
+[budget]
+unknown = "sconosciuto"
+rounds = "giri"
+since = "da"
+alarm = "allarme"
+reason = "motivo"
+pct = "claude_5h_pct"
+stale = "stale"
+open = "aperta"
+alarm_rounds = 4
+
+# The token wake-up of the tick (#190): when, and how it went.
+[wake]
+t = "t"
+ok = "ok"
+exit = "exit"
+duration = "durata_s"
+cost = "costo_usd"
+error = "errore"
+fake = "finta"
+expiry_before = "token_scadenza_prima"
+expiry_after = "token_scadenza_dopo"
+renewed = "token_rinnovato"
+
+# The postponement of a project the tick did not launch (#133): a cursor with a name, which the precheck reads
+# so that the project's series of a stall does not grow (§6.3 of the design note).
+[postpone]
+cursor = "rinvio"
+v = "v"
+t = "t"
+id = "id"
+reason = "motivo"
+round = "giro"
+
+# `controller-stato.json`, the controller's state in one file.
+[status]
+v = "v"
+pid = "pid"
+holder = "proprietario"
+started = "avviato"
+interval = "intervallo_s"
+last_round = "ultimo_giro"
+round = "giro"
+precheck = "precheck"
+decision = "decisione"
+budget = "budget"
+unknown_budget = "budget_sconosciuto"
+alive = "passi_vivi"
+suspended = "sospese"
+to_resume = "da_riprendere"
+to_open = "da_aprire"
+operations = "operazioni"
+wake = "sveglia"
+
+# The steps registry: the cursor `passi` of the reserved project, `{"v": 1, "passi": {key: record}}`.
+[registry]
+cursor = "passi"
+v = "v"
+steps = "passi"
+keep_finished_s = 604800.0
+
+[registry.record]
+project = "progetto"
+folder = "cartella"
+origin = "origine"
+adapter = "adapter"
+agent = "agente"
+model = "modello"
+effort = "effort"
+session = "sessione"
+resume = "sessione_resume"
+orca_session = "sessione_orca"
+transcript = "transcript"
+pid = "pid"
+log = "log"
+marker = "marcatore"
+started_t = "avviato_t"
+started = "avviato"
+state = "stato"
+updated_t = "aggiornato_t"
+resumes = "riprese"
+
+[registry.states]
+launched = "lanciato"
+finished = "finito"
+suspended = "sospesa"
+resuming = "in-ripresa"
+to_resume = "da-riprendere"
+
+[registry.origins]
+controller = "controller"
+
+# What the prompts of a step name of the dossier: the files the stall's step reads and writes after.
+[dossier]
+state_file = ".regia/stato.md"
+memo_model = "contratti.md"

@@ -3031,8 +3031,10 @@ name = "regia-controller"
 version = "0.0.1"
 dependencies = [
  "chrono",
+ "libc",
  "regia-agents",
  "regia-core",
+ "regia-exec",
  "regia-github",
  "regia-identity",
  "regia-store",
@@ -3040,6 +3042,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "toml 1.1.8+spec-1.1.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
