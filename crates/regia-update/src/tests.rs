@@ -91,14 +91,18 @@ fn a_tag_names_a_version_or_nothing() {
 
 // The key of this build -----------------------------------------------------------------------------------
 
-/// Until the owner generates the key the configuration's key is empty and updates are off; once it is
-/// written, it must decode, or no update could ever verify.
+/// The configuration's key is the owner's, minisign key id `FCEDEC6B597154BB` (#495): it must decode, or no
+/// update could ever verify, and a different id means the key changed, which strands every installed copy.
 #[test]
-fn the_build_key_is_off_or_a_minisign_key() {
-    match pubkey() {
-        None => {}
-        Some(key) => assert!(key_decodes(key), "plugins.updater.pubkey of tauri.conf.json is not a minisign key"),
-    }
+fn the_build_key_is_the_owners_minisign_key() {
+    let key = pubkey().expect("plugins.updater.pubkey of tauri.conf.json is empty: updates are off");
+    assert!(key_decodes(key), "plugins.updater.pubkey of tauri.conf.json is not a minisign key");
+    let text = String::from_utf8(STANDARD.decode(key).unwrap()).unwrap();
+    let line = text.lines().nth(1).expect("a minisign key has two lines");
+    let bytes = STANDARD.decode(line.trim()).unwrap();
+    assert_eq!(&bytes[..2], b"Ed");
+    let id: String = bytes[2..10].iter().rev().map(|byte| format!("{byte:02X}")).collect();
+    assert_eq!(id, "FCEDEC6B597154BB", "the update key changed: installed copies would refuse every update");
     assert!(key_decodes(&TestKey::new().public()));
     for bad in ["", "not base64!", &STANDARD.encode("untrusted comment: x\nnot a key")] {
         assert!(!key_decodes(bad), "{bad:?} decoded as a key");
