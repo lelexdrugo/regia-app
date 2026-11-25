@@ -4,8 +4,9 @@
 // from moment to moment), the playhead (dragged on the stage or on the tape, moved by a selection, as the UX
 // prototype does) and the colours, read again from the tokens when the direction on <html> changes: a new theme is
 // a redraw, not a reload. The canvas carries what the proofs wait on: `data-frames`, the frames drawn, `data-dir`,
-// the direction of the last one, `data-camera`, its camera, `data-view`, the stage above the tape, and `data-groups`,
-// at the zoom of groups (#489) the groups in view and the moments they hold, empty at the zoom of detail.
+// the direction of the last one, `data-camera`, its camera, `data-view`, the stage above the tape, `data-groups`,
+// at the zoom of groups (#489) the groups in view and the moments they hold, empty at the zoom of detail, and
+// `data-world`, whether the last frame's world came from tiles or was drawn directly.
 //
 // The level of detail (#489): under lod.ts's zoom of groups each lane's milestones are drawn in groups, which the
 // pointer finds as it finds a node, a click on one opening it at the zoom of detail; the world is blitted from tiles
@@ -57,6 +58,15 @@ const sameCamera = (a: Camera, b: Camera): boolean => Math.abs(a.cx - b.cx) < 1e
 type StripDrag = { kind: "new" | "from" | "to" | "move"; x: number; a: number; b: number; moved: boolean };
 
 const ZOOM_STEP = 1.25;
+
+/**
+ * The engines that draw the world part by part and from tiles, and a group of one from a sprite (#489): Chromium's,
+ * where the bench measured them pay (WebView2 on Skia Ganesh: x10 dense from 38 % of frames late in pan to none).
+ * WebKit's measured the other way on the CI's macOS runner, a frame that drew parts or tiles costing several times one
+ * drawn in one pass (the dossier's report of #489), so there the world is drawn in one pass, as the bench of #488
+ * measured it, and only the groups are new.
+ */
+const PARTS = typeof navigator !== "undefined" && /Chrome\/\d/.test(navigator.userAgent);
 
 export class Stage {
   readonly model: Model;
@@ -363,7 +373,7 @@ export class Stage {
     frame.hover = groups ? -1 : this.hover;
     frame.hoverGroup = groups ? this.hoverGroup : -1;
     pickLabels(frame.scene, camera, this.view, (k) => this.labelWidth(k), this.labels, frame.fade, (k) => this.rank(k), reservedPlaces(frame, this.ctx));
-    drawFrame(this.ctx, frame, this.tiles);
+    drawFrame(this.ctx, frame, PARTS ? this.tiles : null);
     const strip = this.stripFrame;
     if (strip && this.stripCtx) {
       const range = this.viewRange();
@@ -387,6 +397,7 @@ export class Stage {
       this.canvas.dataset["dir"] = this.palette.direction;
       this.canvas.dataset["camera"] = `${cx.toFixed(1)} ${cy.toFixed(1)} ${z.toFixed(3)}`;
       this.canvas.dataset["view"] = `${this.view.w} ${this.view.h}`;
+      this.canvas.dataset["world"] = this.tiles.blitted ? "tiles" : "direct";
       const range = this.viewRange();
       const last = this.lastView;
       if (range && (!last || last.from !== range.from || last.to !== range.to || last.whole !== range.whole)) {
@@ -639,6 +650,7 @@ export class Stage {
       tapeLayers: null,
       nameWidths: null,
       sprites: null,
+      parts: PARTS,
     };
     this.applyEmphasis();
     if (this.stripFrame && this.stripFrame.dpr !== dpr) {

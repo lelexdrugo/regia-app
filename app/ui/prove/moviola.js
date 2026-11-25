@@ -570,13 +570,9 @@ function unblocked(s, scene, labels, cam, view, width, rank, reserved) {
     const w = width(i);
     const sx = nx + 12 + w > view.w - 4 ? nx - 12 - w : nx + 12;
     const plate = [sx - 3, sy - 8, sx + w + 3, sy + 8];
-    // The picker tests whole 8x16 cells: a plate that shares a cell with another is blocked too.
-    const grown = [Math.floor(plate[0] / 8) * 8, Math.floor(plate[1] / 16) * 16, (Math.floor(plate[2] / 8) + 1) * 8, (Math.floor(plate[3] / 16) + 1) * 16];
-    let blocked = reserved.some((place) => overlap(grown, place));
+    let blocked = reserved.some((place) => overlap(plate, place));
     for (let k = 0; k < labels.n && !blocked; k++) {
-      const p = plateOf(labels, k);
-      const cells = [Math.floor(p[0] / 8) * 8, Math.floor(p[1] / 16) * 16, (Math.floor(p[2] / 8) + 1) * 8, (Math.floor(p[3] / 16) + 1) * 16];
-      if (overlap(grown, cells) && rank(labels.id[k]) >= rank(i)) blocked = true;
+      if (overlap(plate, plateOf(labels, k)) && rank(labels.id[k]) >= rank(i)) blocked = true;
     }
     if (!blocked) out.push(i);
   }

@@ -224,7 +224,7 @@ export type Reserved = readonly (readonly [number, number, number, number])[];
  * The labels to draw this frame (#489): the turning points in view, the highest rank first (`rank`, `labelRank` by
  * default) and from left to right within a rank. A label goes to its node's right, or to its left where it would
  * leave the stage, and is skipped when its plate would cover one already placed or a reserved place. The plates are
- * tested where they are drawn, on a grid of 8×16 px cells, every cell a plate touches: the spike tested one row and
+ * tested where they are drawn, rectangle against rectangle: the spike tested one row of a grid of 8×16 px cells and
  * the place on the right, so two labels could overlap (the dossier's docs/app/moviola/risultati.md, §8). `width`
  * gives a label's width in pixels; a node filtered out by `fade` has none.
  */
@@ -240,19 +240,10 @@ export function pickLabels(
 ): Labels {
   out.n = 0;
   if (cam.z < LABEL_ZOOM) return out;
-  const cols = Math.ceil(view.w / 8);
-  const rows = Math.ceil(view.h / 16);
-  const occupied = new Uint8Array(cols * rows);
-  const cells = (x0: number, y0: number, x1: number, y1: number): [number, number, number, number] => [
-    Math.max(0, Math.floor(x0 / 8)),
-    Math.min(cols - 1, Math.floor(x1 / 8)),
-    Math.max(0, Math.floor(y0 / 16)),
-    Math.min(rows - 1, Math.floor(y1 / 16)),
-  ];
-  for (const [x0, y0, x1, y1] of reserved) {
-    const [c0, c1, r0, r1] = cells(x0, y0, x1, y1);
-    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) occupied[r * cols + c] = 1;
-  }
+  // The places taken, as [x0, y0, x1, y1]: the reserved ones, then each plate placed.
+  const taken: (readonly [number, number, number, number])[] = [...reserved];
+  const free = (x0: number, y0: number, x1: number, y1: number): boolean =>
+    taken.every(([a0, b0, a1, b1]) => x1 <= a0 || a1 <= x0 || y1 <= b0 || b1 <= y0);
   const halfW = view.w / 2 / cam.z + 40;
   const halfH = view.h / 2 / cam.z + 20;
   const lo = lowerBound(scene.x, cam.cx - halfW);
@@ -275,18 +266,9 @@ export function pickLabels(
     const w = width(i);
     const right = nx + LABEL_GAP;
     const sx = right + w > view.w - 4 ? nx - LABEL_GAP - w : right;
-    const [c0, c1, r0, r1] = cells(sx - PLATE.x, sy - PLATE.y, sx + w + PLATE.x, sy + PLATE.y);
-    let free = true;
-    for (let r = r0; r <= r1 && free; r++) {
-      for (let c = c0; c <= c1; c++) {
-        if (occupied[r * cols + c]) {
-          free = false;
-          break;
-        }
-      }
-    }
-    if (!free) continue;
-    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) occupied[r * cols + c] = 1;
+    const plate = [sx - PLATE.x, sy - PLATE.y, sx + w + PLATE.x, sy + PLATE.y] as const;
+    if (!free(...plate)) continue;
+    taken.push(plate);
     out.id[out.n] = i;
     out.sx[out.n] = sx;
     out.sy[out.n] = sy;
