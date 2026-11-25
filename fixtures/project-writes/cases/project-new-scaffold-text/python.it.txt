@@ -1,0 +1,4 @@
+progetto epsilon: obiettivo #10
+  creato {dossier}\.regia\decisioni.md
+  creato {dossier}\.regia\LEGGIMI.md
+  creato {dossier}\.regia\mappa.md

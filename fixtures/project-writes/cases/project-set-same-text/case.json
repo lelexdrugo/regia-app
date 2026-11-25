@@ -1,0 +1,24 @@
+{
+  "_note": "Synthetic. The levers alpha has already: nothing written, no comment; as text.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "alpha",
+    "--wip",
+    "3",
+    "--priority",
+    "2"
+  ],
+  "python": [
+    "progetto",
+    "set",
+    "--progetto",
+    "alpha",
+    "--wip",
+    "3",
+    "--priorita",
+    "2"
+  ]
+}

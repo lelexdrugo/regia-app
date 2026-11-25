@@ -1,0 +1,1 @@
+progetto alpha (#1): repo=example/alpha-dossier prodotti=— wip=3 priorita=2

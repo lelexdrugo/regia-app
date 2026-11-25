@@ -1,0 +1,11 @@
+{
+  "_note": "Synthetic. `setup` with `--json`: the same five labels, and the same line of text, which has no JSON.",
+  "args": [
+    "setup",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "setup"
+  ]
+}

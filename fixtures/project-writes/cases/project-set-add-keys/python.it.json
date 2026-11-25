@@ -1,0 +1,12 @@
+{
+  "commento": 9502,
+  "obiettivo": 2,
+  "priorita": 1,
+  "prodotti": [
+    "example/beta-app"
+  ],
+  "progetto": "beta",
+  "repo": "example/beta-dossier",
+  "scritto": true,
+  "wip": 4
+}

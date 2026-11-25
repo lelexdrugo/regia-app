@@ -1,0 +1,26 @@
+[
+  {
+    "argv": [
+      "issue",
+      "edit",
+      "5",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "<!-- regia:progetto\nid: iota\nwip: 2\nwip: 5\npriorita: 1\n-->\n"
+  },
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "5",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "Leve: priorita 3 → 1\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=fixture-session -->"
+  }
+]

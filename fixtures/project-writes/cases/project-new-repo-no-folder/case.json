@@ -1,0 +1,33 @@
+{
+  "_note": "Synthetic. A repo without a folder for it: refused after the read of the issues, before any write.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "eta",
+    "--title",
+    "t",
+    "--objective",
+    "O.",
+    "--definition-of-done",
+    "D.",
+    "--repo",
+    "eta-dossier"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "new",
+    "--id",
+    "eta",
+    "--titolo",
+    "t",
+    "--obiettivo",
+    "O.",
+    "--fatto",
+    "D.",
+    "--repo",
+    "eta-dossier"
+  ]
+}

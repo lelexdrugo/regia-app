@@ -7,7 +7,8 @@
 - `_oggi`, the one point `regia.py` reads today's date from, answers the instant's date;
 - the monotonic clock of `runtime.py` stands still, so a lock or a lease written now expires exactly `ttl` seconds
   after the instant, and a remaining time reads the same on every run;
-- the commits the prototype makes carry the instant as their dates.
+- the commits the prototype makes carry the instant as their dates;
+- `time.strftime` with no time, which dates the scaffold of a new project (`{{DATA}}`), formats the instant, in UTC.
 
 Nothing in the prototype changes and nothing is written next to it.
 
@@ -17,6 +18,8 @@ import datetime as _datetime
 import importlib.util
 import os
 import sys
+import time as _time
+import types
 
 sys.dont_write_bytecode = True  # no __pycache__ in the prototype's tools/
 
@@ -62,6 +65,17 @@ if spec is None or spec.loader is None:
 prototype = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(prototype)
 setattr(prototype, "_oggi", lambda: INSTANT.date())
+
+
+def _strftime(form, moment=None):
+    """`time.strftime` at the instant, in UTC, when it is given no time; as it is otherwise."""
+    return _time.strftime(form, INSTANT.astimezone(_UTC).timetuple() if moment is None else moment)
+
+
+# The prototype's own `time`, with `strftime` at the instant: `sleep` and the rest stay the real ones.
+_TIME = {name: getattr(_time, name) for name in dir(_time) if not name.startswith("__")}
+_TIME["strftime"] = _strftime
+setattr(prototype, "time", types.SimpleNamespace(**_TIME))
 
 # `_runtime()` loads `runtime.py` afresh at every call: each copy gets the clock that stands still.
 _load_runtime = prototype._runtime

@@ -1,0 +1,62 @@
+{
+  "_note": "Synthetic. A project with no folder and no products: no scaffold, an empty folder in the registry and the word for no products. The Project's field «Progetto» is the prototype's last step, and here it fails: the fixture has no answer for its option, so the prototype warns on stderr, as the product does for the field it does not write (#454).",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "zeta",
+    "--title",
+    "no folder",
+    "--objective",
+    "O.",
+    "--definition-of-done",
+    "D.",
+    "--products",
+    "none",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "new",
+    "--id",
+    "zeta",
+    "--titolo",
+    "no folder",
+    "--obiettivo",
+    "O.",
+    "--fatto",
+    "D.",
+    "--prodotti",
+    "nessuno"
+  ],
+  "gh": {
+    "cli": {
+      "issue create": "https://tracker.invalid/issues/10\n"
+    },
+    "issues": {
+      "10": {
+        "id": "ISSUE_10",
+        "state": "OPEN",
+        "subIssues": {
+          "totalCount": 0
+        }
+      }
+    },
+    "nodes": {
+      "ISSUE_10": {
+        "projectItems": {
+          "nodes": [
+            {
+              "id": "ITEM_10",
+              "project": {
+                "id": "PROJECT_FIXTURE"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+[
+  {
+    "argv": [
+      "label",
+      "create",
+      "progetto:zeta",
+      "--repo",
+      "example/tracker",
+      "--color",
+      "5319e7",
+      "--description",
+      "no folder",
+      "--force"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "issue",
+      "create",
+      "--repo",
+      "example/tracker",
+      "--title",
+      "[zeta] no folder",
+      "--body-file",
+      "-",
+      "--label",
+      "progetto:zeta",
+      "--label",
+      "tipo:obiettivo"
+    ],
+    "stdin": "<!-- regia:progetto\nid: zeta\ncartella: \nplaybook: generico\npriorita: 3\nwip: 2\ndefault_automatici: no\nprodotti: nessuno\n-->\n\n## Obiettivo\n\nO.\n\n## Definizione di fatto\n\nD.\n\n## Mandato\n\nDa definire alla prima proposta.\n"
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_10",
+      "o": "opt-c3",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "arguments": "input:{fieldId:\"FIELD_PROJECT_FIXTURE\",singleSelectOptions:[{id:\"opt-project-alpha\",name:\"alpha\",color:BLUE,description:\"\"},{id:\"opt-project-beta\",name:\"beta\",color:GREEN,description:\"\"},{name:\"zeta\",color:ORANGE,description:\"\"}]}",
+    "mutation": "updateProjectV2Field",
+    "variables": {}
+  }
+]

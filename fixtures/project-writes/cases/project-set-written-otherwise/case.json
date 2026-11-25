@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. A wip of 3 on theta, whose registry writes it `  03`: the same value, so nothing is written.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "theta",
+    "--wip",
+    "3",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "set",
+    "--progetto",
+    "theta",
+    "--wip",
+    "3"
+  ]
+}

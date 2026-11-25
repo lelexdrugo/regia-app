@@ -1,0 +1,49 @@
+[
+  {
+    "argv": [
+      "label",
+      "create",
+      "progetto:epsilon",
+      "--repo",
+      "example/tracker",
+      "--color",
+      "0e8a16",
+      "--description",
+      "Un progetto con gli accenti, àèìòù, e un titolo lungo più di cento caratteri più di cento caratteri ",
+      "--force"
+    ],
+    "stdin": null
+  },
+  {
+    "argv": [
+      "issue",
+      "create",
+      "--repo",
+      "example/tracker",
+      "--title",
+      "[epsilon] Un progetto con gli accenti, àèìòù, e un titolo lungo più di cento caratteri più di cento caratteri più di cento caratteri più di cento caratteri ",
+      "--body-file",
+      "-",
+      "--label",
+      "progetto:epsilon",
+      "--label",
+      "tipo:obiettivo"
+    ],
+    "stdin": "<!-- regia:progetto\nid: epsilon\ncartella: {dossier}\nplaybook: paper\npriorita: 1\nwip: 10\ndefault_automatici: 24\nprodotti: example/eps-app, example/eps-lib\n-->\n\n## Obiettivo\n\nAnother objective.\n\n## Definizione di fatto\n\nDone.\n\n## Mandato\n\nA mandate.\n"
+  },
+  {
+    "arguments": "input:{projectId:$p,itemId:$i,fieldId:$f,value:{singleSelectOptionId:$o}}",
+    "mutation": "updateProjectV2ItemFieldValue",
+    "variables": {
+      "f": "FIELD_FIXTURE",
+      "i": "ITEM_10",
+      "o": "opt-c3",
+      "p": "PROJECT_FIXTURE"
+    }
+  },
+  {
+    "arguments": "input:{fieldId:\"FIELD_PROJECT_FIXTURE\",singleSelectOptions:[{id:\"opt-project-alpha\",name:\"alpha\",color:BLUE,description:\"\"},{id:\"opt-project-beta\",name:\"beta\",color:GREEN,description:\"\"},{name:\"epsilon\",color:ORANGE,description:\"\"}]}",
+    "mutation": "updateProjectV2Field",
+    "variables": {}
+  }
+]

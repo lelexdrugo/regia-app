@@ -1,0 +1,29 @@
+{
+  "_note": "Synthetic. A project whose id has an Objective already: the issues are read, and nothing is written.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "alpha",
+    "--title",
+    "again",
+    "--objective",
+    "O.",
+    "--definition-of-done",
+    "D."
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "new",
+    "--id",
+    "alpha",
+    "--titolo",
+    "again",
+    "--obiettivo",
+    "O.",
+    "--fatto",
+    "D."
+  ]
+}

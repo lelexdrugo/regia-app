@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. Nothing to set: refused before any call.",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "alpha"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "set",
+    "--progetto",
+    "alpha"
+  ]
+}

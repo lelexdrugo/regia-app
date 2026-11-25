@@ -1,0 +1,1 @@
+avviso: campo «Progetto» non aggiornato per il progetto zeta (gh api graphql -f…: fake gh: no fixture answer for mutation updateProjectV2Field); l'etichetta resta la fonte, `regia progetto riempi` lo riallinea

@@ -1,0 +1,1 @@
+errore: la cartella ha già un origin (https://github.com/example/another.git), diverso da https://github.com/example/eta-dossier.git: niente repo creato

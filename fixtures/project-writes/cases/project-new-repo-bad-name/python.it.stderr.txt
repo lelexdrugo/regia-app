@@ -1,0 +1,1 @@
+errore: repo 'a/b/c': atteso <nome> o <owner>/<nome>

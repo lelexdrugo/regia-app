@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. No products for alpha, its id given with blanks and in capitals: the word for none replaces the list in place; as text, with no lever changed.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    " ALPHA ",
+    "--products",
+    "none"
+  ],
+  "python": [
+    "progetto",
+    "set",
+    "--progetto",
+    " ALPHA ",
+    "--prodotti",
+    "nessuno"
+  ]
+}

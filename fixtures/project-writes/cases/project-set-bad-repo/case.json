@@ -1,0 +1,24 @@
+{
+  "_note": "Synthetic. A repo with a blank and a wip of 0: the repo is checked first, before any call.",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "alpha",
+    "--repo",
+    "x y",
+    "--wip",
+    "0"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "set",
+    "--progetto",
+    "alpha",
+    "--repo",
+    "x y",
+    "--wip",
+    "0"
+  ]
+}

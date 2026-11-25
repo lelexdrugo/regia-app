@@ -1,0 +1,30 @@
+{
+  "_note": "Synthetic. The wip of gamma, whose Objective was edited on the site with CRLF line ends: its line is rewritten, the others keep their CRLF, and the comment records the before and the after.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "gamma",
+    "--wip",
+    "4",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "set",
+    "--progetto",
+    "gamma",
+    "--wip",
+    "4"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "gh": {
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/3#issuecomment-9501\n"
+    }
+  }
+}

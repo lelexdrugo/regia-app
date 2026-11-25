@@ -1,0 +1,75 @@
+{
+  "_note": "Synthetic. A project with a dossier's folder that is no repo: the label, the objective #10 with its registry on stdin, its status, and the scaffold in `.regia/`, byte for byte: the four models filled, dated on the fixtures' day, and the empty folders. The Project's field «Progetto» is the prototype's last step, and here it fails: the fixture has no answer for its option, so the prototype warns on stderr, as the product does for the field it does not write (#454).",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "delta",
+    "--title",
+    "a scaffolded project",
+    "--folder",
+    "{dossier}",
+    "--objective",
+    "An objective.",
+    "--definition-of-done",
+    "Done when it is done.",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "new",
+    "--id",
+    "delta",
+    "--titolo",
+    "a scaffolded project",
+    "--cartella",
+    "{dossier}",
+    "--obiettivo",
+    "An objective.",
+    "--fatto",
+    "Done when it is done."
+  ],
+  "dossier": {
+    "git": false,
+    "files": {
+      "notes.md": "Notes from before the project.\n"
+    }
+  },
+  "gh": {
+    "cli": {
+      "issue create": "https://tracker.invalid/issues/10\n"
+    },
+    "issues": {
+      "10": {
+        "id": "ISSUE_10",
+        "state": "OPEN",
+        "subIssues": {
+          "totalCount": 0
+        }
+      }
+    },
+    "nodes": {
+      "ISSUE_10": {
+        "projectItems": {
+          "nodes": [
+            {
+              "id": "ITEM_10",
+              "project": {
+                "id": "PROJECT_FIXTURE"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "written": [
+    ".regia/decisioni.md",
+    ".regia/LEGGIMI.md",
+    ".regia/mappa.md",
+    ".regia/stato.md",
+    ".regia/moviola/.gitignore"
+  ]
+}

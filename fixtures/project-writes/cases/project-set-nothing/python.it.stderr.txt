@@ -1,0 +1,1 @@
+errore: niente da impostare: passa --repo, --prodotti, --wip e/o --priorita

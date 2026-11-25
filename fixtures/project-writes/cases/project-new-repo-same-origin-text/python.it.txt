@@ -1,0 +1,6 @@
+progetto eta: obiettivo #10
+  creato {dossier}\.regia\decisioni.md
+  creato {dossier}\.regia\LEGGIMI.md
+  creato {dossier}\.regia\mappa.md
+  creato {dossier}\.regia\stato.md
+  repo privato example/eta-dossier, cartella già un repo, origin https://github.com/example/eta-dossier.git

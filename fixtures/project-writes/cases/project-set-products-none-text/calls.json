@@ -1,0 +1,14 @@
+[
+  {
+    "argv": [
+      "issue",
+      "edit",
+      "1",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "<!-- regia:progetto\nid: alpha\ncartella: dossiers/alpha\nplaybook: generico\npriorita: 2\nwip: 3\ndefault_automatici: no\nrepo: example/alpha-dossier\nprodotti: nessuno\ncolore_a_mano: blu\n-->\n\n## Obiettivo\n\nA synthetic objective, with `wip: 9` outside the block.\n"
+  }
+]

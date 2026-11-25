@@ -1,0 +1,32 @@
+{
+  "_note": "Synthetic. A wip of 11 (#156/V2): refused before any call, as `project set` refuses it.",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "eta",
+    "--title",
+    "t",
+    "--objective",
+    "O.",
+    "--definition-of-done",
+    "D.",
+    "--wip",
+    "11"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "new",
+    "--id",
+    "eta",
+    "--titolo",
+    "t",
+    "--obiettivo",
+    "O.",
+    "--fatto",
+    "D.",
+    "--wip",
+    "11"
+  ]
+}

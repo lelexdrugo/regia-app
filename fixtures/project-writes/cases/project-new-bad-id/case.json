@@ -1,0 +1,28 @@
+{
+  "_note": "Synthetic. An id with a blank inside: refused before any call.",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "Not Valid",
+    "--title",
+    "t",
+    "--objective",
+    "O.",
+    "--definition-of-done",
+    "D."
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "new",
+    "--id",
+    "Not Valid",
+    "--titolo",
+    "t",
+    "--obiettivo",
+    "O.",
+    "--fatto",
+    "D."
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "_note": "Synthetic. Every key on beta's bare registry: each added after the last line, in the order repo, products, wip, priority; the comment says the levers had no value before.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "beta",
+    "--repo",
+    "beta-dossier",
+    "--products",
+    "example/beta-app",
+    "--wip",
+    "4",
+    "--priority",
+    "1",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "set",
+    "--progetto",
+    "beta",
+    "--repo",
+    "beta-dossier",
+    "--prodotti",
+    "example/beta-app",
+    "--wip",
+    "4",
+    "--priorita",
+    "1"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "gh": {
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/2#issuecomment-9502\n"
+    }
+  }
+}

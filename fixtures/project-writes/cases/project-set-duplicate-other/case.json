@@ -1,0 +1,30 @@
+{
+  "_note": "Synthetic. The priority of iota, which is there once: written, while the wip twice is not looked at.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "iota",
+    "--priority",
+    "1",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "set",
+    "--progetto",
+    "iota",
+    "--priorita",
+    "1"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "gh": {
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/5#issuecomment-9503\n"
+    }
+  }
+}

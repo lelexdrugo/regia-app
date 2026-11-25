@@ -1,0 +1,26 @@
+[
+  {
+    "argv": [
+      "issue",
+      "edit",
+      "3",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "<!-- regia:progetto\r\nid: gamma\r\ncartella: dossiers/gamma\r\npriorita: 2\r\nwip: 4\n-->\r\n\r\n## Obiettivo\r\n\r\nEdited on the site, which writes CRLF.\r\n"
+  },
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "3",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "Leve: wip 3 → 4\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=fixture-session -->"
+  }
+]

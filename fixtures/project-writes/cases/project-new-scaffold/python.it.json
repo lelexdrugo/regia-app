@@ -1,0 +1,10 @@
+{
+  "obiettivo": 10,
+  "progetto": "delta",
+  "scaffold": [
+    "{dossier}\\.regia\\decisioni.md",
+    "{dossier}\\.regia\\LEGGIMI.md",
+    "{dossier}\\.regia\\mappa.md",
+    "{dossier}\\.regia\\stato.md"
+  ]
+}

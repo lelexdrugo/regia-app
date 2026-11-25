@@ -1,0 +1,112 @@
+{
+  "_note": "Synthetic. The Objectives the writes of #452 meet: alpha with every key `progetto new` writes and one written by hand, beta with a bare registry, gamma edited on the site with CRLF line ends, theta whose wip is written otherwise, iota with its wip twice, kappa with no registry, and lambda twice, its first Objective closed. #9 is a task of alpha. The Project's field «Progetto» has the options alpha and beta.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "project_field_options": [
+    "alpha",
+    "beta"
+  ],
+  "issues": [
+    {
+      "number": 1,
+      "title": "[alpha] objective of alpha",
+      "status": "In corso",
+      "labels": [
+        "progetto:alpha",
+        "tipo:obiettivo"
+      ],
+      "sub": [
+        [
+          9,
+          "OPEN"
+        ]
+      ],
+      "project_field": "alpha",
+      "body": "<!-- regia:progetto\nid: alpha\ncartella: dossiers/alpha\nplaybook: generico\npriorita: 2\nwip: 3\ndefault_automatici: no\nrepo: example/alpha-dossier\nprodotti: example/alpha-app, example/alpha-lib\ncolore_a_mano: blu\n-->\n\n## Obiettivo\n\nA synthetic objective, with `wip: 9` outside the block.\n"
+    },
+    {
+      "number": 2,
+      "title": "[beta] objective of beta",
+      "status": "Approvato",
+      "labels": [
+        "progetto:beta",
+        "tipo:obiettivo"
+      ],
+      "project_field": "beta",
+      "body": "<!-- regia:progetto\nid: beta\n-->\n"
+    },
+    {
+      "number": 3,
+      "title": "[gamma] objective of gamma",
+      "status": "Approvato",
+      "labels": [
+        "progetto:gamma",
+        "tipo:obiettivo"
+      ],
+      "body": "<!-- regia:progetto\r\nid: gamma\r\ncartella: dossiers/gamma\r\npriorita: 2\r\nwip: 3\r\n-->\r\n\r\n## Obiettivo\r\n\r\nEdited on the site, which writes CRLF.\r\n"
+    },
+    {
+      "number": 4,
+      "title": "[theta] objective of theta",
+      "status": "Approvato",
+      "labels": [
+        "progetto:theta",
+        "tipo:obiettivo"
+      ],
+      "body": "<!-- regia:progetto\nid: theta\nwip:   03\npriorita: 1\n-->\n"
+    },
+    {
+      "number": 5,
+      "title": "[iota] objective of iota",
+      "status": "Approvato",
+      "labels": [
+        "progetto:iota",
+        "tipo:obiettivo"
+      ],
+      "body": "<!-- regia:progetto\nid: iota\nwip: 2\nwip: 5\npriorita: 3\n-->\n"
+    },
+    {
+      "number": 6,
+      "title": "[kappa] objective of kappa",
+      "status": "Approvato",
+      "labels": [
+        "progetto:kappa",
+        "tipo:obiettivo"
+      ],
+      "body": "## Obiettivo\n\nNo registry here.\n"
+    },
+    {
+      "number": 7,
+      "title": "[lambda] the first objective, closed",
+      "status": "Fatto",
+      "labels": [
+        "progetto:lambda",
+        "tipo:obiettivo"
+      ],
+      "state_reason": "COMPLETED",
+      "closed_at": "2026-01-05T09:00:00Z",
+      "body": "<!-- regia:progetto\nid: lambda\nwip: 1\n-->\n"
+    },
+    {
+      "number": 8,
+      "title": "[lambda] the second objective",
+      "status": "Approvato",
+      "labels": [
+        "progetto:lambda",
+        "tipo:obiettivo"
+      ],
+      "body": "<!-- regia:progetto\nid: lambda\nwip: 2\n-->\n"
+    },
+    {
+      "number": 9,
+      "title": "a task of alpha",
+      "status": "Approvato",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1,
+      "project_field": "alpha"
+    }
+  ]
+}

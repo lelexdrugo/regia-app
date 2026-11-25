@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. A wip on kappa, whose Objective has no registry: refused after the read, nothing written.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "kappa",
+    "--wip",
+    "4"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "set",
+    "--progetto",
+    "kappa",
+    "--wip",
+    "4"
+  ]
+}

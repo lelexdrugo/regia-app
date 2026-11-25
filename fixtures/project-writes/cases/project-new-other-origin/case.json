@@ -1,0 +1,43 @@
+{
+  "_note": "Synthetic. A folder that is a repo whose origin is another repo: refused after the read of the issues, before the repo is created, and the folder is left as it was.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "eta",
+    "--title",
+    "t",
+    "--folder",
+    "{dossier}",
+    "--objective",
+    "O.",
+    "--definition-of-done",
+    "D.",
+    "--repo",
+    "eta-dossier"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "new",
+    "--id",
+    "eta",
+    "--titolo",
+    "t",
+    "--cartella",
+    "{dossier}",
+    "--obiettivo",
+    "O.",
+    "--fatto",
+    "D.",
+    "--repo",
+    "eta-dossier"
+  ],
+  "dossier": {
+    "files": {
+      "notes.md": "n\n"
+    },
+    "origin_url": "https://github.com/example/another.git"
+  }
+}

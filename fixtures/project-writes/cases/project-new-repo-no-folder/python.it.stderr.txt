@@ -1,0 +1,1 @@
+errore: --repo richiede --cartella: il dossier è la cartella del progetto

@@ -1,0 +1,43 @@
+{
+  "_note": "Synthetic. A repo that is not a repo's name: refused after the read of the issues, before any write.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "new",
+    "--id",
+    "eta",
+    "--title",
+    "t",
+    "--folder",
+    "{dossier}",
+    "--objective",
+    "O.",
+    "--definition-of-done",
+    "D.",
+    "--repo",
+    "a/b/c"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "new",
+    "--id",
+    "eta",
+    "--titolo",
+    "t",
+    "--cartella",
+    "{dossier}",
+    "--obiettivo",
+    "O.",
+    "--fatto",
+    "D.",
+    "--repo",
+    "a/b/c"
+  ],
+  "dossier": {
+    "git": false,
+    "files": {
+      "notes.md": "n\n"
+    }
+  }
+}

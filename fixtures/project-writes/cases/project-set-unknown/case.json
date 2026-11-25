@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. A project with no Objective: refused after the read of the issues.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "zzz",
+    "--repo",
+    "x/y"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "set",
+    "--progetto",
+    "zzz",
+    "--repo",
+    "x/y"
+  ]
+}

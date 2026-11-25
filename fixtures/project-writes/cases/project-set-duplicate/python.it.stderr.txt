@@ -1,0 +1,1 @@
+errore: il registro di 'iota' ha la chiave 'wip' più di una volta: correggila a mano nell'Obiettivo

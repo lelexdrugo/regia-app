@@ -1,0 +1,26 @@
+[
+  {
+    "argv": [
+      "issue",
+      "edit",
+      "8",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "<!-- regia:progetto\nid: lambda\nwip: 3\n-->\n"
+  },
+  {
+    "argv": [
+      "issue",
+      "comment",
+      "8",
+      "--repo",
+      "example/tracker",
+      "--body-file",
+      "-"
+    ],
+    "stdin": "Leve: wip 2 → 3\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=fixture-session -->"
+  }
+]

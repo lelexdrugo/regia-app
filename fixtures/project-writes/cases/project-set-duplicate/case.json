@@ -1,0 +1,21 @@
+{
+  "_note": "Synthetic. A wip on iota, whose registry has it twice: refused after the read, nothing written.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "iota",
+    "--wip",
+    "3"
+  ],
+  "exit": 1,
+  "python": [
+    "progetto",
+    "set",
+    "--progetto",
+    "iota",
+    "--wip",
+    "3"
+  ]
+}

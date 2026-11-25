@@ -1,0 +1,30 @@
+{
+  "_note": "Synthetic. The wip of lambda, which has two Objectives, the first one closed: only the open issues are read, as the prototype reads them for its writes, so the open Objective is written.",
+  "scenario": "tracker",
+  "args": [
+    "project",
+    "set",
+    "--project",
+    "lambda",
+    "--wip",
+    "3",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "progetto",
+    "set",
+    "--progetto",
+    "lambda",
+    "--wip",
+    "3"
+  ],
+  "env": {
+    "CLAUDE_CODE_SESSION_ID": "fixture-session"
+  },
+  "gh": {
+    "cli": {
+      "issue comment": "https://tracker.invalid/issues/7#issuecomment-9504\n"
+    }
+  }
+}
