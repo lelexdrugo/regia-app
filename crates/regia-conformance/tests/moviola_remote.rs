@@ -200,6 +200,7 @@ fn the_registry_keeps_the_objectives_with_a_folder_here_and_the_first_of_an_id()
         status_field_id: "PVTSSF_1".to_owned(),
         status_options: options,
         project_url: None,
+        project_field_configured: false,
     };
     let binding = TrackerBinding::new(&config).expect("a binding");
     let projects = registry_projects(&issues, &binding, "acme").expect("a registry");

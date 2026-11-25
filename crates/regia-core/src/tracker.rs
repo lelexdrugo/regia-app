@@ -37,6 +37,27 @@ pub struct RawComment {
     pub body: String,
 }
 
+/// An issue, open or closed, updated in the window of the checks, with its last comments (`commenti_recenti`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RecentComments {
+    pub number: u64,
+    pub state: IssueState,
+    pub closed_at: Option<String>,
+    pub labels: Vec<String>,
+    /// The last twenty, oldest first.
+    pub comments: Vec<RawComment>,
+}
+
+/// A closed issue as the checks read it (`issue_chiuse`): its state, why it closed, when, and its URL.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClosedIssue {
+    pub number: u64,
+    pub state: IssueState,
+    pub state_reason: Option<String>,
+    pub closed_at: Option<String>,
+    pub url: Option<String>,
+}
+
 /// The changes of an issue's Status in the configured Project, as its timeline records them.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StatusHistory {
@@ -86,6 +107,18 @@ pub trait Tracker {
     fn status_histories(&self, label: &str, since: DateTime<Utc>) -> Result<Vec<StatusHistory>, TrackerError> {
         let since = since.to_rfc3339_opts(SecondsFormat::Secs, true);
         Err(TrackerError::Unavailable(format!("this tracker does not read the changes of Status of `{label}` since {since}")))
+    }
+
+    /// The issues, open and closed, updated since `since`, newest first, each with its last twenty comments: what
+    /// the checks read of the comments, in one paged read for every project (`commenti_recenti`).
+    fn recent_comments(&self, since: DateTime<Utc>) -> Result<Vec<RecentComments>, TrackerError> {
+        let since = since.to_rfc3339_opts(SecondsFormat::Secs, true);
+        Err(TrackerError::Unavailable(format!("this tracker does not read the comments since {since}")))
+    }
+
+    /// Every closed issue, in the light read of the checks (`issue_chiuse`): no children, blockers or fields.
+    fn closed_issues(&self) -> Result<Vec<ClosedIssue>, TrackerError> {
+        Err(TrackerError::Unavailable("this tracker does not read the closed issues".to_owned()))
     }
 
     /// The names of an issue's labels: a comment reads its issue's project from them.

@@ -1,0 +1,3990 @@
+{
+ "oracle_commit": "00136724a8759548d30307b8b8a4accb74681974",
+ "python": "3.12.10",
+ "results": [
+  {
+   "file": "vectors.json",
+   "index": 0,
+   "fn": "approvati_mai_partiti",
+   "result": [
+    {
+     "controllo": "approvato-mai-partito",
+     "progetto": "p",
+     "dove": "#1",
+     "testo": "titolo 1",
+     "perche": "Approvato da almeno 52 giorni (soglia 21), nessun report",
+     "url": "https://example.invalid/1"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 1,
+   "fn": "approvati_mai_partiti",
+   "result": [
+    {
+     "controllo": "approvato-mai-partito",
+     "progetto": "p",
+     "dove": "#2",
+     "testo": "titolo 2",
+     "perche": "Approvato da almeno 52 giorni (soglia 21), nessun report",
+     "url": "https://example.invalid/2"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 2,
+   "fn": "approvati_mai_partiti",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 3,
+   "fn": "approvati_mai_partiti",
+   "result": [
+    {
+     "controllo": "approvato-mai-partito",
+     "progetto": "p",
+     "dove": "#2",
+     "testo": "titolo 2",
+     "perche": "Approvato da almeno 52 giorni (soglia 21), nessun report",
+     "url": "https://example.invalid/2"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 4,
+   "fn": "commenti_dopo_chiusura",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 5,
+   "fn": "commenti_dopo_chiusura",
+   "result": [
+    {
+     "controllo": "commento-dopo-chiusura",
+     "progetto": "p",
+     "dove": "#10 commento 1",
+     "testo": "ciao",
+     "perche": "commento senza marcatore dopo la chiusura di #10 (2026-10-10)",
+     "url": "https://example.invalid/c1"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 6,
+   "fn": "commenti_dopo_chiusura",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 7,
+   "fn": "commenti_dopo_chiusura",
+   "result": [
+    {
+     "controllo": "commento-dopo-chiusura",
+     "progetto": "p",
+     "dove": "#10 commento 3",
+     "testo": "Una domanda del titolare, senza firma.",
+     "perche": "commento senza marcatore dopo la chiusura di #10 (2026-10-22)",
+     "url": "https://example.invalid/c3"
+    },
+    {
+     "controllo": "commento-dopo-chiusura",
+     "progetto": "p",
+     "dove": "#10 commento 4",
+     "testo": "inoltro — regia · chat",
+     "perche": "commento di chat dopo la chiusura di #10 (2026-10-22)",
+     "url": "https://example.invalid/c4"
+    },
+    {
+     "controllo": "commento-dopo-chiusura",
+     "progetto": "p",
+     "dove": "#10 commento 6",
+     "testo": "Del titolare — il titolare, via chat",
+     "perche": "commento di titolare dopo la chiusura di #10 (2026-10-22)",
+     "url": "https://example.invalid/c6"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 8,
+   "fn": "commenti_dopo_chiusura",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 9,
+   "fn": "controlla_progetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 10,
+   "fn": "controlla_progetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 11,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 101 caratteri",
+     "perche": "supera il tetto di 100: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 12,
+   "fn": "controlla_progetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 13,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 30001 caratteri",
+     "perche": "supera il tetto di 30000: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 14,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ x",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    },
+    {
+     "controllo": "domande-aperte-senza-issue",
+     "progetto": "p",
+     "dove": "docs/open-questions.md:1",
+     "testo": "q",
+     "perche": "casella aperta senza un #N: senza, è solo una domanda"
+    },
+    {
+     "controllo": "inbox-ferma",
+     "progetto": "p",
+     "dove": "#1",
+     "testo": "titolo 1",
+     "perche": "in Inbox da 52 giorni (soglia 7)",
+     "url": "https://example.invalid/1"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 15,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ x",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    },
+    {
+     "controllo": "domande-aperte-senza-issue",
+     "progetto": "p",
+     "dove": "docs/open-questions.md:1",
+     "testo": "q",
+     "perche": "casella aperta senza un #N: senza, è solo una domanda"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 16,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "da fare: x",
+     "perche": "impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 17,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ x C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 18,
+   "fn": "controlla_progetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 19,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ chiedere la key",
+     "perche": "riga tolta dalla versione nuova; domanda al titolare senza un #N in Proposta o Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 20,
+   "fn": "controlla_progetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 21,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ #5 in Decisione: scegliere A o B.",
+     "perche": "riga tolta dalla versione nuova; domanda al titolare: cita solo issue chiuse"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 22,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ x",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    },
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 30001 caratteri",
+     "perche": "supera il tetto di 30000: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 23,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 30001 caratteri",
+     "perche": "supera il tetto di 30000: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 24,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 30001 caratteri",
+     "perche": "supera il tetto di 30000: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 25,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ x C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 26,
+   "fn": "controlla_progetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 27,
+   "fn": "controlla_progetto",
+   "result": [
+    {
+     "controllo": "progetto-campo",
+     "progetto": "p",
+     "dove": "#2",
+     "testo": "t2",
+     "perche": "l'etichetta è progetto:p, il campo «Progetto» dice q (`regia progetto riempi` lo riallinea)",
+     "url": "u2"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 28,
+   "fn": "decisione_senza_flag",
+   "result": [
+    {
+     "controllo": "decisione-senza-flag",
+     "progetto": "p",
+     "dove": "#141 commento 1",
+     "testo": "Decisione: confermo i valori — regia · chat",
+     "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+     "url": "https://example.invalid/c1"
+    },
+    {
+     "controllo": "decisione-senza-flag",
+     "progetto": "p",
+     "dove": "#141 commento 3",
+     "testo": "Decisione: scelgo A — regia · chat",
+     "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+     "url": "https://example.invalid/c3"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 29,
+   "fn": "decisione_senza_flag",
+   "result": [
+    {
+     "controllo": "decisione-senza-flag",
+     "progetto": "p",
+     "dove": "#141 commento 1",
+     "testo": "Decisione: confermo — regia · chat",
+     "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+     "url": "https://example.invalid/c1"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 30,
+   "fn": "decisione_senza_flag",
+   "result": [
+    {
+     "controllo": "decisione-senza-flag",
+     "progetto": "p",
+     "dove": "#9 commento 1",
+     "testo": "Decisione: sì — regia · chat",
+     "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+     "url": "https://example.invalid/c1"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 31,
+   "fn": "decisioni_oltre_tetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 32,
+   "fn": "decisioni_oltre_tetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 33,
+   "fn": "decisioni_oltre_tetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 34,
+   "fn": "decisioni_oltre_tetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 35,
+   "fn": "decisioni_oltre_tetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 30450 caratteri",
+     "perche": "supera il tetto di 30000: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 36,
+   "fn": "decisioni_oltre_tetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 37,
+   "fn": "decisioni_oltre_tetto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 38,
+   "fn": "decisioni_oltre_tetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 30001 caratteri",
+     "perche": "supera il tetto di 30000: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 39,
+   "fn": "decisioni_oltre_tetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "regia",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 30001 caratteri",
+     "perche": "supera il tetto di 30000: `regia compatta-decisioni --progetto regia` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 40,
+   "fn": "domande_aperte",
+   "result": [
+    {
+     "controllo": "domande-aperte-senza-issue",
+     "progetto": "p",
+     "dove": "docs/open-questions.md:2",
+     "testo": "Senza numero. Da capire.",
+     "perche": "casella aperta senza un #N: senza, è solo una domanda"
+    },
+    {
+     "controllo": "domande-aperte-senza-issue",
+     "progetto": "p",
+     "dove": "docs/open-questions.md:7",
+     "testo": "annidata senza numero",
+     "perche": "casella aperta senza un #N: senza, è solo una domanda"
+    },
+    {
+     "controllo": "domande-aperte-senza-issue",
+     "progetto": "p",
+     "dove": "docs/open-questions.md:8",
+     "testo": "con asterisco",
+     "perche": "casella aperta senza un #N: senza, è solo una domanda"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 41,
+   "fn": "domande_aperte",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 42,
+   "fn": "in_corso_fermi",
+   "result": [
+    {
+     "controllo": "in-corso-fermo",
+     "progetto": "p",
+     "dove": "#1",
+     "testo": "titolo 1",
+     "perche": "In corso senza lease viva, issue ferma da 13 giorni (soglia 3)",
+     "url": "https://example.invalid/1"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 43,
+   "fn": "inbox_ferme",
+   "result": [
+    {
+     "controllo": "inbox-ferma",
+     "progetto": "p",
+     "dove": "#2",
+     "testo": "titolo 2",
+     "perche": "in Inbox da 52 giorni (soglia 14)",
+     "url": "https://example.invalid/2"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 44,
+   "fn": "inbox_ferme",
+   "result": [
+    {
+     "controllo": "inbox-ferma",
+     "progetto": "p",
+     "dove": "#3",
+     "testo": "titolo 3",
+     "perche": "in Inbox da 52 giorni (soglia 14)",
+     "url": "https://example.invalid/3"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 45,
+   "fn": "inbox_ferme",
+   "result": [
+    {
+     "controllo": "inbox-ferma",
+     "progetto": "p",
+     "dove": "#1",
+     "testo": "titolo 1",
+     "perche": "in Inbox da 22 giorni (soglia 14)",
+     "url": "https://example.invalid/1"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 46,
+   "fn": "inbox_ferme",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 47,
+   "fn": "leggi_report_resta",
+   "result": {
+    "task": 284,
+    "data": "2026-10-26",
+    "nome": "2026-10-26-266-x.md",
+    "ha_campo": true,
+    "voci": [],
+    "difetti": [],
+    "sul_campo": null,
+    "nessuno": true
+   }
+  },
+  {
+   "file": "vectors.json",
+   "index": 48,
+   "fn": "leggi_report_resta",
+   "result": {
+    "task": 284,
+    "data": "2026-10-26",
+    "nome": "2026-10-26-266-x.md",
+    "ha_campo": true,
+    "voci": [
+     {
+      "$tuple": [
+       1,
+       "aggiornare la guida",
+       "?",
+       5
+      ]
+     }
+    ],
+    "difetti": [],
+    "sul_campo": null,
+    "nessuno": false
+   }
+  },
+  {
+   "file": "vectors.json",
+   "index": 49,
+   "fn": "leggi_riconciliazioni",
+   "result": {
+    "$tuple": [
+     {
+      "$dict": [
+       [
+        {
+         "$tuple": [
+          20,
+          1
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-10-27",
+           0,
+           1,
+           "#6",
+           "d.md"
+          ]
+         }
+        ]
+       ],
+       [
+        {
+         "$tuple": [
+          20,
+          2
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-10-27",
+           0,
+           1,
+           "#7 (Inbox, padre #1)",
+           "d.md"
+          ]
+         }
+        ]
+       ],
+       [
+        {
+         "$tuple": [
+          20,
+          3
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-10-27",
+           0,
+           1,
+           "fatto: 8774a57",
+           "d.md"
+          ]
+         }
+        ]
+       ],
+       [
+        {
+         "$tuple": [
+          21,
+          1
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-10-27",
+           0,
+           2,
+           "#6",
+           "d.md"
+          ]
+         }
+        ]
+       ]
+      ]
+     },
+     {
+      "$set": []
+     }
+    ]
+   }
+  },
+  {
+   "file": "vectors.json",
+   "index": 50,
+   "fn": "leggi_riconciliazioni",
+   "result": {
+    "$tuple": [
+     {
+      "$dict": [
+       [
+        {
+         "$tuple": [
+          20,
+          1
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-10-27",
+           0,
+           1,
+           "#6",
+           "d.md"
+          ]
+         }
+        ]
+       ]
+      ]
+     },
+     {
+      "$set": [
+       21
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "file": "vectors.json",
+   "index": 51,
+   "fn": "leggi_riconciliazioni",
+   "result": {
+    "$tuple": [
+     {
+      "$dict": [
+       [
+        {
+         "$tuple": [
+          20,
+          1
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-10-27",
+           0,
+           1,
+           "#6",
+           "d.md"
+          ]
+         }
+        ]
+       ]
+      ]
+     },
+     {
+      "$set": []
+     }
+    ]
+   }
+  },
+  {
+   "file": "vectors.json",
+   "index": 52,
+   "fn": "leggi_riconciliazioni",
+   "result": {
+    "$tuple": [
+     {
+      "$dict": [
+       [
+        {
+         "$tuple": [
+          20,
+          1
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-10-27",
+           0,
+           1,
+           "scartato: a, b",
+           "d.md"
+          ]
+         }
+        ]
+       ]
+      ]
+     },
+     {
+      "$set": []
+     }
+    ]
+   }
+  },
+  {
+   "file": "vectors.json",
+   "index": 53,
+   "fn": "numeri_con_report",
+   "result": {
+    "$set": [
+     181,
+     2
+    ]
+   }
+  },
+  {
+   "file": "vectors.json",
+   "index": 54,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:2",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:3",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:6",
+     "testo": "/home/user/a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 55,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 56,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:2",
+     "testo": "recinzione aperta",
+     "perche": "recinzione mai chiusa: il resto del file non è controllato"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 57,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:5",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 58,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:2",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:3",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 59,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 60,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 61,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 62,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:3",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 63,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 64,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 65,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni-2026-q4.md:2",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 66,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 67,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 68,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 69,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "recinzione aperta",
+     "perche": "recinzione mai chiusa: il resto del file non è controllato"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 70,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 71,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 72,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 73,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-10-283-x.md:1",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 74,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:3",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 75,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 76,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 77,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:4",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 78,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:6",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 79,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 80,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 81,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/home/user/a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 82,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:3",
+     "testo": "recinzione aperta",
+     "perche": "recinzione mai chiusa: il resto del file non è controllato"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 83,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 84,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:5",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:6",
+     "testo": "C:/a/b.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 85,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 86,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/tmp/a.log",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 87,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:/Users/x/a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:2",
+     "testo": "/home/user/b.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 88,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:\\Windows\\System32",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/opt/homebrew/bin",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 89,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 90,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:4",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 91,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 92,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 93,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 94,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:\\Users\\someone\\AppData\\Local\\Temp\\x",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 95,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 96,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 97,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 98,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 99,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 100,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 101,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/tmp/mia",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 102,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 103,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/Users/user/a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 104,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/c/Users/x/a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 105,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/home/user/a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 106,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/mnt/c/Users/x",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 107,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/mnt/x",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 108,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/opt/x",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 109,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/tmp/x",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 110,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "/var/x",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 111,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:/Users/x/a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 112,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:\\Users\\x\\a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 113,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "\\\\server\\share\\a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 114,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-283-x.md:1",
+     "testo": "C:\\Users\\someone\\work\\dossier\\docs\\x.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 115,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 116,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 117,
+   "fn": "percorso_assoluto",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 118,
+   "fn": "progetto_campo",
+   "result": [
+    {
+     "controllo": "progetto-campo",
+     "progetto": "p",
+     "dove": "#2",
+     "testo": "t2",
+     "perche": "l'etichetta è progetto:p, il campo «Progetto» dice q (`regia progetto riempi` lo riallinea)",
+     "url": "u2"
+    },
+    {
+     "controllo": "progetto-campo",
+     "progetto": "p",
+     "dove": "#3",
+     "testo": "t3",
+     "perche": "l'etichetta è progetto:p, il campo «Progetto» è vuoto (`regia progetto riempi` lo riallinea)",
+     "url": "u3"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 119,
+   "fn": "progetto_campo",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 120,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-26-10-lavoro.md:6",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «?», nessuno l'ha riconciliato",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 121,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 122,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «?», nessuno l'ha riconciliato",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 123,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 124,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino #5, chiuso il 28/10 prima della riga del 30/10: nessuno lo rilegge (se l'ha chiusa il residuo, «fatto: #5»)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 125,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino #5, chiuso il 28/10 prima della riga del 30/10: nessuno lo rilegge (se l'ha chiusa il residuo, «fatto: #5»)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 126,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 127,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 128,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino #5, chiuso come Scartato",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 129,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 130,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 131,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 132,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 133,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-31-10-lavoro-r2.md:6",
+     "testo": "V1: manca y",
+     "perche": "#10 chiuso Fatto il 30/10, V1 ha due testi diversi in due report",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 134,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 135,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 136,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 137,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 138,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-26-10-lavoro.md:1",
+     "testo": "il report done di #10 non ha il campo resta",
+     "perche": "#10 chiuso Fatto il 30/10, report `done` senza «resta» e nessuna riga di riconciliazione",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 139,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:5",
+     "testo": "integrare su main; la prova resta #360.",
+     "perche": "#10 chiuso Fatto il 30/10, «resta» non è una lista né «nessuno»",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 140,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 141,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:5",
+     "testo": "[]",
+     "perche": "#10 chiuso Fatto il 30/10, «resta» non è una lista né «nessuno»",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 142,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 143,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "V1: il Reviewer #1 (#2) chiede una prova",
+     "perche": "#10 chiuso Fatto il 30/10, destino «?», nessuno l'ha riconciliato",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 144,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino #10, cioè il task stesso",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 145,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino #999: l'issue non esiste nel tracker",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 146,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «?», nessuno l'ha riconciliato",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 147,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "- \"V1: manca x → scartato: non serve\"",
+     "perche": "#10 chiuso Fatto il 30/10, riga di «resta» che non ha la forma «V<n>: <testo> → #N» o «→ ?» (scartato: e fatto: li scrive l'orchestratore)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 148,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:5",
+     "testo": "resta:",
+     "perche": "#10 chiuso Fatto il 30/10, «resta» è vuoto: se non resta nulla si scrive «resta: nessuno»",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 149,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 150,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:1",
+     "testo": "il report done di #10 non ha il campo resta",
+     "perche": "#10 chiuso Fatto il 30/10, report `done` senza «resta» e nessuna riga di riconciliazione",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 151,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 152,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 153,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 154,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 155,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 156,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 157,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 158,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 159,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "- \"V1: manca x → scartato: non serve\"",
+     "perche": "#10 chiuso Fatto il 30/10, riga di «resta» che non ha la forma «V<n>: <testo> → #N» o «→ ?» (scartato: e fatto: li scrive l'orchestratore)",
+     "url": "https://example.invalid/10"
+    },
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:7",
+     "testo": "- \"manca y senza numero\"",
+     "perche": "#10 chiuso Fatto il 30/10, riga di «resta» che non ha la forma «V<n>: <testo> → #N» o «→ ?» (scartato: e fatto: li scrive l'orchestratore)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 160,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 161,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:2",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «?», nessuno l'ha riconciliato",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 162,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 163,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «?», nessuno l'ha riconciliato",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 164,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: al prossimo task che tocca la moviola",
+     "perche": "#10 chiuso Fatto il 30/10, destino «al prossimo task che tocca la moviola»: non è #N, scartato: <perché> né fatto: <dove> (sha, #N, percorso o round N)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 165,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «al prossimo task»: non è #N, scartato: <perché> né fatto: <dove> (sha, #N, percorso o round N)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 166,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 167,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 168,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 169,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 170,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «fatto: boh»: non è #N, scartato: <perché> né fatto: <dove> (sha, #N, percorso o round N)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 171,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 172,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «fatto: effaced»: non è #N, scartato: <perché> né fatto: <dove> (sha, #N, percorso o round N)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 173,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 174,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «fatto:»: non è #N, scartato: <perché> né fatto: <dove> (sha, #N, percorso o round N)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 175,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «round 2 di #10»: non è #N, scartato: <perché> né fatto: <dove> (sha, #N, percorso o round N)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 176,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 177,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 178,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «scartato:»: non è #N, scartato: <perché> né fatto: <dove> (sha, #N, percorso o round N)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 179,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 180,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-30-10-lavoro.md:6",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino «?», nessuno l'ha riconciliato",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 181,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 182,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 183,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 184,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 185,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:1",
+     "testo": "V1: manca x",
+     "perche": "#10 chiuso Fatto il 30/10, destino #5, chiuso il 31/10 prima della riga del 03/11: nessuno lo rilegge (se l'ha chiusa il residuo, «fatto: #5»)",
+     "url": "https://example.invalid/10"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 186,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-26-266-x.md:4",
+     "testo": "V1: aggiornare la guida",
+     "perche": "#266 chiuso Fatto il 10/11, destino «?», nessuno l'ha riconciliato",
+     "url": "u"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 187,
+   "fn": "resta_non_riconciliato",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 188,
+   "fn": "resta_non_riconciliato",
+   "result": [
+    {
+     "controllo": "resta-non-riconciliato",
+     "progetto": "p",
+     "dove": ".regia/report/2026-10-26-266-x.md:5",
+     "testo": "V1: aggiornare la guida",
+     "perche": "#266 chiuso Fatto il 10/11, destino «?», nessuno l'ha riconciliato",
+     "url": "u"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 189,
+   "fn": "riferimenti",
+   "result": {
+    "$set": [
+     12,
+     3,
+     45
+    ]
+   }
+  },
+  {
+   "file": "vectors.json",
+   "index": 190,
+   "fn": "segmenti",
+   "result": [
+    "Prima frase #12. Seconda frase senza numero."
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 191,
+   "fn": "segmenti",
+   "result": [
+    "✋ #223 (fase ✋C) in Decisione: ratifica (e quelli di #465)."
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 192,
+   "fn": "segmenti",
+   "result": [
+    "✋ PR workspace #84 da mergiare.",
+    "✋ Rotazione della key."
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 193,
+   "fn": "segmenti",
+   "result": [
+    "Restano da fare: X3 #91 (a, b)",
+    "U1 e U2 (utili)",
+    "#48 piano"
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 194,
+   "fn": "segmenti",
+   "result": [
+    "a",
+    "b"
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 195,
+   "fn": "segmenti",
+   "result": [
+    "vedi es. la prossima"
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 196,
+   "fn": "segmenti",
+   "result": [
+    "✋ a (b)",
+    "✋ c"
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 197,
+   "fn": "segmenti",
+   "result": [
+    "✋ a (b",
+    "✋ c"
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 198,
+   "fn": "segmenti",
+   "result": [
+    "ok"
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 199,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "U1 e U2",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 200,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "U1 e U2 (utili)",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 201,
+   "fn": "stato_righe_tolte",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 202,
+   "fn": "stato_righe_tolte",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 203,
+   "fn": "stato_righe_tolte",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 204,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "TODO la tabella",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 205,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "chiedere la tabella",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 206,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "domanda la tabella",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 207,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "manca la tabella",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 208,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "mancano la tabella",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 209,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "resta la tabella",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 210,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "restano la tabella",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 211,
+   "fn": "stato_righe_tolte",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 212,
+   "fn": "stato_righe_tolte",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 213,
+   "fn": "stato_righe_tolte",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 214,
+   "fn": "stato_righe_tolte",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 215,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "da fare: x #5",
+     "perche": "riga tolta dalla versione nuova; cita solo issue chiuse"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 216,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 217,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "DA FARE: x",
+     "perche": "impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "✋ y",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:3",
+     "testo": "Aspetta TE: z",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 218,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "K0 (28/10), dall'utente mancano: le finestre da operatore 09–14/11 e la fase B di #91.",
+     "perche": "domanda al titolare: l'issue citata è aperta ma non in Proposta né Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 219,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 220,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "U1 e U2 (utili, solo se pronti in K1)",
+     "perche": "impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 221,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 222,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "da fare: la tabella (#5)",
+     "perche": "cita solo issue chiuse"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 223,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 224,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "da fare: p0 p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22…",
+     "perche": "impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 225,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "la tabella",
+     "perche": "impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 226,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 227,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 228,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 229,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ Rotazione della key.",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 230,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 231,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ rotazione della key.",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 232,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 233,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ In Decisione:",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 234,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ Rotazione della key dell'LLM di test.",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 235,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 236,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "vectors.json",
+   "index": 237,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ gate #5",
+     "perche": "domanda al titolare: cita solo issue chiuse"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 238,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ gate #91",
+     "perche": "domanda al titolare: l'issue citata è aperta ma non in Proposta né Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 239,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "✋ la tabella #91 da fare",
+     "perche": "domanda al titolare: l'issue citata è aperta ma non in Proposta né Decisione"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 240,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "da fare: la tabella",
+     "perche": "impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "vectors.json",
+   "index": 241,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "unicode.json",
+   "index": 0,
+   "fn": "segmenti",
+   "result": [
+    "x",
+    "y"
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 1,
+   "fn": "segmenti",
+   "result": [
+    "a",
+    "²",
+    "b"
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 2,
+   "fn": "segmenti",
+   "result": [
+    "✋ uno (due ✋ tre)",
+    "✋ quattro"
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 3,
+   "fn": "segmenti",
+   "result": [
+    "✋ a b",
+    "c"
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 4,
+   "fn": "riferimenti",
+   "result": {
+    "$set": [
+     10,
+     12,
+     13,
+     14,
+     3,
+     7
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 5,
+   "fn": "riferimenti",
+   "result": {
+    "$set": [
+     15,
+     16,
+     17,
+     18
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 6,
+   "fn": "tronca",
+   "result": "a b c d e f g h i j k l m n o p q r s t u v w x y…"
+  },
+  {
+   "file": "unicode.json",
+   "index": 7,
+   "fn": "tronca",
+   "result": "uno due…"
+  },
+  {
+   "file": "unicode.json",
+   "index": 8,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "da faré x",
+     "perche": "impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:3",
+     "testo": "́da fare z",
+     "perche": "impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 9,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "﻿# Titolo da fare",
+     "perche": "impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:4",
+     "testo": "####### da fare",
+     "perche": "impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 10,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "chiesto all'utente: x",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:3",
+     "testo": "DA FARE: İstanbul",
+     "perche": "impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:4",
+     "testo": "Aspetta TE: z",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:5",
+     "testo": "dall'utenté",
+     "perche": "domanda al titolare senza un #N in Proposta o Decisione"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 11,
+   "fn": "stato_senza_issue",
+   "result": [
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "x - da fare",
+     "perche": "impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "da fare",
+     "perche": "impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-senza-issue",
+     "progetto": "p",
+     "dove": ".regia/stato.md:3",
+     "testo": "oka- da fare",
+     "perche": "impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 12,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "unicode.json",
+   "index": 13,
+   "fn": "stato_senza_issue",
+   "result": []
+  },
+  {
+   "file": "unicode.json",
+   "index": 14,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:3",
+     "testo": "manca ²",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:4",
+     "testo": "mancá x",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 15,
+   "fn": "stato_righe_tolte",
+   "result": [
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "restano U1",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "mancano U2",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:4",
+     "testo": "TODO U4",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    },
+    {
+     "controllo": "stato-righe-tolte",
+     "progetto": "p",
+     "dove": ".regia/stato.md:5",
+     "testo": "domandá U5",
+     "perche": "riga tolta dalla versione nuova; impegno senza un #N di un'issue aperta"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 16,
+   "fn": "domande_aperte",
+   "result": [
+    {
+     "controllo": "domande-aperte-senza-issue",
+     "progetto": "p",
+     "dove": "docs/open-questions.md:3",
+     "testo": "r",
+     "perche": "casella aperta senza un #N: senza, è solo una domanda"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 17,
+   "fn": "ruolo_del_commento",
+   "result": "chat"
+  },
+  {
+   "file": "unicode.json",
+   "index": 18,
+   "fn": "ruolo_del_commento",
+   "result": null
+  },
+  {
+   "file": "unicode.json",
+   "index": 19,
+   "fn": "ruolo_del_commento",
+   "result": "worker"
+  },
+  {
+   "file": "unicode.json",
+   "index": 20,
+   "fn": "ruolo_del_commento",
+   "result": "chat"
+  },
+  {
+   "file": "unicode.json",
+   "index": 21,
+   "fn": "ruolo_del_commento",
+   "result": null
+  },
+  {
+   "file": "unicode.json",
+   "index": 22,
+   "fn": "ruolo_del_commento",
+   "result": "orchestratore"
+  },
+  {
+   "file": "unicode.json",
+   "index": 23,
+   "fn": "decisione_senza_flag",
+   "result": [
+    {
+     "controllo": "decisione-senza-flag",
+     "progetto": "p",
+     "dove": "#9 commento 1",
+     "testo": "DECISIONE: x — regia · chat",
+     "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+     "url": "u1"
+    },
+    {
+     "controllo": "decisione-senza-flag",
+     "progetto": "p",
+     "dove": "#9 commento 2",
+     "testo": "Decisione: y — regia · chat",
+     "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+     "url": "u2"
+    },
+    {
+     "controllo": "decisione-senza-flag",
+     "progetto": "p",
+     "dove": "#9 commento None",
+     "testo": "decisione:z",
+     "perche": "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede",
+     "url": null
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 24,
+   "fn": "commenti_dopo_chiusura",
+   "result": [
+    {
+     "controllo": "commento-dopo-chiusura",
+     "progetto": "p",
+     "dove": "#10 commento 3",
+     "testo": "Ciao a",
+     "perche": "commento di titolare dopo la chiusura di #10 (2026-10-22)",
+     "url": "u3"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 25,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "invalido"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 26,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "issue",
+     12
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 27,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "issue",
+     3
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 28,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "fatto"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 29,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "invalido"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 30,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "invalido"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 31,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "fatto"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 32,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "fatto"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 33,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "fatto"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 34,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "invalido"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 35,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "fatto"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 36,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "fatto"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 37,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "fatto"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 38,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "scartato"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 39,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "invalido"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 40,
+   "fn": "classifica_destino",
+   "result": {
+    "$tuple": [
+     "invalido"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 41,
+   "fn": "numeri_con_report",
+   "result": {
+    "$set": [
+     448,
+     450,
+     451
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 42,
+   "fn": "leggi_report_resta",
+   "result": {
+    "task": 448,
+    "data": "٢٠٢٦-١١-٢٥",
+    "nome": "٢٠٢٦-١١-٢٥-٤٤٨-x.md",
+    "ha_campo": true,
+    "voci": [
+     {
+      "$tuple": [
+       3,
+       "rileggere",
+       "#٥",
+       4
+      ]
+     },
+     {
+      "$tuple": [
+       4,
+       "testo",
+       "?",
+       5
+      ]
+     }
+    ],
+    "difetti": [
+     {
+      "$tuple": [
+       6,
+       "- V5: senza virgolette → #6",
+       5,
+       "riga di «resta» che non ha la forma «V<n>: <testo> → #N» o «→ ?» (scartato: e fatto: li scrive l'orchestratore)"
+      ]
+     }
+    ],
+    "sul_campo": null,
+    "nessuno": false
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 43,
+   "fn": "leggi_report_resta",
+   "result": {
+    "task": 1,
+    "data": "2026-11-25",
+    "nome": "2026-11-25-1-x.md",
+    "ha_campo": true,
+    "voci": [],
+    "difetti": [],
+    "sul_campo": null,
+    "nessuno": true
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 44,
+   "fn": "leggi_riconciliazioni",
+   "result": {
+    "$tuple": [
+     {
+      "$dict": [
+       [
+        {
+         "$tuple": [
+          274,
+          1
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-11-12",
+           0,
+           1,
+           "#206",
+           ".regia/decisioni.md"
+          ]
+         }
+        ]
+       ],
+       [
+        {
+         "$tuple": [
+          274,
+          2
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-11-12",
+           0,
+           1,
+           "#275",
+           ".regia/decisioni.md"
+          ]
+         }
+        ]
+       ],
+       [
+        {
+         "$tuple": [
+          5,
+          1
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-11-13",
+           0,
+           2,
+           "fatto: abc1234",
+           ".regia/decisioni.md"
+          ]
+         }
+        ]
+       ],
+       [
+        {
+         "$tuple": [
+          6,
+          1
+         ]
+        },
+        [
+         {
+          "$tuple": [
+           "2026-11-13",
+           0,
+           3,
+           "?",
+           ".regia/decisioni.md"
+          ]
+         }
+        ]
+       ]
+      ]
+     },
+     {
+      "$set": [
+       3
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 45,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "C:\\x\\é.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "C:\\x",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:1",
+     "testo": "C:\\x\\y",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "/tmp/a",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "/home/a",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "/tmp/a.md",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/stato.md:2",
+     "testo": "C:/x/y",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 46,
+   "fn": "percorso_assoluto",
+   "result": [
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-1-x.md:2",
+     "testo": "C:\\w\\x",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/report/2026-11-12-1-x.md:4",
+     "testo": "C:\\a\\b",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:2",
+     "testo": "C:\\a\\b",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    },
+    {
+     "controllo": "percorso-assoluto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md:5",
+     "testo": "C:\\e\\f",
+     "perche": "percorso assoluto: contratti.md, Riferimenti"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 47,
+   "fn": "decisioni_oltre_tetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 3 caratteri",
+     "perche": "supera il tetto di 2: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 48,
+   "fn": "decisioni_oltre_tetto",
+   "result": [
+    {
+     "controllo": "decisioni-oltre-tetto",
+     "progetto": "p",
+     "dove": ".regia/decisioni.md",
+     "testo": ".regia/decisioni.md ha 4 caratteri",
+     "perche": "supera il tetto di 3: `regia compatta-decisioni --progetto p` sposta le voci più vecchie in un archivio"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 49,
+   "fn": "inbox_ferme",
+   "result": [
+    {
+     "controllo": "inbox-ferma",
+     "progetto": "p",
+     "dove": "#1",
+     "testo": "t1",
+     "perche": "in Inbox da 7 giorni (soglia 7)",
+     "url": "u1"
+    },
+    {
+     "controllo": "inbox-ferma",
+     "progetto": "p",
+     "dove": "#4",
+     "testo": "t4",
+     "perche": "in Inbox da 7 giorni (soglia 7)",
+     "url": "u4"
+    }
+   ]
+  },
+  {
+   "file": "unicode.json",
+   "index": 50,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 30,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 3,
+      "decisioni_tetto_caratteri": 30000
+     },
+     null
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 51,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     null
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 52,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-52.yaml riga 2 non valida («sconosciuta: 1»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 53,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-53.yaml riga 1 non valida («inbox_giorni: tanti»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 54,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-54.yaml riga 1 non valida («inbox_giorni: 0»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 55,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-55.yaml riga 1 non valida («inbox_giorni 3»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 56,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-56.yaml riga 2 non valida («inbox_giorni: 4»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 57,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 3,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     null
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 58,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-58.yaml riga 1 non valida («﻿inbox_giorni: 3»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 59,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-59.yaml riga 1 non valida («inbox_giorni:»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 60,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 100
+     },
+     null
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 61,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-61.yaml riga 2 non valida («una riga lunga, oltre quaranta caratteri»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 62,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-62.yaml riga 1 non valida («inbox_giorni: -3»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 63,
+   "fn": "carica_soglie",
+   "result": {
+    "$tuple": [
+     {
+      "inbox_giorni": 7,
+      "approvato_giorni": 21,
+      "in_corso_fermo_giorni": 3,
+      "finestra_commenti_giorni": 14,
+      "max_voci_brief": 10,
+      "decisioni_tetto_caratteri": 30000
+     },
+     "unicode-63.yaml riga 1 non valida («inbox_giorni: 3 4»): valgono i default"
+    ]
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 64,
+   "fn": "data_roma",
+   "result": {
+    "$date": "2026-03-29"
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 65,
+   "fn": "data_roma",
+   "result": {
+    "$date": "2026-03-29"
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 66,
+   "fn": "data_roma",
+   "result": {
+    "$date": "2026-10-25"
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 67,
+   "fn": "data_roma",
+   "result": {
+    "$date": "2026-10-25"
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 68,
+   "fn": "data_roma",
+   "result": {
+    "$date": "2026-10-25"
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 69,
+   "fn": "data_roma",
+   "result": {
+    "$date": "2027-01-01"
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 70,
+   "fn": "data_roma",
+   "result": {
+    "$date": "2027-03-28"
+   }
+  },
+  {
+   "file": "unicode.json",
+   "index": 71,
+   "fn": "data_roma",
+   "result": null
+  },
+  {
+   "file": "unicode.json",
+   "index": 72,
+   "fn": "data_roma",
+   "result": null
+  }
+ ]
+}

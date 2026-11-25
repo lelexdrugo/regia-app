@@ -15,6 +15,10 @@ ready = "maturità:pronto"
 # project label (ADR 0021 of the dossier): the label stays the source, and the field's value is reported as it is.
 [fields]
 project = "Progetto"
+# The keys of `tracker.json` that configure the project field: its id and its options by project. The checks
+# compare the field with the label only when both are there (`campo_progetto_configurato`).
+project_field_id_key = "progetto_field_id"
+project_options_key = "progetto_options"
 
 # The first YAML block of an issue's body is its spec. Its optional due line is `<due_key>: YYYY-MM-DD`, and the
 # template's placeholder, copied as it is, means no date (#244 of the dossier).

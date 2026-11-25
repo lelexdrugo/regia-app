@@ -174,7 +174,13 @@ fn last_line(body: &str) -> &str {
 /// The role of the marker on the last line of `body` that is not blank; `None` without one, or with one
 /// that does not read (`ruolo_firma`).
 pub fn signature_role(body: &str) -> Option<String> {
-    signature().marker.captures(last_line(body)).and_then(|captures| captures.get(1)).map(|role| role.as_str().to_owned())
+    marker_role(last_line(body))
+}
+
+/// The role of the author's marker that `line` is, whole; `None` if it is not one. The one reader of the marker's
+/// pattern (M2): the checks find the line their own way, on `\n` only (`ruolo_del_commento`).
+pub fn marker_role(line: &str) -> Option<String> {
+    signature().marker.captures(line).and_then(|captures| captures.get(1)).map(|role| role.as_str().to_owned())
 }
 
 /// `body` without the signature, its visible line and its marker (`_senza_firma`).

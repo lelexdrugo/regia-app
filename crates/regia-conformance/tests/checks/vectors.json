@@ -1,0 +1,7373 @@
+[
+ {
+  "fn": "approvati_mai_partiti",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1"
+    },
+    {
+     "number": 2,
+     "title": "titolo 2",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/2"
+    },
+    {
+     "number": 3,
+     "title": "titolo 3",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-20T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/3"
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 21,
+   "con_report": {
+    "$set": [
+     2
+    ]
+   }
+  }
+ },
+ {
+  "fn": "approvati_mai_partiti",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1",
+     "bloccato_da": [
+      [
+       9,
+       "OPEN"
+      ]
+     ]
+    },
+    {
+     "number": 2,
+     "title": "titolo 2",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/2",
+     "bloccato_da": [
+      [
+       8,
+       "CLOSED"
+      ]
+     ]
+    },
+    {
+     "number": 3,
+     "title": "titolo 3",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/3",
+     "bloccato_da": [
+      {
+       "state": "OPEN"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 21,
+   "con_report": {
+    "$set": []
+   }
+  }
+ },
+ {
+  "fn": "approvati_mai_partiti",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": true,
+     "campo_progetto": "p",
+     "createdAt": "2026-01-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1"
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 21,
+   "con_report": {
+    "$set": []
+   }
+  }
+ },
+ {
+  "fn": "approvati_mai_partiti",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1",
+     "sub": [
+      [
+       10,
+       "CLOSED"
+      ],
+      [
+       11,
+       "OPEN"
+      ]
+     ]
+    },
+    {
+     "number": 2,
+     "title": "titolo 2",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/2",
+     "sub": []
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 21,
+   "con_report": {
+    "$set": []
+   }
+  }
+ },
+ {
+  "fn": "commenti_dopo_chiusura",
+  "args": {
+   "dati": [
+    {
+     "number": 10,
+     "state": "CLOSED",
+     "closedAt": "2026-09-01T00:00:00Z",
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "ciao",
+       "url": "https://example.invalid/c1"
+      }
+     ]
+    },
+    {
+     "number": 11,
+     "state": "OPEN",
+     "closedAt": null,
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "ciao",
+       "url": "https://example.invalid/c1"
+      }
+     ]
+    },
+    {
+     "number": 12,
+     "state": "CLOSED",
+     "closedAt": "2026-10-22T08:00:00Z",
+     "progetto": "altro",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "ciao",
+       "url": "https://example.invalid/c1"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "commenti_dopo_chiusura",
+  "args": {
+   "dati": [
+    {
+     "number": 10,
+     "state": "CLOSED",
+     "closedAt": "2026-10-10T00:00:00Z",
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "ciao",
+       "url": "https://example.invalid/c1"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "commenti_dopo_chiusura",
+  "args": {
+   "dati": [
+    {
+     "number": 10,
+     "state": "CLOSED",
+     "closedAt": "2026-10-10T00:00:00Z",
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "ciao",
+       "url": "https://example.invalid/c1"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 7
+  }
+ },
+ {
+  "fn": "commenti_dopo_chiusura",
+  "args": {
+   "dati": [
+    {
+     "number": 10,
+     "state": "CLOSED",
+     "closedAt": "2026-10-22T08:00:00Z",
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "report\n\n— regia · worker\n<!-- regia:autore ruolo=worker sessione=s1 -->",
+       "url": "https://example.invalid/c1"
+      },
+      {
+       "id": 2,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "passo\n\n— regia · orchestratore\n<!-- regia:autore ruolo=orchestratore sessione=s1 -->",
+       "url": "https://example.invalid/c2"
+      },
+      {
+       "id": 3,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "Una domanda del titolare, senza firma.",
+       "url": "https://example.invalid/c3"
+      },
+      {
+       "id": 4,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "inoltro\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+       "url": "https://example.invalid/c4"
+      },
+      {
+       "id": 5,
+       "createdAt": "2026-10-22T07:00:00Z",
+       "body": "Prima della chiusura",
+       "url": "https://example.invalid/c5"
+      },
+      {
+       "id": 6,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "Del titolare\n\n— il titolare, via chat\n<!-- regia:autore ruolo=titolare sessione=s -->",
+       "url": "https://example.invalid/c6"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "commenti_dopo_chiusura",
+  "args": {
+   "dati": [
+    {
+     "number": 141,
+     "state": "CLOSED",
+     "closedAt": "2026-10-23T08:55:57Z",
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-22T22:59:48Z",
+       "body": "Decisione: confermo\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+       "url": "https://example.invalid/c1"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": [],
+   "commenti": [],
+   "stato": "",
+   "stato_precedente": null,
+   "domande": "",
+   "con_report": {
+    "$set": []
+   },
+   "lease_vive": {
+    "$set": []
+   },
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 100
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 100
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni-2026-10.md",
+      {
+       "$runs": [
+        [
+         "x",
+         30001
+        ]
+       ]
+      }
+     ]
+    },
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "piccola"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni-2026-10.md",
+      {
+       "$runs": [
+        [
+         "x",
+         30001
+        ]
+       ]
+      }
+     ]
+    },
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      {
+       "$runs": [
+        [
+         "x",
+         30001
+        ]
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1"
+    }
+   ],
+   "commenti": null,
+   "stato": "- ✋ x\n",
+   "stato_precedente": null,
+   "domande": "- [ ] q\n",
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": "- ✋ x\n",
+   "stato_precedente": null,
+   "domande": "- [ ] q\n",
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": "- da fare: x\n",
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": "- ✋ x C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": "niente\n",
+   "stato_precedente": "- ✋ #5 in Decisione: scegliere A o B.\n",
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": "niente\n",
+   "stato_precedente": "- ✋ chiedere la key\n",
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": "niente\n",
+   "stato_precedente": "- ✋ #5 in Decisione: scegliere A o B.\n",
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": true,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": "- ✋ x\n",
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": {
+    "$runs": [
+     [
+      "x",
+      30001
+     ]
+    ]
+   }
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": {
+    "$runs": [
+     [
+      "x",
+      30001
+     ]
+    ]
+   }
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": {
+    "report": [],
+    "decisioni": [
+     {
+      "$tuple": [
+       ".regia/decisioni.md",
+       {
+        "$runs": [
+         [
+          "x",
+          30001
+         ]
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "issues": null,
+   "commenti": null,
+   "stato": "- ✋ x C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": {
+    "report": [],
+    "decisioni": null
+   },
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-11-25T20:23:58.851701+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      2,
+      "Inbox"
+     ]
+    ]
+   },
+   "issues": [
+    {
+     "number": 2,
+     "title": "t2",
+     "progetto": "p",
+     "campo_progetto": "q",
+     "obiettivo": false,
+     "state": "OPEN",
+     "stato": "Inbox",
+     "url": "u2",
+     "createdAt": "2026-11-25T20:23:58.851701+00:00",
+     "updatedAt": "2026-11-25T20:23:58.851701+00:00"
+    }
+   ],
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": false,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "controlla_progetto",
+  "args": {
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-11-25T20:23:58.851701+00:00"
+   },
+   "soglie": {
+    "inbox_giorni": 7,
+    "approvato_giorni": 21,
+    "in_corso_fermo_giorni": 3,
+    "finestra_commenti_giorni": 14,
+    "max_voci_brief": 10,
+    "decisioni_tetto_caratteri": 30000
+   },
+   "aperte": {
+    "$dict": [
+     [
+      2,
+      "Inbox"
+     ]
+    ]
+   },
+   "issues": [
+    {
+     "number": 2,
+     "title": "t2",
+     "progetto": "p",
+     "campo_progetto": "q",
+     "obiettivo": false,
+     "state": "OPEN",
+     "stato": "Inbox",
+     "url": "u2",
+     "createdAt": "2026-11-25T20:23:58.851701+00:00",
+     "updatedAt": "2026-11-25T20:23:58.851701+00:00"
+    }
+   ],
+   "commenti": null,
+   "stato": null,
+   "stato_precedente": null,
+   "domande": null,
+   "con_report": null,
+   "lease_vive": null,
+   "solo_aperte_tolte": false,
+   "campo_progetto": true,
+   "resta": null,
+   "assoluto": null,
+   "decisioni": null
+  }
+ },
+ {
+  "fn": "decisione_senza_flag",
+  "args": {
+   "dati": [
+    {
+     "number": 141,
+     "state": "CLOSED",
+     "closedAt": "2026-10-22T08:00:00Z",
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "Decisione: confermo i valori\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+       "url": "https://example.invalid/c1"
+      },
+      {
+       "id": 2,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "Decisione: confermo\n\n— il titolare, via chat\n<!-- regia:autore ruolo=titolare sessione=s -->",
+       "url": "https://example.invalid/c2"
+      },
+      {
+       "id": 3,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "  **Decisione:** scelgo A\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+       "url": "https://example.invalid/c3"
+      },
+      {
+       "id": 4,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "Una decisione presa ieri\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+       "url": "https://example.invalid/c4"
+      },
+      {
+       "id": 5,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "Decisione: senza firma",
+       "url": "https://example.invalid/c5"
+      },
+      {
+       "id": 6,
+       "createdAt": "2026-09-01T00:00:00Z",
+       "body": "Decisione: vecchia\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+       "url": "https://example.invalid/c6"
+      },
+      {
+       "id": 7,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "Decisione: del worker\n\n— regia · worker\n<!-- regia:autore ruolo=worker sessione=s1 -->",
+       "url": "https://example.invalid/c7"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "decisione_senza_flag",
+  "args": {
+   "dati": [
+    {
+     "number": 141,
+     "state": "CLOSED",
+     "closedAt": "2026-10-23T08:55:57Z",
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-22T22:59:48Z",
+       "body": "Decisione: confermo\n\n— regia · chat\n<!-- regia:autore ruolo=chat sessione=s1 -->",
+       "url": "https://example.invalid/c1"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "decisione_senza_flag",
+  "args": {
+   "dati": [
+    {
+     "number": 9,
+     "state": "OPEN",
+     "closedAt": null,
+     "progetto": "p",
+     "commenti": [
+      {
+       "id": 1,
+       "createdAt": "2026-10-23T09:00:00Z",
+       "body": "Decisione: sì\r\n\r\n— regia · chat\r\n<!-- regia:autore ruolo=chat sessione=s -->\r\n",
+       "url": "https://example.invalid/c1"
+      }
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": "",
+   "progetto": "p",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "progetto": "p",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": null,
+   "progetto": "p",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": {
+    "$runs": [
+     [
+      "- 2026-11-12 · voce\n",
+      1450
+     ]
+    ]
+   },
+   "progetto": "p",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": {
+    "$runs": [
+     [
+      "- 2026-11-12 · voce\r\n",
+      1450
+     ]
+    ]
+   },
+   "progetto": "p",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": {
+    "$runs": [
+     [
+      "x",
+      30000
+     ]
+    ]
+   },
+   "progetto": "p",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": {
+    "$runs": [
+     [
+      "è",
+      29999
+     ],
+     [
+      "·",
+      1
+     ]
+    ]
+   },
+   "progetto": "p",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": {
+    "$runs": [
+     [
+      "è",
+      29999
+     ],
+     [
+      "·x",
+      1
+     ]
+    ]
+   },
+   "progetto": "p",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "decisioni_oltre_tetto",
+  "args": {
+   "testo": {
+    "$runs": [
+     [
+      "x",
+      30001
+     ]
+    ]
+   },
+   "progetto": "regia",
+   "tetto": 30000,
+   "percorso": ".regia/decisioni.md"
+  }
+ },
+ {
+  "fn": "domande_aperte",
+  "args": {
+   "testo": "# Domande\n- [ ] Senza numero. Da capire.\n- [ ] Con numero #91\n- [x] Fatta senza numero\n- [ ] Su due righe\n      che citano #120\n  - [ ] annidata senza numero\n* [ ] con asterisco\n",
+   "progetto": "p",
+   "percorso": "docs/open-questions.md"
+  }
+ },
+ {
+  "fn": "domande_aperte",
+  "args": {
+   "testo": "- [ ] vedi #5\n",
+   "progetto": "p",
+   "percorso": "docs/open-questions.md"
+  }
+ },
+ {
+  "fn": "in_corso_fermi",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "In corso",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-22T00:00:00Z",
+     "updatedAt": "2026-10-10T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1"
+    },
+    {
+     "number": 2,
+     "title": "titolo 2",
+     "state": "OPEN",
+     "stato": "In corso",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-22T00:00:00Z",
+     "updatedAt": "2026-10-10T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/2"
+    },
+    {
+     "number": 3,
+     "title": "titolo 3",
+     "state": "OPEN",
+     "stato": "In corso",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-22T00:00:00Z",
+     "updatedAt": "2026-10-23T08:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/3"
+    },
+    {
+     "number": 4,
+     "title": "titolo 4",
+     "state": "OPEN",
+     "stato": "Approvato",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-22T00:00:00Z",
+     "updatedAt": "2026-10-10T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/4"
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 3,
+   "lease_vive": {
+    "$set": [
+     2
+    ]
+   }
+  }
+ },
+ {
+  "fn": "inbox_ferme",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1",
+     "bloccato_da": [
+      [
+       9,
+       "OPEN"
+      ],
+      [
+       8,
+       "CLOSED"
+      ]
+     ]
+    },
+    {
+     "number": 2,
+     "title": "titolo 2",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/2",
+     "bloccato_da": [
+      [
+       8,
+       "CLOSED"
+      ]
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "inbox_ferme",
+  "args": {
+   "issues": [
+    {
+     "number": 3,
+     "title": "titolo 3",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/3",
+     "sub": [
+      [
+       10,
+       "CLOSED"
+      ]
+     ]
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "inbox_ferme",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1"
+    },
+    {
+     "number": 2,
+     "title": "titolo 2",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-20T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/2"
+    },
+    {
+     "number": 3,
+     "title": "titolo 3",
+     "state": "OPEN",
+     "stato": "Proposta",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/3"
+    },
+    {
+     "number": 4,
+     "title": "titolo 4",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "x",
+     "obiettivo": false,
+     "campo_progetto": "x",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/4"
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 14
+  }
+ },
+ {
+  "fn": "inbox_ferme",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "titolo 1",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/1"
+    },
+    {
+     "number": 2,
+     "title": "titolo 2",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-10-20T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/2"
+    },
+    {
+     "number": 3,
+     "title": "titolo 3",
+     "state": "OPEN",
+     "stato": "Proposta",
+     "progetto": "p",
+     "obiettivo": false,
+     "campo_progetto": "p",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/3"
+    },
+    {
+     "number": 4,
+     "title": "titolo 4",
+     "state": "OPEN",
+     "stato": "Inbox",
+     "progetto": "x",
+     "obiettivo": false,
+     "campo_progetto": "x",
+     "createdAt": "2026-09-01T00:00:00Z",
+     "updatedAt": "2026-10-23T00:00:00Z",
+     "closedAt": null,
+     "url": "https://example.invalid/4"
+    }
+   ],
+   "progetto": "p",
+   "adesso": {
+    "$datetime": "2026-10-23T12:00:00+00:00"
+   },
+   "giorni": 30
+  }
+ },
+ {
+  "fn": "leggi_report_resta",
+  "args": {
+   "nome": "2026-10-26-266-x.md",
+   "testo": "- tipo: done\n- task: \"284\"\n- resta: nessuno\n\n## Corpo\n"
+  }
+ },
+ {
+  "fn": "leggi_report_resta",
+  "args": {
+   "nome": "2026-10-26-266-x.md",
+   "testo": "---\ntipo: done\ntask: 284\nresta:\n  - \"V1: aggiornare la guida → ?\"\n---\n"
+  }
+ },
+ {
+  "fn": "leggi_riconciliazioni",
+  "args": {
+   "file_decisioni": [
+    {
+     "$tuple": [
+      "d.md",
+      "- 2026-10-27 · #20 chiuso. #20/V1 → #6; V2 → #7 (Inbox, padre #1); V3 (con una nota) → fatto: 8774a57 · orchestratore\n- 2026-10-27 · #21/V1 (D1, «alternative») → #6\n- 2026-10-27 · variante V2 → #9 senza un task davanti\n"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "fn": "leggi_riconciliazioni",
+  "args": {
+   "file_decisioni": [
+    {
+     "$tuple": [
+      "d.md",
+      "- 2026-10-27 · #20/V1 -> #6; #21/resta -> nessuno\n"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "fn": "leggi_riconciliazioni",
+  "args": {
+   "file_decisioni": [
+    {
+     "$tuple": [
+      "d.md",
+      "- 2026-10-27 · #20/V1 → #6\n- 2026-10-27 · V2 → #7\n"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "fn": "leggi_riconciliazioni",
+  "args": {
+   "file_decisioni": [
+    {
+     "$tuple": [
+      "d.md",
+      "- 2026-10-27 · #20/V1 → scartato: a, b · orchestratore\n"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "fn": "numeri_con_report",
+  "args": {
+   "nomi": [
+    "2026-10-23-181-controlli.md",
+    "2026-10-14-2-sonda-budget.md",
+    "note.md",
+    "2026-10-23-x-y.md"
+   ]
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-09 · vecchia, in C:\\Users\\someone\\work\\dossier\\docs\\x.md\n- 2026-11-12 · nuova, in C:\\Users\\someone\\work\\dossier\\docs\\x.md\n  continuazione C:\\Users\\someone\\work\\dossier\\docs\\x.md\n\nRiassunto libero C:\\Users\\someone\\work\\dossier\\docs\\x.md\n- 2026-11-10 · alla data, `/home/user/a.md`\n- senza data C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-09 · vecchia\n\n  rientrata C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-12 · a\n```\nC:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-12 · nuova\n  ```\n  C:\\Users\\someone\\work\\dossier\\docs\\x.md\n  ```\n  dopo il blocco C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-12 · nuova\n  prosegue in C:\\Users\\someone\\work\\dossier\\docs\\x.md\nsenza rientro, C:\\Users\\someone\\work\\dossier\\docs\\x.md\n- 2026-11-09 · vecchia\n  prosegue in C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-12 · nuova\n## Titolo C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-12 · nuova\n- 2026-11-09 · altra C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-12 · nuova\n- altro punto C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-12 · nuova\n\n  rientrata dopo la vuota C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "- 2026-11-12 · nuova\n\ntesto non rientrato C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": "```\n- 2026-11-12 · in blocco C:\\Users\\someone\\work\\dossier\\docs\\x.md\n```\n",
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni-2026-q4.md",
+      "- 2026-11-12 · nuova\n  continua C:\\Users\\someone\\work\\dossier\\docs\\x.md\n- 2026-11-09 · vecchia C:\\Users\\someone\\work\\dossier\\docs\\x.md\n"
+     ]
+    },
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-12 · x\n"
+     ]
+    }
+   ],
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni-x.md",
+      null
+     ]
+    }
+   ],
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": "# Stato\n- da fare: C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "report": [],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": "worktree: C:\\Users\\someone\\work\\dossier\\docs\\x.md\n",
+   "report": [],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": "~~~\ntesto\n",
+   "report": [],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-09-283-x.md",
+      "Ho letto C:\\Users\\someone\\work\\dossier\\docs\\x.md e basta.\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-09-283-x.md",
+      "```\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-10-283-x.md",
+      "Ho letto C:\\Users\\someone\\work\\dossier\\docs\\x.md e basta.\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "# Report\n\nworktree: C:\\Users\\someone\\work\\dossier\\docs\\x.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "%TEMP%\\a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "---\n- worktree: C:\\Users\\someone\\work\\dossier\\docs\\x.md\n- esito: done\n---\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "---\ntipo: done\n---\nworktree: C:\\Users\\someone\\work\\dossier\\docs\\x.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "---\ntipo: done\nworktree: C:\\Users\\someone\\work\\dossier\\docs\\x.md\ndossier: C:\\Users\\someone\\work\\dossier\nprove:\n  - \"C:\\Users\\someone\\work\\dossier\\docs\\x.md\"\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "<nome>/tmp/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "<worktree>/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "C:\\Users\\someone\\work\\dossier\\docs\\x.md e /home/user/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "C:\\Users\\someone\\work\\dossier\\docs\\x.md\n\n```sh\n$ cd C:\\Users\\someone\\work\\dossier\\docs\\x.md\nC:\\Users\\someone\\work\\dossier\\docs\\x.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "Ho letto C:\\Users\\someone\\work\\dossier\\docs\\x.md e basta.\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "Il file `C:\\Users\\someone\\work\\dossier\\docs\\x.md` è lì.\n\n| file | dove |\n|---|---|\n| x | C:\\Users\\someone\\work\\dossier\\docs\\x.md |\n| y | `C:/a/b.md` |\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "Le radici `/tmp/`, /var/, /mnt/, /opt/, /c/ e C:\\ da sole, come `\\\\server\\`, non sono sedi.\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "Sta in /tmp/a.log, non in /tmp/.\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "Sta in C:/Users/x/a.md.\nPoi in `/home/user/b.md`, ok.\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "Sta in C:\\Windows\\System32 e in /opt/homebrew/bin.\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "```\n$ cd C:\\Users\\someone\\work\\dossier\\docs\\x.md\n```\n~~~sh\nls C:\\Users\\someone\\work\\dossier\\docs\\x.md\n~~~\n````\n```\nC:\\Users\\someone\\work\\dossier\\docs\\x.md\n```\n````\n> da un terminale: C:\\Users\\someone\\work\\dossier\\docs\\x.md\n  > anche rientrata C:\\Users\\someone\\work\\dossier\\docs\\x.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "```\nC:\\Users\\someone\\work\\dossier\\docs\\x.md\n```\nC:\\Users\\someone\\work\\dossier\\docs\\x.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "```\nx\n```\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "a/tmp/b\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "alle 10:30/11:00\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "cache in C:\\Users\\someone\\AppData\\Local\\Temp\\x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "docs/design/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "file:///C:/Users/x/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "https://h/tmp/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "https://h/var/log/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "https://tracker.invalid/example/regia/blob/main/home/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "il tmp/x e /tmp senza barra\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "in /tmp/mia cartella/x.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "una/frase e/o simili\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi /Users/user/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi /c/Users/x/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi /home/user/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi /mnt/c/Users/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi /mnt/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi /opt/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi /tmp/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi /var/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi C:/Users/x/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi C:\\Users\\x\\a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "vedi \\\\server\\share\\a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "worktree: C:\\Users\\someone\\work\\dossier\\docs\\x.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "{dati}/Users/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "{dati}/opt/x\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "percorso_assoluto",
+  "args": {
+   "stato": null,
+   "report": [
+    {
+     "$tuple": [
+      "2026-11-12-283-x.md",
+      "~/code/a.md\n"
+     ]
+    }
+   ],
+   "decisioni": null,
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "progetto_campo",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "t1",
+     "progetto": "p",
+     "campo_progetto": "p",
+     "obiettivo": false,
+     "state": "OPEN",
+     "stato": "Inbox",
+     "url": "u1"
+    },
+    {
+     "number": 2,
+     "title": "t2",
+     "progetto": "p",
+     "campo_progetto": "q",
+     "obiettivo": false,
+     "state": "OPEN",
+     "stato": "Inbox",
+     "url": "u2"
+    },
+    {
+     "number": 3,
+     "title": "t3",
+     "progetto": "p",
+     "campo_progetto": null,
+     "obiettivo": false,
+     "state": "OPEN",
+     "stato": "Inbox",
+     "url": "u3"
+    },
+    {
+     "number": 4,
+     "title": "t4",
+     "progetto": "q",
+     "campo_progetto": "q",
+     "obiettivo": false,
+     "state": "OPEN",
+     "stato": "Inbox",
+     "url": "u4"
+    }
+   ],
+   "progetto": "p"
+  }
+ },
+ {
+  "fn": "progetto_campo",
+  "args": {
+   "issues": [
+    {
+     "number": 1,
+     "title": "t1",
+     "progetto": null,
+     "campo_progetto": null,
+     "obiettivo": false,
+     "state": "OPEN",
+     "stato": "Inbox",
+     "url": "u1"
+    },
+    {
+     "number": 2,
+     "title": "t2",
+     "progetto": null,
+     "campo_progetto": "p",
+     "obiettivo": false,
+     "state": "OPEN",
+     "stato": "Inbox",
+     "url": "u2"
+    }
+   ],
+   "progetto": "p"
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-26-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [],
+   "issue": {},
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni-2026-q3.md",
+      "- 2026-11-01 · #10/V1 → #5\n"
+     ]
+    },
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-01 · #10/V1 → ?\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni-2026-q3.md",
+      "- 2026-11-01 · #10/V1 → ?\n"
+     ]
+    },
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-01 · #10/V1 → #5\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-28T10:00:00Z",
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-28T21:30:00Z",
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-28T23:30:00Z",
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-29T10:00:00Z",
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "CLOSED",
+       "stateReason": "NOT_PLANNED",
+       "closedAt": "2026-10-30T11:00:00Z",
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-31T10:00:00Z",
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\nresta:  # una voce per riga\n  # commento\n  - \"V1: x → #5\"  # in coda\n---\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: il Reviewer #1 (#2) chiede una prova → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    },
+    {
+     "$tuple": [
+      "2026-10-31-10-lavoro-r2.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca  x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    },
+    {
+     "$tuple": [
+      "2026-10-31-10-lavoro-r2.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca y → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #999\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      999,
+      {
+       "number": 999,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/999"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-25-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-25-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-26-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "# Report #10\n\n- esito: done\n- round: 1\n- resta: integrare su main; la prova resta #360.\n\n## Che cosa cambia\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "- esito: done\n- resta: nessuno\n\n## x\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta: []\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta: nessuno\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: il Reviewer #1 (#2) chiede una prova → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #10\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #999\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → scartato: non serve\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    },
+    {
+     "$tuple": [
+      "2026-10-31-10-lavoro-r2.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta: nessuno\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: failed\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: gate\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: proposal\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "NOT_PLANNED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      ""
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → #5 · orchestratore"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "- esito: done\n- resta: a parole\n\n## x\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → #5"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → #5"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → scartato: non serve\"\n  - \"manca y senza numero\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → #5"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → scartato: non serve\"\n  - \"manca y senza numero\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → #5; V2 → #5"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → #5\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → #5\n- 2026-11-02 · #10/V1 → ?\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → **#5**, Inbox"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → ?"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta: nessuno\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → al prossimo task che tocca la moviola"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → al prossimo task"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto: #5"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto: 0123456789abcdef0123456789abcdef01234567"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto: 8774a57"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto: `tools/regia.py`"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto: boh"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto: decisioni.md"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto: effaced"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto: round 2"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → fatto:"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → round 2 di #10"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → scartato: non serve\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → scartato: non serve"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → scartato: non vale il lavoro"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/V1 → scartato:"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/resta → nessuno · orchestratore"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/resta → nessuno"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · #10/resta → nessuno"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\n  - \"V2: manca y → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-10-31 · chiuso. #10/V1 → fatto: 8774a57; V2 → scartato: il limite si accetta · orchestratore"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-01 · #10/V1 → #5\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-31T10:00:00Z",
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-02 · #10/V1 → ?\n- 2026-11-03 · #10/V1 → #5\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "OPEN",
+       "stateReason": null,
+       "closedAt": null,
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-30-10-lavoro.md",
+      "---\ntipo: done\ntask: 10\nriassunto: \"x\"\nresta:\n  - \"V1: manca x → ?\"\nround: 1\n---\n\ncorpo\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-03 · #10/V1 → #5\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      10,
+      {
+       "number": 10,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-30T10:00:00Z",
+       "url": "https://example.invalid/10"
+      }
+     ],
+     [
+      5,
+      {
+       "number": 5,
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-10-31T10:00:00Z",
+       "url": "https://example.invalid/5"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-26-266-x.md",
+      "---\ntipo: done\nresta:\n  - \"V1: aggiornare la guida → ?\"\n---\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-12 · #284/V1 → #285\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      284,
+      {
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-11-10T10:00:00Z",
+       "url": "u"
+      }
+     ],
+     [
+      266,
+      {
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-11-10T10:00:00Z",
+       "url": "u"
+      }
+     ],
+     [
+      285,
+      {
+       "state": "OPEN"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-26-266-x.md",
+      "---\ntipo: done\ntask: 284\nresta:\n  - \"V1: aggiornare la guida → ?\"\n---\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-12 · #284/V1 → #285\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      284,
+      {
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-11-10T10:00:00Z",
+       "url": "u"
+      }
+     ],
+     [
+      266,
+      {
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-11-10T10:00:00Z",
+       "url": "u"
+      }
+     ],
+     [
+      285,
+      {
+       "state": "OPEN"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "resta_non_riconciliato",
+  "args": {
+   "report": [
+    {
+     "$tuple": [
+      "2026-10-26-266-x.md",
+      "---\ntipo: done\ntask: ventisei\nresta:\n  - \"V1: aggiornare la guida → ?\"\n---\n"
+     ]
+    }
+   ],
+   "file_decisioni": [
+    {
+     "$tuple": [
+      ".regia/decisioni.md",
+      "- 2026-11-12 · #284/V1 → #285\n"
+     ]
+    }
+   ],
+   "issue": {
+    "$dict": [
+     [
+      284,
+      {
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-11-10T10:00:00Z",
+       "url": "u"
+      }
+     ],
+     [
+      266,
+      {
+       "state": "CLOSED",
+       "stateReason": "COMPLETED",
+       "closedAt": "2026-11-10T10:00:00Z",
+       "url": "u"
+      }
+     ],
+     [
+      285,
+      {
+       "state": "OPEN"
+      }
+     ]
+    ]
+   },
+   "progetto": "p",
+   "dal": null
+  }
+ },
+ {
+  "fn": "riferimenti",
+  "args": {
+   "testo": "#12, (#3) e https://tracker.invalid/o/r/issues/45 ma non &#39; né abc#9"
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "- Prima frase #12. Seconda frase senza numero."
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "- ✋ #223 (fase ✋C) in Decisione: ratifica (e quelli di #465)."
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "- ✋ PR workspace #84 da mergiare. ✋ Rotazione della key."
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "Restano da fare: X3 #91 (a, b); U1 e U2 (utili); #48 piano"
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "a · b"
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "vedi es. la prossima"
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "✋ a (b) ✋ c"
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "✋ a (b; ✋ c"
+  }
+ },
+ {
+  "fn": "segmenti",
+  "args": {
+   "riga": "✋; ·  ; ok"
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- Restano da fare: X #91; U1 e U2\n",
+   "nuovo": "- Restano da fare: X #91\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "a\n- Restano da fare: X #91; U1 e U2 (utili)\nb\n",
+   "nuovo": "a\nb\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- da fare: x #91\n",
+   "nuovo": "niente\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- una nota qualunque\n",
+   "nuovo": "niente\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- **Restano da fare:** U1 e U2\n",
+   "nuovo": "x\n    - restano  DA fare: `U1 e U2`\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- TODO la tabella\n",
+   "nuovo": "x\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- chiedere la tabella\n",
+   "nuovo": "x\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- domanda la tabella\n",
+   "nuovo": "x\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- manca la tabella\n",
+   "nuovo": "x\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- mancano la tabella\n",
+   "nuovo": "x\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- resta la tabella\n",
+   "nuovo": "x\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- restano la tabella\n",
+   "nuovo": "x\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- è rimasta la tabella; il mancato\n",
+   "nuovo": "x\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- Restano da fare: X #91; U1 e U2 (utili, solo se pronti in K1)\n",
+   "nuovo": "x\n- Lavoro: U1 e U2 (utili, solo se pronti in K1), dopo il gate\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- da fare: x #5\n",
+   "nuovo": "y\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": false,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- [x] da fare: x\n",
+   "nuovo": "y\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_righe_tolte",
+  "args": {
+   "vecchio": "- da fare: x #5\n",
+   "nuovo": "y\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "solo_aperte": true,
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "## Da fare\n- niente di marcato qui\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- **DA FARE**: x\n- ✋️ y\n- Aspetta TE: z\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- **K0 (28/10), dall'utente mancano:** le finestre da operatore 09–14/11 e la fase B di #91.\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- Fase: scouting fatti → ✋ gate dell'angle (#120)\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- Restano da fare: X3 #91 (racconto); U1 e U2 (utili, solo se pronti in K1); #7 piano\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- [x] ✋ rotazione della key\n- [X] da fare: altro\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- da fare: la tabella (#5)\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- da fare: la tabella (#91)\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- da fare: p0 p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16 p17 p18 p19 p20 p21 p22 p23 p24 p25 p26 p27 p28 p29 p30 p31 p32 p33 p34 p35 p36 p37 p38 p39 p40 p41 p42 p43 p44 p45 p46 p47 p48 p49 p50 p51 p52 p53 p54 p55 p56 p57 p58 p59\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- da fare: x #91; la tabella\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- non manca niente e nessuna domanda\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ #120 (fase ✋C) in Decisione: ratifica dei nomi (e quelli di #130).\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ #120 in Decisione: scegliere A o B. Blocca #91.\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ #120 in Decisione: scegliere A o B. ✋ Rotazione della key.\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ **#120** conferme; blocca #91 e #130.\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ **#120** conferme; ✋ rotazione della key.\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ **#120** la mail ai chair; dal tracker non risulta inviata. Blocca solo la prosa.\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ **In Decisione:**\n  - #120 gate uno\n  - #130 gate due\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ PR workspace #120 da mergiare. ✋ Rotazione della key dell'LLM di test.\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ gate #120\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ gate #130\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ gate #5\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ gate #91\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ la tabella #91 da fare\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "intro\n- da fare: la tabella\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": false
+  }
+ },
+ {
+  "fn": "stato_senza_issue",
+  "args": {
+   "testo": "- ✋ **In Decisione:**\n  - #120 gate uno\n  - #130 gate due\n",
+   "aperte": {
+    "$dict": [
+     [
+      91,
+      "Approvato"
+     ],
+     [
+      120,
+      "Decisione"
+     ],
+     [
+      130,
+      "Proposta"
+     ],
+     [
+      7,
+      "In corso"
+     ]
+    ]
+   },
+   "progetto": "p",
+   "percorso": ".regia/stato.md",
+   "eredita": true
+  }
+ }
+]

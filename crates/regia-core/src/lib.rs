@@ -3,6 +3,7 @@
 //! socket. See `docs/adr/0001-product-architecture.md`.
 
 pub mod brief;
+pub mod checks;
 pub mod comment;
 pub mod deadline;
 pub mod due;
@@ -22,7 +23,10 @@ pub mod tracker;
 pub mod v1;
 
 pub use brief::{Brief, BriefOptions, BriefTask, GraphWarnings, UNSET_STATUS, build_brief};
-pub use comment::{Comment, InstantError, SignatureRole, comment_id, comments, parse_instant, sign, signature_role, summary_line, without_signature};
+pub use checks::{CheckId, Finding, Thresholds};
+pub use comment::{
+    Comment, InstantError, SignatureRole, comment_id, comments, marker_role, parse_instant, sign, signature_role, summary_line, without_signature,
+};
 pub use deadline::{Deadline, FallbackReason, JobState, Verdict};
 pub use due::{DueMark, IgnoredDue, parse_date};
 pub use graph::{GraphOrder, Metrics, graph_order};
@@ -35,7 +39,7 @@ pub use reference::{NotAPathForm, Reference, ReferenceKind, Unresolved, data_roo
 pub use registry::{EntryError, Registry, full_repo, project_entry, registry_with};
 pub use text::{Normalized, normalize, normalize_document, normalize_title};
 pub use tracker::{
-    IssueRef, RawComment, RawIssue, StatusHistory, Tracker, TrackerError, add_children_from_parents, created_issue_number,
+    ClosedIssue, IssueRef, RawComment, RawIssue, RecentComments, StatusHistory, Tracker, TrackerError, add_children_from_parents, created_issue_number,
 };
 pub use v1::{
     ANCHOR_FILE, BaseLabel, TrackerAnchor, TrackerBinding, TrackerConfigV1, TrackerNames, V1Error, anchor_file, base_labels, local_config_file,

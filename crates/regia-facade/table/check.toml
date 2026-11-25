@@ -23,6 +23,9 @@ output = "check_report"
 "approvato-mai-partito" = "approved-never-started"
 "in-corso-fermo" = "in-progress-stalled"
 "progetto-campo" = "project-field"
+# Added after #442 (#283, #36 of the dossier): provisional names, for the gate of the names (#223) with the rest.
+"percorso-assoluto" = "absolute-path"
+"decisioni-oltre-tetto" = "decisions-over-cap"
 
 [shapes.check_report.fields]
 voci = { to = "findings", items = "check_finding" }

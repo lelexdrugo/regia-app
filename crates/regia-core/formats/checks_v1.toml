@@ -1,0 +1,151 @@
+# The deterministic checks of format v1 (`tools/controlli.py` of the dossier, at 247e041, and their wiring in
+# `tools/regia.py`): the prototype's id of each check, the files of the dossier they read, the words they look
+# for, and the sentences of their findings and warnings. All of it is the prototype's, in its language: data,
+# not identifiers, and it stays out of the Rust sources. A finding's sentences pass to the contract as they are.
+#
+# A pattern is written for the `fancy-regex` crate, a backtracking engine with lookaround as Python's `re` has,
+# with Python's classes spelled out, since the `regex` crate's differ: `{w}` stands for the members of Python's
+# `\w` (letters, numbers, `_`: no combining mark, no connector punctuation), `{s}` for those of its `\s` (the
+# four separators U+001C to U+001F too), `{b}` for its `\b` on that `\w`, `{end}` for the end of a path. Python's
+# `$` is written `\n?$`. `\d` is Unicode's decimal digits on both sides.
+
+# The files of a project's folder the checks read, and the thresholds' file of the prototype's folder.
+[files]
+state = ".regia/stato.md"
+questions = "docs/open-questions.md"
+reports = ".regia/report"
+regia = ".regia"
+decisions = ".regia/decisioni.md"
+# `.regia/decisioni-*.md`: the archives, by name.
+archive_prefix = "decisioni-"
+archive_suffix = ".md"
+report_suffix = ".md"
+thresholds = "policies/controlli.yaml"
+
+# The dates of a report's name, and of a line of `decisioni.md`, from which a rule holds: constants of the
+# prototype, not thresholds.
+[dates]
+remaining_from = "2026-10-26"
+absolute_from = "2026-11-10"
+
+# The keys of `policies/controlli.yaml`, one `key: integer` a line.
+[thresholds]
+inbox_days = "inbox_giorni"
+approved_days = "approvato_giorni"
+in_progress_days = "in_corso_fermo_giorni"
+comment_window_days = "finestra_commenti_giorni"
+brief_max = "max_voci_brief"
+decisions_cap = "decisioni_tetto_caratteri"
+
+[text]
+hand = "✋"
+# The typographic apostrophe reads as `'`, and the emoji's variation selector as nothing.
+apostrophe = "’"
+variation_selector = "️"
+ellipsis = "…"
+max_words = 25
+# A comment that begins with this, in lowercase and without the blanks and `*` before it, is a decision.
+decision_prefix = "decisione:"
+# The roles of a comment that are the regia's own: what they write after a close is no finding.
+own_roles = ["orchestratore", "worker"]
+chat_role = "chat"
+# A destination closed this many days before the line that names it is no longer read.
+closed_destination_days = 2
+# The fields of a report's head, as `leggi_report_resta` reads them.
+type_fields = ["tipo", "esito"]
+remaining_field = "resta"
+task_field = "task"
+done = "done"
+none = "nessuno"
+quotes = "\"'"
+# The end of a destination in a line of reconciliation: a `;` splits the line before, this after the arrow.
+destination_split = "·"
+
+[patterns]
+owner = '''✋|(?<![{w}])(?:dall'utente|dal titolare|aspetta te|chiesto all'utente)(?![{w}])'''
+work = '(?<![{w}])(?:da fare|da provare|da chiedere)(?![{w}])'
+extra = '(?<![{w}])(?:resta|restano|manca|mancano|domanda|chiedere|todo)(?![{w}])'
+references = '(?<![{w}&/])#(\d+){b}|{b}issues/(\d+){b}'
+heading = '^[{s}]*#{1,6}[{s}]'
+done_box = '^[{s}]*(?:[-*+]|\d+[.)])[{s}]+\[[xX]\]'
+bullet = '^[{s}]*(?:[-*+]|\d+[.)])[{s}]+'
+open_box = '^([{s}]*)[-*+][{s}]+\[ \][{s}]*(.*)\n?$'
+report_name = '^(\d{4}-\d{2}-\d{2})-(\d+)-.*\.md\n?$'
+field = '^(?:-[ \t]+)?(tipo|esito|resta|task):[ \t]*(.*)\n?$'
+entry = '^[{s}]+-[{s}]+"V(\d+):[{s}]*(.+?)[{s}]*(?:→|->)[{s}]*(#\d+|\?)[{s}]*"[{s}]*(?:#.*)?\n?$'
+entry_number = '^[{s}]+-[{s}]+"?V(\d+):'
+reconciliation = '#(\d+)/V(\d+)(?:[{s}]*\([^()\n]*\))?[{s}]*(?:→|->)[{s}]*([^;\n]*)'
+reconciliation_short = '^[{s}]*V(\d+)(?:[{s}]*\([^()\n]*\))?[{s}]*(?:→|->)[{s}]*([^;\n]*)'
+reconciliation_none = '#(\d+)/resta[{s}]*(?:→|->)[{s}]*nessuno{b}'
+line_date = '^[{s}]*(?:[-*+][{s}]+)?(\d{4}-\d{2}-\d{2}){b}'
+sha = '(?<![{w}])(?=[0-9a-f]*\d)[0-9a-f]{7,40}(?![{w}])'
+path = '[{w}.-]+[/\\][{w}.-]+|{b}[{w}-]+\.(?:md|py|yaml|yml|json|jsonl|sh|txt|js|toml|html){b}'
+round = '(?i){b}round[{s}]+\d+{b}'
+destination_issue = '^#(\d+){b}'
+destination_discarded = '^scartato:[{s}]*[^{s}]'
+destination_done = '^fatto:[{s}]*([^{s}].*)\n?$'
+fence = '^[{s}]*(`{3,}|~{3,})'
+quote = '^[{s}]*>'
+front_matter_exempt = '^(?:-[ \t]+)?(?:worktree|dossier):'
+decision_entry = '^-[{s}]+(\d{4}-\d{2}-\d{2})[{s}]*·'
+other_entry = '^[-*+][{s}]'
+end = '''[^{s}`'"<>|*?()\[\]{},;]*'''
+absolute = '(?<![{w}/\\])[A-Za-z]:[\\/]{end}|(?<![{w}/.~:$%>}\-])/(?:[A-Za-z]|home|Users|tmp|var|mnt|opt)/{end}|(?<![{w}\\])\\\\[{w}.$-]+\\{end}'
+bare_root = '^(?:[A-Za-z]:[\\/]?|/(?:[A-Za-z]|home|Users|tmp|var|mnt|opt)/?|\\\\[{w}.$-]+\\?)$'
+
+# The sentences of the findings. `{name}` is a value the check fills in.
+[why]
+owner_open_not_waiting = "domanda al titolare: l'issue citata è aperta ma non in Proposta né Decisione"
+owner_only_closed = "domanda al titolare: cita solo issue chiuse"
+owner_no_number = "domanda al titolare senza un #N in Proposta o Decisione"
+only_closed = "cita solo issue chiuse"
+no_open_number = "impegno senza un #N di un'issue aperta"
+removed = "riga tolta dalla versione nuova; {why}"
+open_box = "casella aperta senza un #N: senza, è solo una domanda"
+comment_where = "#{number} commento {id}"
+comment_after_close = "commento {who} dopo la chiusura di #{number} ({date})"
+comment_without_marker = "senza marcatore"
+comment_of_role = "di {role}"
+decision_without_flag = "«Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede"
+inbox_stale = "in Inbox da {age} giorni (soglia {days})"
+approved_never_started = "Approvato da almeno {age} giorni (soglia {days}), nessun report"
+in_progress_stalled = "In corso senza lease viva, issue ferma da {age} giorni (soglia {days})"
+project_field_empty = "l'etichetta è progetto:{project}, il campo «Progetto» è vuoto"
+project_field_other = "l'etichetta è progetto:{project}, il campo «Progetto» dice {field}"
+project_field_fix = " (`regia progetto riempi` lo riallinea)"
+entry_out_of_form = "riga di «resta» che non ha la forma «V<n>: <testo> → #N» o «→ ?» (scartato: e fatto: li scrive l'orchestratore)"
+field_not_a_list = "«resta» non è una lista né «nessuno»"
+field_empty = "«resta» è vuoto: se non resta nulla si scrive «resta: nessuno»"
+field_empty_text = "resta:"
+remaining_task = "#{task} chiuso Fatto{closed}, {why}"
+remaining_closed_on = " il {date}"
+no_field_text = "il report `done` di #{task} non ha il campo `resta`"
+no_field = "report `done` senza «resta» e nessuna riga di riconciliazione"
+two_texts = "V{n} ha due testi diversi in due report"
+destination_unanswered = "destino «?», nessuno l'ha riconciliato"
+destination_invalid = "destino «{destination}»: non è #N, scartato: <perché> né fatto: <dove> (sha, #N, percorso o round N)"
+destination_itself = "destino #{n}, cioè il task stesso"
+destination_missing = "destino #{n}: l'issue non esiste nel tracker"
+destination_discarded = "destino #{n}, chiuso come Scartato"
+destination_stale = "destino #{n}, chiuso il {closed} prima della riga del {line}: nessuno lo rilegge (se l'ha chiusa il residuo, «fatto: #{n}»)"
+absolute_path = "percorso assoluto: contratti.md, Riferimenti"
+open_fence_text = "recinzione aperta"
+open_fence = "recinzione mai chiusa: il resto del file non è controllato"
+over_cap_text = "{path} ha {count} caratteri"
+over_cap = "supera il tetto di {cap}: `regia compatta-decisioni --progetto {project}` sposta le voci più vecchie in un archivio"
+
+# The thresholds' file, when its values do not apply.
+[thresholds_reasons]
+unreadable = "{file} non si legge ({error}): valgono i default"
+invalid_line = "{file} riga {n} non valida («{line}»): valgono i default"
+not_readable = "non leggibile"
+
+# The warnings of the wiring (`calcola_controlli`): what could not be checked in full.
+[warnings]
+approved_history = "approvato-mai-partito: la cronologia degli stati non si legge, si applicano due criteri su tre (età, report)"
+leases_unread = "in-corso-fermo: lease non lette ({error})"
+project_field_unset = "progetto-campo: il campo «{field}» non è in tracker.json, controllo saltato"
+folder_missing = "{project}: cartella del dossier non trovata, controlli sul dossier saltati"
+previous_state_unread = "{project}: stato.md precedente non letto: {error}"
+closed_unread = "resta-non-riconciliato: issue chiuse non lette ({error}), controllo saltato"
+unknown_project = "progetto '{project}' sconosciuto"

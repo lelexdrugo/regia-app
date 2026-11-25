@@ -157,6 +157,8 @@ pub struct BaseLabel {
 #[derive(Debug, Deserialize)]
 struct Fields {
     project: String,
+    project_field_id_key: String,
+    project_options_key: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -237,6 +239,26 @@ pub struct TrackerConfigV1 {
     /// string, which the prototype passes on as it is and no other reader needs.
     #[serde(default, deserialize_with = "string_or_none")]
     pub project_url: Option<String>,
+    /// The Project's field that mirrors the label is configured: its id and its options by project are there, as
+    /// the prototype asks. Read from the file's JSON, by the vocabulary's keys.
+    #[serde(skip)]
+    pub project_field_configured: bool,
+}
+
+/// The prototype's test of the configured field: its id is a value that is not empty, false, zero or null, and its options are
+/// an object.
+fn project_field_configured(value: &serde_json::Value) -> bool {
+    let fields = vocabulary().fields;
+    let id = &value[fields.project_field_id_key.as_str()];
+    let truthy = match id {
+        serde_json::Value::Null => false,
+        serde_json::Value::Bool(flag) => *flag,
+        serde_json::Value::Number(number) => number.as_f64() != Some(0.0),
+        serde_json::Value::String(text) => !text.is_empty(),
+        serde_json::Value::Array(items) => !items.is_empty(),
+        serde_json::Value::Object(fields) => !fields.is_empty(),
+    };
+    truthy && value[fields.project_options_key.as_str()].is_object()
 }
 
 fn string_or_none<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Option<String>, D::Error> {
@@ -300,7 +322,8 @@ impl TrackerConfigV1 {
         if !without.is_empty() {
             return Err(local(format!("status_options without {}", without.join(", "))));
         }
-        let config = serde_json::from_value(value.clone()).map_err(|source| V1Error::Parse { path: path.to_path_buf(), source })?;
+        let mut config: Self = serde_json::from_value(value.clone()).map_err(|source| V1Error::Parse { path: path.to_path_buf(), source })?;
+        config.project_field_configured = project_field_configured(&value);
         Ok((config, value))
     }
 
@@ -314,8 +337,10 @@ impl TrackerConfigV1 {
     fn read_with_value(path: &Path) -> Result<(Self, serde_json::Value), V1Error> {
         let parse = |source| V1Error::Parse { path: path.to_path_buf(), source };
         let text = std::fs::read_to_string(path).map_err(|source| V1Error::Read { path: path.to_path_buf(), source })?;
-        let config = serde_json::from_str(&text).map_err(parse)?;
-        Ok((config, serde_json::from_str(&text).map_err(parse)?))
+        let mut config: Self = serde_json::from_str(&text).map_err(parse)?;
+        let value: serde_json::Value = serde_json::from_str(&text).map_err(parse)?;
+        config.project_field_configured = project_field_configured(&value);
+        Ok((config, value))
     }
 }
 
@@ -479,6 +504,7 @@ mod tests {
             status_field_id: "f".into(),
             status_options,
             project_url: None,
+            project_field_configured: false,
         }
     }
 

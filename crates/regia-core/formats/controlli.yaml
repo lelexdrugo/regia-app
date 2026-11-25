@@ -1,0 +1,23 @@
+# Soglie dei controlli deterministici della regia (task #181, figlio C di #138; ARCHITECTURE.md §7).
+# Lette da tools/controlli.py e usate da `regia controlla`, `regia passo fine` (avviso) e `regia brief` («Fuori dal tracker»).
+# Se il file manca o non si legge, il codice usa gli stessi valori scritti qui e lo dice su stderr: un file rotto non cambia il comportamento.
+# Formato: una chiave per riga, `chiave: intero` (≥ 1). Nessun altro YAML (la libreria standard non lo legge).
+#
+# Tarate da #230 (F3 di #184) sul campione del 12/11/2026 (dati in `{dati}/regia-230/`): vedi il report
+# `.regia/report/2026-11-12-230-taratura-controlli.md`. Il campione ha voci solo sopra le soglie in vigore: una soglia più bassa si
+# misura sulle voci che aggiunge (giudicate a parte), una più alta solo contando quelle vere che perderebbe.
+
+# Inbox ferma: giorni dalla creazione, per un'issue senza bloccanti aperti.
+# 7 e non 14: nel campione nessuna Inbox senza blocchi ha da 3 a 11 giorni, e le 4 di 12 giorni sono state giudicate tutte vere (n piccolo).
+inbox_giorni: 7
+# Approvato mai partito: giorni dalla creazione, senza alcun report `.regia/report/*-<N>-*.md`, senza bloccanti aperti e senza sotto-issue.
+approvato_giorni: 21
+# In corso fermo: giorni senza aggiornamenti dell'issue, in più dell'assenza di una lease viva (i dispatch di Orca non la prendono).
+in_corso_fermo_giorni: 3
+# Finestra dei commenti letti (commenti dopo la chiusura, «Decisione:» senza flag) e delle issue chiuse considerate.
+finestra_commenti_giorni: 14
+# Voci mostrate per progetto in `regia brief`; le altre diventano «… e altre N».
+max_voci_brief: 10
+# Tetto di `.regia/decisioni.md` in caratteri (non byte; gli archivi `.regia/decisioni-AAAA-MM.md` non contano): oltre, voce
+# `decisioni-oltre-tetto` con il comando `regia compatta-decisioni`. Decisione del 10/11 su #36 (2A), ADR 0024.
+decisioni_tetto_caratteri: 30000
