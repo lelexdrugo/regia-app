@@ -102,6 +102,24 @@ x10 dense is the lanes and days of x10 with eight times the milestones and aggre
 column per milestone, so x10 dense makes a longer stage, not a more crowded view at the same zoom. Its 12,400
 marks are in view together only near the zoom phase's widest view.
 
+## Recorded runs
+
+Frame time in ms, median / p95 over all phases, 3 repetitions of 2500 ms per phase, warm-up 1000 ms. Late in pan is
+the share of frames longer than 1.5 refresh intervals. Each row is one machine, not a reference.
+
+| Run | Engine | x1 | x10 | x100 (zoom p95) | x10 dense (late in pan) | Sanity |
+|---|---|---|---|---|---|---|
+| **Windows**, Intel Core Ultra 9 285H, Intel Arc 140T (ANGLE on Direct3D 11), WebView2 157, 101 Hz, commit db60b74 | gpu | 9.8 / 10.2 | 9.9 / 19.1 | 9.8 / 12.8 (39.1) | 9.9 / 19.6 (19.5 %) | PASS |
+| **WSL**, same processor, Ubuntu 24.04.3 on WSLg, Mesa `llvmpipe` (no GPU), WebKitGTK 2.52.6, 63 Hz, commit e27e942 | software | 21.0 / 23.0 | 23.0 / 29.0 | 25.0 / 34.0 (61.0) | 24.0 / 30.0 (88.2 %) | PASS |
+
+- **WSL is not a native Linux with a GPU.** WSLg rasterises on the processor. Its numbers are recorded as
+  information, and the one threshold that applies to this engine, x10 with median at most 33 ms and p95 at most
+  50 ms, passes (23.0 / 29.0). The rows of T5 that name a GPU are not judged here.
+- On Windows T5 holds at x1 and does not hold at x100 (zoom) nor at x10 dense. That is the level of detail's work.
+- The two machines' frame times do not compare: different display rates, engines and commits.
+- A native Linux with a GPU and a Mac are not measured yet. The CI runners' numbers, when a run exists, are
+  "not a reference" too.
+
 ## Options
 
 `npm run bench -- <options>`:
