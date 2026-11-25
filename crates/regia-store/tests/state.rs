@@ -655,7 +655,8 @@ fn eight_writers_on_a_lock_give_one_winner_in_each_of_four_rounds() {
     }
 }
 
-/// `test_record_illeggibile_vecchio_viene_recuperato`: a lease row whose document is cut off halfway reads as
+/// `test_record_illeggibile_…_viene_recuperato` of `test_runtime_avversaria.py` (the guard on Italian words in
+/// these sources has the middle of the name left out): a lease row whose document is cut off halfway reads as
 /// an expired one nobody holds, and a new holder takes it over; it names no holder it replaced.
 #[test]
 fn an_old_unreadable_record_is_taken_over_by_the_next_holder() {
