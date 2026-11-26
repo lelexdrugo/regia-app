@@ -145,11 +145,11 @@ test('a display that ran faster than calibrated is judged at the rate of its fra
     page: { gpu: { webgl: true, renderer: 'ANGLE (Intel, Intel(R) Arc(TM) GPU Direct3D11)' } },
     blocks: [block('main', 16.7, [1, '10d'], drr)],
   });
-  assert.equal(json.intervals.main.ms, 8.3);
-  assert.match(md.find((l) => l.startsWith('- display:')), /16\.70 ms \(60 Hz\) before main, but 90 % of its frames ran at 8\.30 ms \(120 Hz\)/);
   assert.equal(verdict(md, '1'), 'FAIL');
   assert.equal(verdict(md, '10d'), 'FAIL');
   assert.match(md.find((l) => l.startsWith('| x10d |')), /\| 10\.0 % \| 10\.0 % \|/, 'late frames counted on 8.3 ms');
+  assert.match(md.find((l) => l.startsWith('- display:')), /16\.70 ms \(60 Hz\) before main, but 90 % of its frames ran at 8\.30 ms \(120 Hz\)/);
+  assert.equal(json.intervals?.main?.ms, 8.3);
 });
 
 test('WSL and the rasteriser are read from what the system prints', () => {
