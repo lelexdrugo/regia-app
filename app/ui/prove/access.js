@@ -2,14 +2,17 @@
 // presses, on x100's synthetic story (`#/moviola/x100`, 2,700 moments, the renderer spike's x100). The canvas is a
 // listbox; the moment chosen is its active descendant, an option of a window of the list in the page.
 //
-// At the zoom of detail: Home, then → until the list ends. At every key the active descendant is an option inside the
-// canvas, chosen, of the moment the story has next in time, with its title and its place in all 2,700, and every
-// moment is reached once. Chrome's own accessibility tree is read at five of them: the first, one past the spike's 200,
-// the middle, the last, and one in a group. PageDown and PageUp go ten moments. At the zoom of groups, the whole stage
-// (lod.ts): Home, then → until the list ends again; every moment once, each group of the stage one stretch of the
-// list, the groups in their order on the stage, each group of several named once, «Group k of n, m moments, lane»;
-// PageDown and PageUp go a group; End is the list's last entry. The live lines keep quiet while the stage holds the
-// focus and speak from the transport; a hidden line says when the level of detail changes.
+// At the zoom of detail, by keys pressed as a keyboard sends them: Home, then → until the list ends. At every key the
+// active descendant is an option inside the canvas, chosen, of the moment the story has next in time, with its title
+// and its place in all 2,700; every moment is reached once, and the page never holds more than the window's options.
+// Chrome's own accessibility tree is read at four of them: the first, one past the spike's 200, the middle, the last.
+// PageDown and PageUp go ten moments. At the zoom of groups, the whole stage (lod.ts): the same walk again, every
+// moment once, each group of the stage one stretch of the list, the groups in their order on the stage, each group of
+// several named once, «Group k of n, m moments, lane»; its first 60 entries by keys as a keyboard sends them, all of it
+// by keydown events from the page, a microtask apart: there a headless Chrome without GPU takes a tenth of a second for
+// each frame of the whole stage, and the walk would take minutes. PageDown and PageUp go a group, End is the list's
+// last entry. The live lines keep quiet while the stage holds the focus and speak from the transport; a hidden line
+// says when the level of detail changes.
 //
 // The negative controls (harness/main.ts, `list=`): no list, as before #490, must fail at the first moment, and the
 // renderer spike's list, which stopped at 200 items, exactly at the 201st. The arrows chose every moment before #490
@@ -18,6 +21,7 @@ import { messages } from "./messages.js";
 
 const ROUTE = "#/moviola/x100?data=demo&lang=en";
 const CANVAS = `document.querySelector(".stage canvas")`;
+const WINDOW = 31;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const KEYS = {
@@ -25,7 +29,6 @@ const KEYS = {
   End: ["End", 35],
   PageUp: ["PageUp", 33],
   PageDown: ["PageDown", 34],
-  ArrowLeft: ["ArrowLeft", 37],
   ArrowRight: ["ArrowRight", 39],
   Tab: ["Tab", 9],
 };
@@ -37,8 +40,8 @@ async function key(page, name) {
   await page.send("Input.dispatchKeyEvent", { type: "keyUp", key: name, code, windowsVirtualKeyCode: keyCode });
 }
 
-/** What the list says now, in one read of the page: the active descendant and what it is. */
-const READ = `(() => {
+/** What the list says now, read in the page: the active descendant and what it is. */
+const READ = `() => {
   const canvas = ${CANVAS};
   const id = canvas.getAttribute("aria-activedescendant");
   const option = id ? document.getElementById(id) : null;
@@ -58,38 +61,61 @@ const READ = `(() => {
     options: canvas.querySelectorAll("[role=option]").length,
     chosen: document.getElementById("moviola-status")?.dataset.selected ?? null,
   };
-})()`;
+}`;
+const read = (page) => page.evaluate(`(${READ})()`);
 
-/** What a step should not be: an empty string when it is right. */
-function wrongAtDetail(state, e, expected) {
-  const want = expected[e];
-  if (!state.found) return "no active descendant in the page";
-  if (!state.inside || state.role !== "option" || state.selected !== "true") return `not a chosen option of the canvas (${state.role}, ${state.selected})`;
-  if (state.moment !== want.id || state.chosen !== want.id) return `the option of ${state.moment}, the stage's ${state.chosen}, for ${want.id}`;
-  if (!state.text.includes(want.title)) return `its words lack the title: ${state.text.slice(0, 80)}`;
-  if (state.pos !== e + 1 || state.size !== expected.length) return `place ${state.pos} of ${state.size}`;
-  if (state.options > 31) return `${state.options} options in the page`;
-  return "";
+/** What is wrong with a step at the zoom of detail, against the story in time order: an empty string when nothing. */
+function atDetail(expected) {
+  return (state, e) => {
+    const want = expected[e];
+    if (!state.found) return "no active descendant in the page";
+    if (!state.inside || state.role !== "option" || state.selected !== "true") return `not a chosen option of the canvas (${state.role}, ${state.selected})`;
+    if (state.moment !== want.id || state.chosen !== want.id) return `the option of ${state.moment}, the stage's ${state.chosen}, for ${want.id}`;
+    if (!state.text.includes(want.title)) return `its words lack the title: ${state.text.slice(0, 80)}`;
+    if (state.pos !== e + 1 || state.size !== expected.length) return `place ${state.pos} of ${state.size}`;
+    return "";
+  };
 }
 
-/** Home, then → until the list ends or a step is wrong: how many entries were right, and the first wrong one. */
-async function walk(page, wrong, total, sample = () => {}) {
+/** Home, then → by keys until `count` entries or a wrong one: the states, and the first wrong entry. */
+async function walk(page, wrong, count, sample = async () => {}) {
   await page.evaluate(`${CANVAS}.focus()`);
   await key(page, "Home");
   const states = [];
-  for (let e = 0; e < total; e++) {
+  for (let e = 0; e < count; e++) {
     if (e > 0) await key(page, "ArrowRight");
-    const state = await page.evaluate(READ);
-    const why = wrong(state, e, states);
+    const state = await read(page);
+    const why = wrong(state, e);
     if (why) return { reached: e, failure: `entry ${e + 1}: ${why}`, states };
     states.push(state);
     await sample(e, state);
   }
-  // The end holds.
-  await key(page, "ArrowRight");
-  const after = await page.evaluate(READ);
-  const held = after.moment === states.at(-1)?.moment;
-  return { reached: total, failure: held ? null : `→ after the last went on to ${after.moment}`, states };
+  return { reached: count, failure: null, states };
+}
+
+/** The same walk by keydown events from the page, a microtask apart so the screen's words follow and no frame is
+ * drawn; then → once more, which must hold at the end. */
+async function walkInPage(page, wrong, count) {
+  const states = await page.evaluate(`(async () => {
+    const read = ${READ};
+    const canvas = ${CANVAS};
+    canvas.focus();
+    const press = (key) => canvas.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+    const out = [];
+    for (let e = 0; e <= ${count}; e++) {
+      press(e === 0 ? "Home" : "ArrowRight");
+      await Promise.resolve();
+      await Promise.resolve();
+      out.push(read());
+    }
+    return out;
+  })()`);
+  for (let e = 0; e < count; e++) {
+    const why = wrong(states[e], e);
+    if (why) return { reached: e, failure: `entry ${e + 1}: ${why}`, states: states.slice(0, e) };
+  }
+  const held = states[count]?.moment === states[count - 1]?.moment;
+  return { reached: count, failure: held ? null : `→ after the last went on to ${states[count]?.moment}`, states: states.slice(0, count) };
 }
 
 /** The moment chosen as Chrome's accessibility tree has it: the focused listbox, its active descendant, its parent. */
@@ -138,26 +164,29 @@ export const access = {
 
     // The zoom of detail: every moment by the arrows, in time order, each one told.
     await fresh(page, harness, ROUTE);
-    const samples = {};
+    const samples = [];
     const at = new Set([0, 250, total >> 1, total - 1]);
-    const detail = await walk(page, (state, e) => wrongAtDetail(state, e, expected), total, async (e) => {
-      if (at.has(e)) samples[e] = await inTree(page);
+    const detail = await walk(page, atDetail(expected), total, async (e) => {
+      if (at.has(e)) samples.push([e, await inTree(page)]);
     });
+    await key(page, "ArrowRight");
+    const heldAtEnd = (await read(page)).moment === expected[total - 1].id;
     const reached = new Set(detail.states.map((state) => state.moment));
-    check(`the zoom of detail: Home, then → reaches each of the ${total} moments in time order, each the canvas's chosen option with its title and place`,
-      detail.failure === null && detail.reached === total && reached.size === total, detail.failure ?? `${detail.reached} entries, ${reached.size} moments`);
-    const sampled = Object.entries(samples).map(([e, node]) => [Number(e), node]);
-    const toldRight = sampled.filter(([e, node]) => node.role === "option" && node.selected && node.name.includes(expected[e].title) && node.listbox === en["moviola-stage"]);
+    const most = Math.max(0, ...detail.states.map((state) => state.options));
+    check(`the zoom of detail: Home, then → by keys reaches each of the ${total} moments in time order, each the canvas's chosen option with its title and place; the end holds`,
+      detail.failure === null && reached.size === total && heldAtEnd, detail.failure ?? `${detail.reached} entries, ${reached.size} moments`);
+    check(`the page holds a window of the list, at most ${WINDOW} options, never the whole story`, most > 0 && most <= WINDOW, `at most ${most} options`);
+    const toldRight = samples.filter(([e, node]) => node.role === "option" && node.selected && node.name.includes(expected[e].title) && node.listbox === en["moviola-stage"]);
     check("Chrome's tree: the focused listbox names the moment chosen, at the first, past the 200th, the middle and the last",
-      sampled.length === 4 && toldRight.length === 4, sampled.map(([e, node]) => `${e + 1}: ${node.role} «${node.name.slice(0, 60)}»`).join("; "));
+      samples.length === 4 && toldRight.length === 4, samples.map(([e, node]) => `${e + 1}: ${node.role} «${node.name.slice(0, 70)}»`).join("; "));
 
     // PageUp and PageDown at the zoom of detail: ten moments.
     await key(page, "Home");
     await key(page, "PageDown");
-    const ten = await page.evaluate(READ);
+    const ten = await read(page);
     await key(page, "PageDown");
     await key(page, "PageUp");
-    const back = await page.evaluate(READ);
+    const back = await read(page);
     check("PageDown and PageUp go ten moments", ten.moment === expected[10].id && back.moment === expected[10].id, `${ten.pos}, ${back.pos}`);
 
     // The live lines: quiet while the stage holds the focus, speaking from the transport.
@@ -189,65 +218,72 @@ export const access = {
     const groups = l.groupsAt(scene, model, l.groupZoom(z));
     const several = [];
     for (let g = 0; g < groups.n; g++) if (l.size(groups, g) > 1) several.push(g);
-    const groupOf = (id) => groups.of[sceneOf.get(model.byId.get(id).index)];
     const ordinal = new Map(several.map((g, i) => [g, i + 1]));
+    const groupOf = (id) => groups.of[sceneOf.get(model.byId.get(id)?.index)];
     const laneOf = (g) => (model.lanes[groups.lane[g]].id === model.timeline.main_direction ? en["moviola-lane-main"] : model.lanes[groups.lane[g]].id);
     check("past the zoom of groups, the hidden line says so", level === en["moviola-list-level-groups"], `«${level}» at zoom ${z}`);
 
-    let lastGroup = -1;
-    const left2 = new Set();
-    const wrongAtGroups = (state, e, before) => {
-      if (!state.found) return "no active descendant in the page";
-      if (!state.inside || state.role !== "option" || state.selected !== "true" || state.chosen !== state.moment) return `not the canvas's chosen option (${state.role}, ${state.selected})`;
-      const g = groupOf(state.moment);
-      if (g === undefined) return `${state.moment} in no group`;
-      if (g !== lastGroup) {
-        if (g < lastGroup || left2.has(g)) return `group ${g} after group ${lastGroup}: not the stage's order, or one group in two stretches`;
-        if (lastGroup >= 0) left2.add(lastGroup);
-        lastGroup = g;
-      }
-      const n = l.size(groups, g);
-      if (n === 1) {
-        if (state.group !== null) return "a group of one in a group of options";
-        if (state.pos !== e + 1 || state.size !== total) return `a moment alone at place ${state.pos} of ${state.size}`;
-      } else {
-        if (state.group !== g) return `in the group of options ${state.group}, on the stage ${g}`;
-        const said = `Group ${ordinal.get(g)} of ${several.length}, ${n} moments, ${laneOf(g)}, `;
-        if (!state.label.startsWith(said)) return `the group named «${state.label.slice(0, 70)}» for «${said}»`;
-        const first = before.findIndex((earlier) => groupOf(earlier.moment) === g);
-        const place = first < 0 ? 1 : e - first + 1;
-        if (state.pos !== place || state.size !== n) return `place ${state.pos} of ${state.size} in its group, for ${place} of ${n}`;
-      }
-      if (!state.text.includes(model.byId.get(state.moment).milestone.title)) return "its words lack the title";
-      return "";
+    // A step at the zoom of groups, against lod.ts's groups: one stretch each, in their order, named, placed.
+    const atGroups = () => {
+      let last = -1;
+      const done = new Set();
+      const first = new Map();
+      return (state, e) => {
+        if (!state.found) return "no active descendant in the page";
+        if (!state.inside || state.role !== "option" || state.selected !== "true" || state.chosen !== state.moment) return `not the canvas's chosen option (${state.role}, ${state.selected}, ${state.chosen})`;
+        const g = groupOf(state.moment);
+        if (g === undefined) return `${state.moment} in no group`;
+        if (g !== last) {
+          if (g < last || done.has(g)) return `group ${g} after group ${last}: not the stage's order, or one group in two stretches`;
+          if (last >= 0) done.add(last);
+          last = g;
+          first.set(g, e);
+        }
+        const n = l.size(groups, g);
+        if (n === 1) {
+          if (state.group !== null) return "a group of one in a group of options";
+          if (state.pos !== e + 1 || state.size !== total) return `a moment alone at place ${state.pos} of ${state.size}`;
+        } else {
+          if (state.group !== g) return `in the group of options ${state.group}, on the stage ${g}`;
+          const said = `Group ${ordinal.get(g)} of ${several.length}, ${n} moments, ${laneOf(g)}, `;
+          if (!state.label.startsWith(said)) return `the group named «${state.label.slice(0, 70)}» for «${said}»`;
+          const place = e - first.get(g) + 1;
+          if (state.pos !== place || state.size !== n) return `place ${state.pos} of ${state.size} in its group, for ${place} of ${n}`;
+        }
+        if (!state.text.includes(model.byId.get(state.moment).milestone.title)) return "its words lack the title";
+        return "";
+      };
     };
     let groupSample = null;
-    const grouped = await walk(page, wrongAtGroups, total, async (e, state) => {
+    const byKeys = await walk(page, atGroups(), 60, async (e, state) => {
       if (!groupSample && state.group !== null && state.pos === 2) groupSample = await inTree(page);
     });
-    const covered = new Set(grouped.states.map((state) => state.moment));
-    check(`the zoom of groups (${groups.n} groups, ${several.length} of several): Home, then → reaches each moment once, group by group in the stage's order, each group named with its moments`,
-      grouped.failure === null && covered.size === total && several.length > 0, grouped.failure ?? `${covered.size} moments`);
-    check("Chrome's tree: an option of a group of several sits in a group named by its place and its moments",
-      groupSample !== null && groupSample.role === "option" && groupSample.selected && /^group "Group \d+ of \d+, \d+ moments, /.test(groupSample.parent ?? ""),
+    check("the zoom of groups by keys: Home, then → through the first 60 entries, group by group, each group of several named once",
+      byKeys.failure === null && byKeys.states.some((state) => state.group !== null), byKeys.failure ?? `${byKeys.states.filter((state) => state.group !== null).length} of 60 in a group of several`);
+    check("Chrome's tree: an option of a group of several sits in a group named by its place, its moments and its lane",
+      groupSample !== null && groupSample.role === "option" && groupSample.selected && /^group "Group \d+ of \d+, \d+ moments, [^,]+, /.test(groupSample.parent ?? ""),
       groupSample ? `${groupSample.parent} › ${groupSample.role} «${groupSample.name.slice(0, 50)}»` : "no option in a group of several");
+    const grouped = await walkInPage(page, atGroups(), total);
+    const covered = new Set(grouped.states.map((state) => state.moment));
+    check(`the zoom of groups (${groups.n} groups, ${several.length} of several), the whole walk: each moment once, group by group in the stage's order, each group named with its moments; the end holds`,
+      grouped.failure === null && covered.size === total && several.length > 0, grouped.failure ?? `${covered.size} moments`);
 
     // PageDown and PageUp go a group; End is the list's last entry.
+    await page.evaluate(`${CANVAS}.focus()`);
     await key(page, "Home");
     await key(page, "PageDown");
-    const next = await page.evaluate(READ);
+    const next = await read(page);
     await key(page, "ArrowRight");
     await key(page, "PageUp");
-    const start = await page.evaluate(READ);
+    const start = await read(page);
     const firstOfNext = grouped.states.find((state) => groupOf(state.moment) !== groupOf(grouped.states[0].moment));
     await key(page, "End");
-    const end = await page.evaluate(READ);
+    const end = await read(page);
     check("at the zoom of groups PageDown goes to the next group, PageUp back to its start, End to the list's last entry",
       next.moment === firstOfNext?.moment && start.moment === firstOfNext?.moment && end.moment === grouped.states.at(-1)?.moment,
       `${next.moment} for ${firstOfNext?.moment}; ${start.moment}; End ${end.moment} for ${grouped.states.at(-1)?.moment}`);
 
     // Back to the zoom of detail: the hidden line says so.
-    await page.evaluate(`${CANVAS}.focus()`);
     await page.press("0");
     await page.waitFor(`${CANVAS}.dataset.groups === ""`, 5_000).catch(() => {});
     await sleep(50);
@@ -256,16 +292,16 @@ export const access = {
 
     // The negative controls: no list at all, and the spike's list of 200.
     await fresh(page, harness, `${ROUTE}&list=none`);
-    const none = await walk(page, (state, e) => wrongAtDetail(state, e, expected), total);
+    const none = await walk(page, atDetail(expected), total);
     await fresh(page, harness, `${ROUTE}&list=capped`);
-    const capped = await walk(page, (state, e) => wrongAtDetail(state, e, expected), total);
+    const capped = await walk(page, atDetail(expected), total);
     const caughtNone = none.reached === 0;
     const caughtCapped = capped.reached === 200;
 
     for (const [name, ok, detail] of results) console.log(`${ok ? "ok " : "NO "} ${name}${detail ? `  → ${detail}` : ""}`);
     console.log(`negative control, no list (as before #490): ${caughtNone ? "caught" : "NOT CAUGHT"} (${none.failure ?? "no failure"})`);
     console.log(`negative control, the spike's list of 200: ${caughtCapped ? "caught" : "NOT CAUGHT"} (${capped.failure ?? "no failure"})`);
-    console.log(`time: ${((Date.now() - started) / 1000).toFixed(1)} s for ${2 * total + 200} arrows`);
+    console.log(`time: ${((Date.now() - started) / 1000).toFixed(1)} s`);
     const newErrors = page.consoleErrors.slice(errors);
     console.log(`errors in the console: ${newErrors.length}`);
     for (const error of [...new Set(newErrors)].slice(0, 10)) console.log(`  ${error}`);

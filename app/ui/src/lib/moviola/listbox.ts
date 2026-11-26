@@ -111,12 +111,14 @@ export class MomentList {
   }
 }
 
-/** The words of an entry into `element`, one span each, with a comma between: text from others in data-raw. */
+/** The words of an entry into `element`, one span each, text from others in data-raw. The comma ends the word's own
+ * span and a space comes between spans: Chrome joins the children of a canvas, which have no layout, with a space, and
+ * a comma on its own read « , » in its tree. */
 function write(element: HTMLElement, words: Words): void {
   words.forEach((word, i) => {
-    if (i > 0) element.append(", ");
+    if (i > 0) element.append(" ");
     const span = document.createElement("span");
-    span.textContent = word.text;
+    span.textContent = i < words.length - 1 ? `${word.text},` : word.text;
     if (word.raw) span.setAttribute("data-raw", "");
     element.append(span);
   });
