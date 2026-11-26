@@ -10,6 +10,11 @@
     "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"nessun-evento\",\"cursore\":[],\"payload\":{\"progetti\":[],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
+    "detector": {},
+    "exit": 1,
+    "line": "{\"v\":1,\"outcome\":\"error\",\"exit\":1,\"motivo\":\"runtime\",\"cursore\":null,\"payload\":{\"dettaglio\":\"{detail}\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
     "detector": {
       "p:rilevatore": {
         "serie": {

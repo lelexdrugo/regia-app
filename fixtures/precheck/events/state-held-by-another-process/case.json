@@ -11,6 +11,7 @@
   "runs": [
     {"note": "a ready task, the database held: error, nothing written", "faults": ["database-held"]},
     {"note": "no active project, the database held: the reads go on", "faults": ["database-held"], "issues": [{"n": 1, "status": "Proposta", "project": "p", "objective": true}, {"n": 2, "status": "Approvato"}]},
+    {"note": "nothing to do, the database held: the lock reads as held, so the tick counts it and fails at its detector", "faults": ["database-held"], "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}]},
     {"note": "a series before the hold", "locks": {"p": "held"}, "cursor": {"p": {"v": 1, "t": "2026-01-09T09:00:00Z", "propri": {"commenti": []}}}, "ticks": [
       {"minutes": 0, "note": "the lock held: the series opens"},
       {"minutes": 30, "note": "the database held: the series is not written", "faults": ["database-held"]},
