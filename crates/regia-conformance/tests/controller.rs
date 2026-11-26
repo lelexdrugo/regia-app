@@ -21,7 +21,11 @@
 //!   through the facade table, the other quoted words, the exit codes it cites);
 //! - **the fake wake-up's sentence** is each side's own, in its language;
 //! - **the precheck's alarm of a failing reading** (#466) is the product's alone: its count in the global detector's
-//!   row and its keys in the payload's budget are taken out of the Rust side only.
+//!   row and its keys in the payload's budget are taken out of the Rust side only;
+//! - **the dossier's warnings** (#743) have no data in the traces: the prototype's driver recorded them with a stub of
+//!   the precheck's dossier that answers none (`docs/app/ombra/driver.py` of the dossier), while the product reads the
+//!   projects' folders with git. Each project's `dossier` is taken out of the Rust side only, in the precheck's line and
+//!   in the payload a prompt attaches; `tests/precheck.rs` compares them with the prototype's real source.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -549,6 +553,64 @@ fn without_the_product_s_alarm(trace: &mut Value) {
     }
 }
 
+/// The dossier's warnings of each project (#743), which the traces were recorded without: from the precheck's line, and
+/// from the payload a prompt attaches, where the key and its list are cut out of the text and nothing else changes.
+fn without_the_dossier_s_warnings(trace: &mut Value) {
+    let (key, projects) = (precheck_word("dossier", "key"), precheck_word("payload", "projects"));
+    for tick in trace["ticks"].as_array_mut().into_iter().flatten() {
+        for project in tick.pointer_mut(&format!("/precheck/payload/{projects}")).and_then(Value::as_array_mut).into_iter().flatten() {
+            if let Some(fields) = project.as_object_mut() {
+                fields.remove(&key);
+            }
+        }
+        for launch in tick["launches"].as_array_mut().into_iter().flatten() {
+            if let Some(prompt) = launch["prompt"].as_str() {
+                launch["prompt"] = json!(without_key_in_text(prompt, &key));
+            }
+        }
+    }
+}
+
+/// `text` without each `,"<key>":[…]` of the compact JSON it holds: the list ends at the bracket that closes it, outside
+/// the strings in it.
+fn without_key_in_text(text: &str, key: &str) -> String {
+    let opening = format!(",\"{key}\":[");
+    let mut out = String::new();
+    let mut rest = text;
+    while let Some(at) = rest.find(&opening) {
+        out.push_str(&rest[..at]);
+        let after = &rest[at + opening.len()..];
+        let (mut depth, mut quoted, mut escaped, mut end) = (1usize, false, false, after.len());
+        for (index, c) in after.char_indices() {
+            match (quoted, escaped, c) {
+                (true, true, _) => escaped = false,
+                (true, false, '\\') => escaped = true,
+                (true, false, '"') | (false, _, '"') => quoted = !quoted,
+                (false, _, '[') => depth += 1,
+                (false, _, ']') => {
+                    depth -= 1;
+                    if depth == 0 {
+                        end = index + 1;
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        rest = &after[end..];
+    }
+    out.push_str(rest);
+    out
+}
+
+/// The cut takes the key and its whole list, brackets and quotes inside its strings included, and leaves the rest as it is.
+#[test]
+fn the_dossier_s_warnings_are_cut_out_of_a_prompt_s_payload_alone() {
+    let text = "before\n{\"progetti\":[{\"id\":\"x\",\"dossier\":[{\"problema\":\"b]\\\"[\"},{\"altri\":2}]},{\"id\":\"y\"}],\"politica\":\"file\"}\nafter";
+    assert_eq!(without_key_in_text(text, "dossier"), "before\n{\"progetti\":[{\"id\":\"x\"},{\"id\":\"y\"}],\"politica\":\"file\"}\nafter");
+    assert_eq!(without_key_in_text("no key here", "dossier"), "no key here");
+}
+
 /// The Rust trace with the placeholders of the prototype's.
 fn normalized_rust(run: &Run) -> Value {
     let mut trace = run.trace.clone();
@@ -575,6 +637,7 @@ fn normalized_rust(run: &Run) -> Value {
         }
     }
     without_the_product_s_alarm(&mut trace);
+    without_the_dossier_s_warnings(&mut trace);
     error_detail(&mut trace);
     fake_wake_sentence(&mut trace);
     digests(&mut trace, Side::Rust);
