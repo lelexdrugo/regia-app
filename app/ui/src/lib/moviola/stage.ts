@@ -5,8 +5,9 @@
 // prototype does) and the colours, read again from the tokens when the direction on <html> changes: a new theme is
 // a redraw, not a reload. The canvas carries what the proofs wait on: `data-frames`, the frames drawn, `data-dir`,
 // the direction of the last one, `data-camera`, its camera, `data-view`, the stage above the tape, `data-groups`,
-// at the zoom of groups (#489) the groups in view and the moments they hold, empty at the zoom of detail, and
-// `data-world`, whether the last frame's world came from tiles or was drawn directly.
+// at the zoom of groups (#489) the groups in view and the moments they hold, empty at the zoom of detail,
+// `data-world`, whether the last frame's world came from tiles or was drawn directly, and `data-forced`, whether
+// its palette was the system's forced colours (#490).
 //
 // The level of detail (#489): under lod.ts's zoom of groups each lane's milestones are drawn in groups, which the
 // pointer finds as it finds a node, a click on one opening it at the zoom of detail; the world is blitted from tiles
@@ -15,15 +16,16 @@
 //
 // The list of moments (#490): the canvas is a listbox, and a window of the list (moments.ts, listbox.ts) is its own
 // children, rebuilt when the moment chosen, the filters or the level of detail change. The arrows walk the list's
-// order: time's at the zoom of detail, the groups' at the zoom of groups; PageUp and PageDown go ten moments, or a
-// group, at a time.
+// order: time's at the zoom of detail, the groups' at the zoom of groups; Home and End go to its first and last
+// entry, PageUp and PageDown ten moments, or a group, at a time. Under forced colours (Windows' contrast themes) the
+// stage draws in the system's colours (palette.ts) and draws again when they come or go, as on a new direction.
 import { clampCamera, type Extent, homeCamera, panBy, reveal, zoomAround } from "./camera";
 import { AXIS, bucketByKind, type CanvasText, cut, drawFrame, drawStrip, type Frame, reservedPlaces, STRIP, type StripFrame, TAPE, type Tape } from "./canvas2d";
 import { GROUP_ZOOM, groupAt, groupEnvelopes, type Groups, groupsAt, groupZoom, inView, size } from "./lod";
 import { chooseWindow, dayStarts, type Envelope, halfThickness, HOUR, laneEnvelope, type Layout, layout, type Model, tapeScale, type TimeWindow } from "./model";
 import { type ListMode, type ListText, MomentList } from "./listbox";
 import { listOrder, nextEntry, type Order, PAGE } from "./moments";
-import { readPalette, type Palette } from "./palette";
+import { FORCED_COLORS, forcedColors, readPalette, type Palette } from "./palette";
 import { buildScene, type Camera, FILTERED, hitTest, labelRank, newLabels, pickLabels, type Scene, toScreenX, toScreenY, toWorldX, toWorldY, type View } from "./scene";
 import { WorldTiles } from "./tiles";
 
@@ -96,6 +98,8 @@ export class Stage {
   private readonly ctx: CanvasRenderingContext2D;
   private readonly options: StageOptions;
   private palette: Palette;
+  /** Whether the palette in use is the system's forced colours (#490): what `data-forced` says of the last frame. */
+  private forced = false;
   private text: CanvasText;
   private lay: Layout | null = null;
   private scene: Scene | null = null;
@@ -132,6 +136,8 @@ export class Stage {
   private readonly list: MomentList | null;
   private order: Order | null = null;
   private orderFor: [readonly boolean[] | null, Groups | null, Scene | null] = [null, null, null];
+  /** The entry at the playhead for an order and an instant: computed once, not at every frame. */
+  private anchored: { order: Order | null; t: number; entry: number } = { order: null, t: Number.NaN, entry: 0 };
 
   constructor(host: HTMLElement, canvas: HTMLCanvasElement, model: Model, options: StageOptions) {
     this.host = host;
@@ -148,6 +154,7 @@ export class Stage {
     this.strip = options.strip ?? null;
     this.stripCtx = this.strip ? this.strip.getContext("2d", { alpha: false }) : null;
     this.palette = readPalette();
+    this.forced = forcedColors();
     this.ready = new Promise((resolve) => (this.settle = resolve));
     this.list = options.list && options.listMode !== "none" ? new MomentList(canvas, model, options.list, options.listMode ?? "window") : null;
 
@@ -163,6 +170,11 @@ export class Stage {
       const themed = new MutationObserver(() => this.retheme());
       themed.observe(document.documentElement, { attributes: true, attributeFilter: ["data-dir", "data-density"] });
       this.cleanup.push(() => themed.disconnect());
+      // A contrast theme of the system, turned on or off, is a new palette too (#490).
+      const forced = matchMedia(FORCED_COLORS);
+      const reforced = () => this.retheme();
+      forced.addEventListener("change", reforced);
+      this.cleanup.push(() => forced.removeEventListener("change", reforced));
     }
     const fonts = document.fonts;
     const loaded = () => this.render();
@@ -227,8 +239,11 @@ export class Stage {
     return this.order;
   }
 
-  /** The entry at the playhead: where the window stands while no moment is chosen, and where a page key starts. */
+  /** The entry at the playhead: where the window stands while no moment is chosen, and where a page key starts. One
+   * pass over the list, once for each order and instant: a frame that moves neither pays nothing. */
   private anchor(order: Order): number {
+    const known = this.anchored;
+    if (known.order === order && known.t === this.t) return known.entry;
     let best = 0;
     let gap = Infinity;
     for (let e = 0; e < order.index.length; e++) {
@@ -238,16 +253,26 @@ export class Stage {
         best = e;
       }
     }
+    this.anchored = { order, t: this.t, entry: best };
     return best;
   }
 
-  /** The window of the list around the moment chosen, and the canvas naming its option. */
-  private syncList(): void {
+  /** The window of the list around the moment chosen, and the canvas naming its option: at every frame, and after
+   * every change of the selection. Nothing is written when nothing changed; the bench measures both. */
+  syncList(): void {
     if (!this.list) return;
     const order = this.listOrder;
     const active = this.list.render(order, this.selected, this.selected >= 0 ? -1 : this.anchor(order));
-    if (active) this.canvas.setAttribute("aria-activedescendant", active);
-    else this.canvas.removeAttribute("aria-activedescendant");
+    if (active) {
+      if (this.canvas.getAttribute("aria-activedescendant") !== active) this.canvas.setAttribute("aria-activedescendant", active);
+    } else if (this.canvas.hasAttribute("aria-activedescendant")) {
+      this.canvas.removeAttribute("aria-activedescendant");
+    }
+  }
+
+  /** The list's window rebuilt so far (listbox.ts), for the bench. */
+  get listBuilds(): number {
+    return this.list?.builds ?? 0;
   }
 
   /** The words of the catalog in use: a new language is a redraw, the lanes' names measured again and the strip's
@@ -460,6 +485,7 @@ export class Stage {
       const { cx, cy, z } = this.camera;
       this.canvas.dataset["frames"] = String(this.frames);
       this.canvas.dataset["dir"] = this.palette.direction;
+      this.canvas.dataset["forced"] = this.forced ? "true" : "false";
       this.canvas.dataset["camera"] = `${cx.toFixed(1)} ${cy.toFixed(1)} ${z.toFixed(3)}`;
       this.canvas.dataset["view"] = `${this.view.w} ${this.view.h}`;
       this.canvas.dataset["world"] = this.tiles.blitted ? "tiles" : "direct";
@@ -513,6 +539,7 @@ export class Stage {
 
   private retheme(): void {
     this.palette = readPalette();
+    this.forced = forcedColors();
     this.widths.clear();
     // Every mark drawn once is in the old tokens: the tiles, the tape's layers, the strip's axis, the names' widths.
     this.tiles.invalidate();
@@ -856,11 +883,12 @@ export class Stage {
   }
 
   /** The arrows go from moment to moment in the list's order, Up and Down to the nearest in the next lane with one;
-   * Home and End to the first and the last; PageUp and PageDown ten moments, or a group, back or on; + and - zoom, 0
-   * brings the camera home; Esc lets the selection go. */
+   * Home and End to the list's first and last entry, a listbox's ends: at the zoom of detail the first and the last
+   * moment the filters keep, at the zoom of groups the first group's first and the last group's last, which need not
+   * be the last in time when two lanes share the last stretch; PageUp and PageDown ten moments, or a group, back or
+   * on; + and - zoom, 0 brings the camera home; Esc lets the selection go. */
   private keydown(event: KeyboardEvent): void {
     if (event.ctrlKey || event.metaKey || event.altKey) return;
-    const nodes = this.model.nodes;
     const done = () => event.preventDefault();
     switch (event.key) {
       case "ArrowRight":
@@ -873,14 +901,11 @@ export class Stage {
       case "ArrowDown":
         this.acrossLanes(event.key === "ArrowUp" ? -1 : 1);
         return done();
-      case "Home": {
-        const first = nodes.find((n) => this.shown(n.index));
-        if (first) this.select(first.index);
-        return done();
-      }
+      case "Home":
       case "End": {
-        const last = [...nodes].reverse().find((n) => this.shown(n.index));
-        if (last) this.select(last.index);
+        const order = this.listOrder;
+        const total = order.index.length;
+        if (total > 0) this.select(order.index[event.key === "Home" ? 0 : total - 1] as number);
         return done();
       }
       case "PageDown":

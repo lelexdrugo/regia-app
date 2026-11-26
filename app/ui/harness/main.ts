@@ -16,7 +16,7 @@ import { type Catalog, catalog } from "../src/lib/i18n";
 import { DENSITIES, DIRECTIONS, draw } from "../src/lib/look";
 import type { ListMode } from "../src/lib/moviola/listbox";
 import type { MoviolaSource, ProjectSummary, Snapshot, Timeline } from "../src/lib/moviola/types";
-import { bench, type BenchResult } from "./bench";
+import { bench, benchList, type BenchResult, type ListBench } from "./bench";
 import { SECTIONS } from "../src/lib/route";
 import { appRenderer, type Check, type CorpusCase, loadFonts, type Renderer, v07 } from "../src/lib/v07";
 import App from "../src/App.svelte";
@@ -37,6 +37,8 @@ declare global {
     harnessSaved?: SettingsChange[];
     /** What the moviola's quick check of the time per frame measured, for prove/bench.mjs. */
     benchResult?: BenchResult;
+    /** What the bench of the list of moments measured (#490), for prove/bench.mjs --list. */
+    benchList?: ListBench;
   }
 }
 
@@ -217,7 +219,7 @@ let mounts = 0;
 function parts(route: string) {
   const [path = "", query = ""] = route.replace(/^#\/?/, "").split("?");
   const params = new URLSearchParams(query);
-  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota", "sort", "ported", "theme", "notes"].map((name) => params.get(name)).join("&");
+  const fixture = ["data", "lang", "dir", "density", "save", "help", "quota", "sort", "ported", "theme", "notes", "list", "text"].map((name) => params.get(name)).join("&");
   return { view: path.split("/")[0] ?? "", query, params, fixture };
 }
 
@@ -257,10 +259,21 @@ async function show(): Promise<void> {
     const catalogFor = (other: string) => (language === "xx" ? pseudo(strings(other)) : strings(other));
     // help=1 opens the help as ? does, once the screen is drawn, for the proofs that read it.
     let helped = params.get("help") !== "1";
+    // text=open opens the moviola's story as text (#490) once the stage is drawn, as a click on its summary does, for
+    // the catalog's and the limits' proofs.
+    let told = params.get("text") !== "open";
     const onsettled = async () => {
       if (!helped) {
         helped = true;
         dispatchEvent(new KeyboardEvent("keydown", { key: "?" }));
+        await tick();
+      }
+      const story = document.querySelector<HTMLDetailsElement>("details.story-text");
+      if (!told && story) {
+        told = true;
+        const toggled = new Promise((resolve) => story.addEventListener("toggle", resolve, { once: true }));
+        story.open = true;
+        await toggled;
         await tick();
       }
       drawn();
@@ -317,9 +330,11 @@ async function show(): Promise<void> {
       mounted.push(mount(Stopped, { target: root, props: { brief: fixtureOf(data) } }));
       break;
     case "bench":
-      // #/bench?scale=1: the moviola's stage on a synthetic timeline, measured (harness/bench.ts).
+      // #/bench?scale=1: the moviola's stage on a synthetic timeline, measured (harness/bench.ts); with list=1, the
+      // cost of its list of moments (#490).
       settingsOf(params);
-      window.benchResult = await bench(root, Number(params.get("scale") ?? "1"), catalogOf);
+      if (params.get("list") === "1") window.benchList = await benchList(root, Number(params.get("scale") ?? "1"), catalogOf);
+      else window.benchResult = await bench(root, Number(params.get("scale") ?? "1"), catalogOf);
       break;
     case "v07":
       window.harnessChecks = await v07(corpus, params.get("renderer") === "unsafe" ? unsafe : appRenderer(catalogOf));

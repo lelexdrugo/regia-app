@@ -3,7 +3,8 @@
   // A card per lane: its title, state and reason, how many moments, the moment that opened it and the one that closed
   // it. Choosing a card dims the other lanes on the stage and lists its moments; choosing it again lets it go. A
   // record's title and reason, and a lane's id, are text from others. The legend of the prototype's L1 is the help's,
-  // on ? (#487).
+  // on ? (#487). The card and its buttons are flex boxes, which keep no space between their items: a hidden comma
+  // between them keeps the names a screen reader reads in words, not glued (#490, seen in the tree of UI Automation).
   import type { Catalog } from "../../lib/i18n";
   import { type LaneCard, laneCards, type Model } from "../../lib/moviola/model";
   import { LANE_ID, timecode } from "../../lib/moviola/text";
@@ -33,7 +34,7 @@
   {@const target = model.nodes[index]}
   {#if target}
     <button type="button" class="link jump" onclick={() => onselect(index)}>
-      <span class="mono">{timecode(strings, target.t)}</span>
+      <span class="mono">{timecode(strings, target.t)}</span><span class="sr">, </span>
       <span data-raw>{target.milestone.title}</span>
     </button>
   {/if}
@@ -55,13 +56,16 @@
             {:else}
               <span class="lane-name" data-raw>{lane.title ?? lane.id}</span>
             {/if}
+            <span class="sr">, </span>
             <span class="pill neutral">{strings.message(LANE_ID[lane.status])}</span>
           </button>
+          <span class="sr">, </span>
           <p class="lane-facts faint">
             <span class="mono" data-raw>{lane.id}</span>
-            <span aria-hidden="true">·</span>
+            <span aria-hidden="true">·</span><span class="sr">, </span>
             <span>{strings.message("moviola-direction-count", { n: lane.nodes.length })}</span>
           </p>
+          <span class="sr">, </span>
           {#if lane.id === main}
             <p class="lane-reason">{strings.message("moviola-direction-main")}</p>
           {:else if !lane.recorded}

@@ -265,3 +265,16 @@ moviola-list-waiting = { $n ->
 moviola-list-level-groups = Zoomed out: the moments are drawn in groups by lane, and the list goes group by group.
 moviola-list-level-detail = Zoomed in: each moment is drawn, and the list goes from moment to moment in time.
 moviola-keys-pages = On the stage: ten moments back or on; zoomed out, the group before or after
+moviola-text-title = The story as text
+moviola-text-lead = { $n ->
+        [one] One moment
+       *[other] { $n } moments
+    } on { $lanes ->
+        [one] one lane
+       *[other] { $lanes } lanes
+    }: first in time order, then direction by direction. The story the stage draws, to read line by line.
+moviola-text-index = In time order
+moviola-text-direction = Direction:
+moviola-text-state = State
+moviola-text-reason = Why
+moviola-text-label = M{ $n }

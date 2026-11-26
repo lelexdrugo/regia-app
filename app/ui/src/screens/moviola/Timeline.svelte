@@ -13,25 +13,26 @@
   // The list of moments (#490): the canvas is a listbox of every moment the filters keep, a window of it in the page,
   // the moment chosen named with aria-activedescendant (lib/moviola/listbox.ts), and at the zoom of groups each group
   // named once (#489/V9). While the stage has the focus the list says the moment chosen, so the status line and the
-  // panel at the playhead stop speaking; a hidden line says when the level of detail changes.
+  // panel at the playhead stop speaking; a hidden line says when the level of detail changes. Under the panel at the
+  // playhead, the story as text (StoryText.svelte), the prototype's `esporta` in the page.
   import { onMount, tick, untrack } from "svelte";
 
   import type { Catalog } from "../../lib/i18n";
   import type { CanvasText } from "../../lib/moviola/canvas2d";
   import { type Filters as FilterState, filtering, fromAddress, NO_FILTERS, visible } from "../../lib/moviola/filters";
   import { frame as frameOf, type Notes } from "../../lib/moviola/frame";
-  import type { ListMode, ListText, Words } from "../../lib/moviola/listbox";
+  import type { ListMode } from "../../lib/moviola/listbox";
   import { type Model, prepare, stateAt } from "../../lib/moviola/model";
   import { isEmpty, type Names, parseQuery, search, stepWithin } from "../../lib/moviola/search";
   import { type GroupsShown, Stage, type ViewRange } from "../../lib/moviola/stage";
-  import { KINDS } from "../../lib/moviola/scene";
-  import { day, dayKey, HEALTH_ID, KIND_ID, LANE_ID, laneName, timecode } from "../../lib/moviola/text";
+  import { day, dayKey, KIND_ID, LANE_ID, laneName, listText, timecode } from "../../lib/moviola/text";
   import type { MoviolaSource, Snapshot } from "../../lib/moviola/types";
   import { href } from "../../lib/route";
   import AtDate, { type Decisions } from "./AtDate.svelte";
   import Directions from "./Directions.svelte";
   import Filters from "./Filters.svelte";
   import Frame from "./Frame.svelte";
+  import StoryText from "./StoryText.svelte";
 
   interface Props {
     strings: Catalog;
@@ -239,40 +240,6 @@
     }
   }
 
-  /** The list's words (#490): a moment's kind, title, instant, lane and health; a group's place, moments, lane, span,
-   * kinds and health. Titles and directions' ids are text from others. */
-  function listWords(catalog: Catalog, model: Model): ListText {
-    const laneWords = (index: number): Words[number] => {
-      const lane = model.lanes[index];
-      return !lane || lane.id === model.timeline.main_direction ? { text: catalog.message("moviola-lane-main") } : { text: lane.id, raw: true };
-    };
-    return {
-      moment: (index) => {
-        const node = model.nodes[index] as Model["nodes"][number];
-        const m = node.milestone;
-        const said: Words = [{ text: catalog.message(KIND_ID[m.kind]) }, { text: m.title, raw: true }, { text: timecode(catalog, node.t) }, laneWords(node.lane)];
-        if (m.health !== "healthy") said.push({ text: catalog.message(HEALTH_ID[m.health]) });
-        return said;
-      },
-      group: (group, position, total) => {
-        const span = group.from === group.to ? timecode(catalog, group.from) : catalog.message("moviola-list-span", { from: timecode(catalog, group.from), to: timecode(catalog, group.to) });
-        const said: Words = [
-          { text: catalog.message("moviola-list-group", { position, total }) },
-          { text: catalog.message("moviola-list-moments", { n: group.count }) },
-          laneWords(group.lane),
-          { text: span },
-        ];
-        KINDS.forEach((kind, k) => {
-          const n = group.kinds[k] ?? 0;
-          if (n > 0) said.push({ text: catalog.message("moviola-list-kind", { kind: catalog.message(KIND_ID[kind]), n }) });
-        });
-        if (group.atRisk > 0) said.push({ text: catalog.message("moviola-list-at-risk", { n: group.atRisk }) });
-        if (group.waiting > 0) said.push({ text: catalog.message("moviola-list-waiting", { n: group.waiting }) });
-        return said;
-      },
-    };
-  }
-
   function words(catalog: Catalog, model: Model): CanvasText {
     return {
       day: (at) => day(catalog, at),
@@ -309,7 +276,7 @@
       dayKey,
       ...(strip ? { strip } : {}),
       observeTheme: untrack(() => observeTheme),
-      list: untrack(() => listWords(strings, model)),
+      list: untrack(() => listText(strings, model)),
       listMode: untrack(() => listMode),
       onchange: (moved) => {
         t = moved.t;
@@ -344,7 +311,7 @@
     const catalog = strings;
     if (stage && view.kind === "ready") {
       stage.setText(words(catalog, view.model));
-      stage.setListText(listWords(catalog, view.model));
+      stage.setListText(listText(catalog, view.model));
     }
   });
 
@@ -549,6 +516,7 @@
     {#if at}
       <AtDate {strings} {model} state={at} {decisions} live={!(onStage && listing)} onselect={(index) => stage?.select(index)} />
     {/if}
+    <StoryText {strings} {model} />
     </div>
     {#if current}
       <Frame {strings} {model} frame={current} {notes} {snapshot} onselect={(index) => stage?.select(index)} onclose={close} />
