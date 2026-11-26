@@ -1,0 +1,5224 @@
+{
+ "oracle_commit": "96ebf7dedb4aec5395d2b57e9e8f242ed31df5ec",
+ "oracle_repository": "lelexdrugo/regia",
+ "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+ "sqlite": "3.49.1",
+ "clock": {
+  "start": "2026-01-10T09:00:00+00:00",
+  "monotonic_start": 1000.0,
+  "tag": "golden/clock"
+ },
+ "step_ttl_s": 1800,
+ "families": {
+  "lease": [
+   {
+    "op": "lease-list",
+    "expired": false,
+    "outcome": [],
+    "rows": []
+   },
+   {
+    "op": "lease-take",
+    "task": 7,
+    "project": "alpha",
+    "holder": "w1",
+    "ttl": 600,
+    "outcome": {
+     "ok": true,
+     "state": "taken",
+     "holder": "w1",
+     "expired": false,
+     "expires_in_s": 600
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 1,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1600.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-take",
+    "task": 12,
+    "project": "beta",
+    "holder": "w2",
+    "ttl": 60,
+    "outcome": {
+     "ok": true,
+     "state": "taken",
+     "holder": "w2",
+     "expired": false,
+     "expires_in_s": 60
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 1,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1600.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-take",
+    "task": 100,
+    "project": "alpha",
+    "holder": "w3",
+    "ttl": 30,
+    "outcome": {
+     "ok": true,
+     "state": "taken",
+     "holder": "w3",
+     "expired": false,
+     "expires_in_s": 30
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 1,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1600.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-take",
+    "task": 7,
+    "project": "alpha",
+    "holder": "w2",
+    "ttl": 600,
+    "outcome": {
+     "ok": false,
+     "state": "busy",
+     "holder": "w1",
+     "expired": false,
+     "expires_in_s": 600
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 1,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1600.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-list",
+    "expired": false,
+    "outcome": [
+     {
+      "unreadable": false,
+      "expired": false,
+      "expires_in_s": 600,
+      "fields": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     },
+     {
+      "unreadable": false,
+      "expired": false,
+      "expires_in_s": 60,
+      "fields": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     },
+     {
+      "unreadable": false,
+      "expired": false,
+      "expires_in_s": 30,
+      "fields": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     }
+    ],
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 1,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1600.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-list",
+    "expired": true,
+    "outcome": [],
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 1,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1600.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 30
+   },
+   {
+    "op": "lease-list",
+    "expired": true,
+    "outcome": [
+     {
+      "unreadable": false,
+      "expired": true,
+      "expires_in_s": 0,
+      "fields": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     }
+    ],
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 1,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1600.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-beat",
+    "task": 7,
+    "holder": "w1",
+    "ttl": null,
+    "outcome": {
+     "ok": true,
+     "state": "heartbeat",
+     "holder": "w1",
+     "expired": false,
+     "expires_in_s": 600
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 2,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 600,
+       "scade": "2026-01-10T09:10:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1630.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-beat",
+    "task": 7,
+    "holder": "w1",
+    "ttl": 900,
+    "outcome": {
+     "ok": true,
+     "state": "heartbeat",
+     "holder": "w1",
+     "expired": false,
+     "expires_in_s": 900
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 3,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 900,
+       "scade": "2026-01-10T09:15:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1930.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-beat",
+    "task": 7,
+    "holder": "w2",
+    "ttl": null,
+    "outcome": {
+     "ok": false,
+     "state": "foreign",
+     "holder": "w1",
+     "expired": false,
+     "expires_in_s": 900
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 3,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 900,
+       "scade": "2026-01-10T09:15:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1930.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-beat",
+    "task": 99,
+    "holder": "w1",
+    "ttl": null,
+    "outcome": {
+     "ok": false,
+     "state": "absent",
+     "holder": null,
+     "expired": null,
+     "expires_in_s": null
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 3,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 900,
+       "scade": "2026-01-10T09:15:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1930.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-take",
+    "task": 7,
+    "project": "beta",
+    "holder": "w1",
+    "ttl": 300.5,
+    "outcome": {
+     "ok": true,
+     "state": "renewed",
+     "holder": "w1",
+     "expired": false,
+     "expires_in_s": 300
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 1,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:00:30.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1030.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-beat",
+    "task": 100,
+    "holder": "w3",
+    "ttl": null,
+    "outcome": {
+     "ok": true,
+     "state": "heartbeat",
+     "holder": "w3",
+     "expired": false,
+     "expires_in_s": 30
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 2,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 45
+   },
+   {
+    "op": "lease-list",
+    "expired": false,
+    "outcome": [
+     {
+      "unreadable": false,
+      "expired": false,
+      "expires_in_s": 255,
+      "fields": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     },
+     {
+      "unreadable": false,
+      "expired": true,
+      "expires_in_s": 0,
+      "fields": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     },
+     {
+      "unreadable": false,
+      "expired": true,
+      "expires_in_s": 0,
+      "fields": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     }
+    ],
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 2,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-list",
+    "expired": true,
+    "outcome": [
+     {
+      "unreadable": false,
+      "expired": true,
+      "expires_in_s": 0,
+      "fields": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     },
+     {
+      "unreadable": false,
+      "expired": true,
+      "expires_in_s": 0,
+      "fields": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     }
+    ],
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 2,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 1,
+      "doc": {
+       "task": 12,
+       "progetto": "beta",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-take",
+    "task": 12,
+    "project": "alpha",
+    "holder": "w3",
+    "ttl": 120,
+    "outcome": {
+     "ok": true,
+     "state": "stolen",
+     "holder": "w3",
+     "expired": false,
+     "expires_in_s": 120
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 2,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 2,
+      "doc": {
+       "task": 12,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 120,
+       "scade": "2026-01-10T09:03:15.000+00:00",
+       "al_posto_di": "w2",
+       "rubato_il": "2026-01-10T09:01:15.000+00:00",
+       "_m": {
+        "t": 1075.0,
+        "scade": 1195.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-beat",
+    "task": 12,
+    "holder": "w2",
+    "ttl": null,
+    "outcome": {
+     "ok": false,
+     "state": "foreign",
+     "holder": "w3",
+     "expired": false,
+     "expires_in_s": 120
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 2,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 2,
+      "doc": {
+       "task": 12,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 120,
+       "scade": "2026-01-10T09:03:15.000+00:00",
+       "al_posto_di": "w2",
+       "rubato_il": "2026-01-10T09:01:15.000+00:00",
+       "_m": {
+        "t": 1075.0,
+        "scade": 1195.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-release",
+    "task": 12,
+    "holder": "w2",
+    "outcome": {
+     "ok": false,
+     "state": "foreign",
+     "holder": "w3",
+     "expired": false,
+     "expires_in_s": 120
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 2,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 30,
+       "scade": "2026-01-10T09:01:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1060.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 2,
+      "doc": {
+       "task": 12,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 120,
+       "scade": "2026-01-10T09:03:15.000+00:00",
+       "al_posto_di": "w2",
+       "rubato_il": "2026-01-10T09:01:15.000+00:00",
+       "_m": {
+        "t": 1075.0,
+        "scade": 1195.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-take",
+    "task": 100,
+    "project": "alpha",
+    "holder": "w3",
+    "ttl": 45,
+    "outcome": {
+     "ok": true,
+     "state": "renewed",
+     "holder": "w3",
+     "expired": false,
+     "expires_in_s": 45
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 3,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 45,
+       "scade": "2026-01-10T09:02:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1120.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 2,
+      "doc": {
+       "task": 12,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 120,
+       "scade": "2026-01-10T09:03:15.000+00:00",
+       "al_posto_di": "w2",
+       "rubato_il": "2026-01-10T09:01:15.000+00:00",
+       "_m": {
+        "t": 1075.0,
+        "scade": 1195.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-beat",
+    "task": 100,
+    "holder": "w3",
+    "ttl": 30.0015,
+    "outcome": {
+     "ok": true,
+     "state": "heartbeat",
+     "holder": "w3",
+     "expired": false,
+     "expires_in_s": 30
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "12",
+      "gen": 2,
+      "doc": {
+       "task": 12,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 120,
+       "scade": "2026-01-10T09:03:15.000+00:00",
+       "al_posto_di": "w2",
+       "rubato_il": "2026-01-10T09:01:15.000+00:00",
+       "_m": {
+        "t": 1075.0,
+        "scade": 1195.0,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-release",
+    "task": 12,
+    "holder": "w3",
+    "outcome": {
+     "ok": true,
+     "state": "released",
+     "holder": null,
+     "expired": null,
+     "expires_in_s": null
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-release",
+    "task": 12,
+    "holder": "w3",
+    "outcome": {
+     "ok": true,
+     "state": "free",
+     "holder": null,
+     "expired": null,
+     "expires_in_s": null
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-list",
+    "expired": false,
+    "outcome": [
+     {
+      "unreadable": false,
+      "expired": false,
+      "expires_in_s": 255,
+      "fields": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     },
+     {
+      "unreadable": false,
+      "expired": false,
+      "expires_in_s": 30,
+      "fields": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     }
+    ],
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 4,
+      "doc": {
+       "task": 7,
+       "progetto": "beta",
+       "proprietario": "w1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "battito": "2026-01-10T09:00:30.000+00:00",
+       "ttl_s": 300.5,
+       "scade": "2026-01-10T09:05:30.500+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1030.0,
+        "scade": 1330.5,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 600
+   },
+   {
+    "op": "lease-take",
+    "task": 7,
+    "project": "alpha",
+    "holder": "w2",
+    "ttl": 60,
+    "outcome": {
+     "ok": true,
+     "state": "stolen",
+     "holder": "w2",
+     "expired": false,
+     "expires_in_s": 60
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lease",
+      "key": "7",
+      "gen": 5,
+      "doc": {
+       "task": 7,
+       "progetto": "alpha",
+       "proprietario": "w2",
+       "preso": "2026-01-10T09:11:15.000+00:00",
+       "battito": "2026-01-10T09:11:15.000+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:12:15.000+00:00",
+       "al_posto_di": "w1",
+       "rubato_il": "2026-01-10T09:11:15.000+00:00",
+       "_m": {
+        "t": 1675.0,
+        "scade": 1735.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-release",
+    "task": 7,
+    "holder": "w2",
+    "outcome": {
+     "ok": true,
+     "state": "released",
+     "holder": null,
+     "expired": null,
+     "expires_in_s": null
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-release",
+    "task": 100,
+    "holder": "w1",
+    "outcome": {
+     "ok": false,
+     "state": "foreign",
+     "holder": "w3",
+     "expired": true,
+     "expires_in_s": 0
+    },
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-list",
+    "expired": true,
+    "outcome": [
+     {
+      "unreadable": false,
+      "expired": true,
+      "expires_in_s": 0,
+      "fields": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     }
+    ],
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "lease-list",
+    "expired": false,
+    "outcome": [
+     {
+      "unreadable": false,
+      "expired": true,
+      "expires_in_s": 0,
+      "fields": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null
+      }
+     }
+    ],
+    "rows": [
+     {
+      "kind": "lease",
+      "key": "100",
+      "gen": 4,
+      "doc": {
+       "task": 100,
+       "progetto": "alpha",
+       "proprietario": "w3",
+       "preso": "2026-01-10T09:01:15.000+00:00",
+       "battito": "2026-01-10T09:01:15.000+00:00",
+       "ttl_s": 30.0015,
+       "scade": "2026-01-10T09:01:45.001+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1075.0,
+        "scade": 1105.001,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   }
+  ],
+  "cursor": [
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "outcome": {
+     "value": null
+    },
+    "rows": []
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "default": "none yet",
+    "outcome": {
+     "value": "none yet"
+    },
+    "rows": []
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "name": "notes",
+    "default": [],
+    "outcome": {
+     "value": []
+    },
+    "rows": []
+   },
+   {
+    "op": "cursor-write",
+    "project": "alpha",
+    "value": "2026-01-09T18:00:00Z",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "outcome": {
+     "value": "2026-01-09T18:00:00Z"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-write",
+    "project": "alpha",
+    "name": "notes",
+    "value": [
+     3,
+     1,
+     2
+    ],
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "name": "notes",
+    "outcome": {
+     "value": [
+      3,
+      1,
+      2
+     ]
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "outcome": {
+     "value": "2026-01-09T18:00:00Z"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 0.25
+   },
+   {
+    "op": "cursor-write",
+    "project": "alpha",
+    "value": {
+     "v": 1,
+     "t": "2026-01-10T09:00:00Z",
+     "propri": {
+      "commenti": [
+       5,
+       9
+      ]
+     }
+    },
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          5,
+          9
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "outcome": {
+     "value": {
+      "v": 1,
+      "t": "2026-01-10T09:00:00Z",
+      "propri": {
+       "commenti": [
+        5,
+        9
+       ]
+      }
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          5,
+          9
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-write",
+    "project": "beta",
+    "value": {
+     "n": 1,
+     "x": 1.0,
+     "big": 9007199254740993,
+     "neg": -2,
+     "half": 0.5,
+     "text": "\u00e8",
+     "nested": {
+      "list": [
+       true,
+       null,
+       2.0
+      ]
+     }
+    },
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          5,
+          9
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "beta",
+    "outcome": {
+     "value": {
+      "n": 1,
+      "x": 1.0,
+      "big": 9007199254740993,
+      "neg": -2,
+      "half": 0.5,
+      "text": "\u00e8",
+      "nested": {
+       "list": [
+        true,
+        null,
+        2.0
+       ]
+      }
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          5,
+          9
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 1.75
+   },
+   {
+    "op": "cursor-write",
+    "project": "alpha",
+    "name": "eventi",
+    "value": "2026-01-10T09:30:00Z",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "valore": "2026-01-10T09:30:00Z",
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "outcome": {
+     "value": "2026-01-10T09:30:00Z"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "valore": "2026-01-10T09:30:00Z",
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "name": "eventi",
+    "outcome": {
+     "value": "2026-01-10T09:30:00Z"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "valore": "2026-01-10T09:30:00Z",
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 1,
+      "doc": {
+       "valore": [
+        3,
+        1,
+        2
+       ],
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-write",
+    "project": "alpha",
+    "name": "notes",
+    "value": null,
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "valore": "2026-01-10T09:30:00Z",
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 2,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "alpha",
+    "name": "notes",
+    "outcome": {
+     "value": null
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "valore": "2026-01-10T09:30:00Z",
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 2,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-write",
+    "project": "alpha",
+    "name": "Notes",
+    "value": 1,
+    "outcome": {
+     "error": "invalid-name"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "valore": "2026-01-10T09:30:00Z",
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 2,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-read",
+    "project": "gamma",
+    "name": "notes",
+    "outcome": {
+     "value": null
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "valore": "2026-01-10T09:30:00Z",
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:notes",
+      "gen": 2,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:00:02.000+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "n": 1,
+        "x": 1.0,
+        "big": 9007199254740993,
+        "neg": -2,
+        "half": 0.5,
+        "text": "\u00e8",
+        "nested": {
+         "list": [
+          true,
+          null,
+          2.0
+         ]
+        }
+       },
+       "aggiornato": "2026-01-10T09:00:00.250+00:00"
+      }
+     }
+    ]
+   }
+  ],
+  "step": [
+   {
+    "op": "step-start",
+    "project": "alpha",
+    "holder": "o1",
+    "session": "s-1",
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "taken",
+     "holder": "o1",
+     "expires_in_s": 1800,
+     "t": "2026-01-10T09:00:00Z",
+     "resumed": false,
+     "cursor": {
+      "form": "absent"
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:30:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 2800.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-comment",
+    "project": "alpha",
+    "comment": 101,
+    "session": "s-1",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101
+        ]
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:30:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 2800.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-comment",
+    "project": "alpha",
+    "comment": 55,
+    "session": "s-1",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 3,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55
+        ]
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:30:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 2800.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-comment",
+    "project": "alpha",
+    "comment": 101,
+    "session": "s-1",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 3,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55
+        ]
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:30:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 2800.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-comment",
+    "project": "alpha",
+    "comment": 77,
+    "session": "s-2",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 3,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55
+        ]
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:30:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 2800.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-comment",
+    "project": "alpha",
+    "comment": 78,
+    "session": null,
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 4,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55,
+         78
+        ]
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:30:00.000+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1000.0,
+        "scade": 2800.0,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 600.75
+   },
+   {
+    "op": "step-renew",
+    "project": "alpha",
+    "holder": "o1",
+    "session": "s-1",
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "renewed",
+     "holder": "o1",
+     "expired": false,
+     "expires_in_s": 1800
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 4,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55,
+         78
+        ]
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:00.750+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1600.75,
+        "scade": 3400.75,
+        "o": "golden/clock"
+       },
+       "rinnovato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-renew",
+    "project": "alpha",
+    "holder": "o2",
+    "session": "s-2",
+    "ttl": 600.0,
+    "outcome": {
+     "exit": 3,
+     "ok": false,
+     "state": "foreign",
+     "holder": "o1",
+     "expired": false,
+     "expires_in_s": 1800
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 4,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55,
+         78
+        ]
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:00.750+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1600.75,
+        "scade": 3400.75,
+        "o": "golden/clock"
+       },
+       "rinnovato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-start",
+    "project": "alpha",
+    "holder": "o2",
+    "session": "s-2",
+    "outcome": {
+     "exit": 3,
+     "ok": false,
+     "state": "busy",
+     "holder": "o1",
+     "expired": false,
+     "expires_in_s": 1800
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 4,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55,
+         78
+        ]
+       },
+       "aggiornato": "2026-01-10T09:00:00.000+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:00.750+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1600.75,
+        "scade": 3400.75,
+        "o": "golden/clock"
+       },
+       "rinnovato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-start",
+    "project": "alpha",
+    "holder": "o1",
+    "session": "s-2",
+    "ttl": 900.0,
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "renewed",
+     "holder": "o1",
+     "expires_in_s": 900,
+     "t": "2026-01-10T09:00:00Z",
+     "resumed": true,
+     "cursor": {
+      "form": "absent"
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 5,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-2",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55,
+         78
+        ]
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 900.0,
+       "scade": "2026-01-10T09:25:00.750+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1600.75,
+        "scade": 2500.75,
+        "o": "golden/clock"
+       },
+       "rinnovato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-comment",
+    "project": "alpha",
+    "comment": 79,
+    "session": "s-1",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 5,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-2",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55,
+         78
+        ]
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 900.0,
+       "scade": "2026-01-10T09:25:00.750+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1600.75,
+        "scade": 2500.75,
+        "o": "golden/clock"
+       },
+       "rinnovato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-finish",
+    "project": "alpha",
+    "holder": "o2",
+    "session": "s-2",
+    "outcome": {
+     "exit": 3,
+     "ok": false,
+     "state": "foreign",
+     "holder": "o1",
+     "expired": false,
+     "expires_in_s": 900
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 5,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-2",
+        "t": "2026-01-10T09:00:00Z",
+        "commenti": [
+         101,
+         55,
+         78
+        ]
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:00:00.000+00:00",
+       "ttl_s": 900.0,
+       "scade": "2026-01-10T09:25:00.750+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1600.75,
+        "scade": 2500.75,
+        "o": "golden/clock"
+       },
+       "rinnovato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-finish",
+    "project": "alpha",
+    "holder": "o1",
+    "session": "s-2",
+    "reports": {
+     "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00",
+     "missing.md": null
+    },
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "holder": "o1",
+     "cursor": {
+      "form": "parts",
+      "version": 1,
+      "t": "2026-01-10T09:00:00Z",
+      "own": {
+       "comments": [
+        55,
+        78,
+        101
+       ],
+       "reports": {
+        "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+       }
+      }
+     },
+     "lock": "released"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          55,
+          78,
+          101
+         ],
+         "report": {
+          "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+         }
+        }
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 6,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-finish",
+    "project": "alpha",
+    "holder": "o1",
+    "session": "s-2",
+    "outcome": {
+     "exit": 3,
+     "ok": false,
+     "state": "absent",
+     "holder": null,
+     "expired": null,
+     "expires_in_s": null
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          55,
+          78,
+          101
+         ],
+         "report": {
+          "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+         }
+        }
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 6,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-comment",
+    "project": "alpha",
+    "comment": 80,
+    "session": "s-1",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          55,
+          78,
+          101
+         ],
+         "report": {
+          "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+         }
+        }
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 6,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "cursor-write",
+    "project": "beta",
+    "value": "2026-01-09T18:00:00Z",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          55,
+          78,
+          101
+         ],
+         "report": {
+          "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+         }
+        }
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 6,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 3.5
+   },
+   {
+    "op": "step-start",
+    "project": "beta",
+    "holder": "o1",
+    "session": null,
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "taken",
+     "holder": "o1",
+     "expires_in_s": 1800,
+     "t": "2026-01-10T09:10:04Z",
+     "resumed": false,
+     "cursor": {
+      "form": "instant",
+      "instant": "2026-01-09T18:00:00Z"
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          55,
+          78,
+          101
+         ],
+         "report": {
+          "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+         }
+        }
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 6,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "acquire",
+    "project": "alpha",
+    "holder": "o2",
+    "ttl": 60,
+    "outcome": {
+     "ok": true,
+     "state": "taken",
+     "holder": "o2",
+     "expired": false,
+     "expires_in_s": 60
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          55,
+          78,
+          101
+         ],
+         "report": {
+          "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+         }
+        }
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 6,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o2",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:11:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 1664.25,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-finish",
+    "project": "alpha",
+    "holder": "o2",
+    "session": null,
+    "outcome": {
+     "exit": 1,
+     "error": "no-step"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          55,
+          78,
+          101
+         ],
+         "report": {
+          "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+         }
+        }
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 6,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o2",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 60,
+       "scade": "2026-01-10T09:11:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 1664.25,
+        "o": "golden/clock"
+       },
+       "rinnovato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 61
+   },
+   {
+    "op": "step-start",
+    "project": "alpha",
+    "holder": "o1",
+    "session": "s-1",
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "stolen",
+     "holder": "o1",
+     "expires_in_s": 1800,
+     "t": "2026-01-10T09:11:05Z",
+     "resumed": false,
+     "cursor": {
+      "form": "parts",
+      "version": 1,
+      "t": "2026-01-10T09:00:00Z",
+      "own": {
+       "comments": [
+        55,
+        78,
+        101
+       ],
+       "reports": {
+        "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+       }
+      }
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:00:00Z",
+        "propri": {
+         "commenti": [
+          55,
+          78,
+          101
+         ],
+         "report": {
+          "2026-01-09-3-done.md": "2026-01-10T08:00:00+00:00"
+         }
+        }
+       },
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 7,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:11:05Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "alpha",
+      "gen": 3,
+      "doc": {
+       "progetto": "alpha",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:11:05.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:41:05.250+00:00",
+       "al_posto_di": "o2",
+       "rubato_il": "2026-01-10T09:11:05.250+00:00",
+       "_m": {
+        "t": 1665.25,
+        "scade": 3465.25,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-finish",
+    "project": "alpha",
+    "holder": "o1",
+    "session": "s-1",
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "holder": "o1",
+     "cursor": {
+      "form": "parts",
+      "version": 1,
+      "t": "2026-01-10T09:11:05Z",
+      "own": {
+       "comments": [],
+       "reports": null
+      }
+     },
+     "lock": "released"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-start",
+    "project": "gamma",
+    "holder": "o2",
+    "session": "s-2",
+    "ttl": 60.0,
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "taken",
+     "holder": "o2",
+     "expires_in_s": 60,
+     "t": "2026-01-10T09:11:05Z",
+     "resumed": false,
+     "cursor": {
+      "form": "absent"
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o2",
+        "sessione": "s-2",
+        "t": "2026-01-10T09:11:05Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "gamma",
+      "gen": 1,
+      "doc": {
+       "progetto": "gamma",
+       "proprietario": "o2",
+       "preso": "2026-01-10T09:11:05.250+00:00",
+       "ttl_s": 60.0,
+       "scade": "2026-01-10T09:12:05.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1665.25,
+        "scade": 1725.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-comment",
+    "project": "gamma",
+    "comment": 300,
+    "session": "s-2",
+    "outcome": null,
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma:passo",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o2",
+        "sessione": "s-2",
+        "t": "2026-01-10T09:11:05Z",
+        "commenti": [
+         300
+        ]
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "gamma",
+      "gen": 1,
+      "doc": {
+       "progetto": "gamma",
+       "proprietario": "o2",
+       "preso": "2026-01-10T09:11:05.250+00:00",
+       "ttl_s": 60.0,
+       "scade": "2026-01-10T09:12:05.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1665.25,
+        "scade": 1725.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 61
+   },
+   {
+    "op": "step-start",
+    "project": "gamma",
+    "holder": "o1",
+    "session": "s-1",
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "stolen",
+     "holder": "o1",
+     "expires_in_s": 1800,
+     "t": "2026-01-10T09:12:06Z",
+     "resumed": false,
+     "cursor": {
+      "form": "absent"
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma:passo",
+      "gen": 3,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:12:06Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "gamma",
+      "gen": 2,
+      "doc": {
+       "progetto": "gamma",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:12:06.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:42:06.250+00:00",
+       "al_posto_di": "o2",
+       "rubato_il": "2026-01-10T09:12:06.250+00:00",
+       "_m": {
+        "t": 1726.25,
+        "scade": 3526.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-finish",
+    "project": "gamma",
+    "holder": "o1",
+    "session": "s-1",
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "holder": "o1",
+     "cursor": {
+      "form": "parts",
+      "version": 1,
+      "t": "2026-01-10T09:12:06Z",
+      "own": {
+       "comments": [],
+       "reports": null
+      }
+     },
+     "lock": "released"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:12:06Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma:passo",
+      "gen": 4,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-start",
+    "project": "delta",
+    "holder": "o1",
+    "session": "s-1",
+    "ttl": 30.0,
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "taken",
+     "holder": "o1",
+     "expires_in_s": 30,
+     "t": "2026-01-10T09:12:06Z",
+     "resumed": false,
+     "cursor": {
+      "form": "absent"
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "delta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:12:06Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:12:06Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma:passo",
+      "gen": 4,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "delta",
+      "gen": 1,
+      "doc": {
+       "progetto": "delta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:12:06.250+00:00",
+       "ttl_s": 30.0,
+       "scade": "2026-01-10T09:12:36.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1726.25,
+        "scade": 1756.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 31
+   },
+   {
+    "op": "step-start",
+    "project": "delta",
+    "holder": "o1",
+    "session": "s-1",
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "state": "renewed",
+     "holder": "o1",
+     "expires_in_s": 1800,
+     "t": "2026-01-10T09:12:06Z",
+     "resumed": true,
+     "cursor": {
+      "form": "absent"
+     }
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "valore": "2026-01-09T18:00:00Z",
+       "aggiornato": "2026-01-10T09:10:00.750+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": null,
+        "t": "2026-01-10T09:10:04Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:10:04.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "delta:passo",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:12:06Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:12:37.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:12:06Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma:passo",
+      "gen": 4,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "beta",
+      "gen": 1,
+      "doc": {
+       "progetto": "beta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:10:04.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:40:04.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1604.25,
+        "scade": 3404.25,
+        "o": "golden/clock"
+       }
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "delta",
+      "gen": 2,
+      "doc": {
+       "progetto": "delta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:12:37.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:42:37.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1757.25,
+        "scade": 3557.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "advance",
+    "seconds": 1800
+   },
+   {
+    "op": "step-finish",
+    "project": "beta",
+    "holder": "o1",
+    "session": null,
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "holder": "o1",
+     "cursor": {
+      "form": "parts",
+      "version": 1,
+      "t": "2026-01-10T09:10:04Z",
+      "own": {
+       "comments": [],
+       "reports": null
+      }
+     },
+     "lock": "released"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:10:04Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:42:37.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 2,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:42:37.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "delta:passo",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "proprietario": "o1",
+        "sessione": "s-1",
+        "t": "2026-01-10T09:12:06Z",
+        "commenti": []
+       },
+       "aggiornato": "2026-01-10T09:12:37.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:12:06Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma:passo",
+      "gen": 4,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "lock",
+      "key": "delta",
+      "gen": 2,
+      "doc": {
+       "progetto": "delta",
+       "proprietario": "o1",
+       "preso": "2026-01-10T09:12:37.250+00:00",
+       "ttl_s": 1800,
+       "scade": "2026-01-10T09:42:37.250+00:00",
+       "al_posto_di": null,
+       "rubato_il": null,
+       "_m": {
+        "t": 1757.25,
+        "scade": 3557.25,
+        "o": "golden/clock"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "op": "step-finish",
+    "project": "delta",
+    "holder": "o1",
+    "session": "s-1",
+    "outcome": {
+     "exit": 0,
+     "ok": true,
+     "holder": "o1",
+     "cursor": {
+      "form": "parts",
+      "version": 1,
+      "t": "2026-01-10T09:12:06Z",
+      "own": {
+       "comments": [],
+       "reports": null
+      }
+     },
+     "lock": "released"
+    },
+    "rows": [
+     {
+      "kind": "cursore",
+      "key": "alpha",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:11:05Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "alpha:passo",
+      "gen": 8,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:11:05.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta",
+      "gen": 2,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:10:04Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:42:37.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "beta:passo",
+      "gen": 2,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:42:37.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "delta",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:12:06Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:42:37.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "delta:passo",
+      "gen": 3,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:42:37.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma",
+      "gen": 1,
+      "doc": {
+       "valore": {
+        "v": 1,
+        "t": "2026-01-10T09:12:06Z",
+        "propri": {
+         "commenti": []
+        }
+       },
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     },
+     {
+      "kind": "cursore",
+      "key": "gamma:passo",
+      "gen": 4,
+      "doc": {
+       "valore": null,
+       "aggiornato": "2026-01-10T09:12:06.250+00:00"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}
