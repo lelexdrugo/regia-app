@@ -5,7 +5,8 @@ folder only from --dir and refuses the live state folder, where a real controlle
     python store_oracle.py --dossier <dossier> --dir <folder> [--wall-offset-s S] [--busy-wait S] <command> ...
 
 Commands, as store-probe: `acquire <project> <holder> <ttl>`, `renew <project> <holder> <ttl>`,
-`release <project> <holder>`, `status <project>`, `hold-tx`, `contend <project> <holder> <attempts>
+`release <project> <holder>` (each takes `--start-at-ms <epoch ms>`: wait for that instant, so that several
+processes make the call together), `status <project>`, `hold-tx`, `contend <project> <holder> <attempts>
 --witness <folder> --start-at-ms <ms> --hold-ms <ms> --done <file> --peer-done <file>`. Also
 `plant <kind> <key> <text>` (a raw row, as the prototype's tests write one) and `parse <vectors.json>`.
 
@@ -119,9 +120,11 @@ def main(argv):
         s.add_argument("project")
         s.add_argument("holder")
         s.add_argument("ttl", type=ttl)
+        s.add_argument("--start-at-ms", type=float)
     s = sub.add_parser("release")
     s.add_argument("project")
     s.add_argument("holder")
+    s.add_argument("--start-at-ms", type=float)
     s = sub.add_parser("status")
     s.add_argument("project")
     sub.add_parser("hold-tx")
@@ -155,6 +158,9 @@ def main(argv):
     if a.busy_wait is not None:
         rt.ATTESA_S = a.busy_wait
 
+    if a.command in ("acquire", "renew", "release") and a.start_at_ms is not None:
+        while time.time() * 1000 < a.start_at_ms:  # the barrier of the eight processes: all start the call together
+            pass
     if a.command == "acquire":
         e = rt.acquisisci(a.project, a.holder, a.ttl)
     elif a.command == "renew":

@@ -1,9 +1,16 @@
 //! The database as the prototype opens it (L1–L3): a new connection per operation, rollback journal,
 //! `synchronous=FULL`, and every mutation inside `BEGIN IMMEDIATE`, so reading, deciding and writing
 //! happen under one write lock and the result exists only after `COMMIT`.
+//!
+//! The prototype never sets the journal mode, so a database it creates stays in the default `delete`, and
+//! it would go on reading and writing a database someone put in WAL. This crate checks it at every open and
+//! puts it back (#439/D4): the one lock the two languages share must not depend on a journal mode that one
+//! of them never looks at.
 
 use std::hash::{BuildHasher, RandomState};
 use std::path::{Path, PathBuf};
+#[cfg(test)]
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
@@ -14,6 +21,8 @@ use serde_json::{Map, Value};
 use crate::v1::sql;
 use crate::{StoreError, folder};
 
+/// The journal mode of the prototype's database and of this one.
+const ROLLBACK_JOURNAL: &str = "delete";
 /// The longest wait for a write lock held by another process: the prototype's `ATTESA_S`.
 pub const BUSY_WAIT: Duration = Duration::from_secs(3);
 /// Attempts on a transient error at open, such as a file an antivirus holds on Windows: `RETRY_IO`.
@@ -53,12 +62,26 @@ pub(crate) struct Database {
     folder: PathBuf,
     file: PathBuf,
     busy_wait: Duration,
+    /// Faults the unit tests inject where the prototype's cases patch `sqlite3.connect`. Not part of the build.
+    #[cfg(test)]
+    faults: Arc<faults::Faults>,
 }
 
 impl Database {
     pub fn new(folder: PathBuf, busy_wait: Duration) -> Self {
         let file = folder.join(folder::database_name());
-        Self { folder, file, busy_wait }
+        Self {
+            folder,
+            file,
+            busy_wait,
+            #[cfg(test)]
+            faults: Arc::default(),
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn faults(&self) -> &faults::Faults {
+        &self.faults
     }
 
     pub fn folder(&self) -> &Path {
@@ -79,7 +102,7 @@ impl Database {
         let mut attempt = 1;
         loop {
             match self.try_open() {
-                Ok(conn) => return Ok(conn),
+                Ok(conn) => return self.rollback_journal(conn),
                 Err(error) if is_busy(&error) => return Err(TxError::Busy),
                 Err(error) if is_transient(&error) && attempt < OPEN_ATTEMPTS => {
                     attempt += 1;
@@ -91,6 +114,8 @@ impl Database {
     }
 
     fn try_open(&self) -> rusqlite::Result<Connection> {
+        #[cfg(test)]
+        self.faults.on_open()?;
         let flags = OpenFlags::SQLITE_OPEN_READ_WRITE | OpenFlags::SQLITE_OPEN_CREATE | OpenFlags::SQLITE_OPEN_NO_MUTEX;
         let conn = Connection::open_with_flags(&self.file, flags)?;
         // rusqlite waits 5 s by default; the prototype waits 3.
@@ -99,6 +124,23 @@ impl Database {
         conn.execute_batch("PRAGMA synchronous=FULL")?;
         conn.execute(&sql().schema, [])?;
         Ok(conn)
+    }
+
+    /// The connection, once the database is in the rollback journal (`delete`): any other mode is set back
+    /// to it, and if SQLite cannot, that is an error, never an open database that is not.
+    fn rollback_journal(&self, conn: Connection) -> Result<Connection, TxError> {
+        let unavailable = |error: rusqlite::Error| TxError::Failed(StoreError::Unavailable { file: self.file.clone(), source: error.into() });
+        let mode = journal_mode(&conn, "PRAGMA journal_mode").map_err(|error| if is_busy(&error) { TxError::Busy } else { unavailable(error) })?;
+        if mode.eq_ignore_ascii_case(ROLLBACK_JOURNAL) {
+            return Ok(conn);
+        }
+        // SQLite answers with the mode it ended in, which is the old one if it could not switch.
+        let now = journal_mode(&conn, "PRAGMA journal_mode=DELETE").unwrap_or(mode);
+        if now.eq_ignore_ascii_case(ROLLBACK_JOURNAL) {
+            Ok(conn)
+        } else {
+            Err(StoreError::JournalMode { file: self.file.clone(), mode: now }.into())
+        }
     }
 
     /// Runs `body` inside `BEGIN IMMEDIATE`. Its value exists only after `COMMIT`; any error rolls back.
@@ -111,7 +153,7 @@ impl Database {
             Err(error) => return Err(StoreError::Unavailable { file: self.file.clone(), source: error.into() }.into()),
         }
         let outcome = match body(&conn) {
-            Ok(value) => match conn.execute_batch("COMMIT") {
+            Ok(value) => match self.commit(&conn) {
                 Ok(()) => Ok(value),
                 Err(error) => Err(StoreError::WriteFailed(error.into())),
             },
@@ -121,8 +163,21 @@ impl Database {
             let _ = conn.execute_batch("ROLLBACK");
         }
         // An error while closing cannot undo what is committed: it is not an error of the operation.
-        let _ = conn.close();
+        let _ = self.close(conn);
         outcome.map_err(TxError::Failed)
+    }
+
+    fn commit(&self, conn: &Connection) -> rusqlite::Result<()> {
+        #[cfg(test)]
+        self.faults.on_commit()?;
+        conn.execute_batch("COMMIT")
+    }
+
+    fn close(&self, conn: Connection) -> rusqlite::Result<()> {
+        let closed = conn.close().map_err(|(_, error)| error);
+        #[cfg(test)]
+        self.faults.on_close()?;
+        closed
     }
 
     /// One document, read without the write lock: `None` if the row is missing.
@@ -163,6 +218,11 @@ impl Database {
         let _ = conn.close();
         rows
     }
+}
+
+/// The journal mode a `PRAGMA journal_mode` statement answers with.
+fn journal_mode(conn: &Connection, statement: &str) -> rusqlite::Result<String> {
+    conn.query_row(statement, [], |row| row.get(0))
 }
 
 fn all_rows(conn: &Connection) -> rusqlite::Result<Vec<Row>> {
@@ -271,5 +331,67 @@ impl std::fmt::Display for SqliteError {
 impl std::error::Error for SqliteError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.0.source()
+    }
+}
+
+/// What the prototype's cases do with `mock.patch("sqlite3.connect", ...)`: an open that fails a number of times,
+/// a `COMMIT` that does not happen, a close that raises after the commit. A test sets the fault; the next
+/// operation meets it where the real error would be, and the counters tell how often.
+#[cfg(test)]
+pub(crate) mod faults {
+    use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+
+    use rusqlite::ffi;
+
+    #[derive(Debug, Default)]
+    pub(crate) struct Faults {
+        opens: AtomicU32,
+        fail_opens: AtomicU32,
+        fail_commit: AtomicBool,
+        fail_close: AtomicBool,
+    }
+
+    fn failure(code: std::ffi::c_int, message: &str) -> rusqlite::Error {
+        rusqlite::Error::SqliteFailure(ffi::Error::new(code), Some(message.to_owned()))
+    }
+
+    impl Faults {
+        /// The next `count` opens fail with "unable to open database file", as a file an antivirus holds.
+        pub(crate) fn fail_next_opens(&self, count: u32) {
+            self.fail_opens.store(count, Ordering::SeqCst);
+        }
+
+        /// Every `COMMIT` fails with "disk I/O error" without happening, until told otherwise.
+        pub(crate) fn fail_commits(&self, on: bool) {
+            self.fail_commit.store(on, Ordering::SeqCst);
+        }
+
+        /// Every close raises after the transaction is over, until told otherwise.
+        pub(crate) fn fail_closes(&self, on: bool) {
+            self.fail_close.store(on, Ordering::SeqCst);
+        }
+
+        /// How many times a connection was tried, failed or not.
+        pub(crate) fn opens(&self) -> u32 {
+            self.opens.load(Ordering::SeqCst)
+        }
+
+        pub(super) fn on_open(&self) -> rusqlite::Result<()> {
+            self.opens.fetch_add(1, Ordering::SeqCst);
+            let left = self.fail_opens.load(Ordering::SeqCst);
+            if left == 0 {
+                return Ok(());
+            }
+            self.fail_opens.store(left - 1, Ordering::SeqCst);
+            Err(failure(ffi::SQLITE_CANTOPEN, "unable to open database file"))
+        }
+
+        pub(super) fn on_commit(&self) -> rusqlite::Result<()> {
+            if self.fail_commit.load(Ordering::SeqCst) { Err(failure(ffi::SQLITE_IOERR, "disk I/O error")) } else { Ok(()) }
+        }
+
+        pub(super) fn on_close(&self) -> rusqlite::Result<()> {
+            if self.fail_close.load(Ordering::SeqCst) { Err(failure(ffi::SQLITE_MISUSE, "close failed")) } else { Ok(()) }
+        }
     }
 }

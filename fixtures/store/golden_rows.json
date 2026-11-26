@@ -1,0 +1,2573 @@
+{
+ "oracle_commit": "5acee641c573f1278e28ea66beea60367d512b13",
+ "oracle_repository": "lelexdrugo/regia",
+ "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+ "sqlite": "3.49.1",
+ "clock": {
+  "start": "2026-01-10T09:00:00+00:00",
+  "monotonic_start": 1000.0,
+  "tag": "golden/clock"
+ },
+ "readings": {
+  "both-ok": {
+   "claude": {
+    "provider": "claude",
+    "stato": "ok",
+    "piano": "max",
+    "finestre": {
+     "5h": {
+      "stato": "ok",
+      "usato_pct": 40.0,
+      "residuo_pct": 60.0,
+      "reset": "2026-01-10T11:00+00:00",
+      "reset_tra_s": 7200
+     }
+    }
+   },
+   "codex": {
+    "provider": "codex",
+    "stato": "ok",
+    "piano": "max",
+    "finestre": {
+     "5h": {
+      "stato": "ok",
+      "usato_pct": 12.5,
+      "residuo_pct": 87.5,
+      "reset": "2026-01-10T12:00+00:00",
+      "reset_tra_s": 10800
+     }
+    }
+   }
+  },
+  "claude-429": {
+   "claude": {
+    "provider": "claude",
+    "stato": "sconosciuto",
+    "piano": null,
+    "finestre": {},
+    "motivo": "too many requests (HTTP 429)"
+   },
+   "codex": {
+    "provider": "codex",
+    "stato": "ok",
+    "piano": "max",
+    "finestre": {
+     "5h": {
+      "stato": "ok",
+      "usato_pct": 13.0,
+      "residuo_pct": 87.0,
+      "reset": "2026-01-10T12:00+00:00",
+      "reset_tra_s": 10800
+     }
+    }
+   }
+  },
+  "claude-recovers": {
+   "claude": {
+    "provider": "claude",
+    "stato": "ok",
+    "piano": "max",
+    "finestre": {
+     "5h": {
+      "stato": "ok",
+      "usato_pct": 55.5,
+      "residuo_pct": 44.5,
+      "reset": "2026-01-10T10:00+00:00",
+      "reset_tra_s": 3600
+     }
+    }
+   },
+   "codex": {
+    "provider": "codex",
+    "stato": "ok",
+    "piano": "max",
+    "finestre": {
+     "5h": {
+      "stato": "ok",
+      "usato_pct": 14.0,
+      "residuo_pct": 86.0,
+      "reset": "2026-01-10T12:00+00:00",
+      "reset_tra_s": 10800
+     }
+    }
+   }
+  }
+ },
+ "steps": [
+  {
+   "op": "status",
+   "project": "alpha",
+   "outcome": {
+    "busy": false,
+    "status": "free",
+    "holder": null,
+    "expired": null,
+    "expires_in_s": null
+   },
+   "rows": []
+  },
+  {
+   "op": "acquire",
+   "project": "alpha",
+   "holder": "w1",
+   "ttl": 600,
+   "outcome": {
+    "ok": true,
+    "state": "taken",
+    "holder": "w1",
+    "expired": false,
+    "expires_in_s": 600
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 1,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 600,
+      "scade": "2026-01-10T09:10:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1600.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "acquire",
+   "project": "beta",
+   "holder": "w2",
+   "ttl": 60,
+   "outcome": {
+    "ok": true,
+    "state": "taken",
+    "holder": "w2",
+    "expired": false,
+    "expires_in_s": 60
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 1,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 600,
+      "scade": "2026-01-10T09:10:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1600.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "acquire",
+   "project": "alpha",
+   "holder": "w2",
+   "ttl": 600,
+   "outcome": {
+    "ok": false,
+    "state": "busy",
+    "holder": "w1",
+    "expired": false,
+    "expires_in_s": 600
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 1,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 600,
+      "scade": "2026-01-10T09:10:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1600.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "status",
+   "project": "alpha",
+   "outcome": {
+    "busy": true,
+    "status": "held",
+    "holder": "w1",
+    "expired": false,
+    "expires_in_s": 600
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 1,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 600,
+      "scade": "2026-01-10T09:10:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1600.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "advance",
+   "seconds": 30,
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 1,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 600,
+      "scade": "2026-01-10T09:10:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1600.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "acquire",
+   "project": "alpha",
+   "holder": "w1",
+   "ttl": 900,
+   "outcome": {
+    "ok": true,
+    "state": "renewed",
+    "holder": "w1",
+    "expired": false,
+    "expires_in_s": 900
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 2,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 900,
+      "scade": "2026-01-10T09:15:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 1930.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "renew",
+   "project": "alpha",
+   "holder": "w1",
+   "ttl": 1200,
+   "outcome": {
+    "ok": true,
+    "state": "renewed",
+    "holder": "w1",
+    "expired": false,
+    "expires_in_s": 1200
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "renew",
+   "project": "alpha",
+   "holder": "w3",
+   "ttl": 60,
+   "outcome": {
+    "ok": false,
+    "state": "foreign",
+    "holder": "w1",
+    "expired": false,
+    "expires_in_s": 1200
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "renew",
+   "project": "gamma",
+   "holder": "w1",
+   "ttl": 60,
+   "outcome": {
+    "ok": false,
+    "state": "absent",
+    "holder": null,
+    "expired": null,
+    "expires_in_s": null
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "release",
+   "project": "alpha",
+   "holder": "w3",
+   "outcome": {
+    "ok": false,
+    "state": "foreign",
+    "holder": "w1",
+    "expired": false,
+    "expires_in_s": 1200
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "advance",
+   "seconds": 45,
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "status",
+   "project": "beta",
+   "outcome": {
+    "busy": false,
+    "status": "expired",
+    "holder": "w2",
+    "expired": true,
+    "expires_in_s": 0
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "advance",
+   "seconds": 20,
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "status",
+   "project": "beta",
+   "outcome": {
+    "busy": false,
+    "status": "expired",
+    "holder": "w2",
+    "expired": true,
+    "expires_in_s": 0
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w2",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 60,
+      "scade": "2026-01-10T09:01:00.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1000.0,
+       "scade": 1060.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "acquire",
+   "project": "beta",
+   "holder": "w3",
+   "ttl": 120,
+   "outcome": {
+    "ok": true,
+    "state": "stolen",
+    "holder": "w3",
+    "expired": false,
+    "expires_in_s": 120
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 2,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w3",
+      "preso": "2026-01-10T09:01:35.000+00:00",
+      "ttl_s": 120,
+      "scade": "2026-01-10T09:03:35.000+00:00",
+      "al_posto_di": "w2",
+      "rubato_il": "2026-01-10T09:01:35.000+00:00",
+      "_m": {
+       "t": 1095.0,
+       "scade": 1215.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "advance",
+   "seconds": 130,
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 2,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w3",
+      "preso": "2026-01-10T09:01:35.000+00:00",
+      "ttl_s": 120,
+      "scade": "2026-01-10T09:03:35.000+00:00",
+      "al_posto_di": "w2",
+      "rubato_il": "2026-01-10T09:01:35.000+00:00",
+      "_m": {
+       "t": 1095.0,
+       "scade": 1215.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "status",
+   "project": "beta",
+   "outcome": {
+    "busy": false,
+    "status": "expired",
+    "holder": "w3",
+    "expired": true,
+    "expires_in_s": 0
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 2,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w3",
+      "preso": "2026-01-10T09:01:35.000+00:00",
+      "ttl_s": 120,
+      "scade": "2026-01-10T09:03:35.000+00:00",
+      "al_posto_di": "w2",
+      "rubato_il": "2026-01-10T09:01:35.000+00:00",
+      "_m": {
+       "t": 1095.0,
+       "scade": 1215.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "renew",
+   "project": "beta",
+   "holder": "w3",
+   "ttl": 30,
+   "outcome": {
+    "ok": true,
+    "state": "renewed",
+    "holder": "w3",
+    "expired": false,
+    "expires_in_s": 30
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 3,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w3",
+      "preso": "2026-01-10T09:01:35.000+00:00",
+      "ttl_s": 30,
+      "scade": "2026-01-10T09:04:15.000+00:00",
+      "al_posto_di": "w2",
+      "rubato_il": "2026-01-10T09:01:35.000+00:00",
+      "_m": {
+       "t": 1225.0,
+       "scade": 1255.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:03:45.000+00:00"
+     }
+    }
+   ]
+  },
+  {
+   "op": "acquire",
+   "project": "beta",
+   "holder": "w3",
+   "ttl": 30.5,
+   "outcome": {
+    "ok": true,
+    "state": "renewed",
+    "holder": "w3",
+    "expired": false,
+    "expires_in_s": 30
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 4,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w3",
+      "preso": "2026-01-10T09:01:35.000+00:00",
+      "ttl_s": 30.5,
+      "scade": "2026-01-10T09:04:15.500+00:00",
+      "al_posto_di": "w2",
+      "rubato_il": "2026-01-10T09:01:35.000+00:00",
+      "_m": {
+       "t": 1225.0,
+       "scade": 1255.5,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:03:45.000+00:00"
+     }
+    }
+   ]
+  },
+  {
+   "op": "release",
+   "project": "beta",
+   "holder": "w3",
+   "outcome": {
+    "ok": true,
+    "state": "released",
+    "holder": null,
+    "expired": null,
+    "expires_in_s": null
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    }
+   ]
+  },
+  {
+   "op": "release",
+   "project": "beta",
+   "holder": "w3",
+   "outcome": {
+    "ok": true,
+    "state": "free",
+    "holder": null,
+    "expired": null,
+    "expires_in_s": null
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    }
+   ]
+  },
+  {
+   "op": "acquire",
+   "project": "beta",
+   "holder": "w1",
+   "ttl": 3600,
+   "outcome": {
+    "ok": true,
+    "state": "taken",
+    "holder": "w1",
+    "expired": false,
+    "expires_in_s": 3600
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "alpha",
+     "gen": 3,
+     "doc": {
+      "progetto": "alpha",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:00:00.000+00:00",
+      "ttl_s": 1200,
+      "scade": "2026-01-10T09:20:30.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1030.0,
+       "scade": 2230.0,
+       "o": "golden/clock"
+      },
+      "rinnovato": "2026-01-10T09:00:30.000+00:00"
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "release",
+   "project": "alpha",
+   "holder": "w1",
+   "outcome": {
+    "ok": true,
+    "state": "released",
+    "holder": null,
+    "expired": null,
+    "expires_in_s": null
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "status",
+   "project": "alpha",
+   "outcome": {
+    "busy": false,
+    "status": "free",
+    "holder": null,
+    "expired": null,
+    "expires_in_s": null
+   },
+   "rows": [
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "budget",
+   "min_interval_s": 300,
+   "force": false,
+   "reading": "both-ok",
+   "outcome": {
+    "probe_called": true,
+    "from_cache": false,
+    "generated": "2026-01-10T09:03:45+00:00",
+    "claude_status": "ok",
+    "claude_used_pct": 40.0,
+    "claude_age_s": 0,
+    "claude_update_failed": false,
+    "attempt_age_s": 0
+   },
+   "rows_during_probe": [
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "sonda",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "token": "1c4901cde2e1468bba1c8525225d9ef2",
+      "scade": "2026-01-10T09:05:15.000+00:00",
+      "_m": {
+       "t": 1225.0,
+       "scade": 1315.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ],
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:03:45.000+00:00",
+      "_m": {
+       "t": 1225.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "advance",
+   "seconds": 60,
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:03:45.000+00:00",
+      "_m": {
+       "t": 1225.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "budget",
+   "min_interval_s": 300,
+   "force": false,
+   "reading": "claude-429",
+   "outcome": {
+    "probe_called": false,
+    "from_cache": true,
+    "generated": "2026-01-10T09:03:45+00:00",
+    "claude_status": "ok",
+    "claude_used_pct": 40.0,
+    "claude_age_s": 60,
+    "claude_update_failed": false,
+    "attempt_age_s": 60
+   },
+   "rows_during_probe": null,
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:03:45.000+00:00",
+      "_m": {
+       "t": 1225.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "advance",
+   "seconds": 300,
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:03:45.000+00:00",
+      "_m": {
+       "t": 1225.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "budget",
+   "min_interval_s": 300,
+   "force": false,
+   "reading": "claude-429",
+   "outcome": {
+    "probe_called": true,
+    "from_cache": false,
+    "generated": "2026-01-10T09:09:45+00:00",
+    "claude_status": "ok",
+    "claude_used_pct": 40.0,
+    "claude_age_s": 360,
+    "claude_update_failed": true,
+    "attempt_age_s": 0
+   },
+   "rows_during_probe": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:03:45.000+00:00",
+      "_m": {
+       "t": 1225.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "sonda",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "token": "136f17ffee244e93809c823eeba1156f",
+      "scade": "2026-01-10T09:11:15.000+00:00",
+      "_m": {
+       "t": 1585.0,
+       "scade": 1675.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ],
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 2,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "sconosciuto",
+         "piano": null,
+         "finestre": {},
+         "motivo": "too many requests (HTTP 429)"
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 13.0,
+           "residuo_pct": 87.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:09:45.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 13.0,
+           "residuo_pct": 87.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:09:45.000+00:00",
+      "_m": {
+       "t": 1585.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "advance",
+   "seconds": 15,
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 2,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "sconosciuto",
+         "piano": null,
+         "finestre": {},
+         "motivo": "too many requests (HTTP 429)"
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 13.0,
+           "residuo_pct": 87.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:09:45.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 13.0,
+           "residuo_pct": 87.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:09:45.000+00:00",
+      "_m": {
+       "t": 1585.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "budget",
+   "min_interval_s": 300,
+   "force": true,
+   "reading": "claude-recovers",
+   "outcome": {
+    "probe_called": true,
+    "from_cache": false,
+    "generated": "2026-01-10T09:10:00+00:00",
+    "claude_status": "ok",
+    "claude_used_pct": 55.5,
+    "claude_age_s": 0,
+    "claude_update_failed": false,
+    "attempt_age_s": 0
+   },
+   "rows_during_probe": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 2,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:03:45.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "sconosciuto",
+         "piano": null,
+         "finestre": {},
+         "motivo": "too many requests (HTTP 429)"
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 13.0,
+           "residuo_pct": 87.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:09:45.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 13.0,
+           "residuo_pct": 87.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:09:45.000+00:00",
+      "_m": {
+       "t": 1585.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "sonda",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "token": "6603f53383f3409fbcf6e792b2e4e003",
+      "scade": "2026-01-10T09:11:30.000+00:00",
+      "_m": {
+       "t": 1600.0,
+       "scade": 1690.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ],
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 3,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 55.5,
+           "residuo_pct": 44.5,
+           "reset": "2026-01-10T10:00+00:00",
+           "reset_tra_s": 3600
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:10:00.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 55.5,
+           "residuo_pct": 44.5,
+           "reset": "2026-01-10T10:00+00:00",
+           "reset_tra_s": 3600
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 14.0,
+           "residuo_pct": 86.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:10:00.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 14.0,
+           "residuo_pct": 86.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:10:00.000+00:00",
+      "_m": {
+       "t": 1600.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "advance",
+   "seconds": 5,
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 3,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 55.5,
+           "residuo_pct": 44.5,
+           "reset": "2026-01-10T10:00+00:00",
+           "reset_tra_s": 3600
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:10:00.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 55.5,
+           "residuo_pct": 44.5,
+           "reset": "2026-01-10T10:00+00:00",
+           "reset_tra_s": 3600
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 14.0,
+           "residuo_pct": 86.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:10:00.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 14.0,
+           "residuo_pct": 86.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:10:00.000+00:00",
+      "_m": {
+       "t": 1600.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "op": "budget",
+   "min_interval_s": 0,
+   "force": false,
+   "reading": "both-ok",
+   "outcome": {
+    "probe_called": true,
+    "from_cache": false,
+    "generated": "2026-01-10T09:10:05+00:00",
+    "claude_status": "ok",
+    "claude_used_pct": 40.0,
+    "claude_age_s": 0,
+    "claude_update_failed": false,
+    "attempt_age_s": 0
+   },
+   "rows_during_probe": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 3,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 55.5,
+           "residuo_pct": 44.5,
+           "reset": "2026-01-10T10:00+00:00",
+           "reset_tra_s": 3600
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:10:00.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 55.5,
+           "residuo_pct": 44.5,
+           "reset": "2026-01-10T10:00+00:00",
+           "reset_tra_s": 3600
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 14.0,
+           "residuo_pct": 86.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:10:00.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 14.0,
+           "residuo_pct": 86.0,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:10:00.000+00:00",
+      "_m": {
+       "t": 1600.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "sonda",
+     "key": "budget",
+     "gen": 1,
+     "doc": {
+      "token": "5c8dafd5bf5b4898b2575ba53c77dea7",
+      "scade": "2026-01-10T09:11:35.000+00:00",
+      "_m": {
+       "t": 1605.0,
+       "scade": 1695.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ],
+   "rows": [
+    {
+     "kind": "cache",
+     "key": "budget",
+     "gen": 4,
+     "doc": {
+      "provider": {
+       "claude": {
+        "valido": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:10:05.000+00:00",
+        "ultimo": {
+         "provider": "claude",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 40.0,
+           "residuo_pct": 60.0,
+           "reset": "2026-01-10T11:00+00:00",
+           "reset_tra_s": 7200
+          }
+         }
+        }
+       },
+       "codex": {
+        "valido": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        },
+        "valido_il": "2026-01-10T09:10:05.000+00:00",
+        "ultimo": {
+         "provider": "codex",
+         "stato": "ok",
+         "piano": "max",
+         "finestre": {
+          "5h": {
+           "stato": "ok",
+           "usato_pct": 12.5,
+           "residuo_pct": 87.5,
+           "reset": "2026-01-10T12:00+00:00",
+           "reset_tra_s": 10800
+          }
+         }
+        }
+       }
+      },
+      "ultimo_tentativo": "2026-01-10T09:10:05.000+00:00",
+      "_m": {
+       "t": 1605.0,
+       "o": "golden/clock"
+      }
+     }
+    },
+    {
+     "kind": "lock",
+     "key": "beta",
+     "gen": 1,
+     "doc": {
+      "progetto": "beta",
+      "proprietario": "w1",
+      "preso": "2026-01-10T09:03:45.000+00:00",
+      "ttl_s": 3600,
+      "scade": "2026-01-10T10:03:45.000+00:00",
+      "al_posto_di": null,
+      "rubato_il": null,
+      "_m": {
+       "t": 1225.0,
+       "scade": 4825.0,
+       "o": "golden/clock"
+      }
+     }
+    }
+   ]
+  }
+ ]
+}
