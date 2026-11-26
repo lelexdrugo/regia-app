@@ -1,0 +1,1 @@
+  ! figlio che aspetta il padre: #11 aspetta #10, ma l'arco figlio → padre chiuderebbe un ciclo (o ne allargherebbe uno scritto) e non conta

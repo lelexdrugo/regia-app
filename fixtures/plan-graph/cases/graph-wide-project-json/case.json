@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. The project's plan cut at 12, whose note suggests a root.",
+  "scenario": "wide",
+  "args": [
+    "plan",
+    "--project",
+    "alpha",
+    "--mermaid",
+    "--max-nodes",
+    "12",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--progetto",
+    "alpha",
+    "--mermaid",
+    "--max-nodi",
+    "12"
+  ]
+}

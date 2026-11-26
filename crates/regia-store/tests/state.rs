@@ -623,3 +623,58 @@ fn concurrent_comments_lose_no_id() {
     ids.sort_unstable();
     assert_eq!(ids, (2001..2009).collect::<Vec<u64>>());
 }
+
+/// `test_a_otto_processi_un_solo_vincitore`: four rounds of eight writers at once on one free lock; each round has
+/// one winner, the others are refused as busy, and the row is the winner's. The prototype starts eight
+/// interpreters; here they are eight threads, each with its own `Store` and so its own connection per operation,
+/// because only `regia-exec` may start a process in this workspace (clippy's `disallowed-methods`). The same case
+/// on real processes, four of each language, is `store_cross.rs`.
+#[test]
+fn eight_writers_on_a_lock_give_one_winner_in_each_of_four_rounds() {
+    let dir = folder("eight-on-a-lock");
+    for round in 0..4 {
+        let name = format!("p{round}");
+        let barrier = std::sync::Arc::new(std::sync::Barrier::new(8));
+        let handles: Vec<_> = (0..8)
+            .map(|i| {
+                let (barrier, dir, name) = (barrier.clone(), dir.clone(), name.clone());
+                std::thread::spawn(move || {
+                    let store = Store::at(dir).unwrap();
+                    barrier.wait();
+                    let who = format!("w{i}");
+                    (store.acquire_lock(&project(&name), &holder(&who), secs(60)).unwrap().state(), who)
+                })
+            })
+            .collect();
+        let outcomes: Vec<(LockState, String)> = handles.into_iter().map(|handle| handle.join().unwrap()).collect();
+        let winners: Vec<&String> = outcomes.iter().filter(|(state, _)| state.is_ok()).map(|(_, who)| who).collect();
+        assert_eq!(winners.len(), 1, "round {round}: {outcomes:?}");
+        assert!(outcomes.iter().all(|(state, _)| matches!(state, LockState::Taken | LockState::Busy)), "round {round}: {outcomes:?}");
+        let status = Store::at(&dir).unwrap().lock_status(&project(&name)).unwrap();
+        assert_eq!(status.lock().and_then(|view| view.holder()), Some(winners[0].as_str()), "round {round}");
+    }
+}
+
+/// `test_record_illeggibile_…_viene_recuperato` of `test_runtime_avversaria.py` (the guard on Italian words in
+/// these sources has the middle of the name left out): a lease row whose document is cut off halfway reads as
+/// an expired one nobody holds, and a new holder takes it over; it names no holder it replaced.
+#[test]
+fn an_old_unreadable_record_is_taken_over_by_the_next_holder() {
+    let (store, _) = store("unreadable-old");
+    raw_row(&store, "lease", "12", &format!("{{\"{}\":", name("lease", "holder")));
+    assert!(matches!(store.leases(false).unwrap()[..], [LeaseEntry::Unreadable { .. }]), "the row is there and unreadable");
+    let outcome = store.acquire_lease(task(12), &project("alpha"), &holder("new"), secs(60)).unwrap();
+    assert!(outcome.is_ok(), "{outcome:?}");
+    assert_eq!(outcome.state(), LockState::Stolen);
+    assert_eq!(outcome.lock().unwrap().replaced(), Some(&Value::Null), "the row had no holder to name");
+    let holders: Vec<Option<String>> = store
+        .leases(false)
+        .unwrap()
+        .iter()
+        .map(|entry| match entry {
+            LeaseEntry::Lease(view) => view.holder().map(str::to_owned),
+            LeaseEntry::Unreadable { .. } => None,
+        })
+        .collect();
+    assert_eq!(holders, [Some("new".to_owned())]);
+}

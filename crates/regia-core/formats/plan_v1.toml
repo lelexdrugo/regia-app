@@ -1,0 +1,75 @@
+# The words of `plan`'s diagram, format v1: `piano_mermaid`, `_piano_stato` and `piano_note` of the dossier's
+# `tools/regia.py` (#239), whose format is its `docs/design/contratto-piano.md` §3. The diagram is data in the
+# prototype's words: it is pasted into a dated comment of the tracker, and the product writes it as the
+# prototype does (#444). A node's status is the name of its option in the Project (`[status_labels]` of
+# `tracker_v1.toml`). Two things in it are the command line's, not these words: the command line the first line
+# quotes, and the option the hint of a project's cut names. The text for people around the diagram, the tree
+# and the line before it, is the catalog's (`locales/*/plan.ftl`).
+
+[diagram]
+# The first line, a comment mermaid does not draw: `{command}` and `{date}` are filled in.
+head = "%% {command} · tracker al {date}"
+direction = "flowchart LR"
+# Before the text of a node, or the title of a box, that waits for the owner.
+hand = "✋"
+# A status the issue does not have, and the project of an issue one step outside that has none.
+unknown = "?"
+# After `Approvato` for a task in draft.
+draft = "abbozzo"
+# In place of the measures, for a task in a cycle.
+cycle = "in ciclo"
+unblocks = "sblocca {unblocks} · catena {chain}"
+unblocks_total = "sblocca {unblocks} ({total} con Inbox e Proposte) · catena {chain}"
+# The node of the notes, at the bottom, and its class.
+note_node = "nota"
+
+[notes]
+inbox = "{count} Inbox senza archi: {numbers}"
+nested = "archi fra padre e figlio, non disegnati: {edges}"
+truncated = "tagliati {count} aperti oltre il tetto, {lost} archi persi: {numbers}"
+# After the note of the cut, for a project's plan only: `{option}` is the command line's option of a root.
+root_hint = " · per il resto usa {option} su un sotto-albero"
+
+# The classes of the nodes: the product's id, then the diagram's name. A box has none.
+[classes]
+waiting = "aspetta"
+in_progress = "incorso"
+draft = "abbozzo"
+ready = "pronto"
+inbox = "inbox"
+external = "esterno"
+note = "nota"
+main_line = "linea"
+
+# Their styles, in the order the diagram defines them.
+[[styles]]
+class = "waiting"
+style = "fill:#fde68a,stroke:#b45309,color:#111"
+
+[[styles]]
+class = "in_progress"
+style = "fill:#bfdbfe,stroke:#1d4ed8,color:#111"
+
+[[styles]]
+class = "draft"
+style = "fill:#f3f4f6,stroke:#6b7280,color:#111"
+
+[[styles]]
+class = "ready"
+style = "fill:#ffffff,stroke:#374151,color:#111"
+
+[[styles]]
+class = "inbox"
+style = "fill:#ffffff,stroke:#9ca3af,stroke-dasharray:4 3,color:#555"
+
+[[styles]]
+class = "external"
+style = "fill:#ffffff,stroke:#6b7280,stroke-dasharray:2 2,color:#555"
+
+[[styles]]
+class = "note"
+style = "fill:#ffffff,stroke:#ffffff,color:#555"
+
+[[styles]]
+class = "main_line"
+style = "stroke-width:3px"

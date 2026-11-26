@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic. The same plan as a tree, with the graph's warnings on stderr.",
+  "scenario": "cycles",
+  "args": [
+    "plan",
+    "--project",
+    "gamma"
+  ],
+  "python": [
+    "piano",
+    "--progetto",
+    "gamma"
+  ]
+}

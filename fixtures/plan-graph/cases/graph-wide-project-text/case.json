@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. The project's plan cut at 12, as markdown to paste.",
+  "scenario": "wide",
+  "args": [
+    "plan",
+    "--project",
+    "alpha",
+    "--mermaid",
+    "--max-nodes",
+    "12"
+  ],
+  "python": [
+    "piano",
+    "--progetto",
+    "alpha",
+    "--mermaid",
+    "--max-nodi",
+    "12"
+  ]
+}

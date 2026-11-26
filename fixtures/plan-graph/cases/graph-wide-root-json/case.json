@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. Under the Objective of alpha at the default cap: the cut, the edges lost, the diagram.",
+  "scenario": "wide",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--mermaid",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--radice",
+    "1",
+    "--mermaid"
+  ]
+}

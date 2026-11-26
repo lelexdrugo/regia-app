@@ -43,7 +43,12 @@ export function findChrome() {
 /** The port Chrome writes once it listens. If it never does, its own stderr says why. */
 async function devtoolsPort(file, chrome, stderr) {
   for (let waited = 0; waited < 30_000 && chrome.exitCode === null; waited += 50) {
-    const port = existsSync(file) ? readFileSync(file, "utf8").split("\n")[0].trim() : "";
+    let port = "";
+    try {
+      port = existsSync(file) ? readFileSync(file, "utf8").split("\n")[0].trim() : "";
+    } catch {
+      // On Windows the file is locked while Chrome writes it (EBUSY): the next look finds it written.
+    }
     if (port) {
       return port;
     }

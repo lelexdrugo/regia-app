@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. A cap under 1 is an error before the tracker is read, exit 1.",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--max-nodes",
+    "0"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "1",
+    "--max-nodi",
+    "0"
+  ],
+  "exit": 1
+}

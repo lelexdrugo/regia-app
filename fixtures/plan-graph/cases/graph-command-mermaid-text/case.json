@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. TestComando: with --mermaid, the line in bold and the fenced diagram.",
+  "scenario": "command",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--mermaid"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "1",
+    "--mermaid"
+  ]
+}

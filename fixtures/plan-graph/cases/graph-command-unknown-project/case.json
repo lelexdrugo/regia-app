@@ -1,0 +1,17 @@
+{
+  "_note": "Synthetic. TestComando: a project with no task in the tracker, exit 1.",
+  "scenario": "command",
+  "args": [
+    "plan",
+    "--project",
+    "nobody",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--progetto",
+    "nobody"
+  ],
+  "exit": 1
+}

@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. A plan with cycles: their tasks are in a cycle, off the main line.",
+  "scenario": "cycles",
+  "args": [
+    "plan",
+    "--project",
+    "gamma",
+    "--mermaid",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--progetto",
+    "gamma",
+    "--mermaid"
+  ]
+}

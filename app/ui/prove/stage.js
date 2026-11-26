@@ -5,9 +5,11 @@
 // (#474/V3), not the prototype's format; the arrows, Home and End go from moment to moment and move the playhead;
 // a click selects the node under it; the wheel zooms, a drag pans, 0 brings the camera home; the playhead follows
 // a drag on the stage, and a click on the tape. Then the portfolio: every project of the fixture with its health and
-// its last milestone, and a link only for a project with a story (Acceptance 2). The negative controls: a stage that
-// does not hear the direction (`theme=fixed`) must be caught keeping the old colours, and the prototype's timecode
-// must not pass for the catalog's.
+// its last milestone, and a link only for a project with a story (Acceptance 2). Forced colours (#490): under Chrome's
+// emulated contrast theme the stage draws in the system's colours and the transport's icons keep their buttons' text
+// colour. The negative controls: a stage that does not hear the direction (`theme=fixed`) must be caught keeping the
+// old colours, under a new direction and under forced colours, and the prototype's timecode must not pass for the
+// catalog's.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -354,6 +356,61 @@ async function groups(page, harness, m, check) {
   return { caught, hidden, of: boxes.length, caughtMoved: moved > 0.001, moved };
 }
 
+/**
+ * Forced colours (#490), in a fresh page: Chrome's emulated contrast theme. The stage draws again in the system's
+ * colours, resolved on a probe that keeps its own: its ground in Canvas, a node in CanvasText; an icon of the transport
+ * keeps the colour of its button's text instead of vanishing into Canvas; the theme gone, the tokens again. The
+ * negative control: a stage deaf to a new palette (`theme=fixed`) keeps the tokens' colours.
+ */
+async function forcedColours(page, harness, first, check) {
+  const system = () => page.evaluate(`(() => {
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;forced-color-adjust:none";
+    document.body.append(probe);
+    const out = {};
+    for (const name of ["Canvas", "CanvasText", "Highlight", "GrayText"]) {
+      probe.style.color = name;
+      out[name] = getComputedStyle(probe).color.match(/\\d+/g).slice(0, 3).map(Number);
+    }
+    probe.remove();
+    return out;
+  })()`);
+  const emulate = (on) => page.send("Emulation.setEmulatedMedia", { features: on ? [{ name: "forced-colors", value: "active" }] : [] });
+  const icon = () => page.evaluate(`(() => {
+    const icon = document.querySelector(".transport .icon");
+    const button = icon.closest("button");
+    return [getComputedStyle(icon).backgroundColor, getComputedStyle(button).color, getComputedStyle(button).backgroundColor];
+  })()`);
+  await page.goto(`${harness}?load=forced${ROUTE}`);
+  await page.waitFor(`document.documentElement.dataset.settled === ${JSON.stringify(ROUTE)}`);
+  const tokens = [rgb(await token(page, "--surface")), rgb(await token(page, "--node"))];
+  await emulate(true);
+  await page.waitFor(`${CANVAS}.dataset.forced === "true"`, 5_000).catch(() => {});
+  await sleep(100);
+  const colours = await system();
+  const [ground, node] = [await pixel(page, 2, 30), await pixel(page, first[0], first[1])];
+  const [ink, text, behind] = await icon();
+  check("forced colours: the stage draws again in the system's, its ground Canvas and a node CanvasText",
+    (await data(page, "forced")) === "true" && near(ground, colours.Canvas) && near(node, colours.CanvasText) && !near(colours.Canvas, tokens[0]),
+    `ground ${ground} for ${colours.Canvas}, node ${node} for ${colours.CanvasText}; the tokens' ${tokens[0]}`);
+  check("forced colours: an icon of the transport keeps its button's text colour, not the ground's", ink === text && ink !== behind, `icon ${ink}, text ${text}, button ${behind}`);
+  await emulate(false);
+  await page.waitFor(`${CANVAS}.dataset.forced === "false"`, 5_000).catch(() => {});
+  await sleep(100);
+  const after = await pixel(page, 2, 30);
+  check("the contrast theme gone, the tokens again", (await data(page, "forced")) === "false" && near(after, tokens[0]), `ground ${after} for ${tokens[0]}`);
+  // The control: a stage deaf to a new palette.
+  const fixed = `${ROUTE}&theme=fixed`;
+  await page.goto(`${harness}?load=forced-fixed${fixed}`);
+  await page.waitFor(`document.documentElement.dataset.settled === ${JSON.stringify(fixed)}`);
+  await emulate(true);
+  await sleep(400);
+  const deaf = await pixel(page, 2, 30);
+  const deafColours = await system();
+  await emulate(false);
+  return { caught: !near(deaf, deafColours.Canvas) && near(deaf, tokens[0]), deaf };
+}
+
 export const stage = {
   browser: true,
   async run({ ui, page, harness }) {
@@ -487,6 +544,8 @@ export const stage = {
 
     await overview(page, harness, m, fixture, model, check);
     const grouped = await groups(page, harness, m, check);
+    await page.resize(1440, 900);
+    const forced = await forcedColours(page, harness, first, check);
 
     // The portfolio (Acceptance 2): each project of the fixture with its health and its last milestone.
     await open(page, harness, "#/moviola?data=demo&lang=en");
@@ -516,9 +575,10 @@ export const stage = {
     console.log(`negative control, a stage deaf to the direction: ${caughtTheme ? "caught" : "NOT CAUGHT"} (kept ${kept})`);
     console.log(`negative control, the groups with every kind hidden: ${grouped.caught ? "caught" : "NOT CAUGHT"} (${grouped.hidden} of ${grouped.of} still in their ink)`);
     console.log(`negative control, the world one device pixel off: ${grouped.caughtMoved ? "caught" : "NOT CAUGHT"} (${(grouped.moved * 100).toFixed(2)} % of the stage differs)`);
+    console.log(`negative control, a stage deaf to forced colours: ${forced.caught ? "caught" : "NOT CAUGHT"} (kept ${forced.deaf})`);
     const newErrors = page.consoleErrors.slice(errors);
     console.log(`errors in the console: ${newErrors.length}`);
     for (const error of [...new Set(newErrors)].slice(0, 10)) console.log(`  ${error}`);
-    return results.every(([, ok]) => ok) && caughtFormat && caughtTheme && grouped.caught && grouped.caughtMoved && newErrors.length === 0;
+    return results.every(([, ok]) => ok) && caughtFormat && caughtTheme && grouped.caught && grouped.caughtMoved && forced.caught && newErrors.length === 0;
   },
 };

@@ -19,9 +19,11 @@
     decisions: Decisions;
     /** Another moment: a node's index in the model. */
     onselect: (index: number) => void;
+    /** Off while the stage holds the focus: its list says the moment chosen, and this panel would say it again (#490). */
+    live?: boolean;
   }
 
-  let { strings, model, state, decisions, onselect }: Props = $props();
+  let { strings, model, state, decisions, onselect, live = true }: Props = $props();
 
   const TONE = { healthy: "positive", at_risk: "negative", waiting_on_owner: "accent" } as const;
   const main = $derived(model.timeline.main_direction);
@@ -30,7 +32,7 @@
 <section
   class="at-date"
   aria-labelledby="moviola-at"
-  aria-live="polite"
+  aria-live={live ? "polite" : "off"}
   data-last={state.last ? state.last.milestone.id : ""}
   data-before={state.before}
   data-after={state.after}
@@ -53,7 +55,8 @@
       <dt>{strings.message("moviola-at-last")}</dt>
       <dd>
         <button type="button" class="link jump" onclick={() => onselect(last.index)}>
-          <span class="mono">{timecode(strings, last.t)}</span>
+          <!-- A flex box keeps no space between its items: the hidden comma keeps the button's name in two words (#490). -->
+          <span class="mono">{timecode(strings, last.t)}</span><span class="sr">,&nbsp;</span>
           <span data-raw>{last.milestone.title}</span>
         </button>
       </dd>

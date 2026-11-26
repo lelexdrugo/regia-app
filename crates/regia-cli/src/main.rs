@@ -2,9 +2,11 @@ mod budget_text;
 mod check;
 mod clock;
 mod comment;
+mod controller;
 mod declare;
 mod dossier;
 mod init;
+mod plan;
 mod policy;
 mod reads;
 mod self_update;
@@ -62,6 +64,13 @@ enum Commands {
     Policy {
         #[command(subcommand)]
         command: policy::PolicyCommand,
+    },
+    /// The resident controller: `controller run`, the prototype's `tools/controller.py`. Its arguments exit 1 when
+    /// they do not hold, as the prototype's.
+    #[command(disable_help_flag = true)]
+    Controller {
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
+        args: Vec<String>,
     },
     /// Replaces this command line with the one of the newest release, once its signature verifies. A copy
     /// that came with the app is the app's to update. Native only: the prototype has no updater.
@@ -124,7 +133,7 @@ struct BudgetArgs {
 }
 
 /// The commands of the table this binary implements besides its own subcommands.
-const NATIVE_THROUGH_THE_TABLE: [&str; 29] = [
+const NATIVE_THROUGH_THE_TABLE: [&str; 30] = [
     "check",
     "checkpoint",
     "comment",
@@ -154,6 +163,7 @@ const NATIVE_THROUGH_THE_TABLE: [&str; 29] = [
     "step renew",
     "step finish",
     "path",
+    "plan",
 ];
 
 /// The prompt: one of the two, never both.
@@ -243,6 +253,7 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
             Ok(ExitCode::SUCCESS)
         }
         Commands::Policy { command } => policy::run(command, catalog),
+        Commands::Controller { args } => controller::run(&args, catalog).map(ExitCode::from),
         Commands::SelfUpdate(args) => self_update::run(&args, catalog),
         Commands::External(argv) => {
             let Some((command, args)) = table.split_command(&argv) else {
@@ -278,6 +289,9 @@ fn native_command(command: &str, args: &[String], catalog: &Catalog) -> Result<u
         return outcome;
     }
     if let Some(outcome) = init::run(command, args, catalog) {
+        return outcome;
+    }
+    if let Some(outcome) = plan::run(command, args, catalog) {
         return outcome;
     }
     match command {

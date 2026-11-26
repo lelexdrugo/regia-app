@@ -1,0 +1,6 @@
+*#10 [Approvato] first step  · sblocca 2 · catena 3
+*#11 [Decisione] the decision after it  · sblocca 1 · catena 2  ← aspetta #10
+un passo fuori dal perimetro:
+  *#30 [Approvato] work of another project  [q]  ← aspetta #11
+(1 Inbox senza archi: #20)
+(* linea principale: #10 → #11 → #30)

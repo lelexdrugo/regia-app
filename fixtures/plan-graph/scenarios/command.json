@@ -1,0 +1,80 @@
+{
+  "_note": "Synthetic. The data of the prototype's own tests of the command (TestComando of test_piano_mermaid.py): the Objective of p, #10, the decision #11 it blocks, the Inbox #20 with no edges, and #30 of q, which #11 blocks.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {
+      "number": 1,
+      "title": "[p] objective of p",
+      "labels": [
+        "progetto:p",
+        "tipo:obiettivo"
+      ],
+      "status": "In corso",
+      "sub": [
+        [
+          10,
+          "OPEN"
+        ],
+        [
+          11,
+          "OPEN"
+        ],
+        [
+          20,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 10,
+      "title": "first step",
+      "labels": [
+        "progetto:p",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 11,
+      "title": "the decision after it",
+      "labels": [
+        "progetto:p",
+        "maturità:pronto"
+      ],
+      "status": "Decisione",
+      "parent": 1,
+      "blocked_by": [
+        [
+          10,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 20,
+      "title": "an idea not formulated",
+      "labels": [
+        "progetto:p"
+      ],
+      "status": "Inbox",
+      "parent": 1
+    },
+    {
+      "number": 30,
+      "title": "work of another project",
+      "labels": [
+        "progetto:q",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "blocked_by": [
+        [
+          11,
+          "OPEN"
+        ]
+      ]
+    }
+  ]
+}

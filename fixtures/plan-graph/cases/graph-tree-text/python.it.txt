@@ -1,0 +1,9 @@
+ #10 [Approvato] a parent  · sblocca 1 · catena 2
+   #11 [Approvato] its child, which it blocks  ← aspetta #10
+*#12 [Approvato] the line starts here  · sblocca 2 · catena 3
+*#13 [Approvato] and goes on here  · sblocca 1 · catena 2  ← aspetta #12
+un passo fuori dal perimetro:
+  *#50 [Approvato] and ends in another project  [q]  ← aspetta #13
+(1 Inbox senza archi: #20)
+(archi fra padre e figlio, non disegnati: #10→#11)
+(* linea principale: #12 → #13 → #50)

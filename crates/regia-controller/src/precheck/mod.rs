@@ -52,7 +52,7 @@ pub use args::{Options, parse_options};
 pub use budget::BudgetSource;
 pub use line::{Json, Outcome, Reason, error_payload, outcome_line, python_repr};
 pub use observe::evaluate;
-pub use sources::{LiveSources, SETTINGS_DIR_SUFFIX, live_sources};
+pub use sources::{LiveSources, SETTINGS_DIR_SUFFIX, live_sources, live_sources_in};
 
 /// An issue of the tracker as the precheck reads it, resolved; an Objective also carries what its
 /// registry says.

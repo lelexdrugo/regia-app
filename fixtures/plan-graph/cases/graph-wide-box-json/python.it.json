@@ -1,0 +1,72 @@
+{
+  "annidati": [
+    [
+      20,
+      22
+    ]
+  ],
+  "archi": [
+    [
+      21,
+      30
+    ]
+  ],
+  "archi_persi": 0,
+  "comando": "regia piano --radice 20 --mermaid",
+  "data": "2026-01-10",
+  "inbox_fuori": [],
+  "linea": [
+    21,
+    30
+  ],
+  "mermaid": "%% regia piano --radice 20 --mermaid · tracker al 2026-01-10\nflowchart LR\n  subgraph n21 [\"#21 a box inside the box · Approvato · sblocca 3 · catena 3\"]\n    n23[\"#23 the innermost task<br/>In corso · sblocca 4 · catena 4\"]\n  end\n  n22[\"#22 the child its parent blocks<br/>Approvato\"]\n  n30[\"#30 after the box<br/>Approvato · alpha\"]\n  n21 ==> n30\n  nota[\"archi fra padre e figlio, non disegnati: #20→#22\"]\n  class nota nota\n  classDef aspetta fill:#fde68a,stroke:#b45309,color:#111\n  classDef incorso fill:#bfdbfe,stroke:#1d4ed8,color:#111\n  classDef abbozzo fill:#f3f4f6,stroke:#6b7280,color:#111\n  classDef pronto fill:#ffffff,stroke:#374151,color:#111\n  classDef inbox fill:#ffffff,stroke:#9ca3af,stroke-dasharray:4 3,color:#555\n  classDef esterno fill:#ffffff,stroke:#6b7280,stroke-dasharray:2 2,color:#555\n  classDef nota fill:#ffffff,stroke:#ffffff,color:#555\n  classDef linea stroke-width:3px\n  class n23 incorso\n  class n22 pronto\n  class n30 esterno\n  class n30 linea\n",
+  "nodi": [
+    {
+      "catena": 3,
+      "ciclo": false,
+      "esterno": false,
+      "number": 21,
+      "parent": 20,
+      "progetto": "alpha",
+      "sblocca": 3,
+      "stato": "Approvato",
+      "title": "a box inside the box"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 22,
+      "parent": 20,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "the child its parent blocks"
+    },
+    {
+      "catena": 4,
+      "ciclo": false,
+      "esterno": false,
+      "number": 23,
+      "parent": 21,
+      "progetto": "alpha",
+      "sblocca": 4,
+      "stato": "In corso",
+      "title": "the innermost task"
+    },
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": true,
+      "number": 30,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "after the box"
+    }
+  ],
+  "progetto": null,
+  "radice": 20,
+  "tagliati": []
+}

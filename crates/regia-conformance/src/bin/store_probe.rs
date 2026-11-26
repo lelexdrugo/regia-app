@@ -4,7 +4,8 @@
 //!
 //!     store-probe --dir <folder> [--wall-offset-s <s>] [--busy-wait-ms <ms>] <command> ...
 //!
-//! `acquire <project> <holder> <ttl>`, `renew <project> <holder> <ttl>`, `release <project> <holder>`,
+//! `acquire <project> <holder> <ttl>`, `renew <project> <holder> <ttl>`, `release <project> <holder>` (each
+//! takes `--start-at-ms <epoch ms>`: wait for that instant, so that several processes make the call together),
 //! `status <project>`, `hold-tx` (a write transaction held until stdin closes or the process dies), and
 //! `contend <project> <holder> <attempts> --witness <folder> --start-at-ms <epoch ms> --hold-ms <ms>
 //! --done <file> --peer-done <file>`.
@@ -127,6 +128,14 @@ fn run(args: &[String]) -> Result<u8, String> {
         parsed.map_err(|error| error.to_string())
     };
     let fail = |error: regia_store::StoreError| error.to_string();
+    if matches!(*command, "acquire" | "renew" | "release")
+        && let Some(start) = flag(args, "--start-at-ms")
+    {
+        let start: u128 = start.parse().map_err(|_| format!("bad --start-at-ms {start}"))?;
+        while epoch_ms() < start {
+            std::hint::spin_loop();
+        }
+    }
     match *command {
         "acquire" => Ok(print_outcome(&store.acquire_lock(&project(0)?, &holder(1)?, ttl(2)?).map_err(fail)?)),
         "renew" => Ok(print_outcome(&store.renew_lock(&project(0)?, &holder(1)?, ttl(2)?).map_err(fail)?)),

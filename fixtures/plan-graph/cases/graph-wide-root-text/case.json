@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic. The same plan as a tree, with the cut in its note and the graph's warnings.",
+  "scenario": "wide",
+  "args": [
+    "plan",
+    "--root",
+    "1"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "1"
+  ]
+}

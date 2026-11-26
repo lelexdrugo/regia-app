@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. TestComando: the JSON, the Inbox left out, the task of q one step outside.",
+  "scenario": "command",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--mermaid",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--radice",
+    "1",
+    "--mermaid"
+  ]
+}

@@ -4,6 +4,7 @@
   import { SvelteMap } from "svelte/reactivity";
 
   import type { Catalog } from "../lib/i18n";
+  import type { ListMode } from "../lib/moviola/listbox";
   import { projectName } from "../lib/moviola/text";
   import type { MoviolaSource, ProjectSummary } from "../lib/moviola/types";
   import Projects from "./moviola/Projects.svelte";
@@ -22,10 +23,11 @@
     hide?: string | null;
     lane?: string | null;
     observeTheme?: boolean;
+    listMode?: ListMode;
     onsettled?: () => void;
   }
 
-  let { strings, source, project, moment = null, query = null, filters = null, hide = null, lane = null, observeTheme = true, onsettled }: Props =
+  let { strings, source, project, moment = null, query = null, filters = null, hide = null, lane = null, observeTheme = true, listMode = "window", onsettled }: Props =
     $props();
 
   const names = new SvelteMap<string, string>();
@@ -50,6 +52,7 @@
       {lane}
       name={names.get(project) ?? project}
       {observeTheme}
+      {listMode}
       {...onsettled ? { onsettled } : {}}
     />
   {/key}

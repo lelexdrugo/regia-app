@@ -663,7 +663,7 @@ fn a_failed_signal_is_recorded_a_lost_lock_stops_the_tick() {
 struct Waiting;
 
 impl regia_controller::engine::BeforePrecheck for Waiting {
-    fn before(&mut self, record: &mut serde_json::Map<String, Value>, _now: f64) -> Result<bool, TickError> {
+    fn before(&mut self, record: &mut serde_json::Map<String, Value>, _tick: &regia_controller::engine::TickContext<'_>) -> Result<bool, TickError> {
         record.insert("decisione".to_owned(), json!("attesa-sospesa"));
         Ok(true)
     }

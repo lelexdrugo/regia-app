@@ -1,0 +1,22 @@
+{
+  "_note": "Synthetic. The whole plan under a cap of 100: the boxes, the cycle, the nodes outside, the notes.",
+  "scenario": "wide",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--mermaid",
+    "--max-nodes",
+    "100",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--radice",
+    "1",
+    "--mermaid",
+    "--max-nodi",
+    "100"
+  ]
+}
