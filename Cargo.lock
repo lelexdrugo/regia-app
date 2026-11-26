@@ -3147,6 +3147,7 @@ dependencies = [
  "regia-core",
  "regia-git",
  "regia-github",
+ "regia-i18n",
  "regia-identity",
  "thiserror 2.0.21",
 ]

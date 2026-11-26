@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::v1::{BaseLabel, TrackerAnchor, base_labels, project_field_name, status_option_names};
+use crate::v1::{BaseLabel, StatusAnchor, TrackerAnchor, base_labels, project_field_name, status_option_names};
 
 const VOCABULARY: &str = include_str!("../formats/init_v1.toml");
 
@@ -749,11 +749,12 @@ enum Written {
 }
 
 impl LocalConfig {
-    /// The anchor of this configuration, which `derive` writes beside it in the app's configuration folder: its owner,
-    /// repo and Project (T08, V17).
+    /// The anchor of this configuration, which `derive` writes in the app's configuration folder when it writes this
+    /// machine's: its owner, repo and Project, and the Project's status field with its options (T08, V17, #685).
     #[must_use]
     pub fn anchor(&self) -> TrackerAnchor {
-        TrackerAnchor { owner: self.owner.clone(), repo: self.repo.clone(), project_number: self.project_number, project_id: self.project_id.clone() }
+        let statuses = StatusAnchor { field_id: self.status_field_id.clone(), options: self.status_options.iter().cloned().collect() };
+        TrackerAnchor { owner: self.owner.clone(), repo: self.repo.clone(), project_number: self.project_number, project_id: self.project_id.clone(), statuses: Some(statuses) }
     }
 
     /// The keys a derived file is compared on, and their values; the project field's two only when the Project has it.

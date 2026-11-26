@@ -15,7 +15,8 @@ use crate::dossier_dir;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MoviolaError {
-    #[error(transparent)]
+    /// In the catalog's words, which the app shows as they are (#685).
+    #[error("{}", crate::detected(.0))]
     Format(#[from] V1Error),
     #[error(transparent)]
     Tracker(#[from] TrackerError),
