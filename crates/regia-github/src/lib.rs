@@ -11,13 +11,13 @@ mod write;
 
 pub use init::GhInit;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Utc};
 use regia_core::{
     CloseReason, ClosedIssue, IssueRef, IssueState, RawComment, RawIssue, RecentComments, StatusHistory, Tracker, TrackerConfigV1, TrackerError,
 };
-use regia_exec::{Pin, Program};
+use regia_exec::{ExecError, Output, Pin, Program};
 use serde::Deserialize;
 use serde_json::{Map, Value, json};
 
@@ -104,20 +104,15 @@ impl GhTracker {
         Self::data_of(self.envelope(query, &variables)?)
     }
 
-    /// The one place that runs `gh api graphql`, for the reads and the writes: `variables` as they are, the
-    /// whole request, with its typed variables, on stdin so that no value reaches gh's argv. What comes back
-    /// is the envelope GraphQL answered, `data` and `errors` as it sent them: what an `errors` means is for
-    /// the caller to say (`data_of` for the reads, `write::answer` for the writes). A call, whichever it is,
-    /// waits for a place among the running ones ([`limit::MAX_CALLS`]).
+    /// `variables` as they are through the adapter's one run of `gh api graphql` ([`graphql_through`]), for
+    /// the reads and the writes. What comes back is the envelope GraphQL answered, `data` and `errors` as it
+    /// sent them: what an `errors` means is for the caller to say (`data_of` for the reads, `write::answer`
+    /// for the writes).
     fn envelope(&self, query: &str, variables: &Map<String, Value>) -> Result<Value, TrackerError> {
         let gh = self.gh.as_ref().map_err(|error| TrackerError::Unavailable(error.clone()))?;
         self.envelope_through(query, variables, |body| {
-            let output = gh
-                .launch(regia_exec::gh::graphql(), &self.work_dir)
-                .stdin(body)
-                .run()
-                .map_err(|error| TrackerError::Unavailable(error.to_string()))?;
-            Ok(Reply { success: output.status.success(), stdout: output.stdout, stderr: output.stderr })
+            graphql_launch(gh, &self.work_dir, body)
+                .map_err(|error| TrackerError::Unavailable(error.to_string()))
         })
     }
 
@@ -129,11 +124,7 @@ impl GhTracker {
         variables: &Map<String, Value>,
         launch: impl FnOnce(String) -> Result<Reply, TrackerError>,
     ) -> Result<Value, TrackerError> {
-        let body = json!({"query": query, "variables": variables}).to_string();
-        let place = self.calls.start();
-        let reply = launch(body);
-        drop(place);
-        envelope_of(&reply?)
+        envelope_of(&graphql_through(&self.calls, query, variables, launch)?)
     }
 
     /// The `data` of an envelope, for the reads: an answer with `errors`, whatever they are but `null`, is a
@@ -153,15 +144,56 @@ impl GhTracker {
     }
 }
 
-/// What a run of `gh api graphql` printed and how it ended.
+/// What a run of `gh` printed and how it ended: its exit code is `None` when a signal ended it.
 struct Reply {
     success: bool,
+    code: Option<i32>,
     stdout: Vec<u8>,
     stderr: Vec<u8>,
 }
 
-/// The envelope of a run, for any caller. A run that fails is `gh` unavailable, with what it said: its
-/// stderr, or its stdout when stderr is empty.
+impl Reply {
+    fn of(output: Output) -> Self {
+        Reply {
+            success: output.status.success(),
+            code: output.status.code(),
+            stdout: output.stdout,
+            stderr: output.stderr,
+        }
+    }
+}
+
+/// The one place that runs `gh api graphql`, for the tracker's reads and writes and for the Projects that
+/// `init` reads (#595, #672): `variables` as they are, the whole request, with its typed variables, on
+/// stdin so that no value reaches gh's argv. A call, whichever it is, waits for a place among the running
+/// ones of `calls` ([`limit::MAX_CALLS`]), and `launch` runs while it holds it: [`graphql_launch`], or in
+/// the tests a launch that does not start a process. What comes back is what `gh` printed and how it
+/// ended, for each caller to read with its own errors: [`envelope_of`] for the tracker, `init`'s own for
+/// its Projects.
+fn graphql_through<E>(
+    calls: &limit::Calls,
+    query: &str,
+    variables: &Map<String, Value>,
+    launch: impl FnOnce(String) -> Result<Reply, E>,
+) -> Result<Reply, E> {
+    let body = json!({"query": query, "variables": variables}).to_string();
+    let place = calls.start();
+    let reply = launch(body);
+    drop(place);
+    reply
+}
+
+/// `gh api graphql --input=-` in `work_dir`, with `body` on stdin: the launch of [`graphql_through`]
+/// outside the tests.
+fn graphql_launch(gh: &Pin, work_dir: &Path, body: String) -> Result<Reply, ExecError> {
+    gh.launch(regia_exec::gh::graphql(), work_dir)
+        .stdin(body)
+        .run()
+        .map(Reply::of)
+}
+
+/// The envelope of a run, for the tracker's reads and writes alike. A run that fails is `gh` unavailable,
+/// with what it said: its stderr, or its stdout when stderr is empty.
 fn envelope_of(reply: &Reply) -> Result<Value, TrackerError> {
     if !reply.success {
         let text = |bytes: &[u8]| String::from_utf8_lossy(bytes).trim().to_owned();
@@ -535,8 +567,14 @@ mod tests {
         }
     }
 
-    fn reply(success: bool, stdout: &str, stderr: &str) -> Reply {
-        Reply { success, stdout: stdout.as_bytes().to_vec(), stderr: stderr.as_bytes().to_vec() }
+    /// A reply as `gh` gives it: a run that succeeds exits with 0, one that fails with 1.
+    pub(crate) fn reply(success: bool, stdout: &str, stderr: &str) -> Reply {
+        Reply {
+            success,
+            code: Some(if success { 0 } else { 1 }),
+            stdout: stdout.as_bytes().to_vec(),
+            stderr: stderr.as_bytes().to_vec(),
+        }
     }
 
     /// Difference 3 of #595, for both sides: a run that ends with an exit code is `gh` unavailable, with
