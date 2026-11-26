@@ -11,7 +11,7 @@ use std::time::Duration;
 
 use common::{SESSION, Trial, args, env_of};
 use regia_agents::suspension::CONTINUE;
-use regia_agents::{ChatHost, Known, OrcaChats, ResumeRequest, ServiceId};
+use regia_agents::{ChatHost, Known, OrcaChats, ResumeRequest, ServiceId, claude_slug};
 use regia_exec::{Effort, ModelId, Program};
 use serde_json::json;
 
@@ -44,7 +44,13 @@ fn claude_and_codex_get_the_resume_s_argv() {
 #[test]
 fn claude_is_resumed_on_its_own_with_its_log_and_continue_on_stdin() {
     let trial = Trial::new("resume-claude");
-    let resumed = trial.cli().resume(&request(&trial, ServiceId::Claude)).expect("the resume");
+    // A stopped session has its transcript already: the resume looks for it at once, as the prototype's does, and the
+    // fake writes its own only after it names the session.
+    let asked = request(&trial, ServiceId::Claude);
+    let existing = trial.claude_home().join("projects").join(claude_slug(&asked.folder)).join(format!("{SESSION}.jsonl"));
+    fs::create_dir_all(existing.parent().expect("its folder")).expect("the transcript's folder");
+    fs::write(&existing, "{\"type\": \"user\", \"message\": {\"content\": \"step\"}}\n").expect("the transcript");
+    let resumed = trial.cli().resume(&asked).expect("the resume");
     assert_eq!(resumed.session, SESSION);
     assert!(resumed.pid > 0);
     trial.wait_for(|| trial.started("claude"), Duration::from_secs(10));
