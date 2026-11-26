@@ -11,6 +11,7 @@
 //! The normalizations, declared:
 //! - **The reasons** are the product's own sentences, in English: the prototype's are translated by the
 //!   tables of `words` before the comparison, those of a lock or a lease and those of the dossier.
+//! - **The line of the checks** in the text of `step finish` (#701) is the prototype's, character for character, with the checks' ids in the contract's words; see `step_finish_prints_the_prototype_s_line_of_the_checks`.
 //! - **The checks** of `step finish` (#448) are compared whole, through the table, when the prototype ran them;
 //!   when it could not, each side says why in its own words, and only that both could not is compared.
 //! - **A generated holder**, `passo-` and 12 random hex digits, reads as `passo-<generated>` on both sides,
@@ -271,6 +272,83 @@ fn an_events_cursor_in_the_old_form_reads_as_its_instant() {
     assert_eq!(json_diff(&rust, &expected), Vec::<String>::new());
     assert_eq!(rust["cursor"], json!({"t": instant}));
     assert_eq!(json_diff(&state_rows(&run.state), &case.state_after().expect("state.json")), Vec::<String>::new());
+}
+
+/// The line of the checks in `step finish`'s text (#701): from `first` on, with the lines indented under it.
+fn checks_block(text: &str, first: &str) -> Vec<String> {
+    let mut lines = text.lines().skip_while(|line| !line.starts_with(first));
+    lines.next().map(|head| head.to_owned()).into_iter().chain(lines.take_while(|line| line.starts_with("  ")).map(str::to_owned)).collect()
+}
+
+/// The contract's id of a check the prototype names, through the table.
+fn contract_id(id: &str) -> String {
+    let report = json!({"voci": [{"controllo": id, "progetto": "p", "dove": "d", "testo": "t", "perche": "w"}], "per_controllo": {}, "avvisi": []});
+    let translated = translate_python("check", &report).unwrap_or_else(|error| panic!("the table does not know {id}: {error}"));
+    translated["findings"][0]["check"].as_str().expect("an id").to_owned()
+}
+
+/// The prototype's lines of the checks with the checks' ids in the contract's words, the only difference declared
+/// between its text and the product's in Italian: the summary's `(id n, …)` and each finding's `[id]`.
+fn in_contract_ids(lines: &[String]) -> Vec<String> {
+    lines
+        .iter()
+        .map(|line| {
+            if let Some((head, counts)) = line.split_once(" (").filter(|_| line.starts_with("controlli:")) {
+                let counts: Vec<String> = counts
+                    .trim_end_matches(')')
+                    .split(", ")
+                    .map(|count| count.rsplit_once(' ').map_or_else(|| count.to_owned(), |(id, n)| format!("{} {n}", contract_id(id))))
+                    .collect();
+                format!("{head} ({})", counts.join(", "))
+            } else if let Some((head, rest)) = line.split_once(": [").filter(|_| line.starts_with("  ")) {
+                let (id, tail) = rest.split_once(']').expect("a closing bracket");
+                format!("{head}: [{}]{tail}", contract_id(id))
+            } else {
+                line.clone()
+            }
+        })
+        .collect()
+}
+
+/// #701: in text, `step finish` prints the prototype's line of the checks, `controlli: N voci (…)`, the first
+/// three of them and how many more, between the cursor and the dossier. In Italian, the catalog the
+/// prototype's sentences are in, the lines are the prototype's own, character for character, but for the checks' ids,
+/// which are the contract's provisional names (#223), as in `check`'s text; the JSON of
+/// `checks` is compared by the cases in JSON. In English only the words of the catalog change.
+#[test]
+fn step_finish_prints_the_prototype_s_line_of_the_checks() {
+    let italian = vec![(env_var("LANG"), OsString::from("it"))];
+    for (name, findings) in [("step-finish-retry-text", 2), ("step-finish-checks-text", 5), ("step-finish-checks-none-text", 0)] {
+        let case = Case::named(name);
+        let Recorded::Text(python) = case.recorded() else { panic!("{name} is recorded in text") };
+        let prototype = checks_block(&lf(&python), "controlli:");
+        let expected = in_contract_ids(&prototype);
+        assert_eq!(prototype.len(), if findings == 0 { 1 } else { findings.min(3) + 1 + usize::from(findings > 3) }, "{name}: the recording");
+        let run = native(&format!("native-{name}-it"), &case, italian.clone());
+        assert_eq!(run.exit, Some(0), "{name}: {}", run.stderr);
+        let stdout = lf(&String::from_utf8_lossy(&run.stdout));
+        let lines: Vec<&str> = stdout.lines().collect();
+        assert_eq!(checks_block(&stdout, "controlli:"), expected, "{name}: the text of the product
+{stdout}");
+        // Where the prototype puts it: after the cursor, before the dossier, with nothing of the checks' keys around it.
+        let at = lines.iter().position(|line| line.starts_with("controlli:")).expect("the line");
+        assert!(lines[..at].iter().any(|line| line.starts_with("cursor.t:")), "{name}: after the cursor
+{stdout}");
+        assert!(lines[at + expected.len()].starts_with("dossier."), "{name}: before the dossier
+{stdout}");
+        assert!(!stdout.contains("checks."), "{name}: the checks' keys are not printed as leaves
+{stdout}");
+        assert_eq!(native_differences(&case, &run), Vec::<String>::new(), "{name}");
+        // English: the catalog's words, the same shape and the same findings.
+        let run = native(&format!("native-{name}-en"), &case, vec![(env_var("LANG"), OsString::from("en"))]);
+        let english = checks_block(&lf(&String::from_utf8_lossy(&run.stdout)), "checks:");
+        assert_eq!(english.len(), expected.len(), "{name}: {english:?}");
+        assert!(english[0].starts_with(&format!("checks: {findings} findings")), "{name}: {english:?}");
+        assert_eq!(english[1..expected.len().min(4)], expected[1..expected.len().min(4)], "{name}: the findings are the same sentences");
+        if findings > 3 {
+            assert_eq!(english.last().map(String::as_str), Some(&*format!("  … and {} more (regia check --project …)", findings - 3)));
+        }
+    }
 }
 
 /// Negative controls: on the machine's clock the lock expires elsewhere, and a row or an outcome altered

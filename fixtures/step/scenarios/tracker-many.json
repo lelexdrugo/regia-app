@@ -1,0 +1,73 @@
+{
+  "_note": "Synthetic. As tracker, with three more tasks In progress with no live lease: five findings, so the line of the checks lists three and says how many more.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {
+      "number": 1,
+      "title": "objective of alpha",
+      "status": "In corso",
+      "labels": [
+        "progetto:alpha",
+        "tipo:obiettivo"
+      ],
+      "body": "registry without a folder"
+    },
+    {
+      "number": 5,
+      "title": "a task in progress with no live lease",
+      "status": "In corso",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1
+    },
+    {
+      "number": 6,
+      "title": "a decision answered in chat",
+      "status": "Decisione",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "parent": 1,
+      "comments": [
+        {
+          "id": 9001,
+          "created_at": "2026-01-08T10:00:00Z",
+          "body": "Decisione: A, as advised.\n\n<!-- regia:autore ruolo=chat -->"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "title": "another task in progress, no. 7",
+      "status": "In corso",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1
+    },
+    {
+      "number": 8,
+      "title": "another task in progress, no. 8",
+      "status": "In corso",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1
+    },
+    {
+      "number": 9,
+      "title": "another task in progress, no. 9",
+      "status": "In corso",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1
+    }
+  ]
+}
