@@ -1,0 +1,365 @@
+{
+  "annidati": [
+    [
+      20,
+      22
+    ]
+  ],
+  "archi": [
+    [
+      10,
+      11
+    ],
+    [
+      10,
+      72
+    ],
+    [
+      10,
+      81
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      13,
+      61
+    ],
+    [
+      21,
+      30
+    ],
+    [
+      30,
+      73
+    ],
+    [
+      40,
+      41
+    ],
+    [
+      41,
+      40
+    ],
+    [
+      41,
+      42
+    ],
+    [
+      60,
+      12
+    ]
+  ],
+  "archi_persi": 0,
+  "comando": "regia piano --radice 1 --mermaid",
+  "data": "2026-01-10",
+  "inbox_fuori": [
+    70,
+    71
+  ],
+  "linea": [
+    10,
+    11,
+    12,
+    13,
+    14
+  ],
+  "mermaid": "%% regia piano --radice 1 --mermaid · tracker al 2026-01-10\nflowchart LR\n  n10[\"#10 A · the start of the line<br/>Approvato · sblocca 5 (7 con Inbox e Proposte) · catena 5\"]\n  n11[\"#11 Il #quot;resta#quot; #lt;b#gt; and #12#59; here<br/>In corso · sblocca 3 (4 con Inbox e Proposte) · catena 4\"]\n  n12{{\"✋ #12 the prefix of the project drops<br/>Decisione · sblocca 2 (3 con Inbox e Proposte) · catena 3\"}}\n  n13[\"#13 a draft on the line<br/>Approvato · abbozzo · sblocca 1 (2 con Inbox e Proposte) · catena 2\"]\n  n14{{\"✋ #14 the proposal at the end of the line<br/>Proposta\"}}\n  n15[\"#15 a long title that goes well beyond th…<br/>Approvato\"]\n  subgraph n20 [\"#20 a box of two · Approvato · sblocca 1 · catena 2\"]\n    subgraph n21 [\"#21 a box inside the box · Approvato · sblocca 3 · catena 3\"]\n      n23[\"#23 the innermost task<br/>In corso · sblocca 4 · catena 4\"]\n    end\n    n22[\"#22 the child its parent blocks<br/>Approvato\"]\n  end\n  n30[\"#30 after the box<br/>Approvato\"]\n  n40[\"#40 one side of a cycle<br/>Approvato · in ciclo\"]\n  n41[\"#41 the other side of the cycle<br/>Approvato · in ciclo\"]\n  n42[\"#42 after the cycle<br/>Approvato\"]\n  n60[\"#60 a blocker of another project<br/>Approvato · sblocca 3 (4 con Inbox e Proposte) · catena 4 · beta\"]\n  n61[\"#61 blocked from here, and by its own pro…<br/>Approvato · beta\"]\n  n72[\"#72 an idea with an edge<br/>Inbox\"]\n  n73[\"#73 a task with no status<br/>?\"]\n  n81[\"#81 open under the parent done<br/>Approvato\"]\n  n90{{\"✋ #90 a decision with no edges<br/>Decisione\"}}\n  n100[\"#100 filler task 0<br/>Approvato\"]\n  n101[\"#101 filler task 1<br/>Approvato\"]\n  n102[\"#102 filler task 2<br/>Approvato\"]\n  n103[\"#103 filler task 3<br/>Approvato · abbozzo\"]\n  n104[\"#104 filler task 4<br/>Approvato\"]\n  n10 ==> n11\n  n10 --> n72\n  n10 --> n81\n  n11 ==> n12\n  n12 ==> n13\n  n13 ==> n14\n  n13 --> n61\n  n21 --> n30\n  n30 --> n73\n  n40 --> n41\n  n41 --> n40\n  n41 --> n42\n  n60 --> n12\n  nota[\"2 Inbox senza archi: #70, #71<br/>archi fra padre e figlio, non disegnati: #20→#22<br/>tagliati 7 aperti oltre il tetto, 0 archi persi: #105, #106, #107, #108, #109, #110, #111\"]\n  class nota nota\n  classDef aspetta fill:#fde68a,stroke:#b45309,color:#111\n  classDef incorso fill:#bfdbfe,stroke:#1d4ed8,color:#111\n  classDef abbozzo fill:#f3f4f6,stroke:#6b7280,color:#111\n  classDef pronto fill:#ffffff,stroke:#374151,color:#111\n  classDef inbox fill:#ffffff,stroke:#9ca3af,stroke-dasharray:4 3,color:#555\n  classDef esterno fill:#ffffff,stroke:#6b7280,stroke-dasharray:2 2,color:#555\n  classDef nota fill:#ffffff,stroke:#ffffff,color:#555\n  classDef linea stroke-width:3px\n  class n12,n14,n90 aspetta\n  class n11,n23 incorso\n  class n13,n103 abbozzo\n  class n10,n15,n22,n30,n40,n41,n42,n81,n100,n101,n102,n104 pronto\n  class n72 inbox\n  class n60,n61 esterno\n  class n10,n11,n12,n13,n14 linea\n",
+  "nodi": [
+    {
+      "catena": 5,
+      "ciclo": false,
+      "esterno": false,
+      "number": 10,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 5,
+      "stato": "Approvato",
+      "title": "[#1 A] the start of the line"
+    },
+    {
+      "catena": 4,
+      "ciclo": false,
+      "esterno": false,
+      "number": 11,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 3,
+      "stato": "In corso",
+      "title": "Il \"resta\" <b> and #12; here"
+    },
+    {
+      "catena": 3,
+      "ciclo": false,
+      "esterno": false,
+      "number": 12,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 2,
+      "stato": "Decisione",
+      "title": "[alpha] the prefix of the project drops"
+    },
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": false,
+      "number": 13,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "stato": "Approvato",
+      "title": "a draft on the line"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 14,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Proposta",
+      "title": "the proposal at the end of the line"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 15,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "a long title that goes well beyond the thirty-eight characters of a node and the sixty of a tree"
+    },
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": false,
+      "number": 20,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 1,
+      "stato": "Approvato",
+      "title": "a box of two"
+    },
+    {
+      "catena": 3,
+      "ciclo": false,
+      "esterno": false,
+      "number": 21,
+      "parent": 20,
+      "progetto": "alpha",
+      "sblocca": 3,
+      "stato": "Approvato",
+      "title": "a box inside the box"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 22,
+      "parent": 20,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "the child its parent blocks"
+    },
+    {
+      "catena": 4,
+      "ciclo": false,
+      "esterno": false,
+      "number": 23,
+      "parent": 21,
+      "progetto": "alpha",
+      "sblocca": 4,
+      "stato": "In corso",
+      "title": "the innermost task"
+    },
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": false,
+      "number": 30,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "after the box"
+    },
+    {
+      "catena": null,
+      "ciclo": true,
+      "esterno": false,
+      "number": 40,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": null,
+      "stato": "Approvato",
+      "title": "one side of a cycle"
+    },
+    {
+      "catena": null,
+      "ciclo": true,
+      "esterno": false,
+      "number": 41,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": null,
+      "stato": "Approvato",
+      "title": "the other side of the cycle"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 42,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "after the cycle"
+    },
+    {
+      "catena": 4,
+      "ciclo": false,
+      "esterno": true,
+      "number": 60,
+      "parent": 2,
+      "progetto": "beta",
+      "sblocca": 3,
+      "stato": "Approvato",
+      "title": "a blocker of another project"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": true,
+      "number": 61,
+      "parent": 2,
+      "progetto": "beta",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "blocked from here, and by its own project"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 72,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Inbox",
+      "title": "an idea with an edge"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 73,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": null,
+      "title": "a task with no status"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 81,
+      "parent": 80,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "open under the parent done"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 90,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Decisione",
+      "title": "a decision with no edges"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 100,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "filler task 0"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 101,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "filler task 1"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 102,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "filler task 2"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 103,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "filler task 3"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": false,
+      "number": 104,
+      "parent": 1,
+      "progetto": "alpha",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "filler task 4"
+    }
+  ],
+  "progetto": null,
+  "radice": 1,
+  "tagliati": [
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111
+  ]
+}

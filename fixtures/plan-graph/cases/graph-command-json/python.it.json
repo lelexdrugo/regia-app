@@ -1,0 +1,63 @@
+{
+  "annidati": [],
+  "archi": [
+    [
+      10,
+      11
+    ],
+    [
+      11,
+      30
+    ]
+  ],
+  "archi_persi": 0,
+  "comando": "regia piano --radice 1 --mermaid",
+  "data": "2026-01-10",
+  "inbox_fuori": [
+    20
+  ],
+  "linea": [
+    10,
+    11,
+    30
+  ],
+  "mermaid": "%% regia piano --radice 1 --mermaid · tracker al 2026-01-10\nflowchart LR\n  n10[\"#10 first step<br/>Approvato · sblocca 2 · catena 3\"]\n  n11{{\"✋ #11 the decision after it<br/>Decisione · sblocca 1 · catena 2\"}}\n  n30[\"#30 work of another project<br/>Approvato · q\"]\n  n10 ==> n11\n  n11 ==> n30\n  nota[\"1 Inbox senza archi: #20\"]\n  class nota nota\n  classDef aspetta fill:#fde68a,stroke:#b45309,color:#111\n  classDef incorso fill:#bfdbfe,stroke:#1d4ed8,color:#111\n  classDef abbozzo fill:#f3f4f6,stroke:#6b7280,color:#111\n  classDef pronto fill:#ffffff,stroke:#374151,color:#111\n  classDef inbox fill:#ffffff,stroke:#9ca3af,stroke-dasharray:4 3,color:#555\n  classDef esterno fill:#ffffff,stroke:#6b7280,stroke-dasharray:2 2,color:#555\n  classDef nota fill:#ffffff,stroke:#ffffff,color:#555\n  classDef linea stroke-width:3px\n  class n11 aspetta\n  class n10 pronto\n  class n30 esterno\n  class n10,n11,n30 linea\n",
+  "nodi": [
+    {
+      "catena": 3,
+      "ciclo": false,
+      "esterno": false,
+      "number": 10,
+      "parent": 1,
+      "progetto": "p",
+      "sblocca": 2,
+      "stato": "Approvato",
+      "title": "first step"
+    },
+    {
+      "catena": 2,
+      "ciclo": false,
+      "esterno": false,
+      "number": 11,
+      "parent": 1,
+      "progetto": "p",
+      "sblocca": 1,
+      "stato": "Decisione",
+      "title": "the decision after it"
+    },
+    {
+      "catena": 1,
+      "ciclo": false,
+      "esterno": true,
+      "number": 30,
+      "parent": null,
+      "progetto": "q",
+      "sblocca": 0,
+      "stato": "Approvato",
+      "title": "work of another project"
+    }
+  ],
+  "progetto": null,
+  "radice": 1,
+  "tagliati": []
+}

@@ -1,0 +1,15 @@
+{
+  "_note": "Synthetic. TestComando: a root the tracker does not have, exit 1.",
+  "scenario": "command",
+  "args": [
+    "plan",
+    "--root",
+    "999"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "999"
+  ],
+  "exit": 1
+}

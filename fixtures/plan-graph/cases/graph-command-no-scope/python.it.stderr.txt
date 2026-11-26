@@ -1,0 +1,3 @@
+usage: regia piano [-h] (--progetto PROGETTO | --radice RADICE) [--mermaid]
+                   [--max-nodi MAX_NODI]
+regia piano: error: one of the arguments --progetto --radice is required

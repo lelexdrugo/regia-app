@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic. TestAlbero: indented by parent, the main line, one step outside, the notes.",
+  "scenario": "tree",
+  "args": [
+    "plan",
+    "--root",
+    "1"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "1"
+  ]
+}

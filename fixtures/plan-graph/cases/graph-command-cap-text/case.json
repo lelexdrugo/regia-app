@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. TestComando: a cap that is not the default is in the command line quoted.",
+  "scenario": "command",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--mermaid",
+    "--max-nodes",
+    "3"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "1",
+    "--mermaid",
+    "--max-nodi",
+    "3"
+  ]
+}

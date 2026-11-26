@@ -1,0 +1,36 @@
+*#10 [Approvato] A · the start of the line  · sblocca 5 (7 con Inbox e Proposte) · catena 5
+*#11 [In corso] Il "resta" <b> and #12; here  · sblocca 3 (4 con Inbox e Proposte) · catena 4  ← aspetta #10
+*#12 [Decisione] the prefix of the project drops  · sblocca 2 (3 con Inbox e Proposte) · catena 3  ← aspetta #11,#60
+*#13 [Approvato] a draft on the line  · sblocca 1 (2 con Inbox e Proposte) · catena 2  ← aspetta #12
+*#14 [Proposta] the proposal at the end of the line  ← aspetta #13
+ #15 [Approvato] a long title that goes well beyond the thirty-eight charact…
+ #20 [Approvato] a box of two  · sblocca 1 · catena 2
+   #21 [Approvato] a box inside the box  · sblocca 3 · catena 3
+     #23 [In corso] the innermost task  · sblocca 4 · catena 4
+   #22 [Approvato] the child its parent blocks  ← aspetta #20
+ #30 [Approvato] after the box  ← aspetta #21
+ #40 [Approvato] one side of a cycle  · in ciclo  ← aspetta #41
+ #41 [Approvato] the other side of the cycle  · in ciclo  ← aspetta #40
+ #42 [Approvato] after the cycle  ← aspetta #41
+ #72 [Inbox] an idea with an edge  ← aspetta #10
+ #73 [—] a task with no status  ← aspetta #30
+ #81 [Approvato] open under the parent done  ← aspetta #10
+ #90 [Decisione] a decision with no edges
+ #100 [Approvato] filler task 0
+ #101 [Approvato] filler task 1
+ #102 [Approvato] filler task 2
+ #103 [Approvato] filler task 3
+ #104 [Approvato] filler task 4
+ #105 [Approvato] filler task 5
+ #106 [Approvato] filler task 6
+ #107 [Approvato] filler task 7
+ #108 [Approvato] filler task 8
+ #109 [Approvato] filler task 9
+ #110 [Approvato] filler task 10
+ #111 [Approvato] filler task 11
+un passo fuori dal perimetro:
+   #60 [Approvato] a blocker of another project  [beta]  · sblocca 3 (4 con Inbox e Proposte) · catena 4
+   #61 [Approvato] blocked from here, and by its own project  [beta]  ← aspetta #13
+(2 Inbox senza archi: #70, #71)
+(archi fra padre e figlio, non disegnati: #20→#22)
+(* linea principale: #10 → #11 → #12 → #13 → #14)
