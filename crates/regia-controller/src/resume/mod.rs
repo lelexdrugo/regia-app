@@ -882,6 +882,28 @@ impl Resume {
     }
 }
 
+/// The resumes of a tick's line, as the prototype's summary of a tick names them: the session, and the surface's word.
+#[must_use]
+pub fn line_resumes(record: &Value) -> Vec<(String, String)> {
+    let (l, v) = (&words().line, &words().resume);
+    record
+        .get(&l.resumes)
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .map(|resume| {
+            let text = |key: &str| resume.get(key).and_then(Value::as_str).unwrap_or_default().to_owned();
+            (text(&v.session), text(&v.adapter))
+        })
+        .collect()
+}
+
+/// Until when a tick's line waits for a suspended session, as the summary of a tick names it.
+#[must_use]
+pub fn line_wait(record: &Value) -> Option<String> {
+    record.get(&words().line.wait).and_then(|wait| wait.get(&words().wait.until)).and_then(Value::as_str).map(str::to_owned)
+}
+
 fn push(record: &mut Map<String, Value>, key: &str, value: Value) {
     if let Some(Value::Array(items)) = record.get_mut(key) {
         items.push(value);

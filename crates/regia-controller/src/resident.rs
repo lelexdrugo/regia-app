@@ -198,6 +198,10 @@ pub struct Summary {
     pub wake: Option<WakeSummary>,
     /// The tick followed a suspension of the machine.
     pub wakeup: bool,
+    /// The sessions the tick resumed (#470): the session, and the surface's word.
+    pub resumes: Vec<(String, String)>,
+    /// Until when the tick waits for a suspended session (#470).
+    pub suspended_until: Option<String>,
 }
 
 impl Summary {
@@ -233,6 +237,8 @@ impl Summary {
             operations: crate::schedule::line_operations(record),
             wake,
             wakeup: record.get(&r.wakeup).and_then(Value::as_bool).unwrap_or(false),
+            resumes: crate::resume::line_resumes(record),
+            suspended_until: crate::resume::line_wait(record),
         }
     }
 }
