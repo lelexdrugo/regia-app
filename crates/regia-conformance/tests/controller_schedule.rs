@@ -8,7 +8,10 @@
 //! - Also: D1 for the chat (#467/V8, `test_controller_lock_lanci.py`), the cursors written only by the lock's holder
 //!   (#582), and the record of a step launched on Orca (#467/V11).
 //!
-//! The values are the prototype's words, so a word the format changes fails here. 2026-10-22 is a Thursday.
+//! The values are the prototype's words, so a word the format changes fails here. The limits of the days skipped
+//! are not words: the cases read them from the format (`lookback_days`, `skipped_kept`), so a product whose code
+//! departs from its format fails here, and `controller_schedule_cross.rs` holds the format's to the prototype's
+//! (#732). 2026-10-22 is a Thursday.
 
 use std::collections::BTreeSet;
 use std::fs;
@@ -16,7 +19,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
-use chrono::{DateTime, NaiveDateTime};
+use chrono::{DateTime, Datelike, Days, NaiveDate, NaiveDateTime};
 use regia_agents::{Dry, LaunchError, LaunchRequest, LaunchSurface, ProbeConsent, Receipt, ServiceId, SurfaceKind, WakeOutcome, WakeUp};
 use regia_controller::engine::native::{StoreLock, StoreSignals, new_record};
 use regia_controller::engine::{
@@ -40,9 +43,26 @@ fn evening() -> Value {
     json!({"operazioni": [{"nome": "sera", "ora": "18:00", "giorni": "tutti", "azione": "chat", "prompt": "regia: brief"}]})
 }
 
-/// The UTC instant of a day of October 2026, as the cases' local time.
+/// An operation of the working days that is not the dailies: the rule of one chat waiting is not its own.
+fn weekdays() -> Value {
+    json!({"operazioni": [{"nome": "review", "ora": "09:00", "giorni": "lun-ven", "azione": "chat", "prompt": "review the week"}]})
+}
+
+/// The days of the week of `weekdays` and `evening`, Monday 0.
+const WEEKDAYS: [u32; 5] = [0, 1, 2, 3, 4];
+const EVERY_DAY: [u32; 7] = [0, 1, 2, 3, 4, 5, 6];
+
+/// The cases' days are October's, and past 31 the month after's: `NOVEMBER + 11` is 11 November 2026, a Wednesday.
+const NOVEMBER: u32 = 31;
+
+/// A day of the cases' calendar.
+fn date(day: u32) -> NaiveDate {
+    NaiveDate::from_ymd_opt(2026, 10, 1).unwrap() + Days::new(u64::from(day) - 1)
+}
+
+/// The UTC instant of a day of the cases' calendar, as the cases' local time.
 fn instant(day: u32, hour: u32, minute: u32) -> String {
-    format!("2026-10-{day:02}T{hour:02}:{minute:02}:00Z")
+    format!("{}T{hour:02}:{minute:02}:00Z", date(day))
 }
 
 fn secs(day: u32, hour: u32, minute: u32) -> f64 {
@@ -51,7 +71,21 @@ fn secs(day: u32, hour: u32, minute: u32) -> f64 {
 
 /// The closing file's name of a chat started at that minute: `AAAA-MM-GG-HHMM.md`, in UTC.
 fn closing_name(day: u32, hour: u32, minute: u32) -> String {
-    format!("2026-10-{day:02}-{hour:02}{minute:02}.md")
+    format!("{}-{hour:02}{minute:02}.md", date(day))
+}
+
+/// The days from `first` to `last`, both in, that fall on `days` (Monday 0), in order, as the state writes them.
+fn dates(first: NaiveDate, last: NaiveDate, days: &[u32]) -> Vec<String> {
+    first.iter_days().take_while(|day| *day <= last).filter(|day| days.contains(&day.weekday().num_days_from_monday())).map(|day| day.to_string()).collect()
+}
+
+/// The limits of format v1 on the days skipped, as `operations_v1.toml` has them: how many days back they are looked
+/// for after an absence (`lookback_days`), and how many an operation's entry keeps (`skipped_kept`).
+fn skipped_limits() -> (u64, usize) {
+    let file = regia_conformance::workspace_root().join("crates").join("regia-controller").join("formats").join("operations_v1.toml");
+    let format: toml::Table = toml::from_str(&fs::read_to_string(&file).unwrap_or_else(|error| panic!("{}: {error}", file.display()))).expect("TOML");
+    let limit = |key: &str| format[key].as_integer().unwrap_or_else(|| panic!("no {key} in {}", file.display()));
+    (u64::try_from(limit("lookback_days")).unwrap(), usize::try_from(limit("skipped_kept")).unwrap())
 }
 
 fn utc_local(secs: f64) -> Option<NaiveDateTime> {
@@ -594,6 +628,50 @@ fn a_weekend_away_skips_only_the_scheduled_days() {
 fn the_first_time_there_is_no_past_to_catch_up() {
     let mut case = Case::new("first-time", Setup::of(dailies()));
     assert_eq!(voices(&case.at(22, 15, 0)), pairs(&[("giornalieri", "lanciata")]));
+}
+
+// ---------- the limits of the days skipped (#732) ----------
+
+/// The prototype's `inizio = max(contab, oggi - timedelta(days=SALTATE_LOOKBACK_GIORNI))`: after an absence longer than
+/// the lookback, the days skipped are the working days of the lookback only, and none opens a chat: today's opens, once.
+#[test]
+fn lookback_days_bounds_the_days_skipped_after_a_long_absence() {
+    let (lookback, kept) = skipped_limits();
+    let (last, today) = (date(22), date(NOVEMBER + 11));
+    let absence = u64::try_from((today - last).num_days()).unwrap();
+    assert!(absence > lookback + 1, "an absence of {absence} days: the first day missed is past the lookback, and so is the day before it");
+    let mut case = Case::new("lookback", Setup::of(weekdays()));
+    assert_eq!(voices(&case.at(22, 9, 30)), pairs(&[("review", "lanciata")]), "Thursday 22 October");
+    let record = case.at(NOVEMBER + 11, 9, 30);
+    assert_eq!(voices(&record), pairs(&[("review", "saltata"), ("review", "lanciata")]), "Wednesday 11 November");
+    let skipped = dates(today - Days::new(lookback), today - Days::new(1), &WEEKDAYS);
+    assert_eq!(record["operazioni"][0]["giorni"], json!(skipped), "the lookback's working days, the weekends left out, none before it");
+    assert_eq!(case.chat.calls(), 2, "today's chat: none for the days skipped");
+    assert_eq!(case.operations_cursor()["ops"]["review"]["saltate"], json!(skipped[skipped.len().saturating_sub(kept)..]));
+}
+
+/// The prototype's `s["saltate"] = (list(s.get("saltate") or []) + saltati)[-SALTATE_TENUTE:]`: two absences of a week,
+/// within the lookback, whose days skipped are more than an entry keeps. Each tick records all of its own; the entry
+/// keeps the most recent, the older first.
+#[test]
+fn skipped_kept_bounds_the_days_an_entry_keeps() {
+    let (lookback, kept) = skipped_limits();
+    let (away, again) = (dates(date(23), date(28), &EVERY_DAY), dates(date(30), date(NOVEMBER + 4), &EVERY_DAY));
+    assert!(lookback >= 7 && away.len() + again.len() > kept, "a week is within the lookback, and the two together are more than an entry keeps");
+    let mut case = Case::new("kept", Setup::of(evening()));
+    case.at(22, 18, 5);
+    let first = case.at(29, 18, 5);
+    assert_eq!(voices(&first), pairs(&[("sera", "saltata"), ("sera", "lanciata")]));
+    assert_eq!(first["operazioni"][0]["giorni"], json!(away));
+    assert_eq!(case.operations_cursor()["ops"]["sera"]["saltate"], json!(away));
+    let second = case.at(NOVEMBER + 5, 18, 5);
+    assert_eq!(voices(&second), pairs(&[("sera", "saltata"), ("sera", "lanciata")]));
+    assert_eq!(second["operazioni"][0]["giorni"], json!(again), "the tick's own days, all of them");
+    let all = [away, again].concat();
+    let latest = json!(all[all.len() - kept..]);
+    assert_eq!(case.operations_cursor()["ops"]["sera"]["saltate"], latest, "the most recent, the older first: the oldest are dropped");
+    assert_eq!(case.status(&second)["operazioni"]["sera"]["saltate"], latest, "and the state file's the same");
+    assert_eq!(case.chat.calls(), 3, "one chat a tick: none for the days skipped");
 }
 
 // ---------- suspended sessions ----------
