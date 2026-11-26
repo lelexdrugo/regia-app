@@ -16,7 +16,7 @@ import { type Catalog, catalog } from "../src/lib/i18n";
 import { DENSITIES, DIRECTIONS, draw } from "../src/lib/look";
 import type { ListMode } from "../src/lib/moviola/listbox";
 import type { MoviolaSource, ProjectSummary, Snapshot, Timeline } from "../src/lib/moviola/types";
-import { bench, benchList, type BenchResult, type ListBench } from "./bench";
+import { benchList, type ListBench } from "./bench";
 import { SECTIONS } from "../src/lib/route";
 import { appRenderer, type Check, type CorpusCase, loadFonts, type Renderer, v07 } from "../src/lib/v07";
 import App from "../src/App.svelte";
@@ -35,8 +35,6 @@ declare global {
     harnessChecks?: Check[];
     /** Every change the shell asked to save, in order, for the proofs of the settings. */
     harnessSaved?: SettingsChange[];
-    /** What the moviola's quick check of the time per frame measured, for prove/bench.mjs. */
-    benchResult?: BenchResult;
     /** What the bench of the list of moments measured (#490), for prove/bench.mjs --list. */
     benchList?: ListBench;
   }
@@ -330,11 +328,13 @@ async function show(): Promise<void> {
       mounted.push(mount(Stopped, { target: root, props: { brief: fixtureOf(data) } }));
       break;
     case "bench":
-      // #/bench?scale=1: the moviola's stage on a synthetic timeline, measured (harness/bench.ts); with list=1, the
-      // cost of its list of moments (#490).
+      // #/bench?scale=1&list=1: the cost of the moviola's list of moments on a synthetic timeline (#490,
+      // harness/bench.ts). The time per frame is the product's bench's, crates/regia-moviola-bench (#683).
+      if (params.get("list") !== "1") {
+        throw new Error("#/bench measures the list of moments, with list=1: the time per frame is crates/regia-moviola-bench's `npm run bench`");
+      }
       settingsOf(params);
-      if (params.get("list") === "1") window.benchList = await benchList(root, Number(params.get("scale") ?? "1"), catalogOf);
-      else window.benchResult = await bench(root, Number(params.get("scale") ?? "1"), catalogOf);
+      window.benchList = await benchList(root, Number(params.get("scale") ?? "1"), catalogOf);
       break;
     case "v07":
       window.harnessChecks = await v07(corpus, params.get("renderer") === "unsafe" ? unsafe : appRenderer(catalogOf));

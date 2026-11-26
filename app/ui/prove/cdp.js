@@ -61,7 +61,7 @@ async function devtoolsPort(file, chrome, stderr) {
 /**
  * A headless browser with one page. `profiles` holds its throwaway profile. `CHROME_FLAGS` adds flags, for a
  * machine that needs one. `headed` opens a window with the GPU instead, at its own size, and `binary` picks the
- * browser: prove/bench.mjs measures time per frame there, never headless.
+ * browser: prove/bench.mjs takes its screenshots in Edge or Chrome that way.
  */
 export async function launch({ width, height, profiles, binary = findChrome(), headed = false }) {
   const profile = join(profiles, `chrome-${process.pid}`);
