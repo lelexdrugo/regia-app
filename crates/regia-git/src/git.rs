@@ -15,8 +15,8 @@ pub const TIMEOUT: Duration = Duration::from_secs(120);
 const WRITES: [&str; 5] = ["fetch", "merge", "add", "commit", "push"];
 
 /// The exit codes the prototype gives a call past its deadline, and a git that could not start.
-const TIMED_OUT: i32 = 124;
-const NOT_RUN: i32 = 127;
+pub(crate) const TIMED_OUT: i32 = 124;
+pub(crate) const NOT_RUN: i32 = 127;
 
 /// The user's git at its pinned path.
 #[derive(Debug, Clone)]
@@ -98,8 +98,13 @@ impl Git {
 
     /// Runs `args` in `folder`. `date`, when given, is the date of the commit the call makes.
     pub(crate) fn run(&self, folder: &Path, args: Args, date: Option<GitDate>) -> Run {
+        self.run_within(folder, args, date, TIMEOUT)
+    }
+
+    /// [`Git::run`] with a deadline of its own, `limit`, in place of [`TIMEOUT`].
+    pub(crate) fn run_within(&self, folder: &Path, args: Args, date: Option<GitDate>, limit: Duration) -> Run {
         let subcommand = args.tokens().next().map_or_else(String::new, |token| token.to_string_lossy().into_owned());
-        let mut launch = self.pin.launch(args, folder).limits(Limits { timeout: TIMEOUT, ..Limits::default() });
+        let mut launch = self.pin.launch(args, folder).limits(Limits { timeout: limit, ..Limits::default() });
         if WRITES.contains(&subcommand.as_str()) {
             launch = launch.writing();
         }
@@ -115,7 +120,7 @@ impl Git {
             Err(ExecError::TimedOut { limit, .. }) => Run {
                 code: TIMED_OUT,
                 stdout: String::new(),
-                stderr: format!("git {subcommand}: no answer within {} s", limit.as_secs()),
+                stderr: format!("git {subcommand}: no answer within {} s", limit.as_secs_f64()),
             },
             Err(error) => Run { code: NOT_RUN, stdout: String::new(), stderr: format!("git cannot run: {error}") },
         }
@@ -134,7 +139,7 @@ pub(crate) fn last_line(text: &str) -> String {
 }
 
 /// The line boundaries of Python's `str.splitlines`.
-fn is_line_break(c: char) -> bool {
+pub(crate) fn is_line_break(c: char) -> bool {
     matches!(c, '\n' | '\r' | '\u{b}' | '\u{c}' | '\u{1c}' | '\u{1d}' | '\u{1e}' | '\u{85}' | '\u{2028}' | '\u{2029}')
 }
 
@@ -149,6 +154,26 @@ pub(crate) mod call {
     /// The current branch, short; fails on a detached HEAD.
     pub fn branch() -> Args {
         Args::new().word("symbolic-ref").word("--short").word("-q").word("HEAD")
+    }
+
+    /// The current branch as the warnings read it: nothing, and no failure, on a detached HEAD.
+    pub fn show_current() -> Args {
+        Args::new().word("branch").word("--show-current")
+    }
+
+    /// Every local branch and every ref of the remote `origin`, one a line: whether it is `HEAD`'s, its name, its
+    /// commit and the ref it points to, separated by tabs.
+    pub fn refs() -> Args {
+        Args::new()
+            .word("for-each-ref")
+            .word("--format=%(HEAD)%09%(refname)%09%(objectname)%09%(symref)")
+            .word("refs/heads")
+            .word("refs/remotes/origin")
+    }
+
+    /// How many commits of `branch` none of `against` has.
+    pub fn count_not(branch: &Text, against: &[Text]) -> Args {
+        against.iter().fold(Args::new().word("rev-list").word("--count").value(branch).word("--not"), Args::value)
     }
 
     pub fn upstream() -> Args {

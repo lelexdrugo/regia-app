@@ -11,9 +11,15 @@
 //! - the push goes to the branch's upstream only, never with force and never to another branch.
 //!
 //! A failure of git is an outcome with its reason, never an error.
+//!
+//! [`dossier_warnings`] is the prototype's `avvisi_dossier`, what the brief and the precheck say of each project's
+//! dossier, its workers' branches and its products' clones: local git only, each call within a deadline, and a
+//! failure of git a warning of its project.
 
 mod dossier;
 mod git;
+mod warnings;
 
 pub use dossier::{Checkpoint, DossierSync, Outcome, named_files, named_paths, sync, sync_with};
 pub use git::{Git, GitDate, Run, TIMEOUT};
+pub use warnings::{DossierProject, Problem, Warning, WarningsRequest, dossier_warnings, dossier_warnings_with};

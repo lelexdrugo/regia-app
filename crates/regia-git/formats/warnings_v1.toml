@@ -1,0 +1,85 @@
+# Format v1 of the dossier's warnings, as the prototype gives them (`avvisi_dossier` of `tools/regia.py`, #159,
+# #158, #549 and #646 of the dossier): the words the brief and the precheck print, and what the warnings read in
+# the dossier and in the registry. They are data, not identifiers, and stay out of the Rust sources (ADR 0001,
+# sections 7 and 12).
+
+# Each call of git has at most `call_timeout_s` seconds, and less when the caller's deadline is nearer: the
+# prototype's `AVVISO_GIT_TIMEOUT_S`. Only local git: no fetch, no network.
+call_timeout_s = 10
+
+# The problems, in the order of the prototype's checks of a dossier. After `not_pushed`, `no_upstream` and
+# `detached_head` the worker branches are still read; after the others they are not.
+[problems]
+folder_missing = "cartella-mancante"
+not_a_repo = "non-e-repo"
+detached_head = "head-staccato"
+no_remote = "senza-remoto"
+no_upstream = "senza-upstream"
+not_pushed = "non-pushati"
+git_failed = "git-guasto"
+branch_not_pushed = "branch-non-pushato"
+product_without_clone = "prodotto-senza-clone"
+
+# The prototype's sentences of a warning's detail. `{git}` is the last line of what git said, `{alias}` the alias of
+# a site as the registry writes it. A detail that quotes a failure of the call itself (no answer in time, no git) is
+# in the product's own words.
+[details]
+no_repo_key = "il registro non ha il campo repo"
+no_origin = "nessun remoto origin"
+rev_list = "rev-list: {git}"
+rev_list_unreadable = "rev-list: risposta illeggibile"
+no_message = "(nessun messaggio)"
+main_branch_unknown = "branch principale del remoto non noto"
+clone_missing = "la cartella manca"
+clone_not_a_root = "la cartella non è la radice di un repo git"
+origin_not_the_repo = "l'origin non è quel repo"
+site_absolute = "la sede nel registro è un percorso assoluto"
+site_unknown_alias = "l'alias '{alias}' della sede non è noto"
+site_without_path = "la sede non ha un percorso"
+site_leaves_root = "la sede esce dalla radice"
+
+# The names the main branch of the remote `origin` may have after the one its `HEAD` names, in order: the name is
+# not taken for granted.
+[remote]
+main_names = ["main", "master"]
+
+# The reports of the dossier that name a worker's branch (#134, #158): files `*.md` of `folder`, by name, the case of
+# the extension as the system's names have it. Only the front matter between two `fence` lines is read, and in it the
+# keys at the start of a line; the last report of a branch wins. A report whose `type` or `push` is `gate` holds its
+# commit here on purpose: its branch is `expected`. A `branch` is `<name>@<sha>`, the sha of 7 to 40 lowercase hex
+# digits, or the name alone.
+[reports]
+folder = ".regia/report"
+extension = ".md"
+fence = "---"
+type_key = "tipo"
+task_key = "task"
+branch_key = "branch"
+push_key = "push"
+gate = "gate"
+sha_mark = "@"
+sha_min = 7
+sha_max = 40
+
+# A worker's branch by its name alone (#549): `[<owner>/]<prefix><N>-<slug>`, `<N>` the task, no slash in the owner
+# or in the slug (docs/design/isolamento-worker.md §A of the dossier).
+[worker_branch]
+prefix = "regia-"
+
+# The registry's text: the dossier's repo, its products, separated by `products_separator` (a product without an
+# owner takes the tracker's), or one of `none` for none; and the sites of their clones (#646),
+# `<owner>/<name>=<alias>/<path>`, separated the same way. Without a site the clone is the dossier's sibling folder
+# with the repo's name. An alias names a root `up` levels above the dossier's folder.
+[registry]
+none = ["", "-", "—", "nessuno", "nessuna"]
+products_separator = ","
+site_separator = "="
+repo_suffix = ".git"
+
+[[registry.aliases]]
+alias = "radice"
+up = 2
+
+[[registry.aliases]]
+alias = "progetti"
+up = 1

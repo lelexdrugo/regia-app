@@ -311,7 +311,7 @@ fn changed(stdout: &str) -> Vec<(String, String)> {
 }
 
 /// Whether git's top level is the folder itself: a repo further up is not the dossier.
-fn same_folder(top: &Path, folder: &Path) -> bool {
+pub(crate) fn same_folder(top: &Path, folder: &Path) -> bool {
     match (canonical(top), canonical(folder)) {
         (Ok(top), Ok(folder)) => top == folder,
         _ => false,
