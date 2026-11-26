@@ -15,9 +15,9 @@
 //! the resume of a suspended session (#470) call the same guard before their own effect.
 //!
 //! What the tick does not do, by the plan: the lock's taking and release, the log file, the state file
-//! on disk, the wait between ticks and the restart (#468); the scheduled operations (#469); the resume of
-//! suspended sessions (#470). The tick returns its line, and [`Controller::status`] the state document, for
-//! the host that writes them.
+//! on disk, the wait between ticks and the restart, which are its host's, [`crate::resident`] (#468); the
+//! scheduled operations (#469); the resume of suspended sessions (#470). The tick returns its line, and
+//! [`Controller::status`] the state document, for the host that writes them.
 
 use std::collections::BTreeSet;
 use std::fmt;
@@ -35,7 +35,7 @@ use crate::precheck::v1::format as precheck_words;
 
 pub mod native;
 mod prompt;
-mod words;
+pub(crate) mod words;
 
 pub use prompt::prompt;
 use words::format as words;
@@ -340,7 +340,7 @@ pub struct Controller {
 }
 
 /// An instant of the clock as the prototype writes it: UTC, to the second, the second truncated.
-fn iso(secs: f64) -> String {
+pub(crate) fn iso(secs: f64) -> String {
     WallTime::from_unix_secs_f64(secs).map(WallTime::to_iso_seconds).unwrap_or_default()
 }
 

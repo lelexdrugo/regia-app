@@ -2,20 +2,24 @@
 //! the liveness of a process and the reaping of the sessions this host started, the controller's lock, the
 //! postponements and the steps registry in the state database. The prototype's `esegui_precheck`,
 //! folders of its registry, `processo_vivo`, `rinnova_lock`, the cursor of `_segna_rinvio` and `sospese.Registro`.
+//!
+//! Every write of the state here is the lock holder's: one transaction checks that the controller's lock is
+//! still this controller's, then writes (#507 of the dossier, #582, ADR 0001 §7). A controller that stood still
+//! past its lock's expiry, and that another one replaced, writes neither a postponement nor a record.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::hash::{BuildHasher, Hasher, RandomState};
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use regia_core::{Registry, Tracker, TrackerBinding, TrackerConfigV1, project_entry};
 use regia_github::GhTracker;
 use regia_identity::{config_dir, prototype_env_var, state_dir};
-use regia_store::{CursorName, Holder, ProjectId, Store, Ttl, WallTime};
+use regia_store::{CursorName, Fenced, Holder, ProjectId, Store, Ttl, WallTime};
 use serde_json::{Map, Value, json};
 
 use super::words::format as words;
-use super::{ControllerLock, Folders, LaunchedStep, Liveness, LockLost, Precheck, PrecheckRun, Signals, StateError, Steps, iso};
+use super::{AliveStep, ControllerLock, Folders, LaunchedStep, Liveness, LockLost, Precheck, PrecheckRun, Signals, StateError, Steps, iso};
 use crate::precheck::{Fault, Verdict, evaluate, live_sources};
 
 /// How long the controller's lock lasts from a renewal: the prototype's `LOCK_TTL_S`, the TTL both languages
@@ -161,6 +165,25 @@ fn reserved() -> Result<ProjectId, StateError> {
     ProjectId::new(words().reserved_project.clone()).map_err(|error| StateError::Failed(error.to_string()))
 }
 
+/// The lock passed to someone else, or to nobody: `what` was neither read nor written.
+fn lost(what: &str, holder: Option<&Value>) -> StateError {
+    let now = match holder {
+        Some(Value::String(holder)) => format!("{holder} holds it"),
+        Some(other) => format!("{other} holds it"),
+        None => "nobody holds it".to_owned(),
+    };
+    StateError::LockLost(LockLost(format!("the controller's lock is no longer ours ({now}): {what} is left alone")))
+}
+
+/// What became of an operation as the lock's holder.
+fn fenced<T>(outcome: Result<Fenced<T>, regia_store::StoreError>, what: &str) -> Result<T, StateError> {
+    match outcome {
+        Ok(Fenced::Done(value)) => Ok(value),
+        Ok(Fenced::LockLost { holder }) => Err(lost(what, holder.as_ref())),
+        Err(error) => Err(StateError::Failed(error.to_string())),
+    }
+}
+
 /// The controller's lock in the state database: renewed by its holder, for [`LOCK_TTL_S`].
 #[derive(Debug, Clone)]
 pub struct StoreLock {
@@ -189,17 +212,21 @@ impl ControllerLock for StoreLock {
     }
 }
 
-/// The postponements in the state database: one cursor with a name per project. The owner of the lock is not
-/// checked in the write's transaction yet: #468 does, with the registry's (#582).
+/// The postponements in the state database: one cursor with a name per project, written in a transaction that
+/// first checks the controller's lock is still `holder`'s (#582, the residue #467/V4). The prototype writes it
+/// without that check; a postponement written after the lock passed would hide a project's stall from the
+/// controller that holds it now.
 #[derive(Debug, Clone)]
 pub struct StoreSignals {
     store: Store,
+    holder: Holder,
 }
 
 impl StoreSignals {
+    /// The postponements of the controller whose lock `holder` holds.
     #[must_use]
-    pub fn new(store: Store) -> StoreSignals {
-        StoreSignals { store }
+    pub fn new(store: Store, holder: Holder) -> StoreSignals {
+        StoreSignals { store, holder }
     }
 }
 
@@ -208,7 +235,9 @@ impl Signals for StoreSignals {
         let failed = |error: String| StateError::Failed(error);
         let project = ProjectId::new(project).map_err(|error| failed(error.to_string()))?;
         let name = CursorName::new(words().postpone.cursor.clone()).map_err(|error| failed(error.to_string()))?;
-        self.store.write_cursor(&project, &name, value).map_err(|error| failed(error.to_string()))
+        let lock = reserved()?;
+        let written = self.store.as_holder(&lock, &self.holder).write_cursor(&project, &name, |_| (Some(value), ()));
+        fenced(written, "the postponement")
     }
 }
 
@@ -223,51 +252,139 @@ pub fn random_id() -> String {
 }
 
 /// The steps registry in the state database, in the prototype's document: the cursor `passi` of the reserved
-/// project, every record under its key. It is read once, after the controller took its lock, and written
-/// whole at each change, keeping the open records and the finished ones of the last week.
+/// project, `{"v": 1, "passi": {key: record}}`, which both controllers read and write. D2 of ADR 0001 §7 is not
+/// inherited (the counterexample of round 2 of `0001-review-codex.md`):
 ///
-/// The writes neither check the lock's owner nor keep the records another controller added since the read:
-/// D2 (ADR 0001 §7) and #507 are #468's, which saves record by record with a version check.
+/// - **read after the lock.** Building it reads nothing; [`StoreSteps::load`] reads in a transaction that first
+///   checks the controller's lock is `holder`'s, so the registry cannot be read before the lock is taken;
+/// - **saved record by record, with a version check.** In one transaction that first checks the lock (#507), each
+///   record this controller changed since its last load or save goes over the stored one only where the stored
+///   record is still the version the change started from; where another writer changed it, the stored one stays,
+///   and so does every record this controller did not change, also one added after the load. Then the
+///   prototype's rule of what is kept: the open records, and the finished ones of the last week.
+///
+/// After a save the memory is the document as written.
 #[derive(Debug)]
 pub struct StoreSteps {
     store: Store,
-    records: Mutex<Map<String, Value>>,
+    holder: Holder,
+    memory: Mutex<Memory>,
+}
+
+/// What a controller knows of the registry.
+#[derive(Debug, Default)]
+struct Memory {
+    /// The records, by key.
+    records: Map<String, Value>,
+    /// Each record as the state held it at the last load or save: the version a change is checked against.
+    bases: Map<String, Value>,
+    /// The keys of the records changed since.
+    changed: BTreeSet<String>,
+}
+
+fn registry_cursor() -> Result<CursorName, StateError> {
+    CursorName::new(words().registry.cursor.clone()).map_err(|error| StateError::Failed(error.to_string()))
+}
+
+/// The records of a stored registry; none when it is missing or does not read as one.
+fn stored_records(doc: &Value) -> Map<String, Value> {
+    doc.get(&words().registry.steps).and_then(Value::as_object).cloned().unwrap_or_default()
+}
+
+/// The prototype's rule of what a save keeps: the open records, and the finished ones updated within a week.
+fn keep_recent(records: &mut Map<String, Value>, at: f64) {
+    let r = &words().registry;
+    let states = &r.states;
+    let open = [&states.launched, &states.suspended, &states.resuming, &states.to_resume];
+    records.retain(|_, record| {
+        let state = record.get(&r.record.state).and_then(Value::as_str);
+        let updated = record.get(&r.record.updated_t).and_then(Value::as_f64).filter(|updated| *updated != 0.0).unwrap_or(at);
+        state.is_some_and(|state| open.iter().any(|open| open.as_str() == state)) || at - updated < r.keep_finished_s
+    });
 }
 
 impl StoreSteps {
-    /// The registry as the state holds it now.
+    /// The registry of the controller whose lock `holder` holds, not read yet: [`StoreSteps::load`] reads it, once
+    /// the lock is taken.
+    #[must_use]
+    pub fn new(store: Store, holder: Holder) -> StoreSteps {
+        StoreSteps { store, holder, memory: Mutex::new(Memory::default()) }
+    }
+
+    /// Reads the registry, in a transaction that first checks the lock is still `holder`'s: the number of records.
     ///
     /// # Errors
     ///
-    /// The state cannot be read.
-    pub fn load(store: Store) -> Result<StoreSteps, String> {
-        let r = &words().registry;
-        let name = CursorName::new(r.cursor.clone()).map_err(|error| error.to_string())?;
-        let project = ProjectId::new(words().reserved_project.clone()).map_err(|error| error.to_string())?;
-        let doc = store.cursor(&project, &name).map_err(|error| error.to_string())?;
-        let records = doc.get(&r.steps).and_then(Value::as_object).cloned().unwrap_or_default();
-        Ok(StoreSteps { store, records: Mutex::new(records) })
+    /// The lock is not `holder`'s, or the state cannot be read.
+    pub fn load(&self) -> Result<usize, StateError> {
+        let (lock, name) = (reserved()?, registry_cursor()?);
+        let doc = fenced(self.store.as_holder(&lock, &self.holder).cursor(&lock, &name), "the steps registry")?;
+        let records = stored_records(&doc);
+        let mut memory = self.memory()?;
+        *memory = Memory { bases: records.clone(), records, changed: BTreeSet::new() };
+        Ok(memory.records.len())
     }
 
     /// The records, by key.
     #[must_use]
     pub fn records(&self) -> Map<String, Value> {
-        self.records.lock().map(|records| records.clone()).unwrap_or_default()
+        self.memory.lock().map(|memory| memory.records.clone()).unwrap_or_default()
     }
 
-    fn save(&self, records: &mut Map<String, Value>, at: f64) -> Result<(), StateError> {
+    /// The steps a controller launched that are still launched, for the tick's memory after a restart, so the
+    /// window between a launch and the step's start does not launch the project again (F136, Choice 1 of the
+    /// dossier's #102): each with its pid, its session and its key, at its launch, or at `started` without one.
+    /// By their launch, so a project launched twice is the later launch.
+    #[must_use]
+    pub fn launched_steps(&self, started: f64) -> Vec<AliveStep> {
         let r = &words().registry;
-        let states = &r.states;
-        let open = [&states.launched, &states.suspended, &states.resuming, &states.to_resume];
-        records.retain(|_, record| {
-            let state = record.get(&r.record.state).and_then(Value::as_str);
-            let updated = record.get(&r.record.updated_t).and_then(Value::as_f64).filter(|updated| *updated != 0.0).unwrap_or(at);
-            state.is_some_and(|state| open.iter().any(|open| open.as_str() == state)) || at - updated < r.keep_finished_s
+        let mut steps: Vec<(f64, AliveStep)> = self
+            .records()
+            .into_iter()
+            .filter_map(|(key, record)| {
+                let text = |name: &str| record.get(name).and_then(Value::as_str);
+                if text(&r.record.origin) != Some(r.origins.controller.as_str()) || text(&r.record.state) != Some(r.states.launched.as_str()) {
+                    return None;
+                }
+                let project = text(&r.record.project)?.to_owned();
+                let launched = record.get(&r.record.started_t).and_then(Value::as_f64).filter(|t| *t != 0.0);
+                let pid = record.get(&r.record.pid).and_then(Value::as_u64).and_then(|pid| u32::try_from(pid).ok());
+                let session = text(&r.record.session).map(str::to_owned);
+                Some((launched.unwrap_or(0.0), AliveStep { project, pid, t: launched.unwrap_or(started), session, key }))
+            })
+            .collect();
+        steps.sort_by(|a, b| a.0.total_cmp(&b.0));
+        steps.into_iter().map(|(_, step)| step).collect()
+    }
+
+    fn memory(&self) -> Result<MutexGuard<'_, Memory>, StateError> {
+        self.memory.lock().map_err(|_| StateError::Failed("the registry's memory is poisoned".to_owned()))
+    }
+
+    fn save(&self, memory: &mut Memory, at: f64) -> Result<(), StateError> {
+        let (lock, name) = (reserved()?, registry_cursor()?);
+        let r = &words().registry;
+        let known: &Memory = memory;
+        let written = self.store.as_holder(&lock, &self.holder).write_cursor(&lock, &name, |stored| {
+            let mut merged = stored_records(&stored);
+            for key in &known.changed {
+                // The version check: the stored record is still the one this change started from.
+                if merged.get(key) == known.bases.get(key) {
+                    match known.records.get(key) {
+                        Some(record) => merged.insert(key.clone(), record.clone()),
+                        None => merged.remove(key),
+                    };
+                }
+            }
+            keep_recent(&mut merged, at);
+            let doc = json!({r.v.as_str(): 1, r.steps.as_str(): Value::Object(merged.clone())});
+            (Some(doc), merged)
         });
-        let failed = |error: String| StateError::Failed(error);
-        let name = CursorName::new(r.cursor.clone()).map_err(|error| failed(error.to_string()))?;
-        let doc = json!({r.v.as_str(): 1, r.steps.as_str(): Value::Object(records.clone())});
-        self.store.write_cursor(&reserved()?, &name, doc).map_err(|error| failed(error.to_string()))
+        let merged = fenced(written, "the steps registry")?;
+        memory.records = merged.clone();
+        memory.bases = merged;
+        memory.changed.clear();
+        Ok(())
     }
 }
 
@@ -307,22 +424,24 @@ pub fn new_record(step: &LaunchedStep<'_>, at: f64) -> (String, Value) {
 impl Steps for StoreSteps {
     fn launched(&self, step: &LaunchedStep<'_>, at: f64) -> Result<String, StateError> {
         let (key, record) = new_record(step, at);
-        let mut records = self.records.lock().map_err(|_| StateError::Failed("the registry's memory is poisoned".to_owned()))?;
-        records.insert(key.clone(), record);
-        self.save(&mut records, at)?;
+        let mut memory = self.memory()?;
+        memory.records.insert(key.clone(), record);
+        memory.changed.insert(key.clone());
+        self.save(&mut memory, at)?;
         Ok(key)
     }
 
     fn finished(&self, key: &str, at: f64) -> Result<(), StateError> {
         let r = &words().registry;
-        let mut records = self.records.lock().map_err(|_| StateError::Failed("the registry's memory is poisoned".to_owned()))?;
-        let Some(Value::Object(record)) = records.get_mut(key) else { return Ok(()) };
+        let mut memory = self.memory()?;
+        let Some(Value::Object(record)) = memory.records.get_mut(key) else { return Ok(()) };
         if record.get(&r.record.state).and_then(Value::as_str) != Some(r.states.launched.as_str()) {
             return Ok(());
         }
         record.insert(r.record.state.clone(), json!(r.states.finished));
         record.insert(r.record.updated_t.clone(), json!(at));
-        self.save(&mut records, at)
+        memory.changed.insert(key.to_owned());
+        self.save(&mut memory, at)
     }
 
     fn suspended_projects(&self) -> BTreeSet<String> {

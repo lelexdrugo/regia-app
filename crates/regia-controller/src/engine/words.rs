@@ -27,7 +27,32 @@ pub(crate) struct Format {
     pub(crate) postpone: PostponeWords,
     pub(crate) status: StatusWords,
     pub(crate) registry: RegistryWords,
+    pub(crate) resident: ResidentWords,
     pub(crate) dossier: DossierWords,
+}
+
+/// The resident controller's files, its wait, and the lines of its log that are not a tick's (#468).
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ResidentWords {
+    pub(crate) log: String,
+    pub(crate) log_max_bytes: u64,
+    pub(crate) log_copies: u32,
+    pub(crate) status: String,
+    pub(crate) interval_s: f64,
+    pub(crate) slice_s: f64,
+    pub(crate) wakeup_factor: f64,
+    pub(crate) line: ResidentLine,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ResidentLine {
+    pub(crate) error: String,
+    pub(crate) note: String,
+    pub(crate) tick_failed: String,
+    pub(crate) wakeup: String,
+    pub(crate) wakeup_note: String,
 }
 
 #[derive(Debug, Deserialize)]

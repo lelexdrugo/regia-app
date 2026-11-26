@@ -196,6 +196,29 @@ to_resume = "da-riprendere"
 [registry.origins]
 controller = "controller"
 
+# The resident controller, the host of the tick (#468): its files beside the state database, the wait between two
+# ticks, and the lines it adds to `controller.log` besides the ticks' own.
+[resident]
+# One JSON line a tick, ASCII; past this size the log moves to `controller.log.1`, the older copies one up, this many.
+log = "controller.log"
+log_max_bytes = 1000000
+log_copies = 3
+# The state in one file, replaced whole: the Python brief reads it.
+status = "controller-stato.json"
+interval_s = 900.0
+# The wait is in slices: the lock is renewed at each one, and a suspension of the machine is noticed.
+slice_s = 30.0
+# More than this many intervals since the last tick is a suspension: a tick at once.
+wakeup_factor = 2.0
+
+# A line of the log that is not a tick's: a tick that failed, or a suspension noticed. Its other keys are a tick's.
+[resident.line]
+error = "errore"
+note = "nota"
+tick_failed = "errore-giro"
+wakeup = "risveglio"
+wakeup_note = "tempo trascorso molto oltre l'intervallo: sospensione; giro subito"
+
 # How the step's workers start, by the protocol §1.3: a sentence of the step's prompt, in English. It names the
 # optional surface by the commands the agent runs, so it is data, as the rest of the surface stays in its adapter.
 [prompt]
