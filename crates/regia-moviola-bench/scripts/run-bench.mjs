@@ -34,6 +34,13 @@ const fail = (message, code = 2) => {
   console.error(`moviola-bench: ${message}`);
   process.exit(code);
 };
+if (flag('help')) {
+  console.log('npm run bench [-- --software] [--only main|sanity] [--scales 1,10,100,10d] [--reps 3] [--phase-ms 2500]');
+  console.log('              [--warmup-ms 1000] [--repeat N] [--no-shots] [--env KEY=VALUE]... [--xvfb] [--label name]');
+  console.log('              [--out folder] [--skip-build] [--timeout-s 2400]');
+  console.log('Builds the page and the window, then measures in it (README.md, "Options"). --help only prints this.');
+  process.exit(0);
+}
 
 const platform = process.platform;
 const software = flag('software');
@@ -73,6 +80,9 @@ const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 13);
 const out = resolve(option('out', join(root, 'results', `${label}-${stamp}`)));
 mkdirSync(out, { recursive: true });
 
+// Linux without a display, or with --xvfb: the window opens in Xvfb, which has no GPU (analyze.mjs classes it software).
+const xvfb = platform === 'linux' && (flag('xvfb') || (!process.env.DISPLAY && !process.env.WAYLAND_DISPLAY));
+
 const config = {
   label,
   blocks,
@@ -83,6 +93,7 @@ const config = {
   repeat: number('repeat', 1, 1),
   shots: !flag('no-shots'),
   software,
+  xvfb,
   env,
 };
 
@@ -129,7 +140,7 @@ const server = await serve({
 const hostEnv = { ...process.env, ...env, MOVIOLA_BENCH_URL: `${server.origin}/index.html?token=${token}` };
 let cmd = exe;
 let cmdArgs = [];
-if (platform === 'linux' && (flag('xvfb') || (!process.env.DISPLAY && !process.env.WAYLAND_DISPLAY))) {
+if (xvfb) {
   cmd = 'xvfb-run';
   cmdArgs = ['-a', '-s', '-screen 0 1600x1000x24', exe];
 }

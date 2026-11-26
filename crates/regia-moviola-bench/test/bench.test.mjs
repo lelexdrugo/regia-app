@@ -1,12 +1,12 @@
 // The bench's own tests, in Node, without a window: the synthetic timelines, the verdicts, the server's rules and
 // what the machine says it is. `npm test`.
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { engineClass, pool, sanityVerdict, summarise, target } from '../scripts/analyze.mjs';
+import { analyze, engineClass, pool, sanityVerdict, summarise, target } from '../scripts/analyze.mjs';
 import { glxSummary, isWsl } from '../scripts/machine.mjs';
 import { safeName, serve } from '../scripts/serve.mjs';
 import { dimensions, parseScale, syntheticTimeline } from '../src/timeline.js';
@@ -86,6 +86,70 @@ test('llvmpipe, WARP or --software make a run software; a GPU name does not', ()
   assert.equal(engineClass({ page: { gpu: { renderer: 'ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11)' } } }), 'software');
   assert.equal(engineClass({ config: { software: true }, page: { gpu: { renderer: 'ANGLE (Intel, Arc)' } } }), 'software');
   assert.equal(engineClass({ machine: { gpu: { renderer: 'Intel(R) Arc(TM) 140T GPU' } }, page: { gpu: { renderer: 'ANGLE (Intel, Arc)' } } }), 'gpu');
+});
+
+/** The probe of a GitHub Linux runner: glxinfo found no display, WebKit's WebGL said "Apple GPU". */
+const runner = (virtual) => ({
+  config: { software: false },
+  machine: { platform: 'linux', virtual, gpu: { renderer: null, accelerated: null, vendor: null } },
+  page: { gpu: { webgl: true, renderer: 'Apple GPU', vendor: 'Apple Inc.' } },
+});
+
+test('a Linux virtual machine whose renderer nothing read is software, not gpu (#488/V23)', () => {
+  assert.equal(engineClass(runner('amazon')), 'software');
+  assert.equal(engineClass(runner('microsoft')), 'software');
+  assert.equal(engineClass({ ...runner('none'), config: { xvfb: true } }), 'software', 'a window in Xvfb has no GPU');
+  // controls: bare metal, an unknown answer and the macOS runner keep gpu; a renderer read wins
+  assert.equal(engineClass(runner('none')), 'gpu');
+  assert.equal(engineClass(runner('unknown')), 'gpu');
+  assert.equal(engineClass({ ...runner('yes'), machine: { platform: 'darwin', virtual: 'yes', gpu: { renderer: null } } }), 'gpu');
+  assert.equal(engineClass({ ...runner('kvm'), machine: { platform: 'linux', virtual: 'kvm', gpu: { renderer: 'NVIDIA GeForce RTX 4090/PCIe/SSE2', accelerated: 'yes' } } }), 'gpu');
+});
+
+/** analyze() on a results.json written to a folder of its own: summary.md's lines and summary.json. */
+function analyzed(doc) {
+  const dir = mkdtempSync(join(tmpdir(), 'moviola-bench-analyze-'));
+  try {
+    writeFileSync(join(dir, 'results.json'), JSON.stringify(doc));
+    analyze(dir);
+    return { md: readFileSync(join(dir, 'summary.md'), 'utf8').split('\n'), json: JSON.parse(readFileSync(join(dir, 'summary.json'), 'utf8')) };
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+/** A block as the harness writes it: rows of the four phases at each scale, late frames counted on `vsync`. */
+const block = (name, vsync, scales, dts, renderer = 'canvas2d') => ({
+  name, vsync_ms: vsync, failures: [], infos: [],
+  rows: scales.flatMap((scale) => ['pan', 'zoom', 'playhead', 'hover'].map((phase) => ({
+    block: name, renderer, scale, rep: 1, phase, repeat: 1, frames: dts.length,
+    dropped_pct: (100 * dts.filter((x) => x > 1.5 * vsync).length) / dts.length, samples: { dt: dts, js: dts.map(() => 0.5) },
+  }))),
+});
+const verdict = (md, scale) => md.find((l) => l.startsWith(`| x${scale} |`))?.split('|').at(-2).trim();
+
+test("the runner's engine class follows into summary.md and summary.json, with the software row of T5", () => {
+  const { md, json } = analyzed({ ...runner('amazon'), config: { label: 'ci-linux', software: false }, blocks: [block('main', 16, [1, 10], steady(16))] });
+  assert.equal(json.engine, 'software');
+  assert.match(md.find((l) => l.startsWith('- engine class:')), /\*\*software\*\* \(no renderer read, on a virtual machine: amazon\)/);
+  assert.match(md.find((l) => l.startsWith('| x10 |')), /median <= 33 ms, p95 <= 50 ms \| PASS \|$/);
+  assert.match(md.find((l) => l.startsWith('| x1 |')), /none on this engine/);
+});
+
+test('a display that ran faster than calibrated is judged at the rate of its frames: calibrated 60 Hz, used 120 Hz', () => {
+  // Windows' dynamic refresh rate: the empty frames of the calibration at 60 Hz, the stage's at 120, one in ten
+  // missing a refresh. At 120 Hz that misses T5 (p95 16.7 against 9.1 ms, 10 % late in pan); at 60 Hz it would pass.
+  const drr = Array.from({ length: 40 }, (_, i) => (i % 10 === 9 ? 16.7 : 8.3));
+  const { md, json } = analyzed({
+    config: { label: 'windows', reps: 1 },
+    machine: { platform: 'win32', virtual: 'no', wsl: false, gpu: { renderer: 'Intel(R) Arc(TM) GPU' } },
+    page: { gpu: { webgl: true, renderer: 'ANGLE (Intel, Intel(R) Arc(TM) GPU Direct3D11)' } },
+    blocks: [block('main', 16.7, [1, '10d'], drr)],
+  });
+  assert.equal(json.intervals.main.ms, 8.3);
+  assert.match(md.find((l) => l.startsWith('- display:')), /16\.70 ms \(60 Hz\) before main, but 90 % of its frames ran at 8\.30 ms \(120 Hz\)/);
+  assert.equal(verdict(md, '1'), 'FAIL');
+  assert.equal(verdict(md, '10d'), 'FAIL');
+  assert.match(md.find((l) => l.startsWith('| x10d |')), /\| 10\.0 % \| 10\.0 % \|/, 'late frames counted on 8.3 ms');
 });
 
 test('WSL and the rasteriser are read from what the system prints', () => {

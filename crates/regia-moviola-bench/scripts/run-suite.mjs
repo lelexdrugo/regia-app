@@ -13,6 +13,12 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
+if (args.includes('--help')) {
+  console.log('npm run bench:suite [-- --only bench,software,stress,headroom] [--host-label name] [--env KEY=VALUE]... [--xvfb]');
+  console.log('                    [--reps N] [--phase-ms N] [--warmup-ms N] [--timeout-s N]');
+  console.log('Runs each step into results/<system>-<date>/<step>/ (README.md). --help only prints this.');
+  process.exit(0);
+}
 const option = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : fallback;
