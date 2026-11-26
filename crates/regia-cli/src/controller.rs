@@ -128,6 +128,16 @@ fn surface_of(kind: SurfaceKind, env: &Env) -> Arc<dyn LaunchSurface + Send + Sy
     }
 }
 
+/// Where a scheduled chat opens with the steps on `kind`, as the prototype's launcher of chats: nowhere with `cli`,
+/// whose session would have nobody in front of it; on nothing with `Dry`; otherwise on the format's surface.
+fn chat_kind(kind: SurfaceKind) -> Option<SurfaceKind> {
+    match kind {
+        SurfaceKind::Dry => Some(SurfaceKind::Dry),
+        SurfaceKind::Cli => None,
+        SurfaceKind::Auto | SurfaceKind::Orca => chat_surface_kind(),
+    }
+}
+
 /// `controller run`.
 fn controller_run(args: &RunArgs, catalog: &Catalog) -> Result<u8, String> {
     let settings = crate::settings()?;
@@ -169,11 +179,7 @@ fn controller_run(args: &RunArgs, catalog: &Catalog) -> Result<u8, String> {
     let env = Env::of_this_process();
     let dry = args.shadow || args.launcher == "fake";
     let kind = if dry { SurfaceKind::Dry } else { SurfaceKind::parse(&args.launcher).unwrap_or(SurfaceKind::Auto) };
-    let chat = match (dry, kind, chat_surface_kind()) {
-        (true, _, _) => ChatSurface::Open(Arc::new(Dry::new())),
-        (false, SurfaceKind::Cli, _) | (false, _, None) => ChatSurface::None,
-        (false, _, Some(chat)) => ChatSurface::Open(surface_of(chat, &env)),
-    };
+    let chat = chat_kind(kind).map_or(ChatSurface::None, |chat| ChatSurface::Open(surface_of(chat, &env)));
     let token_expiry: Option<Arc<dyn Fn() -> Option<String> + Send + Sync>> = (!dry).then(|| {
         let env = env.clone();
         Arc::new(move || UsageProbes::new(consent, env.clone(), Https::new()).claude_token_expiry()) as Arc<dyn Fn() -> Option<String> + Send + Sync>
@@ -329,6 +335,16 @@ mod tests {
         for wrong in [&["--launcher", "dry"][..], &["--rounds", "-1"], &["--max-steps", "x"], &["--nope"]] {
             assert!(parsed(wrong).is_err(), "{wrong:?}");
         }
+    }
+
+    /// `test_il_lanciatore_di_chat_dipende_dall_adapter`: the fake launcher's chat starts nothing, the `cli` one opens no
+    /// chat, and with `auto` or `orca` the chat is Orca's, never the fallback of `auto`.
+    #[test]
+    fn the_chat_s_surface_follows_the_launcher() {
+        assert_eq!(chat_kind(SurfaceKind::Dry), Some(SurfaceKind::Dry));
+        assert_eq!(chat_kind(SurfaceKind::Cli), None);
+        assert_eq!(chat_kind(SurfaceKind::Auto), Some(SurfaceKind::Orca));
+        assert_eq!(chat_kind(SurfaceKind::Orca), Some(SurfaceKind::Orca));
     }
 
     /// The prototype's summary line: the round and its instant, the precheck, the decision, then what the round did.
