@@ -4,7 +4,9 @@
 //!
 //! - Acceptance 2: `--once --shadow` runs on a fresh copy and launches nothing. Every file of the live state folder is
 //!   the same after the run, byte for byte; the programs a launch would start are the `probe` in its beating mode, and
-//!   none beats; the copy has the shadow's line, its chat on `Dry`, and the live lock released.
+//!   none beats; the copy has the shadow's line, its chat on `Dry`, and the live lock released. The agents' app is the
+//!   fake `orca` with no worker (#599/V9 of the dossier, fixed by #743): the precheck reads the workers of the tasks in
+//!   progress from it, a read a beating probe would take for a launch, and its log may hold those reads only.
 //! - The prototype's command line: a second controller exits 3 (`test_secondo_controller_da_riga_di_comando_esce_3`),
 //!   and a wrong argument exits 1, not clap's 2 (`test_argomenti_errati_escono_1_non_2`, with its fourth case, the
 //!   parser's own errors).
@@ -71,6 +73,38 @@ struct Fixture {
     responses: PathBuf,
     beat: PathBuf,
     probes: PathBuf,
+    /// The fake `orca`, and the log of its calls.
+    orca: PathBuf,
+    orca_log: PathBuf,
+}
+
+/// The reads of the agents' app the precheck makes (#599): the only calls of the fake `orca` a run may make.
+const ORCA_READS: [&str; 4] = ["worker-list", "task-list", "worker-read", "worker-show"];
+
+/// The fake `orca` of a run's folder, answering that there is no worker, with the log of its calls beside it.
+fn fake_orca(run: &Path) -> (PathBuf, PathBuf) {
+    let dir = run.join("fake-orca");
+    fs::create_dir_all(&dir).unwrap();
+    let target = dir.join(format!("orca{}", std::env::consts::EXE_SUFFIX));
+    regia_conformance::place_fake(&bin_dir().join(format!("fake-orca{}", std::env::consts::EXE_SUFFIX)), &target);
+    let answers = dir.join("answers.json");
+    let none = json!({"orca": {"worker_list": [{"scope": {"source": "all"}, "workers": [], "page": {"hasMore": false, "nextCursor": null}}], "task_lists": {}, "transcripts": {}, "shows": {}}});
+    fs::write(&answers, none.to_string()).unwrap();
+    let log = dir.join("calls.log");
+    fs::write(dir.join("fixture.json"), json!({"responses": answers, "log": log}).to_string()).unwrap();
+    (target, log)
+}
+
+impl Fixture {
+    /// The calls of the fake `orca` that are not the precheck's reads: none, unless a launch went through the agents' app.
+    fn orca_calls_besides_the_reads(&self) -> Vec<String> {
+        let calls = fs::read_to_string(&self.orca_log).unwrap_or_default();
+        let read = |line: &str| {
+            let words: Vec<&str> = line.split_whitespace().collect();
+            words.first() == Some(&"orchestration") && words.get(1).is_some_and(|verb| ORCA_READS.contains(verb))
+        };
+        calls.lines().filter(|line| !read(line)).map(str::to_owned).collect()
+    }
 }
 
 impl Fixture {
@@ -105,11 +139,13 @@ impl Fixture {
         for program in ["claude", "codex", "orca"] {
             fs::copy(&probe, probes.join(format!("{program}{}", std::env::consts::EXE_SUFFIX))).unwrap();
         }
-        Fixture { beat: run.join("a-launch-ran.txt"), run, live, copy, home, responses, probes }
+        let (orca, orca_log) = fake_orca(&run);
+        Fixture { beat: run.join("a-launch-ran.txt"), run, live, copy, home, responses, probes, orca, orca_log }
     }
 
     /// The command against the fixture: the live state folder, the regia's home, and every program a launch would
-    /// start a beating probe, by its variable and first on the path.
+    /// start a beating probe, by its variable and first on the path; by its variable, the agents' app is the fake
+    /// `orca`, whose reads are the precheck's and no launch.
     fn command(&self, args: &[&str], language: &str) -> Ran {
         let args: Vec<String> = args.iter().map(|arg| (*arg).to_owned()).collect();
         let (launch, _) = fixture_for_rust(launch(&regia_binary(), &args, &self.run), &self.responses, &self.run);
@@ -121,10 +157,11 @@ impl Fixture {
             .env("PATH", path)
             .env("REGIA_PROBE_MODE", "beat")
             .env("REGIA_PROBE_BEAT", &self.beat);
-        for program in [Program::Claude, Program::Codex, Program::Orca] {
+        for program in [Program::Claude, Program::Codex] {
             let name = program.name().to_owned();
             launch = launch.env(&program.env_name(), self.probes.join(format!("{name}{}", std::env::consts::EXE_SUFFIX)));
         }
+        let launch = launch.env(&Program::Orca.env_name(), &self.orca);
         let output = launch.run().expect("the command runs");
         Ran { code: output.status.code(), stdout: output.stdout, stderr: output.stderr }
     }
@@ -186,6 +223,7 @@ fn a_shadow_round_runs_on_a_fresh_copy_and_launches_nothing() {
     assert!(after == before, "the live folder is the same, byte for byte");
     println!("live folder: {} files, digest {} before and {} after", before.len(), digest(&before), digest(&after));
     assert!(!fixture.beat.exists(), "no program a launch starts was started");
+    assert_eq!(fixture.orca_calls_besides_the_reads(), Vec::<String>::new(), "no launch through the agents' app");
     match controller_lock(&fixture.live) {
         LockStatus::Held(view) => assert_eq!(view.holder(), Some(LIVE_HOLDER), "the live controller keeps its lock"),
         other => panic!("{other:?}"),
@@ -232,6 +270,7 @@ fn a_second_controller_from_the_command_line_exits_3() {
     assert_eq!(italian.code, Some(3));
     assert!(stderr(&italian).contains("un altro controller è attivo"), "{}", stderr(&italian));
     assert!(!fixture.beat.exists());
+    assert_eq!(fixture.orca_calls_besides_the_reads(), Vec::<String>::new());
 }
 
 /// `test_argomenti_errati_escono_1_non_2`, with its fourth case: the parser's own errors exit 1 too, and the fixed clock
