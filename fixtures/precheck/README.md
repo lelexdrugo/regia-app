@@ -9,7 +9,9 @@ Everything here is synthetic: the projects are `p`, `a` and `b`, the tracker is 
 The cases are under `events/`, not `cases/`: the harness reads every family's `cases/` as cases of the CLI, and these drive another command. `events/<case>/` holds two files:
 
 - `case.json`: the issues, compactly, with the defaults of the prototype's test helper (a task of `p`, approved and ready; an Objective whose registry names the folder `{dossier}/<project>`, wip 2, priority 3); the comments, by issue, some signed by the product's own signer; and the runs, each with its arguments, the events cursor of each project, the locks, the leases, the reports on disk with their dates and, for a worker's report, its text, the real repos of its dossiers (#743), a stand-in where git should be, and the failures to build;
-- `python.it.json`: for each run, the exit code and the line, with `t` as `{precheck-t}` and the sentence of an error as `{detail}`.
+- `python.it.json`: for each run, the exit code and the line, with `t` as `{precheck-t}` and the sentence of an error, or the reason of the policy's fallback (`politica_motivo`, which names the file it could not read), as `{detail}`.
+
+A run, or a tick of a run, can also have `faults` (#600), set up on the state database before the tick and taken away after it, the same for both sides: `database-held`, another process's write transaction held for the whole tick (`store-probe hold-tx`); `cursor-write`, every write of a cursor aborted by a trigger; `budget-cache`, the read of the budget's cache failing, its last attempt past the probes' interval and the claim of a new probe aborted by a trigger, so no side ever asks a provider. The harness checks that each trigger aborts its write before any side runs. A run can have no policy file (`no_policy_file`), a lock `renewed` at the tick's instant, and a 5-hour window with neither a reset nor the flag of a window not open (`no_reset`).
 
 ## Replaying a run
 

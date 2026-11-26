@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. A project's lock held by a step that renews it at every tick, half an hour apart: its heartbeat moves, so each tick is a new series of one, never a stall.",
+  "transcribes": [
+    "test_precheck.py::TestStallo::test_battito_che_avanza_azzera_la_serie"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true}
+  ],
+  "runs": [
+    {"note": "six ticks, the lock renewed at each", "ticks": [
+      {"minutes": 30, "locks": {"p": "renewed"}},
+      {"minutes": 30, "locks": {"p": "renewed"}},
+      {"minutes": 30, "locks": {"p": "renewed"}},
+      {"minutes": 30, "locks": {"p": "renewed"}},
+      {"minutes": 30, "locks": {"p": "renewed"}},
+      {"minutes": 30, "locks": {"p": "renewed"}}
+    ]}
+  ]
+}

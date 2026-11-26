@@ -1,0 +1,29 @@
+{
+  "_note": "Synthetic. The state fails at one point of a tick: every write of a cursor aborts, or the read of the budget's cache fails (its last attempt past the probes' interval, the claim of a new probe aborted, so no provider is asked). A tick that reaches the point fails and writes nothing; one that does not reach it is not touched; a failure in the middle of a series neither counts nor resets it, and the stall comes when it would have.",
+  "transcribes": [
+    "test_precheck.py::TestFailClosed::test_runtime_guasto_in_ogni_punto (scrivi_cursore and sonda_cache; the other points stay with the prototype's tests)",
+    "test_precheck.py::TestStallo::test_un_errore_non_conta_e_non_azzera (the error at scrivi_cursore and at sonda_cache, where the prototype's test makes elenca fail)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Approvato"}
+  ],
+  "runs": [
+    {"note": "a ready task, the cursor's write fails: error", "faults": ["cursor-write"]},
+    {"note": "a ready task, the cache's read fails: error", "faults": ["budget-cache"]},
+    {"note": "nothing to start: the cache is not read", "faults": ["budget-cache"], "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}]},
+    {"note": "nothing to count and no series: no cursor is written", "faults": ["cursor-write"], "issues": [{"n": 1, "status": "Approvato", "project": "p", "objective": true}]},
+    {"note": "a held lock: a failed write in the middle of the series", "locks": {"p": "held"}, "ticks": [
+      {"minutes": 0},
+      {"minutes": 30, "note": "the write fails", "faults": ["cursor-write"]},
+      {"minutes": 30, "note": "the series goes on"},
+      {"minutes": 30, "note": "three ticks and an hour and a half: a stall"}
+    ]},
+    {"note": "the same ready task: a failed read of the cache in the middle of the series", "ticks": [
+      {"minutes": 30},
+      {"minutes": 30},
+      {"minutes": 30, "note": "the cache fails", "faults": ["budget-cache"]},
+      {"minutes": 30, "note": "the third tick of the series: a stall"}
+    ]}
+  ]
+}

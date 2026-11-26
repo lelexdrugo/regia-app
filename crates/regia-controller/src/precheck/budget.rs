@@ -149,6 +149,15 @@ pub(crate) fn check(source: &BudgetSource, max: f64, now: WallTime) -> Check {
             return Check::known(pct < max, pct, extra);
         }
         let hours = one_decimal(age as f64 / 3600.0);
+        // Two forms the probes never write, where the product does not take the prototype's reading (#466/V12, #600),
+        // and the cases of `fixtures/precheck/events/budget-cache-codec` do not go:
+        // - A reset without its offset is an instant in UTC here. The prototype's `_parse_reset` reads it in the
+        //   machine's time zone, so its answer for a reset nearer than the zones' spread depends on the machine, which no
+        //   recording can fix; a day ahead or back, the two agree, and the case fixes that.
+        // - A window with neither a reset nor the flag of a window not open is not open: the store's codec
+        //   (`Window::from_v1` of `regia-store`) has one form for a window without a reset. The prototype reads it as
+        //   open with a reset it cannot read: fresh, the line has no flag of a window not open; old, its reason is the
+        //   expired window's. The gate decides the same on both sides.
         let reset = match window {
             Window::Open { reset, .. } => WallTime::parse_iso(reset),
             Window::NotOpen { .. } | Window::Unknown { .. } => None,

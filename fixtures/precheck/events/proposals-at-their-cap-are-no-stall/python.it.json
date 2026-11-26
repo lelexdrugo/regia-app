@@ -1,0 +1,52 @@
+[
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {},
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"proposte-esaurite\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"proposte-esaurite\",\"eventi\":1,\"pronti\":0,\"report\":0,\"gate\":0,\"inbox\":1,\"lease\":0,\"proposte\":3,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  }
+]

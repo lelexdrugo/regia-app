@@ -30,10 +30,21 @@
 //! run's dossier that is not built is the folder of its reports, or no folder at all: the old cases' lines carry
 //! `cartella-mancante` or `non-e-repo`.
 //!
+//! **The faults (#600).** A run, or a tick of a run, can have faults (`faults`), which the harness sets up in the state
+//! database both sides open, before the tick and taken away after it, never with a clock or a race: another process's
+//! write transaction held for the whole tick (`store-probe hold-tx`, the prototype's process suspended in a
+//! transaction); every write of a cursor aborted (the prototype's `scrivi_cursore` failing); the read of the budget's
+//! cache failing (its `sonda_cache` failing), with the cache's last attempt past the probes' interval and the claim of a
+//! new probe aborted, so that neither side ever asks a provider. The aborts are triggers of the state's table, and the
+//! harness checks that they fire before any side runs. The prototype's tests raise the same faults in its fake runtime;
+//! those of its other points (`leggi_cursore`, `stato_lock`, `elenca`) have no such place on the real runtime, where a
+//! read cannot be made to fail alone, and stay with the prototype's tests. A run can also have no policy file at all,
+//! and a lock renewed at each tick.
+//!
 //! **Nothing is left out of the comparison.** Every key of the prototype's line is ported: the lists of what is not
 //! ported yet are empty, and no recorded run may end with a reason not ported (none is left). The `t` of the line is
 //! each run's own (the prototype's comes from the machine's clock), and so is the sentence of an error, whose key is
-//! kept.
+//! kept, and the reason of the policy's fallback, which names the machine's folders.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -45,9 +56,10 @@ use regia_conformance::{
     workspace_root, write_state, writes_of_run,
 };
 use regia_core::SignatureRole;
+use regia_exec::harness::Running;
 use regia_exec::{Launch, Pin, Program, python};
 use regia_facade::PROTOTYPE_LIMITS;
-use regia_identity::{env_var, prototype_env_var};
+use regia_identity::{config_dir_var, env_var, prototype_env_var};
 use serde::Deserialize;
 use serde::de::{MapAccess, SeqAccess, Visitor};
 use serde_json::{Value, json};
@@ -107,15 +119,18 @@ code = precheck.main(run["args"], ambiente=amb, out=out)
 print(json.dumps({"exit": code, "stdout": out.getvalue()}))
 "#;
 
-/// The variable that names the product's settings folder: `SETTINGS_DIR_SUFFIX` of `regia-controller`'s
-/// precheck, which this crate does not depend on.
-const SETTINGS_DIR_SUFFIX: &str = "CONFIG_DIR";
-
 /// The share of Claude's 5-hour window of a run that does not say: under every threshold.
 const DEFAULT_PCT: f64 = 10.0;
 /// How long before the run's instant the cache was last asked: well within its interval, so neither side
 /// asks a provider.
 const CACHE_ATTEMPT_AGO_S: f64 = 5.0;
+/// How long before it the cache was last asked in a tick whose read of the cache fails: past the probes' interval of
+/// 300 s, so each side goes to claim a probe, which a trigger aborts.
+const STALE_ATTEMPT_AGO_S: f64 = 600.0;
+/// The message of the triggers that abort a write: a fault the harness injected.
+const FAULT_MESSAGE: &str = "a fault injected by the harness";
+/// How long a lock renewed at a tick lives from it: the prototype's `rinnova` with a ttl of 600 s.
+const RENEWED_TTL_S: f64 = 600.0;
 
 // ---------- the cases ----------
 
@@ -200,9 +215,15 @@ struct RunSpec {
     /// The value of each project's events cursor.
     #[serde(default)]
     cursor: BTreeMap<String, Value>,
-    /// Each project's lock: `held`, `expired`, or `unreadable`.
+    /// Each project's lock: `held`, `expired`, `unreadable`, or `renewed`, held and renewed at the tick's instant.
     #[serde(default)]
     locks: BTreeMap<String, String>,
+    /// The faults of the run's one tick (#600); a run with `ticks` has them in its ticks.
+    #[serde(default)]
+    faults: Vec<FaultSpec>,
+    /// The policy file is not there: both sides take the defaults, and say why (#600).
+    #[serde(default)]
+    no_policy_file: bool,
     #[serde(default)]
     leases: Vec<LeaseSpec>,
     #[serde(default)]
@@ -343,6 +364,34 @@ struct TickSpec {
     usage: Option<UsageSpec>,
     /// The workers from this tick on.
     workers: Option<Vec<WorkerSpec>>,
+    /// The faults of this tick alone (#600).
+    #[serde(default)]
+    faults: Vec<FaultSpec>,
+}
+
+/// A fault of a tick (#600), the same on both sides: set up on the run's state before the tick, taken away after it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+enum FaultSpec {
+    /// Another process holds a write transaction on the state database for the whole tick: `store-probe hold-tx`, as
+    /// the prototype's test holds it with a process suspended in a transaction (`TestRuntimeVero`).
+    DatabaseHeld,
+    /// Every write of a cursor aborts: the prototype's `scrivi_cursore` failing.
+    CursorWrite,
+    /// The read of the budget's cache fails: its last attempt is past the probes' interval, and the claim of a new
+    /// probe aborts before any probe runs: the prototype's `sonda_cache` failing.
+    BudgetCache,
+}
+
+impl FaultSpec {
+    /// The kind of the rows whose writes the fault aborts, for a fault that is a trigger's.
+    fn aborted_kind(self) -> Option<String> {
+        match self {
+            FaultSpec::DatabaseHeld => None,
+            FaultSpec::CursorWrite => Some(store_word("kinds", "cursor")),
+            FaultSpec::BudgetCache => Some(store_word("kinds", "probe")),
+        }
+    }
 }
 
 /// Claude's reading as the cache stores it: the last valid one, with its 5-hour window, and the last
@@ -360,6 +409,9 @@ struct UsageSpec {
     /// The window is not open: no reset yet.
     #[serde(default)]
     not_open: bool,
+    /// The window has neither a reset nor the flag of a window not open, a form the probes never write (#466/V12).
+    #[serde(default)]
+    no_reset: bool,
     /// Why the last attempt failed.
     failed: Option<String>,
     /// The cache was asked and holds no provider at all.
@@ -612,9 +664,9 @@ fn state_instant(now: &str, ago_s: f64) -> String {
     now.checked_add_secs(-ago_s).expect("an instant in range").to_iso()
 }
 
-/// The row of the cache of the usage probes at `now`: asked [`CACHE_ATTEMPT_AGO_S`] ago, with Claude's
-/// reading as `usage` says.
-fn cache_row(usage: &UsageSpec, now: &str) -> StateRow {
+/// The row of the cache of the usage probes at `now`: asked `attempt_ago_s` ago, with Claude's reading as `usage`
+/// says.
+fn cache_row(usage: &UsageSpec, now: &str, attempt_ago_s: f64) -> StateRow {
     let word = |section: &str, key: &str| store_word(section, key);
     let (ok, unknown) = (word("usage_statuses", "ok"), word("usage_statuses", "unknown"));
     let reading = |status: &str, windows: Value, reason: Option<&str>| {
@@ -630,6 +682,8 @@ fn cache_row(usage: &UsageSpec, now: &str) -> StateRow {
             let window = if usage.not_open {
                 json!({word("usage_window", "status"): ok, word("usage_window", "used_pct"): pct, word("usage_window", "remaining_pct"): 100.0 - pct,
                     word("usage_window", "open"): false, word("usage_window", "reset"): null, word("usage_window", "reset_in_s"): null})
+            } else if usage.no_reset {
+                json!({word("usage_window", "status"): ok, word("usage_window", "used_pct"): pct, word("usage_window", "remaining_pct"): 100.0 - pct})
             } else {
                 let reset = usage.reset.clone().unwrap_or_else(|| state_instant(now, -7200.0));
                 json!({word("usage_window", "status"): ok, word("usage_window", "used_pct"): pct, word("usage_window", "remaining_pct"): 100.0 - pct,
@@ -648,7 +702,7 @@ fn cache_row(usage: &UsageSpec, now: &str) -> StateRow {
             json!({word("budget", "valid"): valid, word("budget", "valid_at"): valid_at, word("budget", "last"): last}),
         );
     }
-    let doc = json!({word("budget", "providers"): providers, word("budget", "attempted_at"): state_instant(now, CACHE_ATTEMPT_AGO_S)});
+    let doc = json!({word("budget", "providers"): providers, word("budget", "attempted_at"): state_instant(now, attempt_ago_s)});
     StateRow { kind: word("kinds", "cache"), key: word("budget", "key"), doc }
 }
 
@@ -670,8 +724,14 @@ fn rows(run: &RunSpec, now: &str) -> Vec<StateRow> {
             "unreadable" => json!("not a document"),
             state => {
                 let word = |key: &str| store_word("lock", key);
-                json!({word("project"): project, word("holder"): "someone", word("taken_at"): "2026-01-10T08:00:00.000+00:00", word("ttl_s"): 600,
-                    word("expires_at"): expires(state == "expired"), word("replaced"): null, word("stolen_at"): null})
+                let mut doc = json!({word("project"): project, word("holder"): "someone", word("taken_at"): "2026-01-10T08:00:00.000+00:00", word("ttl_s"): 600,
+                    word("expires_at"): expires(state == "expired"), word("replaced"): null, word("stolen_at"): null});
+                if state == "renewed" {
+                    // The holder renewed it at this tick, as the prototype's `rinnova` writes it: a heartbeat that moves.
+                    doc[word("renewed_at")] = json!(state_instant(now, 0.0));
+                    doc[word("expires_at")] = json!(state_instant(now, -RENEWED_TTL_S));
+                }
+                doc
             }
         };
         out.push(StateRow { kind: store_word("kinds", "lock"), key: project.clone(), doc });
@@ -688,7 +748,8 @@ fn rows(run: &RunSpec, now: &str) -> Vec<StateRow> {
         out.push(StateRow { kind: store_word("kinds", "lease"), key: lease.task.to_string(), doc });
     }
     let usage = run.usage.clone().unwrap_or(UsageSpec { pct: Some(DEFAULT_PCT), ..UsageSpec::default() });
-    out.push(cache_row(&usage, now));
+    let attempt_ago_s = if run.faults.contains(&FaultSpec::BudgetCache) { STALE_ATTEMPT_AGO_S } else { CACHE_ATTEMPT_AGO_S };
+    out.push(cache_row(&usage, now, attempt_ago_s));
     out
 }
 
@@ -788,11 +849,15 @@ fn build_repo(dossier: &Path, dir: &Path, spec: &RepoSpec) {
 }
 
 /// The folder of a run's policy file, `<home>/policies/budget.yaml`: the run's text, else the product's copy
-/// of the prototype's file.
+/// of the prototype's file, or no file at all.
 fn policy_home(state: &Path, run: &RunSpec) -> PathBuf {
     let home = state.join("home");
     let file = home.join(regia_core::policy::file_path());
     fs::create_dir_all(file.parent().expect("the policies folder")).expect("the policies folder");
+    if run.no_policy_file {
+        let _ = fs::remove_file(&file);
+        return home;
+    }
     let text = match &run.policy_file {
         Some(text) => text.clone(),
         None => fs::read_to_string(workspace_root().join("crates").join("regia-core").join("formats").join("budget.yaml")).expect("the policy file"),
@@ -867,12 +932,31 @@ fn with_placeholder_t(line: &str) -> String {
 /// A recorded line: its `t`, and the sentence of an error, which can name the machine's folders, as their
 /// placeholders. Inside the sentence every quote is escaped, so the end of the payload is the last one.
 fn for_the_recording(line: &str) -> String {
-    let line = with_placeholder_t(line);
+    let line = string_as_placeholder(&with_placeholder_t(line), POLICY_REASON);
     let start = "\"payload\":{\"dettaglio\":\"";
     match (line.find(start), line.rfind("\"},\"t\":\"")) {
         (Some(from), Some(to)) => format!("{}{start}{DETAIL_PLACEHOLDER}{}", &line[..from], &line[to..]),
         _ => line,
     }
+}
+
+/// The key of the reason of the policy's fallback in the payload: the prototype's names the file it could not read,
+/// with the machine's folders, and each side words its own (#600).
+const POLICY_REASON: &str = "politica_motivo";
+
+/// `line` with the string value of `key`, if the line has one, as [`DETAIL_PLACEHOLDER`]: Python escapes every quote
+/// and backslash inside a string, so the value ends at the first quote that no backslash escapes.
+fn string_as_placeholder(line: &str, key: &str) -> String {
+    let start = format!("\"{key}\":\"");
+    let Some(from) = line.find(&start).map(|at| at + start.len()) else { return line.to_owned() };
+    let mut escaped = false;
+    let end = line[from..].char_indices().find(|&(_, c)| {
+        let closes = c == '"' && !escaped;
+        escaped = c == '\\' && !escaped;
+        closes
+    });
+    let to = from + end.map(|(at, _)| at).unwrap_or_else(|| panic!("the string of {key} does not end: {line}"));
+    format!("{}{DETAIL_PLACEHOLDER}{}", &line[..from], &line[to..])
 }
 
 // ---------- the two sides ----------
@@ -908,7 +992,7 @@ fn product(state: &Path, responses: &Path, args: &[String], run: &RunSpec, now: 
     let launch = regia_exec::harness::launch(&precheck_binary(), args, state);
     let (launch, _) = fixture_for_rust(launch, responses, state);
     let launch = launch
-        .env(&env_var(SETTINGS_DIR_SUFFIX), settings_dir(state, consent))
+        .env(&config_dir_var(), settings_dir(state, consent))
         .env(&prototype_env_var("HOME"), policy_home(state, run))
         .env(&Program::Orca.env_name(), fake_orca(state, responses))
         .env(&env_var("NOW"), now);
@@ -1095,11 +1179,14 @@ fn projects_of(line: &mut Ordered) -> Vec<&mut Ordered> {
     }
 }
 
-/// A line as the comparison reads it: the detail of an error as the placeholder.
+/// A line as the comparison reads it: the detail of an error and the reason of the policy's fallback as the
+/// placeholder, their keys kept where they are.
 fn comparable(line: &str) -> Ordered {
     let mut line = parse_line(line);
-    if let Some(detail) = line.get_mut("payload").and_then(|payload| payload.get_mut("dettaglio")) {
-        *detail = Ordered::Scalar(Value::from(DETAIL_PLACEHOLDER));
+    for key in ["dettaglio", POLICY_REASON] {
+        if let Some(value) = line.get_mut("payload").and_then(|payload| payload.get_mut(key)) {
+            *value = Ordered::Scalar(Value::from(DETAIL_PLACEHOLDER));
+        }
     }
     line
 }
@@ -1207,7 +1294,8 @@ fn put_rows(state: &Path, rows: &[StateRow]) {
 
 /// The rows a tick changes before it runs at `now`: cursors, locks, signals, and the cache asked again.
 fn tick_rows(tick: &TickSpec, usage: &UsageSpec, now: &str) -> Vec<StateRow> {
-    let partial = RunSpec { cursor: tick.cursor.clone(), locks: tick.locks.iter().filter(|(_, lock)| *lock != "none").map(|(p, l)| (p.clone(), l.clone())).collect(), usage: Some(usage.clone()), ..RunSpec::default() };
+    let locks = tick.locks.iter().filter(|(_, lock)| *lock != "none").map(|(p, l)| (p.clone(), l.clone())).collect();
+    let partial = RunSpec { cursor: tick.cursor.clone(), locks, usage: Some(usage.clone()), faults: tick.faults.clone(), ..RunSpec::default() };
     let mut out: Vec<StateRow> = rows(&partial, now);
     for project in tick.locks.iter().filter(|(_, lock)| *lock == "none").map(|(project, _)| project) {
         out.push(StateRow { kind: store_word("kinds", "lock"), key: project.clone(), doc: Value::Null });
@@ -1230,9 +1318,84 @@ fn detector_rows(state: &Path) -> Value {
     Value::Object(found.map(|row| (row["key"].as_str().unwrap_or_default().to_owned(), row["doc"][&value].clone())).collect())
 }
 
-/// The ticks of a run, one when it gives none.
+/// The ticks of a run, one when it gives none, which has the run's faults.
 fn ticks_of(run: &RunSpec) -> Vec<TickSpec> {
-    if run.ticks.is_empty() { vec![TickSpec::default()] } else { run.ticks.clone() }
+    assert!(run.ticks.is_empty() || run.faults.is_empty(), "a run with ticks has its faults in them");
+    if run.ticks.is_empty() { vec![TickSpec { faults: run.faults.clone(), ..TickSpec::default() }] } else { run.ticks.clone() }
+}
+
+/// What a tick's faults set up on a state (#600), taken away when it is dropped: the triggers that abort the writes,
+/// and the other process that holds the database's write transaction, which dies with the handle if a side panics.
+struct Faults {
+    state: PathBuf,
+    triggers: Vec<String>,
+    holder: Option<Running>,
+}
+
+impl Faults {
+    /// The faults of a tick on `state`, after the harness's own writes for it: the triggers first, each checked to
+    /// abort the write it is for, then the holder, once it says it holds the transaction.
+    fn set(state: &Path, faults: &[FaultSpec]) -> Faults {
+        let mut set = Faults { state: state.to_path_buf(), triggers: Vec::new(), holder: None };
+        let kinds: Vec<String> = faults.iter().filter_map(|fault| fault.aborted_kind()).collect();
+        if !kinds.is_empty() {
+            let (connection, [table, kind, key, generation, document]) = state_table(state);
+            for (at, aborted) in kinds.iter().enumerate() {
+                for event in ["INSERT", "UPDATE"] {
+                    let name = format!("harness_fault_{at}_{}", event.to_lowercase());
+                    connection
+                        .execute_batch(&format!(
+                            "CREATE TRIGGER {name} BEFORE {event} ON {table} WHEN NEW.{kind} = '{aborted}' BEGIN SELECT RAISE(ABORT, '{FAULT_MESSAGE}'); END;"
+                        ))
+                        .expect("a fault's trigger");
+                    set.triggers.push(name);
+                }
+                // The write the fault is for, as both sides make it, must abort: for the cache, no side may get past the
+                // claim to a provider.
+                connection.execute_batch("BEGIN IMMEDIATE").expect("a transaction to check the trigger");
+                let tried = connection.execute(
+                    &format!(
+                        "INSERT INTO {table} ({kind}, {key}, {generation}, {document}) VALUES (?1, 'harness-check', 1, '{{}}') \
+                         ON CONFLICT ({kind}, {key}) DO UPDATE SET {generation} = {generation} + 1, {document} = excluded.{document}"
+                    ),
+                    [aborted],
+                );
+                connection.execute_batch("ROLLBACK").expect("the check's rollback");
+                assert!(tried.is_err_and(|error| error.to_string().contains(FAULT_MESSAGE)), "the fault on {aborted} does not abort its write");
+            }
+        }
+        if faults.contains(&FaultSpec::DatabaseHeld) {
+            let args = ["--dir".to_owned(), state.display().to_string(), "hold-tx".to_owned()];
+            let launch = regia_exec::harness::launch(Path::new(env!("CARGO_BIN_EXE_store-probe")), &args, state);
+            let mut holder = regia_exec::harness::start(launch).expect("the holder starts");
+            assert_eq!(holder.read_line().expect("the holder's line"), "\"ready\"", "the transaction is held");
+            set.holder = Some(holder);
+        }
+        set
+    }
+}
+
+impl Drop for Faults {
+    /// The holder ends first, its stdin closed, then the triggers go: the next tick's rows are the harness's own.
+    fn drop(&mut self) {
+        if let Some(holder) = self.holder.take() {
+            let _ = holder.finish();
+        }
+        if !self.triggers.is_empty() {
+            let (connection, _) = state_table(&self.state);
+            for name in &self.triggers {
+                let _ = connection.execute_batch(&format!("DROP TRIGGER IF EXISTS {name};"));
+            }
+        }
+    }
+}
+
+/// A connection to a run's state database, and the names of its table and columns in format v1.
+fn state_table(state: &Path) -> (rusqlite::Connection, [String; 5]) {
+    let format: toml::Table = toml::from_str(&fs::read_to_string(workspace_root().join("crates").join("regia-store").join("formats").join("store_v1.toml")).expect("the format")).expect("TOML");
+    let column = |name: &str| format["table"][name].as_str().expect("a column").to_owned();
+    let names = ["name", "kind", "key", "generation", "document"].map(column);
+    (rusqlite::Connection::open(state.join(regia_store::database_name())).expect("the state database"), names)
 }
 
 /// What a side runs: each tick of a run at its instant on one state folder, after the tick's changes. The
@@ -1263,7 +1426,9 @@ fn run_ticks(case: &Case, index: usize, run: &RunSpec, side: &str, mut each: imp
             let usage = usage.clone().unwrap_or(UsageSpec { pct: Some(DEFAULT_PCT), ..UsageSpec::default() });
             put_rows(&state, &tick_rows(tick, &usage, &now));
         }
+        let faults = Faults::set(&state, &tick.faults);
         each(&state, &responses_path, &now, tick);
+        drop(faults);
     }
     for dir in [&state, &dossier] {
         let _ = fs::remove_dir_all(dir);
@@ -1441,6 +1606,55 @@ fn the_comparison_notices_a_difference() {
     let recorded = json!({"exit": 0, "line": with_placeholder_t(&silent)});
     assert_eq!(differences(&ran(&silent), &recorded), Vec::<String>::new());
     assert!(!differences(&ran(line), &recorded).is_empty());
+    // The reason of the policy's fallback is each side's own, a quote of it escaped, and its key is compared (#600).
+    let fallback = bare.replace("\"politica\":\"file\"", "\"politica\":\"default\",\"politica_motivo\":\"the prototype's \\\"x.yaml\\\" in C:\\\\here\"");
+    let recorded = json!({"exit": 0, "line": for_the_recording(&fallback)});
+    assert!(recorded["line"].as_str().is_some_and(|line| line.contains("\"politica_motivo\":\"{detail}\"},")), "{recorded}");
+    let own = bare.replace("\"politica\":\"file\"", "\"politica\":\"default\",\"politica_motivo\":\"the product's words\"");
+    assert_eq!(differences(&ran(&own), &recorded), Vec::<String>::new(), "each side words its own reason");
+    for altered in [bare.replace("\"politica\":\"file\"", "\"politica\":\"default\""), bare.to_owned()] {
+        assert!(!differences(&ran(&altered), &recorded).is_empty(), "unnoticed: {altered}");
+    }
+}
+
+/// `TestRuntimeVero.test_cartella_di_runtime_sotto_temp_e_error_runtime` on the product's side alone (#600, #466/V5): the
+/// prototype's side cannot run there, since its import refuses the folder before its precheck starts. The choice this
+/// test fixes: the product refuses a state folder inside the temporary one as the prototype's runtime refuses it, with
+/// the tick's error `runtime`, and never creates it. The temporary folder is one of the run's own, named by the
+/// variables both languages read for it (`TMPDIR`, `TEMP`, `TMP`), so the test writes nothing in the machine's.
+#[test]
+fn a_state_folder_inside_the_temporary_one_is_refused() {
+    let issues = json!([{"n": 1, "status": "Approvato", "objective": true}, {"n": 2, "status": "Approvato"}]);
+    let label = "precheck-state-in-the-temporary-folder";
+    let (state, responses, run) = product_run(label, issues, json!({}));
+    let temporary = state.join("temporary");
+    fs::create_dir_all(&temporary).expect("the run's temporary folder");
+    let refused = temporary.join("refused-state");
+    // The tracker's configuration, which the refused folder would have held, in the dossier's place.
+    let home = policy_home(&state, &run);
+    fs::create_dir_all(home.join("config")).expect("the dossier's configuration folder");
+    fs::copy(state.join("tracker.json"), home.join("config").join("tracker.json")).expect("the tracker's configuration");
+    let launch = regia_exec::harness::launch(&precheck_binary(), &[], &state);
+    let (launch, _) = fixture_for_rust(launch, &responses, &state);
+    let launch = ["TMPDIR", "TEMP", "TMP"]
+        .into_iter()
+        .fold(launch, |launch, name| launch.env(name, &temporary))
+        .env(&prototype_env_var("RUNTIME"), &refused)
+        .env(&config_dir_var(), settings_dir(&state, GRANTED))
+        .env(&prototype_env_var("HOME"), &home)
+        .env(&Program::Orca.env_name(), fake_orca(&state, &responses))
+        .env(&env_var("NOW"), FIXTURE_NOW);
+    let output = launch.run().expect("run the precheck");
+    let stdout = String::from_utf8_lossy(&output.stdout).replace("\r\n", "\n");
+    let (last, _) = outcome_of(&stdout);
+    let line: Value = serde_json::from_str(&last).unwrap_or_else(|error| panic!("{error}: {stdout}"));
+    let outcome = (line["outcome"].as_str(), line["motivo"].as_str(), line["exit"].as_i64(), output.status.code());
+    let created = refused.exists();
+    for dir in [state.clone(), bin_dir().join("conformance-state").join(format!("{label}-dossier"))] {
+        let _ = fs::remove_dir_all(dir);
+    }
+    assert_eq!(outcome, (Some("error"), Some("runtime"), Some(1), Some(1)), "{line}");
+    assert!(!created, "the refused state folder was created");
 }
 
 /// TestVincoli of the prototype: the command never reads stdin, and the engine has no way to write the

@@ -1,0 +1,19 @@
+{
+  "_note": "Synthetic. Ten ticks in a row, half an hour apart, of a new Inbox item with the open Proposals at their cap: the backfill held is a legitimate wait, so no tick is a stall and no series of a stall opens.",
+  "transcribes": [
+    "test_precheck_budget.py::TestProposteEsaurite::test_non_e_uno_stallo"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Inbox", "maturity": ""},
+    {"n": 10, "status": "Proposta", "maturity": ""},
+    {"n": 11, "status": "Proposta", "maturity": ""},
+    {"n": 12, "status": "Proposta", "maturity": ""}
+  ],
+  "runs": [
+    {"note": "ten ticks at the cap", "ticks": [
+      {"minutes": 30}, {"minutes": 30}, {"minutes": 30}, {"minutes": 30}, {"minutes": 30},
+      {"minutes": 30}, {"minutes": 30}, {"minutes": 30}, {"minutes": 30}, {"minutes": 30}
+    ]}
+  ]
+}

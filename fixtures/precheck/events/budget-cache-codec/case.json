@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic. A form of the cache's 5-hour window that the probes never write (#466/V12): a reset without its offset, a day ahead or a day back, read as the same window or as expired on both sides, whatever the machine's time zone. Nearer than the zones' spread, the prototype reads it in the machine's zone and the product as UTC, and a window with neither a reset nor the flag of a window not open is read by the product as not open: both choices are written at the product's reading of the window, in `precheck/budget.rs`, and not built here. A ready task waits on the gate.",
+  "transcribes": [
+    "test_precheck.py::TestBudgetStale (the same window and the expired one, with a reset the probes would write with its offset)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Approvato"}
+  ],
+  "runs": [
+    {"note": "a reset without its offset a day ahead, two hours old: the same window", "usage": {"pct": 30.0, "age_s": 7200, "reset": "2026-01-11T09:00:00"}},
+    {"note": "a reset without its offset a day back, two hours old: expired", "usage": {"pct": 30.0, "age_s": 7200, "reset": "2026-01-09T09:00:00"}}
+  ]
+}

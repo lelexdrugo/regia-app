@@ -1,0 +1,16 @@
+{
+  "_note": "Synthetic. The budget policy's file is missing, or does not read: both sides take the defaults and say so, the outcome as with the file, the reason each side's own.",
+  "transcribes": [
+    "test_precheck_budget.py::TestFile::test_il_precheck_dichiara_il_ripiego_nel_json",
+    "test_precheck_budget.py::TestFile::test_file_mancante_default_dichiarati (through the precheck)",
+    "test_precheck_budget.py::TestFile::test_file_illeggibile_default_dichiarati (through the precheck, its case `non yaml`)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Inbox", "maturity": ""}
+  ],
+  "runs": [
+    {"note": "no policy file: the defaults, and why", "no_policy_file": true},
+    {"note": "a policy file that does not read: the defaults, and why", "policy_file": "{{{ no"}
+  ]
+}

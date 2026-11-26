@@ -1,0 +1,98 @@
+[
+  {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T09:30:00Z",
+          "digest": "365e8e09eb59",
+          "n": 1,
+          "ultimo": "2026-01-10T09:30:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"occupato\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"occupato\",\"eventi\":0,\"serie\":1,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T10:00:00Z",
+          "digest": "52ac0340dd96",
+          "n": 1,
+          "ultimo": "2026-01-10T10:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"occupato\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"occupato\",\"eventi\":0,\"serie\":1,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T10:30:00Z",
+          "digest": "f562a81a14c3",
+          "n": 1,
+          "ultimo": "2026-01-10T10:30:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"occupato\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"occupato\",\"eventi\":0,\"serie\":1,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T11:00:00Z",
+          "digest": "ce411237b0a2",
+          "n": 1,
+          "ultimo": "2026-01-10T11:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"occupato\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"occupato\",\"eventi\":0,\"serie\":1,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T11:30:00Z",
+          "digest": "68d69715ab0f",
+          "n": 1,
+          "ultimo": "2026-01-10T11:30:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"occupato\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"occupato\",\"eventi\":0,\"serie\":1,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  },
+  {
+    "detector": {
+      "p:rilevatore": {
+        "serie": {
+          "da": "2026-01-10T12:00:00Z",
+          "digest": "3f4a2c6303ba",
+          "n": 1,
+          "ultimo": "2026-01-10T12:00:00Z",
+          "visti": {}
+        },
+        "v": 1
+      }
+    },
+    "exit": 3,
+    "line": "{\"v\":1,\"outcome\":\"idle\",\"exit\":3,\"motivo\":\"occupato\",\"cursore\":[{\"progetto\":\"p\",\"valore\":null}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"idle\",\"motivo\":\"occupato\",\"eventi\":0,\"serie\":1,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+  }
+]

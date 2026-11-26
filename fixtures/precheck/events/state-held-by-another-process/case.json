@@ -1,0 +1,20 @@
+{
+  "_note": "Synthetic. Another process holds a write transaction on the state database for the whole tick, as a process suspended in the middle of a write: the lock of a project reads as held, the tick cannot write its detector and fails, writing nothing; with no active project the reads go on and nothing is written; a series written before the hold stays as it was, and the next tick goes on with it.",
+  "transcribes": [
+    "test_precheck.py::TestRuntimeVero::test_database_tenuto_da_un_processo_sospeso_e_error_runtime",
+    "test_precheck.py::TestRuntimeVero::test_contabilita_in_una_riga_distinta_dal_cursore_eventi (the detector's row, not the events cursor, is what the hold keeps from being written)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Approvato"}
+  ],
+  "runs": [
+    {"note": "a ready task, the database held: error, nothing written", "faults": ["database-held"]},
+    {"note": "no active project, the database held: the reads go on", "faults": ["database-held"], "issues": [{"n": 1, "status": "Proposta", "project": "p", "objective": true}, {"n": 2, "status": "Approvato"}]},
+    {"note": "a series before the hold", "locks": {"p": "held"}, "cursor": {"p": {"v": 1, "t": "2026-01-09T09:00:00Z", "propri": {"commenti": []}}}, "ticks": [
+      {"minutes": 0, "note": "the lock held: the series opens"},
+      {"minutes": 30, "note": "the database held: the series is not written", "faults": ["database-held"]},
+      {"minutes": 30, "note": "the hold gone: the series goes on from where it was"}
+    ]}
+  ]
+}
