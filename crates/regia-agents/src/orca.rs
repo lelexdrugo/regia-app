@@ -515,6 +515,32 @@ const PER_CALL: Duration = Duration::from_secs(20);
 /// A request of permission of Orca or of the agent as a system line ("Allow Bash?"): the worker waits for a person.
 static PERMISSION: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^Allow [\w .:-]{1,40}\?").expect("the pattern of a permission"));
 
+/// The warnings of a session as a system line of a transcript says them (#644 of the dossier, decision 1A): its limit,
+/// which passes by itself, and its billing, which only the owner can fix.
+static SESSION_LIMIT: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(?i)session limit|hit your .{0,30}limit").expect("the pattern of a session's limit"));
+static BILLING: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(?i)payment is past due|can't use your Claude subscription").expect("the pattern of a billing"));
+
+/// Why a worker went silent because of its session (#644 of the dossier, decision 1A): the limit of its session, which
+/// passes by itself, or its billing, which only the owner can fix.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SessionCause {
+    Limit,
+    Billing,
+}
+
+/// The prototype's `causa_di_sessione` on the texts of system lines: the billing when one of them says it, before the
+/// limit, since a warning can say both and only the billing needs the owner; else the limit when one says it.
+#[must_use]
+pub fn session_cause<S: AsRef<str>>(texts: &[S]) -> Option<SessionCause> {
+    if texts.iter().any(|text| BILLING.is_match(text.as_ref())) {
+        Some(SessionCause::Billing)
+    } else if texts.iter().any(|text| SESSION_LIMIT.is_match(text.as_ref())) {
+        Some(SessionCause::Limit)
+    } else {
+        None
+    }
+}
+
 /// The title of a worker's task, `--task-title "<product> #N …"` (protocol §1.3): the task's number.
 static TASK_TITLE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(&format!(r"^\s*{}\s+#(\d+)\b", regex::escape(regia_identity::PRODUCT_NAME))).expect("the pattern of a worker's title"));
@@ -583,12 +609,14 @@ fn system_text(line: &serde_json::Map<String, Value>) -> String {
 type Line = serde_json::Map<String, Value>;
 
 /// What a transcript says of its worker: when it last wrote, whether its last line of the assistant has an open call,
-/// and whether its last line asks for a permission.
+/// whether its last line asks for a permission, and the cause of a session its system lines at the end say (#644 of the
+/// dossier), which only the command of the workers reads.
 #[derive(Debug, Default)]
 struct Transcript {
     last: Option<WallTime>,
     open_call: bool,
     permission: bool,
+    cause: Option<SessionCause>,
 }
 
 /// One call of the Orca adapter: the `result` of `orca orchestration <words> --json`, or why there is none.
@@ -599,10 +627,14 @@ type OrcaCall<'a> = dyn FnMut(&[&str], Instant) -> Result<Value, String> + 'a;
 fn read_transcript(call: &mut OrcaCall<'_>, deadline: Instant, dispatch: &str) -> Result<Transcript, String> {
     let (mut cursor, mut last): (Option<String>, Option<WallTime>) = (None, None);
     let (mut assistant, mut final_line): (Option<Line>, Option<Line>) = (None, None);
-    let outcome = |last, assistant: &Option<Line>, final_line: &Option<Line>| Transcript {
+    // The texts of the system lines after the last line that is not one: a warning of the session counts only when it is
+    // the last thing the worker wrote.
+    let mut tail: Vec<String> = Vec::new();
+    let outcome = |last, assistant: &Option<Line>, final_line: &Option<Line>, tail: &[String]| Transcript {
         last,
         open_call: assistant.as_ref().is_some_and(open_call),
         permission: final_line.as_ref().is_some_and(|line| PERMISSION.is_match(&system_text(line))),
+        cause: session_cause(tail),
     };
     for _ in 0..TRANSCRIPT_PAGES {
         let mut words = vec!["worker-read", "--dispatch", dispatch, "--limit", "50"];
@@ -615,7 +647,7 @@ fn read_transcript(call: &mut OrcaCall<'_>, deadline: Instant, dispatch: &str) -
         };
         let lines = transcript.get("messages").and_then(Value::as_array).cloned().unwrap_or_default();
         if lines.is_empty() {
-            return Ok(outcome(last, &assistant, &final_line));
+            return Ok(outcome(last, &assistant, &final_line, &tail));
         }
         for line in &lines {
             let line = object(line, "a line of a transcript")?;
@@ -629,13 +661,18 @@ fn read_transcript(call: &mut OrcaCall<'_>, deadline: Instant, dispatch: &str) -
                 }
             }
             final_line = Some(line.clone());
+            if role == Some("system") {
+                tail.push(system_text(line));
+            } else {
+                tail.clear();
+            }
             if role == Some("assistant") {
                 assistant = Some(line.clone());
             }
         }
         cursor = transcript.get("nextCursor").and_then(Value::as_str).or_else(|| answer.get("cursor").and_then(Value::as_str)).filter(|c| !c.is_empty()).map(str::to_owned);
         if cursor.is_none() {
-            return Ok(outcome(last, &assistant, &final_line));
+            return Ok(outcome(last, &assistant, &final_line, &tail));
         }
     }
     Err("orca: a transcript without end".to_owned())
@@ -753,6 +790,183 @@ fn truthy(value: &Value) -> bool {
     }
 }
 
+// ---------- the command of the workers (#698 and #744 of the dossier; F277 of its inventory) ----------
+
+/// The pages of `worker-list` the command reads at most, to the end of the list, a hundred dispatches each: a dispatch
+/// forgotten for months is at its bottom. A list that does not end within them is no answer.
+const ALL_PAGES: usize = 30;
+
+/// Orca's activities (`projection.stage.activity`) that mean a person is awaited (#698 of the dossier): `blocked`, seen on
+/// a record, and `needs-input`, the reason of Orca's own notice, taken too. Only the command reads them.
+pub const WAITING_ACTIVITIES: [&str; 2] = ["blocked", "needs-input"];
+
+/// A dispatch in progress of one of the tasks asked, as the command reads it: Orca's ids, which it prints only when asked,
+/// its activity, and what its transcript and `worker-show` say, `None` when it does not read.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DispatchState {
+    pub dispatch_id: String,
+    pub run_id: Option<String>,
+    /// `projection.stage.activity`, lowercase: the list's, or `worker-show`'s when the list has none and the dispatch read.
+    pub activity: Option<String>,
+    pub read: Option<DispatchRead>,
+}
+
+/// What a dispatch that reads says: when its worker last wrote; whether it waits for a person (Orca's `agentWait`, or an
+/// activity of [`WAITING_ACTIVITIES`], under the thresholds too); why it is blocked, past the block's threshold; and why
+/// its session stopped it, only past the silence's threshold and never while it waits for a person.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DispatchRead {
+    pub last: WallTime,
+    pub waiting: bool,
+    pub blocked: Option<Blocked>,
+    pub cause: Option<SessionCause>,
+}
+
+/// A task asked, with its dispatches in progress in the order of Orca's list, the most recent first.
+#[derive(Debug, Clone, PartialEq)]
+pub struct TaskDispatches {
+    pub task: u64,
+    pub dispatches: Vec<DispatchState>,
+}
+
+/// A dispatch of the list: its id, its task and its run in Orca, and its activity.
+struct Listed {
+    dispatch: String,
+    task: Option<String>,
+    run: Option<String>,
+    activity: Option<String>,
+}
+
+/// `projection.stage.activity` of a record of `worker-list --full` or `worker-show --full`, trimmed and lowercase; `None`
+/// when it is missing, empty or not a text.
+fn activity_of(record: &serde_json::Map<String, Value>) -> Option<String> {
+    let activity = record.get("projection")?.get("stage")?.get("activity")?.as_str()?.trim();
+    (!activity.is_empty()).then(|| activity.to_lowercase())
+}
+
+/// The prototype's `_in_corso_con_attivita`: every dispatch in progress, the most recent first, to the end of
+/// `worker-list` within [`ALL_PAGES`] pages, each with its activity.
+fn all_in_progress(call: &mut OrcaCall<'_>, deadline: Instant) -> Result<Vec<Listed>, String> {
+    let mut found = Vec::new();
+    let mut cursor: Option<String> = None;
+    for _ in 0..ALL_PAGES {
+        let mut words = vec!["worker-list", "--full", "--limit", "100"];
+        if let Some(cursor) = &cursor {
+            words.extend(["--cursor", cursor.as_str()]);
+        }
+        let answer = call(&words, deadline)?;
+        let result = object(&answer, "worker-list's result")?;
+        if result.get("scope").and_then(Value::as_object).and_then(|scope| scope.get("source")).is_some_and(|source| !source.is_null() && source.as_str() != Some("all")) {
+            return Err("orca: worker-list is limited to a run".to_owned());
+        }
+        let listed = result.get("workers").is_some_and(truthy);
+        for worker in objects(result.get("workers")) {
+            let outcome = worker.get("projection").and_then(Value::as_object).and_then(|projection| projection.get("outcome")).and_then(Value::as_str);
+            if outcome == Some("in_progress")
+                && let Some(dispatch) = text_of(worker, "dispatchId")
+            {
+                let (task, run) = (text_of(worker, "taskId").map(str::to_owned), text_of(worker, "runId").map(str::to_owned));
+                found.push(Listed { dispatch: dispatch.to_owned(), task, run, activity: activity_of(worker) });
+            }
+        }
+        let page = result.get("page").and_then(Value::as_object);
+        cursor = page.and_then(|page| text_of(page, "nextCursor")).or_else(|| text_of(result, "nextCursor")).map(str::to_owned);
+        if cursor.is_none() || page.and_then(|page| page.get("hasMore")) == Some(&Value::Bool(false)) || !listed {
+            return Ok(found);
+        }
+    }
+    Err("orca: worker-list without end".to_owned())
+}
+
+/// The prototype's `_numeri_dei_task`: the task's number of each of Orca's tasks of `runs`, from its title.
+fn task_numbers(call: &mut OrcaCall<'_>, deadline: Instant, runs: &BTreeSet<&str>) -> Result<BTreeMap<String, u64>, String> {
+    let mut numbers = BTreeMap::new();
+    for run in runs {
+        let answer = call(&["task-list", "--run", run], deadline)?;
+        for task in objects(object(&answer, "task-list's result")?.get("tasks")) {
+            let title = task.get("title").and_then(Value::as_str).unwrap_or_default();
+            if let (Some(found), Some(id)) = (TASK_TITLE.captures(title), text_of(task, "id"))
+                && let Ok(number) = found[1].parse::<u64>()
+            {
+                numbers.insert(id.to_owned(), number);
+            }
+        }
+    }
+    Ok(numbers)
+}
+
+/// The prototype's `_leggi_dispatch`: a dispatch read as [`read_workers`] reads a worker, with the wait of its activity,
+/// which the list's record holds already, under the thresholds too. `None` when there is no instant; otherwise what it
+/// read, with its activity, the list's or else `worker-show`'s.
+fn read_dispatch(call: &mut OrcaCall<'_>, deadline: Instant, listed: &Listed, thresholds: WorkerThresholds, now: WallTime) -> Result<Option<(DispatchRead, Option<String>)>, String> {
+    let elapsed = |at: WallTime| (now.unix_micros() - at.unix_micros()) as f64 / 1e6;
+    let transcript = read_transcript(call, deadline, &listed.dispatch)?;
+    let (mut last, mut activity, mut agent_wait) = (transcript.last, listed.activity.clone(), false);
+    if last.is_none_or(|last| elapsed(last) > thresholds.silence_s.min(thresholds.block_s)) {
+        let shown = call(&["worker-show", "--dispatch", &listed.dispatch, "--full"], deadline)?;
+        let shown = object(&shown, "worker-show's result")?;
+        let of_dispatch = shown.get("dispatch").filter(|value| !value.is_null());
+        let field = |key: &str| of_dispatch.and_then(|dispatch| dispatch.get(key));
+        let beat = orca_instant(field("lastHeartbeatAt"));
+        last = match (last, beat) {
+            (Some(line), Some(beat)) => Some(line.max(beat)),
+            (Some(line), None) => Some(line),
+            (None, Some(beat)) => Some(beat),
+            (None, None) => orca_instant(field("dispatchedAt")),
+        };
+        agent_wait = shown.get("observation").and_then(|observation| observation.get("agentWait")).is_some_and(truthy);
+        activity = activity.or_else(|| activity_of(shown));
+    }
+    let Some(last) = last else { return Ok(None) };
+    let waiting = agent_wait || activity.as_deref().is_some_and(|activity| WAITING_ACTIVITIES.contains(&activity));
+    // The cause of a session holds over an open call, and a wait for a person over the cause (#644 of the dossier).
+    let cause = transcript.cause.filter(|_| elapsed(last) > thresholds.silence_s && !(waiting || transcript.permission));
+    let blocked = if elapsed(last) <= thresholds.block_s {
+        None
+    } else if waiting || transcript.permission {
+        Some(Blocked::WaitingForPerson)
+    } else if transcript.open_call {
+        Some(Blocked::OpenCall)
+    } else {
+        None
+    };
+    Ok(Some((DispatchRead { last, waiting, blocked, cause }, activity)))
+}
+
+/// The prototype's `osserva_dispatch`, its reading (#698 of the dossier): for each of `tasks`, in their order, every
+/// dispatch in progress whose task's title names it, whatever the tracker says of the task. A dispatch that does not read
+/// stays in its task's list, unread; once a read fails with the deadline near, the dispatches after it are not read
+/// either, and stay listed. It changes nothing of [`read_workers`], which the precheck reads.
+///
+/// # Errors
+///
+/// When Orca does not answer `worker-list` or `task-list`, answers them with something that is not one, or with a list
+/// that does not end.
+pub fn read_dispatches(call: &mut OrcaCall<'_>, tasks: &[u64], thresholds: WorkerThresholds, now: WallTime, deadline: Instant) -> Result<Vec<TaskDispatches>, String> {
+    let listed = all_in_progress(call, deadline)?;
+    let runs: BTreeSet<&str> = listed.iter().filter_map(|dispatch| dispatch.run.as_deref()).collect();
+    let numbers = task_numbers(call, deadline, &runs)?;
+    let wanted: BTreeSet<u64> = tasks.iter().copied().collect();
+    let mut by_task: BTreeMap<u64, Vec<DispatchState>> = BTreeMap::new();
+    let mut expired = false;
+    for dispatch in &listed {
+        let Some(number) = dispatch.task.as_ref().and_then(|task| numbers.get(task)).copied().filter(|number| wanted.contains(number)) else { continue };
+        let mut found = None;
+        if !expired {
+            match read_dispatch(call, deadline, dispatch, thresholds, now) {
+                Ok(read) => found = read,
+                Err(_) => expired = Instant::now() + Duration::from_secs(1) >= deadline,
+            }
+        }
+        let (read, activity) = match found {
+            Some((read, activity)) => (Some(read), activity),
+            None => (None, dispatch.activity.clone()),
+        };
+        by_task.entry(number).or_default().push(DispatchState { dispatch_id: dispatch.dispatch.clone(), run_id: dispatch.run.clone(), activity, read });
+    }
+    Ok(tasks.iter().map(|task| TaskDispatches { task: *task, dispatches: by_task.get(task).cloned().unwrap_or_default() }).collect())
+}
+
 /// The workers of Orca on `orca` as setup finds it, or pinned: `orca orchestration <words> --json` for each call, with no
 /// stdin, each within its cap and the read's deadline, in a neutral folder and the environment of its allow-list.
 #[derive(Debug, Clone, Default)]
@@ -778,25 +992,44 @@ impl OrcaWorkers {
     ///
     /// When `orca` cannot be found, or does not answer the lists.
     pub fn read(&self, wanted: &BTreeSet<u64>, thresholds: WorkerThresholds, now: WallTime, deadline: Instant) -> Result<Vec<WorkerBeat>, String> {
-        let pin = match &self.pin {
-            Some(pin) => pin.clone(),
-            None => Pin::resolve(Program::Orca).map_err(|error| format!("orca is not available: {error}"))?,
-        };
-        let mut call = |words: &[&str], deadline: Instant| -> Result<Value, String> {
-            let left = deadline.saturating_duration_since(Instant::now());
-            if left <= Duration::from_secs(1) {
-                return Err("orca: the deadline ran out".to_owned());
-            }
-            let args = orchestration(words)?;
-            let output = pin.launch(args, &neutral_folder()).limits(Limits { timeout: PER_CALL.min(left), ..Limits::default() }).run().map_err(|error| format!("orca {}: {error}", words[0]))?;
-            let answer: Value = serde_json::from_slice(&output.stdout).map_err(|_| format!("orca {}: an answer that is not JSON", words[0]))?;
-            if !answer.get("ok").is_some_and(truthy) {
-                let code = answer.get("error").and_then(|error| error.get("code")).and_then(Value::as_str).unwrap_or("error");
-                return Err(format!("orca {}: {code}", words[0]));
-            }
-            Ok(answer.get("result").filter(|result| truthy(result)).cloned().unwrap_or_else(|| json!({})))
-        };
-        read_workers(&mut call, wanted, thresholds, now, deadline)
+        let pin = self.pin()?;
+        read_workers(&mut orca_call(&pin), wanted, thresholds, now, deadline)
+    }
+
+    /// [`read_dispatches`] on this machine's Orca: what the command of the workers shows.
+    ///
+    /// # Errors
+    ///
+    /// When `orca` cannot be found, or does not answer the lists.
+    pub fn read_dispatches(&self, tasks: &[u64], thresholds: WorkerThresholds, now: WallTime, deadline: Instant) -> Result<Vec<TaskDispatches>, String> {
+        let pin = self.pin()?;
+        read_dispatches(&mut orca_call(&pin), tasks, thresholds, now, deadline)
+    }
+
+    fn pin(&self) -> Result<Pin, String> {
+        match &self.pin {
+            Some(pin) => Ok(pin.clone()),
+            None => Pin::resolve(Program::Orca).map_err(|error| format!("orca is not available: {error}")),
+        }
+    }
+}
+
+/// One call of the adapter on `orca` at `pin`: `orca orchestration <words> --json`, the `result` of its answer, or why
+/// there is none.
+fn orca_call(pin: &Pin) -> impl FnMut(&[&str], Instant) -> Result<Value, String> + '_ {
+    move |words: &[&str], deadline: Instant| -> Result<Value, String> {
+        let left = deadline.saturating_duration_since(Instant::now());
+        if left <= Duration::from_secs(1) {
+            return Err("orca: the deadline ran out".to_owned());
+        }
+        let args = orchestration(words)?;
+        let output = pin.launch(args, &neutral_folder()).limits(Limits { timeout: PER_CALL.min(left), ..Limits::default() }).run().map_err(|error| format!("orca {}: {error}", words[0]))?;
+        let answer: Value = serde_json::from_slice(&output.stdout).map_err(|_| format!("orca {}: an answer that is not JSON", words[0]))?;
+        if !answer.get("ok").is_some_and(truthy) {
+            let code = answer.get("error").and_then(|error| error.get("code")).and_then(Value::as_str).unwrap_or("error");
+            return Err(format!("orca {}: {code}", words[0]));
+        }
+        Ok(answer.get("result").filter(|result| truthy(result)).cloned().unwrap_or_else(|| json!({})))
     }
 }
 
@@ -941,6 +1174,97 @@ mod tests {
         assert!(read_workers(&mut limited, &wanted, thresholds, now, Instant::now() + Duration::from_secs(60)).is_err());
         assert_eq!(orca_instant(Some(&json!("2026-01-10 08:00:00"))), WallTime::parse_iso("2026-01-10T08:00:00Z"));
         assert_eq!(orca_instant(Some(&json!(true))), None);
+    }
+
+    /// The prototype's `causa_di_sessione` and its tests of #644: the billing before the limit, in any of the texts; the
+    /// limit in both its forms; a billing whose first eighty characters still say it.
+    #[test]
+    fn the_cause_of_a_session_is_the_prototype_s() {
+        let limit = "You've hit your session limit · resets 3:30pm (Europe/Rome)";
+        let billing: String = "Claude Code can't use your Claude subscription, usually because a payment is past due".chars().take(80).collect();
+        assert_eq!(session_cause(&[limit]), Some(SessionCause::Limit));
+        assert_eq!(session_cause(&["Claude hit its session limit."]), Some(SessionCause::Limit));
+        assert_eq!(session_cause(&[billing.as_str()]), Some(SessionCause::Billing));
+        assert_eq!(session_cause(&[limit, billing.as_str()]), Some(SessionCause::Billing));
+        assert_eq!(session_cause(&["Allow Bash?", "x"]), None);
+        assert_eq!(session_cause::<&str>(&[]), None);
+    }
+
+    /// The prototype's `osserva_dispatch`, its reading, on an injected Orca: every dispatch in progress of a task, in the
+    /// list's order, a concluded one left out; an open call with a session's limit after it, both said; the list's
+    /// activity, a wait under the thresholds too, or `worker-show`'s; a dispatch that does not read stays, unread; and
+    /// once a read fails with the deadline near, the dispatches after it are listed and not read.
+    #[test]
+    fn the_dispatches_read_as_the_prototype_s_command_reads_them() {
+        let now = WallTime::parse_iso("2026-01-10T09:00:00Z").unwrap();
+        let ms = |minutes_ago: i64| json!(now.unix_micros() / 1000 - minutes_ago * 60_000);
+        let line = |minutes_ago: i64, role: &str, blocks: Value| json!({"role": role, "timestamp": ms(minutes_ago), "blocks": blocks});
+        let transcripts = BTreeMap::from([
+            ("d1", vec![line(2, "assistant", json!([{"type": "text", "text": "ok"}]))]),
+            ("d2", vec![line(240, "assistant", json!([{"type": "tool-call", "callId": "c", "state": "running"}])), line(240, "system", json!([{"type": "text", "text": "Claude hit its session limit."}]))]),
+            ("d4", vec![line(5, "assistant", json!([]))]),
+            ("d5", vec![line(240, "assistant", json!([]))]),
+        ]);
+        let record = |dispatch: &str, task: &str, outcome: &str, activity: Option<&str>| {
+            let mut record = json!({"dispatchId": dispatch, "taskId": task, "runId": "r", "projection": {"outcome": outcome}});
+            if let Some(activity) = activity {
+                record["projection"]["stage"] = json!({"activity": activity});
+            }
+            record
+        };
+        let workers = json!([
+            record("d1", "t1", "in_progress", None), record("d2", "t1b", "in_progress", None), record("d3", "t1", "succeeded", None),
+            record("d4", "t2", "in_progress", Some(" Blocked ")), record("d5", "t3", "in_progress", None), record("d6", "t3", "in_progress", None),
+        ]);
+        let title = |n: u64| format!("{} #{n} work", regia_identity::PRODUCT_NAME);
+        let tasks = json!([{"id": "t1", "title": title(1)}, {"id": "t1b", "title": title(1)}, {"id": "t2", "title": title(2)}, {"id": "t3", "title": title(3)}]);
+        let failing = std::cell::Cell::new("d6");
+        let asked = std::cell::RefCell::new(Vec::new());
+        let mut call = |words: &[&str], _: Instant| -> Result<Value, String> {
+            asked.borrow_mut().push(words.join(" "));
+            match words[0] {
+                "worker-list" => Ok(json!({"workers": workers, "page": {"hasMore": false}})),
+                "task-list" => Ok(json!({"tasks": tasks})),
+                "worker-read" if words[2] == failing.get() => Err("orca worker-read: source_changed".to_owned()),
+                "worker-read" if words.contains(&"--cursor") => Ok(json!({"transcript": {"messages": []}})),
+                "worker-read" => Ok(json!({"transcript": {"messages": transcripts[words[2]], "nextCursor": "page-1"}})),
+                "worker-show" if words[2] == "d5" => Ok(json!({"dispatch": {}, "projection": {"stage": {"activity": "needs-input"}}})),
+                "worker-show" => Ok(json!({"dispatch": {}, "observation": {}})),
+                other => Err(format!("unexpected {other}")),
+            }
+        };
+        let thresholds = WorkerThresholds::from_policy(None);
+        let summary = |found: &[TaskDispatches]| -> Vec<String> {
+            let minutes = |read: &DispatchRead| (now.unix_micros() - read.last.unix_micros()) / 60_000_000;
+            found
+                .iter()
+                .flat_map(|task| task.dispatches.iter().map(move |dispatch| (task.task, dispatch)))
+                .map(|(task, dispatch)| {
+                    let read = dispatch.read.as_ref().map(|read| (minutes(read), read.waiting, read.blocked, read.cause));
+                    format!("{task} {} {:?} {read:?}", dispatch.dispatch_id, dispatch.activity)
+                })
+                .collect()
+        };
+        let found = read_dispatches(&mut call, &[1, 2, 3, 9], thresholds, now, Instant::now() + Duration::from_secs(60)).unwrap();
+        assert_eq!(found.iter().map(|task| (task.task, task.dispatches.len())).collect::<Vec<_>>(), [(1, 2), (2, 1), (3, 2), (9, 0)]);
+        assert_eq!(
+            summary(&found),
+            [
+                "1 d1 None Some((2, false, None, None))",
+                "1 d2 None Some((240, false, Some(OpenCall), Some(Limit)))",
+                "2 d4 Some(\"blocked\") Some((5, true, None, None))",
+                "3 d5 Some(\"needs-input\") Some((240, true, Some(WaitingForPerson), None))",
+                "3 d6 None None",
+            ]
+        );
+        assert!(!asked.borrow().iter().any(|call| call.contains("worker-show --dispatch d4")), "a recent dispatch is not shown: {:?}", asked.borrow());
+        failing.set("d5");
+        asked.borrow_mut().clear();
+        let found = read_dispatches(&mut call, &[3], thresholds, now, Instant::now() + Duration::from_millis(500)).unwrap();
+        assert_eq!(summary(&found), ["3 d5 None None", "3 d6 None None"]);
+        assert!(!asked.borrow().iter().any(|call| call.contains("d6")), "past the deadline nothing more is read: {:?}", asked.borrow());
+        let mut endless = |_: &[&str], _: Instant| Ok(json!({"workers": [record("d1", "t1", "in_progress", None)], "page": {"hasMore": true, "nextCursor": "more"}}));
+        assert!(read_dispatches(&mut endless, &[1], thresholds, now, Instant::now() + Duration::from_secs(60)).is_err(), "a list without end is no answer");
     }
 
     #[test]

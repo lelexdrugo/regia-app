@@ -40,7 +40,10 @@ pub use https::{Https, TIMEOUT};
 pub use launch::{
     Dry, Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, launch_with_fallback, read_prompt_file,
 };
-pub use orca::{Auto, Blocked, Orca, OrcaWaits, OrcaWorkers, PROMPT_IN_ARGV_MAX, WorkerBeat, WorkerThresholds, read_workers, running_workers, surface};
+pub use orca::{
+    Auto, Blocked, DispatchRead, DispatchState, Orca, OrcaWaits, OrcaWorkers, PROMPT_IN_ARGV_MAX, SessionCause, TaskDispatches, WAITING_ACTIVITIES, WorkerBeat,
+    WorkerThresholds, read_dispatches, read_workers, running_workers, session_cause, surface,
+};
 pub use policy::{Assignment, Diversity, Fallback, Policy, Role, Settings, SettingsError, Tier};
 pub use usage::{
     Bearer, CLAUDE_URL, CODEX_URL, MACOS_CLAUDE, PROBES_OFF, Platform, ProbeConsent, TOKEN_WARNING_S, Transport, TransportError,
