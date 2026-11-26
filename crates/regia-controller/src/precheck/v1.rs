@@ -13,6 +13,7 @@ pub(crate) struct Format {
     pub(crate) outcomes: Outcomes,
     pub(crate) payload: PayloadWords,
     pub(crate) project: ProjectWords,
+    pub(crate) answers: AnswersWords,
     pub(crate) backlog: BacklogWords,
     pub(crate) cursor: CursorWords,
     pub(crate) events: EventsWords,
@@ -135,6 +136,20 @@ pub(crate) struct ProjectWords {
     pub(crate) tasks: String,
     pub(crate) max_tasks: usize,
     pub(crate) backlog_tasks: String,
+    pub(crate) blocked: String,
+    pub(crate) silent_tasks: String,
+    pub(crate) blocked_tasks: String,
+    pub(crate) answer_tasks: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct AnswersWords {
+    pub(crate) consultation: String,
+    pub(crate) stale_margin_s: f64,
+    pub(crate) recent_s: f64,
+    pub(crate) recent_total_s: f64,
+    pub(crate) recent_margin_s: f64,
 }
 
 #[derive(Debug, Deserialize)]

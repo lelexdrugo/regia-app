@@ -5,8 +5,10 @@
 //! A project is active when its Objective is approved, in progress or in decision. For each one, in the
 //! order of its priority and then of its id:
 //!
-//! - **events**: comments of the owner on an issue that waits for the owner, newer than the step's instant
-//!   and neither written by a step nor signed by the regia (M2, P4); reports newer than that instant,
+//! - **events**: comments of the owner on an issue that waits for the owner and changed since the step's
+//!   instant (#589), newer than that instant and neither written by a step, signed by the regia nor a
+//!   consultation (M2, P4, #68), then the same on the project's other issues, open or closed, from one read
+//!   of the recent comments that never fails the tick (#393); reports newer than that instant,
 //!   except those the step listed as processed with the same date (#406); expired leases of tasks in
 //!   progress; ready tasks, as many as the wip has room for; Inbox items created after the instant. A
 //!   task closed or reopened is no event of its own: a closed dependency makes its dependents ready, and
@@ -92,6 +94,16 @@ pub struct ExpiredLease {
     pub project: Option<String>,
 }
 
+/// A comment of the read of a project's recent comments (#393 of the dossier): the issue it is on, its id, when it
+/// was written as the tracker gives it, and its body.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RecentComment {
+    pub number: u64,
+    pub id: u64,
+    pub created_at: String,
+    pub body: String,
+}
+
 /// A report on disk: its file name, and when it was last written, to the microsecond as Python reads it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Report {
@@ -116,6 +128,11 @@ pub trait Sources {
     ///
     /// When the tracker cannot be read, or has no such issue.
     fn comments(&self, number: u64) -> Result<Vec<RawComment>, String>;
+
+    /// The comments of the project's issues updated after `since`, open or closed, from one read (#393 of the
+    /// dossier). `None` when they were not read: too close to the tick's deadline, past the time the tick gives
+    /// such reads, or a read that failed. A read more, which never fails the tick.
+    fn recent_comments(&self, project: &str, since: WallTime) -> Option<Vec<RecentComment>>;
 
     /// The value of the project's events cursor, `null` without one.
     ///

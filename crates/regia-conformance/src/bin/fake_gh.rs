@@ -211,6 +211,7 @@ fn answer(args: &[String]) -> Result<Reply, String> {
     let mut number = None;
     let mut after = None;
     let mut node = None;
+    let mut label = None;
     for (key, value) in variables {
         match key.as_str() {
             "n" => number = Some(value),
@@ -218,8 +219,11 @@ fn answer(args: &[String]) -> Result<Reply, String> {
             "after" | "c" => after = Some(value),
             // A node read by its id: an issue's items, or the Project's fields and items.
             "id" | "p" => node = Some(value),
-            // The window of the comments the checks read: the fixture holds the comments it answers.
-            "since" => {}
+            // The window of the comments the checks read, and the precheck's (`s`): the fixture holds the comments it
+            // answers.
+            "since" | "s" => {}
+            // The project's label of the precheck's read of the recent comments.
+            "e" => label = Some(value),
             "o" | "r" => {
                 if responses["expect"][&key] != value.as_str() {
                     return Err(format!("variable {key} is {value}, the fixture expects {}", responses["expect"][&key]));
@@ -256,6 +260,10 @@ fn answer(args: &[String]) -> Result<Reply, String> {
     } else if query.contains("filterBy:{since:$since}") {
         // The checks' read of recent comments, on open and closed issues alike.
         (format!("comments {index}"), responses["comment_pages"][index].clone())
+    } else if query.contains("filterBy:{since:$s,labels:[$e],states:[OPEN,CLOSED]}") {
+        // The prototype's precheck reads a project's recent comments by its label, one page (#393 of the dossier).
+        let label = label.ok_or("recent comments without a label")?;
+        (format!("recent {label}"), responses["recent_by_label"][&label].clone())
     } else if query.contains("states:[CLOSED]") {
         (format!("closed{walk} {index}"), responses["closed_pages"][index].clone())
     } else if query.contains("issues(first:") && !query.contains("states:") {

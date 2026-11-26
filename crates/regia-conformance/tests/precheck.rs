@@ -143,6 +143,9 @@ struct IssueSpec {
     registry: Option<String>,
     #[serde(default)]
     labels: Vec<String>,
+    /// Closed: not in the list of the open issues, only in the read of the recent comments (#393 of the dossier).
+    #[serde(default)]
+    closed: bool,
 }
 
 #[allow(clippy::unnecessary_wraps)]
@@ -308,8 +311,8 @@ fn tracker_config() -> Value {
     read_json(&fixtures_root().join("brief").join("tracker.json"))
 }
 
-/// The node of an issue as GraphQL answers the list of both sides, at the run's instant `now`.
-fn node(spec: &IssueSpec, dossier: &str, config: &Value, now: &str) -> Value {
+/// The labels of an issue: its project's, the Objective's, its maturity's, then its own.
+fn labels_of(spec: &IssueSpec) -> Vec<String> {
     let mut labels: Vec<String> = Vec::new();
     if let Some(project) = &spec.project {
         labels.push(format!("progetto:{project}"));
@@ -322,6 +325,12 @@ fn node(spec: &IssueSpec, dossier: &str, config: &Value, now: &str) -> Value {
         labels.push(format!("maturità:{maturity}"));
     }
     labels.extend(spec.labels.iter().cloned());
+    labels
+}
+
+/// The node of an issue as GraphQL answers the list of both sides, at the run's instant `now`.
+fn node(spec: &IssueSpec, dossier: &str, config: &Value, now: &str) -> Value {
+    let labels = labels_of(spec);
     let (field_by_name, field_values) = match &spec.status {
         Some(name) => {
             let option = config["status_options"][name].as_str().map_or_else(|| format!("opt-unknown-{}", spec.n), str::to_owned);
@@ -367,8 +376,12 @@ fn responses(issues: &[IssueSpec], comments: &BTreeMap<String, Vec<CommentSpec>>
         return json!({"fail": {"error": error, "exit": 1}});
     }
     let config = tracker_config();
-    let nodes: Vec<Value> = issues.iter().map(|spec| node(spec, dossier, &config, now)).collect();
+    let nodes: Vec<Value> = issues.iter().filter(|spec| !spec.closed).map(|spec| node(spec, dossier, &config, now)).collect();
     let mut by_number = serde_json::Map::new();
+    // The read of the recent comments (#393): every issue with comments, open or closed, its last twenty, whatever the
+    // window, which the fake does not apply; both sides keep the comments newer than their cursor. The product reads
+    // them as the checks do, every label at once, the prototype by the project's label.
+    let mut recent: Vec<(Vec<String>, Value)> = Vec::new();
     for spec in issues.iter().filter(|spec| !run.comments_missing.contains(&spec.n)) {
         let list = comments.get(&spec.n.to_string()).cloned().unwrap_or_default();
         let nodes: Vec<Value> = list
@@ -378,12 +391,31 @@ fn responses(issues: &[IssueSpec], comments: &BTreeMap<String, Vec<CommentSpec>>
                 json!({"databaseId": comment.id, "createdAt": comment.created, "url": url, "body": comment_body(comment)})
             })
             .collect();
-        by_number.insert(spec.n.to_string(), json!({"comments": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": nodes}}));
+        if !nodes.is_empty() {
+            let last = nodes[nodes.len().saturating_sub(20)..].to_vec();
+            let labels = labels_of(spec);
+            let (state, closed_at) = if spec.closed { ("CLOSED", json!(now)) } else { ("OPEN", Value::Null) };
+            let names: Vec<Value> = labels.iter().map(|name| json!({"name": name})).collect();
+            recent.push((labels, json!({"number": spec.n, "state": state, "closedAt": closed_at, "labels": {"nodes": names}, "comments": {"nodes": last}})));
+        }
+        if !spec.closed {
+            by_number.insert(spec.n.to_string(), json!({"comments": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": nodes}}));
+        }
     }
+    recent.sort_by_key(|(_, node)| node["number"].as_u64());
+    let mut by_label = serde_json::Map::new();
+    let projects: std::collections::BTreeSet<String> = issues.iter().flat_map(labels_of).filter(|label| label.starts_with("progetto:")).collect();
+    for label in projects {
+        let nodes: Vec<Value> = recent.iter().filter(|(labels, _)| labels.contains(&label)).map(|(_, node)| node.clone()).collect();
+        by_label.insert(label, json!({"repository": {"issues": {"nodes": nodes}}}));
+    }
+    let all: Vec<Value> = recent.into_iter().map(|(_, node)| node).collect();
     json!({
         "expect": {"o": config["owner"], "r": config["repo"]},
         "issue_pages": [{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": nodes}}}],
         "blocker_pages": {}, "sub_issue_pages": {}, "issues": by_number,
+        "comment_pages": [{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": all}}}],
+        "recent_by_label": by_label,
     })
 }
 
@@ -1091,7 +1123,13 @@ fn the_format_s_vocabulary_is_the_prototype_s() {
         assert_eq!(json!(outcome["exit"].as_integer()), python["exits"][word], "{word}");
     }
     assert_eq!(json!(format["line"]["max_length"].as_integer()), python["limit"]);
-    assert_eq!(python["events"], json!(["risposta-a-gate", "report-nuovi", "lease-scadute", "worker-silente", "pronti", "inbox"]), "the order the engine keeps");
+    // The blocked workers (#641) come before the silent ones, with the same reason: the engine counts both at its
+    // place, once.
+    assert_eq!(
+        python["events"],
+        json!(["risposta-a-gate", "report-nuovi", "lease-scadute", "worker-silente", "worker-silente", "pronti", "inbox"]),
+        "the order the engine keeps"
+    );
     assert_eq!(python["idle"], json!(["budget", "occupato", "limite-wip", "proposte-esaurite", "lavoro-in-corso", "attesa-del-titolare", "nessun-evento"]));
 }
 

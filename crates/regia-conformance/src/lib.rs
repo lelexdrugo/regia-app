@@ -1488,10 +1488,11 @@ const CONNECTIONS: &[(&str, &[&str])] = &[
     ("repository.issues.nodes.timelineItems", &["first:50"]),
     ("repository.issues.nodes.comments", &["last:20"]),
     // One issue's connections, read a page at a time. The comments' cursor is `$c` in the prototype's
-    // `commenti_issue`, `$after` in the product's; `subIssues(first:1)` only counts.
+    // `commenti_issue`, `$after` in the product's; `subIssues(first:1)` only counts. The prototype's precheck reads
+    // an issue's last hundred comments in one go (`TrackerGh.commenti`).
     ("repository.issue.blockedBy", &["first:100,after:$after"]),
     ("repository.issue.subIssues", &["first:100,after:$after", "first:1"]),
-    ("repository.issue.comments", &["first:100,after:$after", "first:100,after:$c"]),
+    ("repository.issue.comments", &["first:100,after:$after", "first:100,after:$c", "last:100"]),
     // `init`: the Projects of an owner, with their fields.
     ("repositoryOwner.projectsV2", &["first:50,after:$after"]),
     ("repositoryOwner.projectsV2.nodes.fields", &["first:50"]),
@@ -1501,6 +1502,11 @@ const CONNECTIONS: &[(&str, &[&str])] = &[
     ("node.items", &["first:100,after:$after"]),
     ("node.items.nodes.content.labels", &["first:30"]),
 ];
+
+/// The connections the prototype reads as one page with no cursor, each with the filter that marks that read: the
+/// precheck's recent comments of a project, the hundred issues updated last (#393 of the dossier). Any other read
+/// of the same path still needs its cursor.
+const ONE_PAGE: &[(&str, &str, &str)] = &[("repository.issues", "first:100", "filterBy:{since:$s,labels:[$e],states:[OPEN,CLOSED]}")];
 
 /// The types a fragment may be on, by the path of the field it is inside. A fragment on another type
 /// selects nothing on the real API, and the fake answers its fields anyway: without this a wrong type
@@ -1571,7 +1577,8 @@ fn check_selections(selections: &[Selection], path: &str) -> Result<(), String> 
         if pagination.is_empty() && allowed.is_some() {
             return Err(format!("`{here}` is a connection read with no pagination, the prototype reads it with {:?}", allowed.unwrap_or_default()));
         }
-        if !pagination.is_empty() {
+        let one_page = ONE_PAGE.iter().any(|(at, form, filter)| *at == here && pagination == *form && selection.arguments.contains(filter));
+        if !pagination.is_empty() && !one_page {
             let Some(forms) = allowed else {
                 return Err(format!("`{here}({pagination})` is a connection the prototype does not read"));
             };

@@ -2,21 +2,24 @@
 //! reports on disk, the budget policy, the user's consent to the usage probes and their cache. The tick
 //! has a deadline, checked before each read of the tracker.
 
+use std::cell::Cell;
 use std::convert::Infallible;
 use std::path::{Path, PathBuf};
-use std::time::{Instant, UNIX_EPOCH};
+use std::sync::{Arc, mpsc};
+use std::thread;
+use std::time::{Duration, Instant, UNIX_EPOCH};
 
 use chrono::{DateTime, Utc};
 use regia_agents::{Env, Https, Platform, ProbeConsent, Settings, UsageProbes};
 use regia_core::policy::{file_path, local_file_name, read_local};
-use regia_core::{Policy, RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1};
+use regia_core::{Policy, RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1, project_label_prefix};
 use regia_github::GhTracker;
 use regia_identity::{config_dir, env_var, prototype_env_var, state_dir};
 use regia_store::{CursorName, LeaseEntry, LockStatus, ManualClock, ProjectId, ProviderUsage, Store, ViewField, WallTime, read_state_file, reports_folder};
 use serde_json::Value;
 
 use super::v1::format;
-use super::{ExpiredLease, HeldLock, Issue, ObjectiveRegistry, Report, Sources};
+use super::{ExpiredLease, HeldLock, Issue, ObjectiveRegistry, RecentComment, Report, Sources};
 
 /// The variable that names the folder of the user's settings in place of the system's, for the harness:
 /// `REGIA_CONFIG_DIR`. The system's folder is not one a variable moves on every system, and the harness
@@ -33,8 +36,11 @@ const LAST_COMMENTS: usize = 100;
 const DEADLINE_MARGIN_S: f64 = 1.0;
 
 pub struct LiveSources {
-    tracker: GhTracker,
+    /// Shared with the thread of a read that has a deadline of its own: the recent comments (#393).
+    tracker: Arc<GhTracker>,
     binding: TrackerBinding,
+    /// The seconds the reads of the recent comments took in this tick, which share one cap.
+    recent_spent: Cell<f64>,
     /// Opened before the tick, failing at its first read, where the prototype's state fails.
     store: Result<Store, String>,
     /// The state folder, where the budget policy's local override is read.
@@ -85,7 +91,23 @@ pub fn live_sources_in(folder: Option<&Path>, deadline_s: f64, fixed: Option<Wal
         Some(at) => store.with_clock(ManualClock::fixed(at)),
         None => store,
     });
-    Ok(LiveSources { tracker: GhTracker::new(&config), binding, store, state, started: Instant::now(), deadline_s, fixed })
+    Ok(LiveSources {
+        tracker: Arc::new(GhTracker::new(&config)),
+        binding,
+        recent_spent: Cell::new(0.0),
+        store,
+        state,
+        started: Instant::now(),
+        deadline_s,
+        fixed,
+    })
+}
+
+/// The seconds a read of the recent comments may take (#393): its own cap, what is left of the tick's cap for all
+/// of them, and what the tick's deadline leaves past its margin. Zero or less: no read.
+fn recent_budget(left_s: f64, spent_s: f64) -> f64 {
+    let words = &format().answers;
+    words.recent_s.min(words.recent_total_s - spent_s).min(left_s - words.recent_margin_s)
 }
 
 impl LiveSources {
@@ -173,6 +195,40 @@ impl Sources for LiveSources {
             }
             None => Err(format!("the tracker has no issue #{number}")),
         }
+    }
+
+    /// The prototype's `commenti_recenti` through the read of the checks, which takes every issue updated in the
+    /// window and pages through them, kept to those with the project's label: what the prototype asks for, without
+    /// its cap of the hundred issues updated last. The read runs in a thread with its deadline; past it, or when it
+    /// fails, there is no answer, and the thread is left to end with the process.
+    fn recent_comments(&self, project: &str, since: WallTime) -> Option<Vec<RecentComment>> {
+        let spent = self.recent_spent.get();
+        let budget = recent_budget(self.deadline_s - self.started.elapsed().as_secs_f64(), spent);
+        if budget <= 0.0 {
+            return None;
+        }
+        let since = DateTime::<Utc>::from_timestamp_micros(since.unix_micros())?;
+        let (tracker, (sender, receiver)) = (Arc::clone(&self.tracker), mpsc::channel());
+        let begun = Instant::now();
+        thread::spawn(move || {
+            let _ = sender.send(tracker.recent_comments(since));
+        });
+        let answer = receiver.recv_timeout(Duration::from_secs_f64(budget));
+        self.recent_spent.set(spent + begun.elapsed().as_secs_f64());
+        let issues = answer.ok()?.ok()?;
+        let label = format!("{}{project}", project_label_prefix());
+        Some(
+            issues
+                .into_iter()
+                .filter(|issue| issue.labels.contains(&label))
+                .flat_map(|issue| {
+                    let number = issue.number;
+                    issue.comments.into_iter().filter_map(move |comment| {
+                        Some(RecentComment { number, id: comment.id?, created_at: comment.created_at, body: comment.body })
+                    })
+                })
+                .collect(),
+        )
     }
 
     fn events_cursor(&self, project: &str) -> Result<Value, String> {
@@ -284,6 +340,17 @@ mod tests {
         assert_eq!(task_number(Some(&Value::from(3.5))), None);
         assert_eq!(task_number(Some(&Value::from("3"))), None);
         assert_eq!(task_number(None), None);
+    }
+
+    /// `test_un_tracker_lento_non_allunga_il_giro` and `test_piu_progetti_lenti_dividono_un_solo_tetto` of the
+    /// prototype, in their sums: a read's own cap, the tick's cap shared by every project, the deadline's margin.
+    #[test]
+    fn the_recent_comments_share_one_cap_and_keep_off_the_deadline() {
+        assert!((recent_budget(100.0, 0.0) - 12.0).abs() < 1e-9, "a read's own cap");
+        assert!((recent_budget(100.0, 10.0) - 5.0).abs() < 1e-9, "what the tick's cap leaves");
+        assert!(recent_budget(100.0, 15.0) <= 0.0, "the tick's cap spent");
+        assert!((recent_budget(25.0, 0.0) - 5.0).abs() < 1e-9, "the deadline's margin");
+        assert!(recent_budget(20.0, 0.0) <= 0.0, "too close to the deadline");
     }
 
     #[test]

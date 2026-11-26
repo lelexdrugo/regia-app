@@ -99,6 +99,30 @@ proposals = "proposte"
 tasks = "task"
 max_tasks = 10
 backlog_tasks = "arretrato_task"
+# The workers of the tasks in progress (#210 and #641 of the dossier): how many are silent and how many blocked in
+# a new episode, counted among the events after `leases`, and their tasks after `backlog_tasks`. `blocked` is not
+# `blocked_by_wip`, the ready tasks the wip holds back.
+blocked = "bloccati"
+silent_tasks = "silenti_task"
+blocked_tasks = "bloccati_task"
+# The tasks of the owner's answers outside Decision and Proposal (#393): where the step looks for them, the first
+# `max_tasks` by number, after the workers' tasks.
+answer_tasks = "risposte_task"
+
+# The owner's answers (§6.4 of the design note). On an issue that waits for the owner, a comment newer than the
+# step's instant that the step did not write, the regia did not sign and that is no consultation (#68: it starts
+# with `consultation` and never wakes, whoever signs it). An issue that waits and did not change since
+# `stale_margin_s` before that instant is not read (#589): a new or edited comment moves its `updatedAt`. The
+# answers outside Decision and Proposal (#393) come from one read a project of the comments of its issues updated
+# after the instant, open or closed: at most `recent_s` seconds of it, `recent_total_s` for every project of a
+# tick, and none with less than `recent_margin_s` seconds left before the tick's deadline. That read never fails
+# the tick: whatever goes wrong, it is as if it had not been made.
+[answers]
+consultation = "Consultazione:"
+stale_margin_s = 120.0
+recent_s = 12.0
+recent_total_s = 15.0
+recent_margin_s = 20.0
 
 # The backlog to formulate (§6.4 point 11 of the design note, #211): every Inbox item and every approved
 # draft, when the wip has room, except a parent with open sub-issues, a blocked task and an item with this

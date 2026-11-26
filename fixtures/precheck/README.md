@@ -15,7 +15,7 @@ The cases are under `events/`, not `cases/`: the harness reads every family's `c
 
 `crates/regia-conformance/tests/precheck.rs` builds, from `case.json`, what both sides read:
 
-1. the answers of the fake `gh`: the list of the open issues in one page, and the comments of every issue;
+1. the answers of the fake `gh`: the list of the open issues in one page, and the comments of every issue; the read of the recent comments (#393 of the dossier) has every issue with comments, an issue marked `closed` too, its last twenty, which the product asks as the checks do, every label at once, and the prototype by the project's label;
 2. the state folder: the synthetic `tracker.json`, and the rows of `regia.db` (the cursor's value with its date, a lock or a lease that expires in 2999 or in 2000, a row that is not a document);
 3. a dossier folder, with each report at `<project>/.regia/report/<name>` and its date, to the 100 nanoseconds.
 

@@ -38,6 +38,12 @@ struct Observation {
     tasks: Vec<u64>,
     /// The first numbers of the backlog to formulate, in the graph's order.
     backlog: Vec<u64>,
+    /// The tasks whose worker went silent, then blocked, in a new episode (#210, #641): their numbers only, Orca's
+    /// ids stay in its adapter.
+    silent_tasks: Vec<u64>,
+    blocked_tasks: Vec<u64>,
+    /// The first tasks of the owner's answers outside Decision and Proposal (#393), by number.
+    answer_tasks: Vec<u64>,
     /// Whether the tick counts towards a stall: new activity, or a held lock (#466).
     countable: bool,
     /// The digest of what a countable tick observed.
@@ -49,10 +55,10 @@ struct Observation {
 }
 
 impl Observation {
-    /// The number of events: the counts written before the first optional one.
+    /// The number of events: the counts written before the first optional one, the workers' included.
     fn events(&self) -> i64 {
         let words = &format().project;
-        let events = [&words.ready, &words.reports, &words.answers, &words.inbox, &words.leases, &words.silent];
+        let events = [&words.ready, &words.reports, &words.answers, &words.inbox, &words.leases, &words.silent, &words.blocked];
         self.counts.iter().filter(|(key, _)| events.iter().any(|event| event.as_str() == *key)).map(|(_, count)| count).sum()
     }
 
@@ -72,7 +78,12 @@ impl Observation {
         if !self.backlog.is_empty() {
             fields.push((words.backlog_tasks.clone(), numbers(&self.backlog)));
         }
-        // #466: the silent workers' tasks follow the backlog's, each only when it applies.
+        // The workers' tasks, then the answers', each only when it applies.
+        for (key, list) in [(&words.silent_tasks, &self.silent_tasks), (&words.blocked_tasks, &self.blocked_tasks), (&words.answer_tasks, &self.answer_tasks)] {
+            if !list.is_empty() {
+                fields.push((key.clone(), numbers(list)));
+            }
+        }
         if self.accounted.count > 0 {
             fields.push((format().series.key.clone(), Json::Int(self.accounted.count)));
         }
@@ -105,6 +116,21 @@ fn created_after(task: &Task, t: Option<WallTime>) -> Result<bool, Fault> {
 /// better than an answer lost.
 fn signed_by_the_regia(body: &str) -> bool {
     signature_role(body).is_some_and(|role| role != regia_core::SignatureRole::Owner.word())
+}
+
+/// A consultation (#68 of the dossier): a comment whose text starts with its word, after the blanks Python's
+/// `lstrip` takes, is context and never wakes, whoever signs it.
+fn consultation(body: &str) -> bool {
+    body.trim_start_matches(|c: char| c.is_whitespace() || ('\u{1c}'..='\u{1f}').contains(&c)).starts_with(&format().answers.consultation)
+}
+
+/// An issue that waits for the owner and did not change since the cursor (#589 of the dossier): its `updatedAt`
+/// no later than the step's instant less the margin. A new or edited comment moves `updatedAt`, so a stale issue
+/// has no answer to read. Without a cursor, without `updatedAt` or with one that does not read it is not stale: in
+/// doubt it is read.
+fn stale(task: &Task, t: Option<WallTime>) -> bool {
+    let (Some(t), Some(updated)) = (t, WallTime::parse_iso(&task.updated_at)) else { return false };
+    t.checked_add_secs(-format().answers.stale_margin_s).is_some_and(|limit| updated <= limit)
 }
 
 /// Whether an item can be drained from the backlog (#211): not a parent with open sub-issues, not blocked
@@ -150,6 +176,9 @@ fn observe(
             counts: Vec::new(),
             tasks: Vec::new(),
             backlog: Vec::new(),
+            silent_tasks: Vec::new(),
+            blocked_tasks: Vec::new(),
+            answer_tasks: Vec::new(),
             countable: true,
             digest: Some(series::digest(&Json::List(facts))),
             objective_in_decision,
@@ -194,10 +223,17 @@ fn observe(
     let reports = new_reports.len();
     let waiting: Vec<&Task> = mine.iter().copied().filter(|task| task.status.is_some_and(Status::waits_on_owner)).collect();
     let mut answer_ids: Vec<i64> = Vec::new();
+    // The issues whose comments this loop read: a stale one (#589) is left to the read of the recent comments,
+    // which goes by `updatedAt` too.
+    let mut read: BTreeSet<u64> = BTreeSet::new();
     for task in &waiting {
+        if stale(task, t) {
+            continue;
+        }
+        read.insert(task.number);
         for comment in sources.comments(task.number).map_err(Fault::tracker)? {
-            // A comment the step wrote itself, then one the regia signed, is not an answer.
-            if comment.id.is_some_and(|id| own_comments.contains(&i128::from(id))) || signed_by_the_regia(&comment.body) {
+            // A comment the step wrote itself, then one the regia signed or a consultation, is not an answer.
+            if comment.id.is_some_and(|id| own_comments.contains(&i128::from(id))) || signed_by_the_regia(&comment.body) || consultation(&comment.body) {
                 continue;
             }
             let new = match t {
@@ -212,9 +248,31 @@ fn observe(
             }
         }
     }
+    // The owner's answers outside Decision and Proposal (#393): who answers and changes the status at once takes the
+    // issue off the list above, and steering on an Objective, an approved task, one in progress or one just closed
+    // was never on it. The same rule as above, once a comment, one read a project; an instant that does not read
+    // skips its comment, as nothing of this read fails the tick.
+    let mut answer_tasks: BTreeSet<u64> = BTreeSet::new();
+    if let Some(t) = t {
+        for comment in sources.recent_comments(&project.id, t).unwrap_or_default() {
+            let id = i64::try_from(comment.id).unwrap_or(i64::MAX);
+            if read.contains(&comment.number)
+                || own_comments.contains(&i128::from(comment.id))
+                || answer_ids.contains(&id)
+                || signed_by_the_regia(&comment.body)
+                || consultation(&comment.body)
+            {
+                continue;
+            }
+            if WallTime::parse_iso(&comment.created_at).is_some_and(|created| created > t) {
+                answer_ids.push(id);
+                answer_tasks.insert(comment.number);
+            }
+        }
+    }
     answer_ids.sort_unstable();
     let answers = answer_ids.len();
-    // #466: the silent workers of the tasks in progress are read here, after the comments.
+    // #599: the silent workers of the tasks in progress are read here, after the comments.
 
     let words = &format().project;
     let count = |n: usize| i64::try_from(n).unwrap_or(i64::MAX);
@@ -311,6 +369,9 @@ fn observe(
         counts,
         tasks,
         backlog,
+        silent_tasks: Vec::new(),
+        blocked_tasks: Vec::new(),
+        answer_tasks: answer_tasks.into_iter().take(words.max_tasks).collect(),
         countable,
         digest,
         objective_in_decision,
@@ -536,7 +597,7 @@ mod tests {
     use serde_json::{Value, json};
 
     use super::*;
-    use crate::precheck::{ExpiredLease, ObjectiveRegistry, Report};
+    use crate::precheck::{ExpiredLease, ObjectiveRegistry, RecentComment, Report};
 
     /// Claude's reading as the cache gives it: `pct` of the 5-hour window, read `age_s` ago.
     fn usage(pct: f64, age_s: i64) -> ProviderUsage {
@@ -561,11 +622,16 @@ mod tests {
         detectors: RefCell<BTreeMap<String, Value>>,
         /// The cursors of the controller and of the alerting step, by `<project>:<name>`.
         signals: BTreeMap<String, Value>,
+        /// The answer of the read of the recent comments, `None` for no answer; and the projects it was asked for.
+        recent: Option<Vec<RecentComment>>,
+        recent_asked: RefCell<Vec<String>>,
     }
 
     impl Default for Fake {
         fn default() -> Fake {
             Fake {
+                recent: Some(Vec::new()),
+                recent_asked: RefCell::default(),
                 issues: Vec::new(),
                 comments: BTreeMap::new(),
                 cursors: BTreeMap::new(),
@@ -589,6 +655,11 @@ mod tests {
         fn comments(&self, number: u64) -> Result<Vec<RawComment>, String> {
             self.read.borrow_mut().push(number);
             Ok(self.comments.get(&number).cloned().unwrap_or_default())
+        }
+
+        fn recent_comments(&self, project: &str, _since: WallTime) -> Option<Vec<RecentComment>> {
+            self.recent_asked.borrow_mut().push(project.to_owned());
+            self.recent.clone()
         }
 
         fn events_cursor(&self, project: &str) -> Result<Value, String> {
@@ -732,6 +803,61 @@ mod tests {
         let line = line(&fake);
         assert_eq!(line[&format().line.keys.reason], Reason::Answers.word());
         assert_eq!(project_of(&line, "p")[&format().project.answers], 1);
+    }
+
+    /// `test_precheck_ferme.py` and `test_precheck_risposte.py` of the prototype (#589, #393, #68): a stale issue
+    /// is not read, a consultation never wakes, and the owner's comment outside Decision and Proposal is an answer,
+    /// once, with its task; an instant that does not read skips its comment, and without a cursor nothing is asked.
+    #[test]
+    fn stale_issues_consultations_and_the_answers_outside_the_gates() {
+        let at = |minutes: i64| format!("2026-01-10T08:{minutes:02}:00Z");
+        let raw = |id: u64, created: &str, body: &str| RawComment { id: Some(id), created_at: created.to_owned(), url: String::new(), body: body.to_owned() };
+        let recent = |number: u64, id: u64, created: &str, body: &str| RecentComment { number, id, created_at: created.to_owned(), body: body.to_owned() };
+        let waiting = |number: u64, updated: &str| {
+            let mut task = task(number, "p", Status::Decision);
+            task.updated_at = updated.to_owned();
+            issue(task)
+        };
+        let cursor = BTreeMap::from([("p".to_owned(), json!({format().events.t.as_str(): "2026-01-10T08:00:00Z"}))]);
+        // #2 did not change since two minutes before the cursor: not read. #3 moved: read, and its consultation
+        // does not wake.
+        let issues = vec![objective(1, "p", Status::Approved, "2", "3"), waiting(2, "2026-01-10T07:58:00Z"), waiting(3, &at(30))];
+        let fake = Fake {
+            issues: issues.clone(),
+            comments: BTreeMap::from([(3, vec![raw(30, &at(31), "  Consultazione: and if?")])]),
+            cursors: cursor.clone(),
+            ..Fake::default()
+        };
+        let line = line(&fake);
+        assert_eq!((line[&format().line.keys.reason].clone(), fake.read.borrow().clone()), (json!(Reason::WaitingOnOwner.word()), vec![3]));
+        // The owner's comment on an approved task, on a stale issue and once only for a comment already counted;
+        // the regia's, a consultation, one before the cursor and one whose instant does not read are not answers.
+        let regia = sign("Done.", SignatureRole::Orchestrator, Some("s"));
+        let fake = Fake {
+            issues: [issues, vec![issue(task(4, "p", Status::Approved))]].concat(),
+            comments: BTreeMap::from([(3, vec![raw(31, &at(31), "Decision: A")])]),
+            recent: Some(vec![
+                recent(4, 40, &at(10), "Decision: go"),
+                recent(4, 40, &at(10), "Decision: go"),
+                recent(2, 41, &at(11), "A line"),
+                recent(3, 31, &at(31), "Decision: A"),
+                recent(4, 42, &at(12), &regia),
+                recent(4, 43, &at(13), "Consultazione: maybe"),
+                recent(9, 44, "2026-01-10T07:00:00Z", "Too early"),
+                recent(9, 45, "yesterday", "Unreadable"),
+            ]),
+            cursors: cursor,
+            ..Fake::default()
+        };
+        let line = super::tests::line(&fake);
+        let project = project_of(&line, "p");
+        assert_eq!(line[&format().line.keys.reason], Reason::Answers.word());
+        assert_eq!((project[&format().project.answers].clone(), project[&format().project.answer_tasks].clone()), (json!(3), json!([2, 4])));
+        assert_eq!(*fake.recent_asked.borrow(), ["p"]);
+        // Without a cursor every issue is read, and the recent comments are not asked.
+        let fake = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3"), waiting(2, "2026-01-01T00:00:00Z")], ..Fake::default() };
+        let _ = super::tests::line(&fake);
+        assert_eq!((fake.read.borrow().clone(), fake.recent_asked.borrow().len()), (vec![2], 0));
     }
 
     #[test]

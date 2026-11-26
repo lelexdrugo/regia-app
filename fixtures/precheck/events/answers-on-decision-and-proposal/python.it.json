@@ -4,7 +4,7 @@
       "p:rilevatore": {
         "serie": {
           "da": "2026-01-10T09:00:00Z",
-          "digest": "c6b28cf1ec56",
+          "digest": "0c7e0a8586c9",
           "n": 1,
           "ultimo": "2026-01-10T09:00:00Z",
           "visti": {}
@@ -13,7 +13,7 @@
       }
     },
     "exit": 0,
-    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"risposta-a-gate\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"risposta-a-gate\",\"eventi\":2,\"pronti\":0,\"report\":0,\"gate\":2,\"inbox\":0,\"lease\":0,\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"risposta-a-gate\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"risposta-a-gate\",\"eventi\":3,\"pronti\":0,\"report\":0,\"gate\":3,\"inbox\":0,\"lease\":0,\"risposte_task\":[3],\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   },
   {
     "detector": {},

@@ -1,0 +1,102 @@
+{
+  "_note": "Synthetic. #393: the owner's comment newer than the cursor on an approved task, one in progress, the Objective or an issue just closed wakes once, with its task in risposte_task; the step's, the regia's and a consultation do not, nor one before the cursor; an instant that does not read skips its comment. An issue in Decision read by the loop counts once. Without a cursor, or with too little time left in the tick, the recent comments are not read.",
+  "transcribes": [
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_il_titolare_su_approvato_in_corso_obiettivo_e_chiusa_sveglia_una_volta",
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_il_commento_del_passo_della_chat_della_regia_e_consultazione_non_svegliano",
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_il_commento_del_titolare_firmato_o_a_mano_sveglia",
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_un_commento_prima_del_cursore_non_conta",
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_una_issue_in_decisione_non_si_conta_due_volte",
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_consultazione_su_una_issue_in_decisione_non_sveglia_piu",
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_un_istante_illeggibile_non_ferma_il_giro",
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_senza_cursore_o_con_poco_tempo_non_si_legge",
+    "test_precheck_risposte.py::TestRisposteFuoriDaiGate::test_piu_progetti_lenti_dividono_un_solo_tetto (two projects, each its own read)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 3, "status": "Approvato", "blocked_by": [[8, "OPEN"]]},
+    {"n": 4, "status": "In corso"},
+    {"n": 9, "status": "Fatto", "closed": true}
+  ],
+  "comments": {
+    "1": [{"id": 3, "created": "2026-01-10T08:07:00Z", "body": "Decisione: avanti tutto"}],
+    "3": [{"id": 1, "created": "2026-01-10T08:05:00Z", "body": "Decisione: avanti"}],
+    "4": [{"id": 2, "created": "2026-01-10T08:06:00Z", "body": "Decisione: avanti"}],
+    "9": [{"id": 4, "created": "2026-01-10T08:08:00Z", "body": "Decisione: chiudi"}]
+  },
+  "runs": [
+    {
+      "note": "the owner on an approved task, one in progress, the Objective and one just closed: four answers, once each",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}}
+    },
+    {
+      "note": "the step's own, the regia's signatures and a consultation do not wake: work in progress",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z", "propri": {"commenti": [10]}}},
+      "comments": {
+        "4": [
+          {"id": 10, "created": "2026-01-10T08:05:00Z", "body": "The step's own."},
+          {"id": 11, "created": "2026-01-10T08:06:00Z", "body": "Done.", "sign": ["orchestratore", "s-1"]},
+          {"id": 12, "created": "2026-01-10T08:07:00Z", "body": "A question.", "sign": ["chat", "s-1"]},
+          {"id": 13, "created": "2026-01-10T08:08:00Z", "body": "Report.", "sign": ["worker", "s-1"]},
+          {"id": 14, "created": "2026-01-10T08:09:00Z", "body": "  Consultazione: and if we waited?"}
+        ]
+      }
+    },
+    {
+      "note": "the owner's, signed through a chat or written by hand, wakes",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}},
+      "comments": {
+        "4": [
+          {"id": 20, "created": "2026-01-10T08:05:00Z", "body": "Decisione: B", "sign": ["titolare", "s-1"]},
+          {"id": 21, "created": "2026-01-10T08:06:00Z", "body": "A line"}
+        ]
+      }
+    },
+    {
+      "note": "a comment before the cursor does not count, and one whose instant does not read is skipped",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}},
+      "comments": {
+        "3": [{"id": 30, "created": "2026-01-10T07:55:00Z"}],
+        "4": [{"id": 31, "created": "yesterday"}]
+      }
+    },
+    {
+      "note": "an issue in Decision read by the loop counts once, and its consultation never wakes",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}},
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 2, "status": "Decisione"},
+        {"n": 3, "status": "Approvato", "blocked_by": [[8, "OPEN"]]}
+      ],
+      "comments": {
+        "2": [{"id": 40, "created": "2026-01-10T08:05:00Z"}, {"id": 42, "created": "2026-01-10T08:07:00Z", "body": "Consultazione: e se...?"}],
+        "3": [{"id": 41, "created": "2026-01-10T08:06:00Z"}]
+      }
+    },
+    {
+      "note": "without a cursor the recent comments are not read",
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 4, "status": "In corso"}
+      ]
+    },
+    {
+      "note": "with less than its margin left in the tick the recent comments are not read",
+      "args": ["--scadenza-s", "20"],
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}}
+    },
+    {
+      "note": "two projects, each its own read and its own tasks",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}, "q": {"v": 1, "t": "2026-01-10T08:30:00Z"}},
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 4, "status": "In corso"},
+        {"n": 10, "status": "Approvato", "project": "q", "objective": true},
+        {"n": 11, "status": "In corso", "project": "q"}
+      ],
+      "comments": {
+        "4": [{"id": 50, "created": "2026-01-10T08:20:00Z"}],
+        "11": [{"id": 51, "created": "2026-01-10T08:20:00Z"}, {"id": 52, "created": "2026-01-10T08:40:00Z"}]
+      }
+    }
+  ]
+}

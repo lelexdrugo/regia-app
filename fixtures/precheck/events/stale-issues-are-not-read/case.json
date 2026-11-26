@@ -1,0 +1,78 @@
+{
+  "_note": "Synthetic. #589: an issue in Decision or Proposal whose updatedAt is no later than the cursor less 120 s is not read; its comment newer than the cursor still comes through the recent comments, with its task. A moved issue is read as before, and its comment counts once. Without a cursor, without updatedAt or with one that does not read, the issue is read.",
+  "transcribes": [
+    "test_precheck_ferme.py::TestIssueFerme::test_una_issue_ferma_non_si_legge_e_una_mossa_si",
+    "test_precheck_ferme.py::TestIssueFerme::test_al_limite_del_margine_e_ferma",
+    "test_precheck_ferme.py::TestIssueFerme::test_il_commento_del_titolare_sulla_issue_mossa_sveglia_come_prima",
+    "test_precheck_ferme.py::TestIssueFerme::test_senza_cursore_si_leggono_tutte",
+    "test_precheck_ferme.py::TestIssueFerme::test_senza_updated_at_o_con_un_istante_illeggibile_si_legge",
+    "test_precheck_ferme.py::TestIssueFerme::test_un_commento_su_una_ferma_arrivato_per_i_recenti_conta",
+    "test_precheck_ferme.py::TestIssueFerme::test_una_issue_letta_non_si_conta_due_volte"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+    {"n": 2, "status": "Decisione", "updated": "2026-01-10T07:57:59Z"},
+    {"n": 3, "status": "Proposta", "updated": "2026-01-07T08:00:00Z"}
+  ],
+  "comments": {
+    "2": [{"id": 20, "created": "2026-01-10T08:30:00Z", "body": "Decisione: A"}],
+    "3": [{"id": 30, "created": "2026-01-10T08:40:00Z", "body": "Decisione: B"}, {"id": 31, "created": "2026-01-07T07:00:00Z"}]
+  },
+  "runs": [
+    {
+      "note": "both stale: their answers come from the recent comments, with their tasks",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}}
+    },
+    {
+      "note": "updatedAt exactly the cursor less the margin is stale",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}},
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 2, "status": "Decisione", "updated": "2026-01-10T07:58:00Z"}
+      ]
+    },
+    {
+      "note": "one second later it moved: read, and counted once",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}},
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 2, "status": "Decisione", "updated": "2026-01-10T07:58:01Z"}
+      ]
+    },
+    {
+      "note": "without a cursor every issue is read and the recent comments are not",
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 2, "status": "Decisione", "updated": "2025-12-11T08:00:00Z"},
+        {"n": 3, "status": "Proposta", "updated": "2025-12-11T08:00:00Z"}
+      ]
+    },
+    {
+      "note": "without updatedAt the issue is read",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}},
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 2, "status": "Decisione", "updated": ""}
+      ]
+    },
+    {
+      "note": "an updatedAt that does not read: the issue is read",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}},
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 2, "status": "Decisione", "updated": "yesterday"}
+      ]
+    },
+    {
+      "note": "stale with an old comment only: no answer, waiting on the owner",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:00:00Z"}},
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 3, "status": "Proposta", "updated": "2026-01-07T08:00:00Z"}
+      ],
+      "comments": {
+        "3": [{"id": 31, "created": "2026-01-07T07:00:00Z"}]
+      }
+    }
+  ]
+}
