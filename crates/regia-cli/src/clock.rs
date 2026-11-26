@@ -30,6 +30,12 @@ impl Clock {
         }
     }
 
+    /// Today: the instant's own day when the clock is fixed, otherwise the machine's day in its zone, as the prototype
+    /// dates what it reads (#444).
+    pub(crate) fn today(&self) -> chrono::NaiveDate {
+        if self.fixed { self.now.date_naive() } else { chrono::Local::now().date_naive() }
+    }
+
     /// With the clock fixed, a commit is made at its instant, so it has the same id on every run;
     /// otherwise git dates it, as the user's own git would.
     pub(crate) fn commit_date(&self) -> Option<GitDate> {

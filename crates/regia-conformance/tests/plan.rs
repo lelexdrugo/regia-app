@@ -15,7 +15,7 @@ use std::fs;
 use std::path::PathBuf;
 
 use proptest::prelude::*;
-use regia_conformance::{fixtures_dir, workspace_root};
+use regia_conformance::{Case, CliRun, Recorded, fixtures_dir, json_diff, lf, run_case, translate_python, workspace_root};
 use regia_core::graph_order;
 use regia_core::plan::{self, Issues, PlanGraph, Quoted, Scope};
 use regia_core::{IssueState, Maturity, Metrics, Status, Task, TrackerBinding, TrackerConfigV1};
@@ -343,6 +343,156 @@ proptest! {
         let measured_again = graph_order(&reversed);
         prop_assert_eq!(plan::plan_graph(&Issues::new(&reversed, &measured_again), scope, cap), capped, "the order of the issues counts");
     }
+}
+
+/// The product's names of `plan` and of its options, each with the prototype's, as the facade table translates them.
+fn names() -> Vec<(String, String)> {
+    let table = Table::embedded();
+    let mut out = Vec::new();
+    for argv in [&["--root", "1", "--mermaid", "--max-nodes", "3"][..], &["--project", "p"]] {
+        let english: Vec<String> = argv.iter().map(|arg| (*arg).to_owned()).collect();
+        let python = table.python_argv("plan", &english).expect("the table knows plan");
+        out.push(("plan".to_owned(), python[0].clone()));
+        out.extend(english.iter().zip(&python[1..]).filter(|(arg, _)| arg.starts_with("--")).map(|(arg, theirs)| (arg.clone(), theirs.clone())));
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
+/// `text` with each of `from` as a whole word, between blanks, backticks or the ends, as `to`.
+fn replace_word(text: &str, from: &str, to: &str) -> String {
+    let edge = |c: Option<char>| c.is_none_or(|c| c.is_whitespace() || c == '`');
+    let mut out = String::new();
+    let mut rest = text;
+    // The character of the text before `rest`.
+    let mut previous: Option<char> = None;
+    while let Some(at) = rest.find(from) {
+        let before = if at == 0 { previous } else { rest[..at].chars().last() };
+        let after = rest[at + from.len()..].chars().next();
+        out.push_str(&rest[..at]);
+        out.push_str(if edge(before) && edge(after) { to } else { from });
+        previous = from.chars().last();
+        rest = &rest[at + from.len()..];
+    }
+    out.push_str(rest);
+    out
+}
+
+/// The one normalization of the cases, declared: the native plan quotes its own command line, in the first line of the
+/// diagram and in the line before it, and names its own option of a root in the hint of a project's cut
+/// (`docs/contract/commands.md`, `comando`); the prototype quotes its own. Here the product's names become the
+/// prototype's, by the table. The recordings never hold the product's names that differ, so nothing else can change.
+fn in_the_prototype_s_names(text: &str) -> String {
+    let names = names();
+    let command = names.iter().find(|(ours, _)| ours == "plan").map(|(_, theirs)| theirs.clone()).expect("the command's name");
+    let bin = regia_identity::BIN_NAME;
+    let mut out = replace_word(text, &format!("{bin} plan"), &format!("{bin} {command}"));
+    for (ours, theirs) in names.iter().filter(|(ours, _)| ours.starts_with("--")) {
+        out = replace_word(&out, ours, theirs);
+    }
+    out
+}
+
+/// The normalization changes only the product's names, as whole words.
+#[test]
+fn the_names_change_and_nothing_else() {
+    let bin = regia_identity::BIN_NAME;
+    let line = format!("%% {bin} plan --root 1 --mermaid --max-nodes 3 · per il resto usa --root su `{bin} plan --project p`");
+    let theirs = in_the_prototype_s_names(&line);
+    assert!(!theirs.contains("--root") && !theirs.contains("--max-nodes") && !theirs.contains("--project") && !theirs.contains(" plan "), "{theirs}");
+    assert_eq!(in_the_prototype_s_names(&theirs), theirs, "the prototype's names stay");
+    for kept in ["--rooted", "x--root", "planned", "a --mermaid b"] {
+        assert_eq!(in_the_prototype_s_names(kept), kept);
+    }
+}
+
+fn plan_cases() -> Vec<Case> {
+    Case::all().into_iter().filter(|case| case.command_name() == "plan").collect()
+}
+
+/// The binary on `case`, natively (no prototype), in Italian: the language the recordings were made in.
+fn native(label: &str, case: &Case) -> CliRun {
+    run_case(label, case, |_| vec![(regia_identity::env_var("LANG"), "it".into())])
+}
+
+/// Every way the native run differs from what the prototype printed for `case`, with `python` in place of the recording
+/// when it is given. JSON whole, text byte for byte, both after the names; an error's words are each side's own, so
+/// for an exit other than 0 both print nothing on stdout and something on stderr; otherwise stderr is empty on both
+/// sides or on neither (the graph's warnings are the catalog's here).
+fn case_differences(case: &Case, run: &CliRun, python: Option<&Recorded>) -> Vec<String> {
+    let mut out = Vec::new();
+    if run.exit != Some(i32::from(case.spec.exit)) {
+        out.push(format!("exit: rust {:?}, python {}; stderr: {}", run.exit, case.spec.exit, run.stderr.trim()));
+    }
+    let recorded = python.cloned().unwrap_or_else(|| case.recorded());
+    let python_text = match &recorded {
+        Recorded::Text(text) => text.clone(),
+        Recorded::Json(value) => value.to_string(),
+    };
+    // The names that differ: those the normalization changes.
+    let ours: Vec<String> = names().into_iter().filter(|(ours, theirs)| ours.starts_with("--") && ours != theirs).map(|(ours, _)| ours).collect();
+    for name in &ours {
+        assert!(!python_text.contains(name.as_str()), "{}: the recording holds the product's name {name}", case.name);
+    }
+    let stdout = lf(&String::from_utf8_lossy(&run.stdout));
+    if case.spec.exit != 0 {
+        if !stdout.is_empty() || !python_text.trim().is_empty() {
+            out.push(format!("stdout of an error: rust {stdout:?}, python {python_text:?}"));
+        }
+        if run.stderr.trim().is_empty() || case.recorded_stderr().trim().is_empty() {
+            out.push(format!("stderr of an error: rust {:?}, python {:?}", run.stderr, case.recorded_stderr()));
+        }
+        return out;
+    }
+    match &recorded {
+        Recorded::Json(python) => match (serde_json::from_str::<Value>(&stdout), translate_python("plan", python)) {
+            (Ok(mut rust), Ok(python)) => {
+                // The two strings that quote the command line, each as a whole.
+                for key in ["command", "mermaid"] {
+                    if let Some(text) = rust[key].as_str() {
+                        rust[key] = json!(in_the_prototype_s_names(text));
+                    }
+                }
+                out.extend(json_diff(&rust, &python).into_iter().map(|line| format!("stdout {line}")));
+                if rust["mermaid"] != python["mermaid"] {
+                    out.push(format!("mermaid, byte for byte:\n--- rust\n{}\n--- python\n{}", rust["mermaid"].as_str().unwrap_or("null"), python["mermaid"].as_str().unwrap_or("null")));
+                }
+            }
+            (Err(error), _) => out.push(format!("stdout: rust printed no JSON ({error}): {stdout}")),
+            (_, Err(error)) => out.push(format!("stdout: the table does not cover the prototype's output: {error}")),
+        },
+        Recorded::Text(python) => {
+            let stdout = in_the_prototype_s_names(&stdout);
+            if &stdout != python {
+                out.push(format!("stdout, byte for byte:\n--- rust\n{stdout}--- python\n{python}"));
+            }
+        }
+    }
+    if run.stderr.trim().is_empty() != case.recorded_stderr().trim().is_empty() {
+        out.push(format!("stderr: rust {:?}, python {:?}", run.stderr, case.recorded_stderr()));
+    }
+    out
+}
+
+/// Acceptance 1 and 2: every case of `plan` natively gives what the prototype printed, the diagram byte for byte, the
+/// tree and the markdown in Italian byte for byte; it writes nothing to the tracker.
+#[test]
+fn every_plan_case_natively_gives_the_prototype_s_output() {
+    let cases = plan_cases();
+    assert!(cases.len() >= 4, "the plan's cases are missing: {}", cases.len());
+    let mut failed = Vec::new();
+    for case in &cases {
+        let run = native(&format!("native-{}", case.name), case);
+        let mut diff = case_differences(case, &run, None);
+        if !run.writes.is_empty() {
+            diff.push(format!("writes: {:?}", run.writes));
+        }
+        if !diff.is_empty() {
+            failed.push(format!("case {}:\n{}", case.name, diff.join("\n")));
+        }
+    }
+    assert!(failed.is_empty(), "{}", failed.join("\n\n"));
 }
 
 /// The vectors are the answers of today's prototype: the capture, run again on the dossier named by `REGIA_HOME`, writes
