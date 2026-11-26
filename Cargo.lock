@@ -2993,6 +2993,7 @@ dependencies = [
  "chrono",
  "clap",
  "regia-agents",
+ "regia-controller",
  "regia-core",
  "regia-exec",
  "regia-facade",

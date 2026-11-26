@@ -30,6 +30,11 @@ impl Clock {
         }
     }
 
+    /// Whether `REGIA_NOW` fixes the clock.
+    pub(crate) fn fixed(&self) -> bool {
+        self.fixed
+    }
+
     /// With the clock fixed, a commit is made at its instant, so it has the same id on every run;
     /// otherwise git dates it, as the user's own git would.
     pub(crate) fn commit_date(&self) -> Option<GitDate> {

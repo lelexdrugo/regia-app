@@ -66,6 +66,21 @@ impl Source {
     }
 }
 
+/// The scheduled operations of a tick's line that did something, as name and action: the ones already done today are
+/// left out, as the prototype's summary of a tick leaves them out.
+#[must_use]
+pub fn line_operations(record: &Value) -> Vec<(String, String)> {
+    let v = &words().voices;
+    record
+        .get(&v.operations)
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|voice| Some((voice.get(&v.name)?.as_str()?.to_owned(), voice.get(&v.action)?.as_str()?.to_owned())))
+        .filter(|(_, action)| *action != v.actions.already_done)
+        .collect()
+}
+
 /// The surface a scheduled chat opens on, by the format: the one where its owner sees it.
 #[must_use]
 pub fn chat_surface_kind() -> Option<SurfaceKind> {

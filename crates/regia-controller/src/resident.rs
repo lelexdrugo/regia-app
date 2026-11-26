@@ -164,6 +164,79 @@ pub enum Notice {
     StatusNotWritten(String),
 }
 
+/// The precheck of a tick, as its summary names it.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PrecheckSummary {
+    /// None when the run did not end.
+    pub exit: Option<i64>,
+    pub outcome: Option<String>,
+    pub reason: Option<String>,
+}
+
+/// The token's wake-up of a tick, as its summary names it.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct WakeSummary {
+    pub ok: bool,
+    pub error: Option<String>,
+    /// The token's expiry changed across it.
+    pub renewed: bool,
+}
+
+/// A tick's line by meaning, as the prototype's summary of a tick names it (#468/V2): the command renders it in its
+/// user's language. The decision, the outcome and the actions are the format's words, data and not text.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Summary {
+    pub round: i64,
+    pub t: String,
+    /// None when the tick ended before the precheck.
+    pub precheck: Option<PrecheckSummary>,
+    pub decision: Option<String>,
+    /// The steps launched: the project, and the surface's word.
+    pub launched: Vec<(String, String)>,
+    /// The scheduled operations that did something: the name, and the action.
+    pub operations: Vec<(String, String)>,
+    pub wake: Option<WakeSummary>,
+    /// The tick followed a suspension of the machine.
+    pub wakeup: bool,
+}
+
+impl Summary {
+    /// The summary of a tick's line.
+    #[must_use]
+    pub fn of(record: &Value) -> Summary {
+        let (r, l, w) = (&words().record, &words().launched, &words().wake);
+        let k = &r.precheck_keys;
+        let text = |value: Option<&Value>| value.and_then(Value::as_str).map(str::to_owned);
+        let precheck = record.get(&r.precheck).filter(|precheck| precheck.is_object()).map(|precheck| PrecheckSummary {
+            exit: precheck.get(&k.exit).and_then(Value::as_i64),
+            outcome: text(precheck.get(&k.outcome)),
+            reason: text(precheck.get(&k.reason)),
+        });
+        let launched = record
+            .get(&r.launched)
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .map(|launch| (text(launch.get(&l.project)).unwrap_or_default(), text(launch.get(&l.adapter)).unwrap_or_default()))
+            .collect();
+        let wake = record.get(&r.wake).filter(|wake| wake.is_object()).map(|wake| WakeSummary {
+            ok: wake.get(&w.ok).and_then(Value::as_bool).unwrap_or(false),
+            error: text(wake.get(&w.error)),
+            renewed: wake.get(&w.renewed).and_then(Value::as_bool).unwrap_or(false),
+        });
+        Summary {
+            round: record.get(&r.round).and_then(Value::as_i64).unwrap_or(0),
+            t: text(record.get(&r.t)).unwrap_or_default(),
+            precheck,
+            decision: text(record.get(&r.decision)),
+            launched,
+            operations: crate::schedule::line_operations(record),
+            wake,
+            wakeup: record.get(&r.wakeup).and_then(Value::as_bool).unwrap_or(false),
+        }
+    }
+}
+
 /// Where a resident's notices go.
 pub trait Console: Send + Sync {
     fn notice(&self, notice: &Notice);
