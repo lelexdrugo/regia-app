@@ -1,12 +1,14 @@
-//! A stand-in for `orca`, for the precheck's workers (#599, F275 of the dossier's inventory): it answers the four
-//! reads of Orca's adapter, `orchestration worker-list`, `task-list`, `worker-read` and `worker-show`, each with
-//! `--json`, from the `orca` part of a run's fixture, and fails on anything else. Both sides start it: the product
-//! by its absolute path, the prototype's adapter through its search of the program. It takes a flag's value in
-//! both forms, `--limit 100` as the prototype sends it and `--limit=100` as the product does.
+//! A stand-in for `orca`, for the precheck's workers (#599, F275 of the dossier's inventory) and the command of the
+//! workers (#744, F277): it answers the four reads of Orca's adapter, `orchestration worker-list`, `task-list`,
+//! `worker-read` and `worker-show`, each with `--json`, from the `orca` part of a run's fixture, and fails on anything
+//! else. Both sides start it: the product by its absolute path, the prototype's adapter through its search of the
+//! program. It takes a flag's value in both forms, `--limit 100` as the prototype sends it and `--limit=100` as the
+//! product does.
 //!
 //! The fixture is named by the file beside this executable, which every run writes: without it the fake refuses
 //! to run, so it never passes for the real Orca. A cursor reads as `page-<n>`; a page the fixture does not hold is
-//! an empty one. Each call is appended to the log the file names, as its words.
+//! an empty one. A transcript, or what `worker-show` says of a dispatch, that is a text fails with that code;
+//! `worker-show` without `--full` is Orca's concise view. Each call is appended to the log the file names, as its words.
 
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -73,7 +75,6 @@ fn answer(args: &[String]) -> Result<Value, String> {
     if let Some(code) = orca["fail"].as_str() {
         return Err(code.to_owned());
     }
-    let missing = || Value::Null;
     match words.get(1).map(String::as_str) {
         Some("worker-list") => {
             let index = page(&words)?;
@@ -93,7 +94,15 @@ fn answer(args: &[String]) -> Result<Value, String> {
         }
         Some("worker-show") => {
             let dispatch = value(&words, "--dispatch").ok_or("worker-show without --dispatch")?;
-            Ok(orca["shows"].get(dispatch).cloned().unwrap_or_else(missing))
+            // The concise view, as Orca's: no `dispatch`, no `observation`, no `projection`.
+            if !words.iter().any(|word| word == "--full") {
+                return Ok(json!({"dispatchId": dispatch, "state": "ready", "liveness": "unverifiable", "waitingOnHuman": "unknown"}));
+            }
+            let shown = &orca["shows"][dispatch];
+            if let Some(code) = shown.as_str() {
+                return Err(code.to_owned());
+            }
+            Ok(shown.clone())
         }
         other => Err(format!("unexpected command {other:?}")),
     }
