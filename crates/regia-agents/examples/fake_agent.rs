@@ -7,7 +7,8 @@
 //! something else, because the allow-list keeps a test's own variables from reaching it:
 //!
 //! - `dies`: print an error and exit with 2 before any session;
-//! - `slow`: sleep 8 s once the session is open, then write `<name>.done` next to itself.
+//! - `slow`: sleep 8 s once the session is open, then write `<name>.done` next to itself;
+//! - `fork`: open another session than the one it was asked to resume, as a resume that forks.
 //!
 //! Asked for `--no-session-persistence`, as the token wake-up asks, the fake `claude` answers with
 //! one `result` line after a note and keeps nothing: no file in its folder, which it does not need.
@@ -18,7 +19,8 @@
 //! agent's session file under the folders named in the files `claude-home` and `codex-home` next to
 //! it, and nowhere without them. The words of `orca-mode` next to it ask for something else: `down`,
 //! `unreachable`, `not-a-workspace`, `launch-fails`, `no-effort` (a model without effort), `naming`
-//! (Orca's short naming session first), `naming-only`, `no-session`.
+//! (Orca's short naming session first), `naming-only`, `no-session`. `search` answers the pages of `orca-search.json`
+//! next to it, a JSON array of results, the first without `--cursor` and the n-th for `--cursor=c<n>`; none without it.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -29,6 +31,9 @@ use std::time::{Duration, SystemTime};
 
 /// The session every fake opens.
 const SESSION: &str = "11111111-2222-3333-4444-555555555555";
+
+/// The session a resume opens when it forks.
+const FORK: &str = "bbbbbbbb-1111-2222-3333-444444444444";
 
 /// The session Orca opens first to name the chat.
 const NAMING: &str = "99999999-0000-0000-0000-000000000000";
@@ -64,13 +69,14 @@ fn main() -> ExitCode {
         eprintln!("the fake {name} needs {folder_variable}: it does not write in a real home");
         return ExitCode::from(65);
     };
+    let session = if mode == "fork" { FORK } else { SESSION };
     if name == "claude" {
-        say(&serde_json::json!({"type": "system", "subtype": "init", "session_id": SESSION}).to_string());
+        say(&serde_json::json!({"type": "system", "subtype": "init", "session_id": session}).to_string());
         let cwd = std::env::current_dir().expect("own folder");
         let slug: String = cwd.to_string_lossy().chars().map(|c| if c.is_ascii_alphanumeric() { c } else { '-' }).collect();
         let folder = home.join("projects").join(slug);
         let line = serde_json::json!({"type": "user", "message": {"content": prompt}});
-        write(&folder, &format!("{SESSION}.jsonl"), &format!("{line}\n"));
+        write(&folder, &format!("{session}.jsonl"), &format!("{line}\n"));
     } else {
         say(&serde_json::json!({"type": "thread.started", "thread_id": SESSION}).to_string());
         let folder = home.join("sessions").join("2026").join("10").join("21");
@@ -119,6 +125,12 @@ fn orca(dir: &Path) -> ExitCode {
         ["status", ..] => answer(serde_json::json!({"runtime": {"reachable": !mode("unreachable")}})),
         ["worktree", "show"] if mode("not-a-workspace") => refuse("selector_not_found", "selector_not_found"),
         ["worktree", "show"] => answer(serde_json::json!({"worktree": {}})),
+        ["search", ..] => {
+            let pages: Vec<serde_json::Value> =
+                fs::read_to_string(dir.join("orca-search.json")).ok().and_then(|text| serde_json::from_str(&text).ok()).unwrap_or_default();
+            let page = value("cursor").and_then(|cursor| cursor.strip_prefix('c').and_then(|n| n.parse::<usize>().ok())).unwrap_or(0);
+            answer(pages.get(page).cloned().unwrap_or_else(|| serde_json::json!({"hits": [], "page": {"hasMore": false}})))
+        }
         ["agent", "launch"] => {
             if mode("launch-fails") {
                 return refuse("runtime_error", "launch refused");

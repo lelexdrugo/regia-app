@@ -297,6 +297,56 @@ fn analysis_value(analysis: &Analysis) -> Value {
     Value::Object(value)
 }
 
+/// The prototype's check of the app's sessions (`sospese.py`): whether the app may show this session, by its record, its
+/// transcript or the app's index; None when the app does not answer.
+fn app_session(record: &Map<String, Value>, analysis: Option<&Map<String, Value>>, host: &dyn ChatHost) -> Option<bool> {
+    let (e, w) = (engine_words(), &engine_words().registry.record);
+    if text(record, &w.adapter) == Some(e.adapters.own_sessions.as_str()) || truthy(record.get(&w.surface_session)) {
+        return Some(true);
+    }
+    if analysis.and_then(|analysis| analysis.get(&words().analysis.entrypoint)).and_then(Value::as_str) == Some(CHAT_ENTRYPOINT) {
+        return Some(true);
+    }
+    let session = text(record, &w.resume).or_else(|| text(record, &w.session));
+    let known = host.known(text(record, &w.folder).unwrap_or_default())?;
+    Some(session.and_then(|session| known.get(session)).is_some_and(|chat| chat.as_deref().is_some_and(|chat| !chat.is_empty())))
+}
+
+/// The prototype's guard of the Cli surface (`sospese.py`): whether a suspended session of the registry may be resumed
+/// from here, and why. Never one of the app's sessions: by its record, by its transcript's entrypoint (the record's
+/// `analisi`), or by the app's index. A step the regia launched on the Cli surface is resumed without asking the app;
+/// any other session only when the app answers and does not show it (fail-closed).
+#[must_use]
+pub fn resumable_from_here(record: &Map<String, Value>, host: &dyn ChatHost) -> (bool, String) {
+    let (e, r) = (engine_words(), words());
+    let (w, reasons) = (&e.registry.record, &r.reasons);
+    match agent_or_claude(record) {
+        Some(agent) if ServiceId::parse(agent).is_some() => {}
+        agent => {
+            let shown = agent.map_or_else(|| record.get(&w.agent).map_or_else(|| "None".to_owned(), |value| if value.is_null() { "None".to_owned() } else { value.to_string() }), str::to_owned);
+            return (false, reasons.agent.replace("{agent}", &shown));
+        }
+    }
+    if text(record, &w.adapter) == Some(e.adapters.own_sessions.as_str()) || truthy(record.get(&w.surface_session)) {
+        return (false, reasons.app_session.clone());
+    }
+    let analysis = record.get(&r.record.analysis).and_then(Value::as_object).filter(|analysis| !analysis.is_empty());
+    if analysis.and_then(|analysis| analysis.get(&r.analysis.entrypoint)).and_then(Value::as_str) == Some(CHAT_ENTRYPOINT) {
+        return (false, reasons.app_chat.clone());
+    }
+    if !truthy(record.get(&w.resume)) && !truthy(record.get(&w.session)) {
+        return (false, reasons.no_session.clone());
+    }
+    if text(record, &w.adapter) == Some(SurfaceKind::Cli.id()) && text(record, &w.origin) == Some(e.registry.origins.controller.as_str()) {
+        return (true, reasons.launched.clone());
+    }
+    match app_session(record, analysis, host) {
+        None => (false, reasons.no_answer.clone()),
+        Some(true) => (false, reasons.shown.clone()),
+        Some(false) => (true, reasons.opted_in.clone()),
+    }
+}
+
 /// The hook of the resume: [`Resume::new`], then the tick runs it before its precheck, first.
 pub struct Resume {
     state: PathBuf,
@@ -594,55 +644,15 @@ impl Resume {
         Ok(())
     }
 
-    /// Whether the app may show this session: by its record, its transcript, or the app's index; None when the app does
-    /// not answer. The prototype's check of the app's sessions (`sospese.py`).
-    fn app_session(&self, record: &Map<String, Value>, analysis: Option<&Map<String, Value>>) -> Option<bool> {
-        let (e, w) = (engine_words(), &engine_words().registry.record);
-        if text(record, &w.adapter) == Some(e.adapters.own_sessions.as_str()) || truthy(record.get(&w.surface_session)) {
-            return Some(true);
-        }
-        if analysis.and_then(|analysis| analysis.get(&words().analysis.entrypoint)).and_then(Value::as_str) == Some(CHAT_ENTRYPOINT) {
-            return Some(true);
-        }
-        let session = text(record, &w.resume).or_else(|| text(record, &w.session));
-        let known = self.host.known(text(record, &w.folder).unwrap_or_default())?;
-        Some(session.and_then(|session| known.get(session)).is_some_and(|chat| chat.as_deref().is_some_and(|chat| !chat.is_empty())))
-    }
-
-    /// F167, the prototype's `_riprendibile` with its guard of the Cli surface: whether this suspended session may be
-    /// resumed from here, and why. Never one of the app's.
+    /// F167, the prototype's `_riprendibile`: whether this suspended session may be resumed from here, and why. Past the
+    /// format's attempts for one limit it is the owner's; otherwise the guard of the Cli surface says.
     fn resumable(&self, record: &Map<String, Value>) -> (bool, String) {
-        let (e, r) = (engine_words(), words());
-        let (w, reasons) = (&e.registry.record, &r.reasons);
+        let r = words();
         let failed = record.get(&r.record.failed).and_then(Value::as_i64).unwrap_or(0);
         if failed >= r.max_failed {
-            return (false, reasons.failed.replace("{n}", &failed.to_string()));
+            return (false, r.reasons.failed.replace("{n}", &failed.to_string()));
         }
-        match agent_or_claude(record) {
-            Some(agent) if ServiceId::parse(agent).is_some() => {}
-            agent => {
-                let shown = agent.map_or_else(|| record.get(&w.agent).map_or_else(|| "None".to_owned(), |value| if value.is_null() { "None".to_owned() } else { value.to_string() }), str::to_owned);
-                return (false, reasons.agent.replace("{agent}", &shown));
-            }
-        }
-        if text(record, &w.adapter) == Some(e.adapters.own_sessions.as_str()) || truthy(record.get(&w.surface_session)) {
-            return (false, reasons.app_session.clone());
-        }
-        let analysis = record.get(&r.record.analysis).and_then(Value::as_object).filter(|analysis| !analysis.is_empty());
-        if analysis.and_then(|analysis| analysis.get(&r.analysis.entrypoint)).and_then(Value::as_str) == Some(CHAT_ENTRYPOINT) {
-            return (false, reasons.app_chat.clone());
-        }
-        if !truthy(record.get(&w.resume)) && !truthy(record.get(&w.session)) {
-            return (false, reasons.no_session.clone());
-        }
-        if text(record, &w.adapter) == Some(SurfaceKind::Cli.id()) && text(record, &w.origin) == Some(e.registry.origins.controller.as_str()) {
-            return (true, reasons.launched.clone());
-        }
-        match self.app_session(record, analysis) {
-            None => (false, reasons.no_answer.clone()),
-            Some(true) => (false, reasons.shown.clone()),
-            Some(false) => (true, reasons.opted_in.clone()),
-        }
+        resumable_from_here(record, self.host.as_ref())
     }
 
     /// The prototype's channel of a session of the app, whether a way to wake it exists: a worker with its dispatch, or a step's
