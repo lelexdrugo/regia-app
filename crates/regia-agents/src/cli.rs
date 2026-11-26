@@ -10,17 +10,24 @@ use std::path::{Path, PathBuf};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use regia_exec::{AbsolutePath, Detached, Launch, Limits, Pin, Search, claude, codex, secret_shaped};
+use regia_exec::{AbsolutePath, Detached, Effort, Launch, Limits, ModelId, Pin, Search, Text, claude, codex, secret_shaped};
 use regia_identity::{env_var, prototype_env_var, state_dir};
 use regia_store::{is_within, temporary_folder};
 use serde_json::Value;
 
-use crate::launch::{Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind};
+use crate::launch::{Label, LaunchError, LaunchRequest, LaunchSurface, Receipt, SurfaceKind, resolved_folder};
+use crate::suspension::CONTINUE;
 use crate::{AgentService, Env, ServiceId, WakeOutcome};
 
 /// The folder of the logs in the state folder, by project. It is the prototype's, shared while the
 /// two coexist, so a step launched by either is found in one place.
 const STEPS: &str = "passi";
+
+/// A resume's log beside the step's files: the prototype's name, the step's name and this (`sospese.riprendi_cli`).
+const RESUME_LOG: &str = "-ripresa.log";
+
+/// The longest session id that reaches an argv.
+const SESSION_MAX: usize = 128;
 
 /// The variables of the agents' folders. A session may start the other agent, for a review.
 const AGENT_FOLDERS: [&str; 2] = ["CLAUDE_CONFIG_DIR", "CODEX_HOME"];
@@ -123,6 +130,10 @@ impl Cli {
     ///
     /// The variables that bind a process to the session that started it are removed by name too.
     pub fn child_environment(&self, service: &AgentService, request: &LaunchRequest) -> (Vec<(String, OsString)>, Vec<String>) {
+        self.child_environment_with(service, &request.secret_env)
+    }
+
+    fn child_environment_with(&self, service: &AgentService, secrets: &[String]) -> (Vec<(String, OsString)>, Vec<String>) {
         let prefixes = [prototype_env_var(""), env_var(""), "MOVIOLA_".to_owned()];
         let mut set: Vec<(String, OsString)> = vec![("PYTHONUTF8".to_owned(), "1".into())];
         let mut removed = Vec::new();
@@ -139,7 +150,7 @@ impl Cli {
                 None => removed.push(folder.to_owned()),
             }
         }
-        for name in &request.secret_env {
+        for name in secrets {
             if let Some(value) = self.env.get(name) {
                 set.push((name.clone(), value.to_os_string()));
             }
@@ -148,8 +159,8 @@ impl Cli {
         (set, removed)
     }
 
-    fn environment(&self, launch: Launch, service: &AgentService, request: &LaunchRequest) -> Launch {
-        let (set, removed) = self.child_environment(service, request);
+    fn environment(&self, launch: Launch, service: &AgentService, secrets: &[String]) -> Launch {
+        let (set, removed) = self.child_environment_with(service, secrets);
         let launch = removed.iter().fold(launch, |launch, name| launch.without(name));
         set.iter().fold(launch, |launch, (name, value)| launch.env(name, value))
     }
@@ -225,6 +236,125 @@ impl Cli {
         let output = launch.run().map_err(|error| error.to_string())?;
         Ok(wake_outcome(output.status.code(), &String::from_utf8_lossy(&output.stdout), &String::from_utf8_lossy(&output.stderr)))
     }
+
+    /// A `.cmd` takes arguments of a narrow alphabet only (threat model §3.6, rule 9), which is not widened: the files
+    /// of a launch are in the state folder and go as arguments. Checked before the steps folder is created, so the
+    /// refusal leaves nothing behind; what the state folder adds to it (`passi`, the project, the file names) is inside
+    /// the alphabet.
+    fn state_fits_batch(&self) -> Result<(), LaunchError> {
+        let state = state_folder(self.state.as_deref())?;
+        let absolute = AbsolutePath::new(&state).map_err(|error| LaunchError::before(error.to_string()))?;
+        if absolute.fits_batch() {
+            return Ok(());
+        }
+        Err(LaunchError::before(format!(
+            "the state folder {} has characters that a .cmd does not receive in safety: choose another one with {}",
+            state.display(),
+            prototype_env_var("RUNTIME")
+        )))
+    }
+
+    /// The prototype's `riprendi_cli` (the dossier's #132): the session the usage limit stopped, resumed with
+    /// `claude -p --resume` or `codex exec resume` on its own, in its folder, told to go on on stdin, with the log
+    /// `<state>/passi/<project>/<name>-ripresa.log`. It waits for the session the agent says it goes on with, which can
+    /// be a new one (a fork). A process still running without saying it is no failure: the session is the one resumed.
+    /// One that ended with an error is. The caller has checked that the session is not one of the app's.
+    ///
+    /// # Errors
+    ///
+    /// Before any effect, the program is missing or the state folder does not fit; after one, the process ended with an
+    /// error before it named its session.
+    pub fn resume(&self, request: &ResumeRequest) -> Result<Resumed, LaunchError> {
+        let service = AgentService::known(request.service);
+        let pin = self.pin(&service)?;
+        if request.service == ServiceId::Codex && pin.through_batch() {
+            self.state_fits_batch()?;
+        }
+        let files = Files::reserve(&steps_folder(self.state.as_deref(), &request.label)?, CONTINUE)?;
+        let name = files.log.file_stem().map(|stem| stem.to_string_lossy().into_owned()).unwrap_or_default();
+        let log = files.log.with_file_name(format!("{name}{RESUME_LOG}"));
+        let args = match request.service {
+            ServiceId::Claude => claude::resume(&request.session, request.model.as_ref(), request.effort),
+            ServiceId::Codex => codex::resume(&request.session, request.model.as_ref(), request.effort),
+        };
+        let launch = self.environment(pin.launch(args, &request.folder), &service, &[]);
+        let started = crate::launch::now();
+        let mut detached = launch.detach(&files.prompt, &log).map_err(|error| LaunchError::before(error.to_string()))?;
+        // From here on something runs: a failure is after an effect.
+        let session = match self.wait_for_session(&service, &mut detached, &log) {
+            Ok(session) => session,
+            Err(error) => match detached.try_wait() {
+                Ok(Some(status)) if status.code() != Some(0) => return Err(error),
+                _ => request.session.as_str().to_owned(),
+            },
+        };
+        let transcript = service.transcript(&self.env, &request.folder, &session).map(|path| path.display().to_string());
+        Ok(Resumed { pid: detached.pid(), log: log.display().to_string(), started, session, transcript })
+    }
+}
+
+/// A session to resume on the Cli surface (the dossier's #132): its service, the project it is of (the folder of the
+/// logs), the folder it ran in, its id, and the model and the effort it had, when the registry has them.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResumeRequest {
+    pub service: ServiceId,
+    pub label: Label,
+    pub folder: PathBuf,
+    pub session: Text,
+    pub model: Option<ModelId>,
+    pub effort: Option<Effort>,
+}
+
+impl ResumeRequest {
+    /// The checks before any effect: a project id, a folder that exists, and an id as an agent gives it.
+    ///
+    /// # Errors
+    ///
+    /// The first check that fails, before any effect.
+    pub fn new(service: ServiceId, label: &str, folder: &Path, session: &str) -> Result<ResumeRequest, LaunchError> {
+        let label = Label::parse(label)?;
+        if !folder.is_dir() {
+            return Err(LaunchError::before(format!("the session's folder does not exist: {}", folder.display())));
+        }
+        let folder = resolved_folder(folder)?;
+        Ok(ResumeRequest { service, label, folder, session: session_id(session)?, model: None, effort: None })
+    }
+
+    #[must_use]
+    pub fn model(mut self, model: Option<ModelId>) -> ResumeRequest {
+        self.model = model;
+        self
+    }
+
+    #[must_use]
+    pub fn effort(mut self, effort: Option<Effort>) -> ResumeRequest {
+        self.effort = effort;
+        self
+    }
+}
+
+/// A session id read from a registry or a file name is untrusted (threat model §3.6, rule 7): letters, digits, `-` and
+/// `_`, not a dash first, as the agents give them, before it reaches an argv. That also fits a `.cmd`.
+fn session_id(session: &str) -> Result<Text, LaunchError> {
+    let shaped = !session.is_empty()
+        && session.len() <= SESSION_MAX
+        && !session.starts_with('-')
+        && session.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_');
+    if !shaped {
+        return Err(LaunchError::before("the session's id is not one an agent gives: letters, digits, dashes and underscores"));
+    }
+    Text::parse(session).map_err(|error| LaunchError::before(error.to_string()))
+}
+
+/// What a resume started: its process, its log, when, the session the agent goes on with (a new one after a fork), and
+/// that session's transcript, when it is there.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Resumed {
+    pub pid: u32,
+    pub log: String,
+    pub started: String,
+    pub session: String,
+    pub transcript: Option<String>,
 }
 
 impl LaunchSurface for Cli {
@@ -241,16 +371,7 @@ impl LaunchSurface for Cli {
         // goes as its working folder, which codex uses when it has no `--cd`.
         let through_batch = request.service == ServiceId::Codex && pin.through_batch();
         if through_batch {
-            // Before the steps folder is created: the refusal leaves nothing behind. What the state folder
-            // adds to it (`passi`, the project, the file names) is inside the alphabet.
-            let state = state_folder(self.state.as_deref())?;
-            if !absolute(&state)?.fits_batch() {
-                return Err(LaunchError::before(format!(
-                    "the state folder {} has characters that a .cmd does not receive in safety: choose another one with {}",
-                    state.display(),
-                    prototype_env_var("RUNTIME")
-                )));
-            }
+            self.state_fits_batch()?;
         }
         let steps = steps_folder(self.state.as_deref(), &request.label)?;
         let files = Files::reserve(&steps, &request.prompt)?;
@@ -262,7 +383,7 @@ impl LaunchSurface for Cli {
                 codex::exec(cd, &absolute(&files.last)?, request.model.as_ref(), request.effort)
             }
         };
-        let launch = self.environment(pin.launch(args, &request.folder), &service, request);
+        let launch = self.environment(pin.launch(args, &request.folder), &service, &request.secret_env);
         let mut receipt = Receipt::new(SurfaceKind::Cli, request);
         let mut detached = launch.detach(&files.prompt, &files.log).map_err(|error| LaunchError::before(error.to_string()))?;
         // From here on something runs: a failure is after an effect.

@@ -273,7 +273,7 @@ pub mod python {
 
 /// `claude` as the Cli surface starts it (ADR 0001 §6): fixed flags, the prompt on stdin.
 pub mod claude {
-    use crate::{Args, Effort, ModelId};
+    use crate::{Args, Effort, ModelId, Text};
 
     /// `claude -p --output-format=stream-json --verbose --dangerously-skip-permissions [--model=…]
     /// [--effort=…]`: a session with nobody at the keyboard, which prints its events on stdout, one
@@ -312,11 +312,32 @@ pub mod claude {
             .word("--max-turns=1")
             .word("--output-format=json")
     }
+
+    /// `claude -p --resume=<session> --output-format=stream-json --verbose --dangerously-skip-permissions [--model=…]
+    /// [--effort=…]`: a session the usage limit stopped, resumed with nobody at the keyboard (the dossier's #132). What
+    /// it is told goes on stdin, as for [`print`]. The session is untrusted (read from a registry or a file name): its
+    /// caller checks its shape before it becomes a [`Text`], and the joined form keeps it from reading as an option.
+    pub fn resume(session: &Text, model: Option<&ModelId>, effort: Option<Effort>) -> Args {
+        let args = Args::new()
+            .word("-p")
+            .opt("--resume", session)
+            .word("--output-format=stream-json")
+            .word("--verbose")
+            .word("--dangerously-skip-permissions");
+        let args = match model {
+            Some(model) => args.opt("--model", model),
+            None => args,
+        };
+        match effort {
+            Some(effort) => args.opt("--effort", &effort),
+            None => args,
+        }
+    }
 }
 
 /// `codex` as the Cli surface starts it (ADR 0001 §6): fixed flags, the prompt on stdin.
 pub mod codex {
-    use crate::{AbsolutePath, Args, Effort, ModelId};
+    use crate::{AbsolutePath, Args, Effort, ModelId, Text};
 
     /// `codex exec --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check
     /// [--cd=<folder>] --output-last-message=<file> [--model=…] [--config=model_reasoning_effort=…] -`.
@@ -340,6 +361,22 @@ pub mod codex {
             args = args.push(format!("--config=model_reasoning_effort={}", effort.as_str()).into());
         }
         args.word("-")
+    }
+
+    /// `codex exec resume --json --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check [--model=…]
+    /// [--config=model_reasoning_effort=…] <session> -`: a session the usage limit stopped, resumed (the dossier's
+    /// #132), started in its own folder. The last `-` reads what it is told from stdin. The session is a positional
+    /// that its caller checked: a `.cmd` takes only the narrow alphabet, which an id of codex keeps.
+    pub fn resume(session: &Text, model: Option<&ModelId>, effort: Option<Effort>) -> Args {
+        let mut args =
+            Args::new().word("exec").word("resume").word("--json").word("--dangerously-bypass-approvals-and-sandbox").word("--skip-git-repo-check");
+        if let Some(model) = model {
+            args = args.opt("--model", model);
+        }
+        if let Some(effort) = effort {
+            args = args.push(format!("--config=model_reasoning_effort={}", effort.as_str()).into());
+        }
+        args.value(session).word("-")
     }
 }
 
@@ -380,6 +417,18 @@ pub mod orca {
             args = args.opt("--effort", &effort);
         }
         Ok(args.word("--json"))
+    }
+
+    /// `orca search --query=<text> --path=<folder> --limit=100 [--cursor=<c>] --json`: a page of the sessions Orca
+    /// indexed under a folder whose text holds `query` (the dossier's #132). The folder is the one the registry names,
+    /// as it is: Orca matches it literally. The cursor is the one the previous page printed.
+    pub fn search(query: &Text, folder: &Text, cursor: Option<&Text>) -> Args {
+        let args = Args::new().word("search").opt("--query", query).opt("--path", folder).word("--limit=100");
+        let args = match cursor {
+            Some(cursor) => args.opt("--cursor", cursor),
+            None => args,
+        };
+        args.word("--json")
     }
 
     /// `--worktree=path:<folder>`, the folder with `/`, as the prototype's selector.
@@ -595,5 +644,36 @@ mod tests {
             ]
         );
         assert!(orca::agent_launch(Program::Gh, &folder, &prompt, None, None).is_err());
+        let (query, here, cursor) = (Text::parse("hit your session limit").unwrap(), Text::parse(r"C:\work\trial").unwrap(), Text::parse("c1").unwrap());
+        assert_eq!(
+            tokens(&orca::search(&query, &here, Some(&cursor))),
+            ["search", "--query=hit your session limit", r"--path=C:\work\trial", "--limit=100", "--cursor=c1", "--json"]
+        );
+        assert_eq!(tokens(&orca::search(&query, &here, None)).len(), 5, "no cursor on the first page");
+    }
+
+    /// The prototype's argv of a resume (`sospese.py`) in the `--name=value` form: the session joined to `--resume` for claude, a
+    /// positional before the `-` of stdin for codex, the model and the effort as for a launch.
+    #[test]
+    fn the_resume_builders_spell_the_prototype_argv() {
+        let session = Text::parse("11111111-2222-3333-4444-555555555555").unwrap();
+        let haiku = ModelId::parse("haiku").unwrap();
+        assert_eq!(
+            tokens(&claude::resume(&session, Some(&haiku), Some(Effort::Low))),
+            [
+                "-p",
+                "--resume=11111111-2222-3333-4444-555555555555",
+                "--output-format=stream-json",
+                "--verbose",
+                "--dangerously-skip-permissions",
+                "--model=haiku",
+                "--effort=low"
+            ]
+        );
+        assert_eq!(tokens(&claude::resume(&session, None, None)).len(), 5);
+        let codex = tokens(&codex::resume(&session, Some(&haiku), Some(Effort::High)));
+        assert_eq!(codex[..5], ["exec", "resume", "--json", "--dangerously-bypass-approvals-and-sandbox", "--skip-git-repo-check"]);
+        assert_eq!(codex[5..], ["--model=haiku", "--config=model_reasoning_effort=high", "11111111-2222-3333-4444-555555555555", "-"]);
+        assert_eq!(tokens(&codex::resume(&session, None, None))[5..], ["11111111-2222-3333-4444-555555555555", "-"]);
     }
 }

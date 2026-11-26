@@ -8,10 +8,15 @@ publish.workspace = true
 
 [dependencies]
 chrono.workspace = true
+# The time zone a usage limit's text names ("resets 5:30pm (Europe/Rome)", the dossier's #132), with the IANA
+# database bundled, so every platform answers alike. The version the workspace's graph already locks.
+jiff = { version = "0.2.38", default-features = false, features = ["std", "tzdb-bundle-always"] }
 regia-core.workspace = true
 regia-exec.workspace = true
 regia-identity.workspace = true
 regia-store.workspace = true
+# The prototype's patterns of a usage limit's text, as `tools/sospese.py` spells them.
+regex.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

@@ -19,16 +19,22 @@ use std::path::{Path, PathBuf};
 use regia_exec::{ExecError, ModelId, Pin, Program};
 use serde::{Deserialize, Serialize};
 
+mod chats;
 mod cli;
 mod gates;
 mod https;
 mod launch;
 mod orca;
 mod policy;
+pub mod suspension;
 mod usage;
 mod wake;
 
-pub use cli::{Cli, WAKE_PROMPT, Waits};
+pub use chats::{
+    CHAT_ENTRYPOINT, ChatHost, Known, NoChatHost, OrcaChats, chat_host, chat_wake_command, coordinated_workers, session_by_marker, worker_ids,
+    worker_wake_command,
+};
+pub use cli::{Cli, ResumeRequest, Resumed, WAKE_PROMPT, Waits};
 pub use gates::{Gate, GateError, Gates};
 pub use https::{Https, TIMEOUT};
 pub use launch::{

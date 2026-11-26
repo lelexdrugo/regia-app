@@ -341,7 +341,7 @@ fn marker(text: &str) -> String {
 
 /// The session files of the agent's folder there are now: claude's for this working folder, codex's
 /// of every day.
-fn session_files(service: &AgentService, env: &Env, folder: &Path) -> BTreeSet<PathBuf> {
+pub(crate) fn session_files(service: &AgentService, env: &Env, folder: &Path) -> BTreeSet<PathBuf> {
     let Some(home) = service.home(env) else { return BTreeSet::new() };
     let jsonl = |path: &PathBuf| path.extension().is_some_and(|extension| extension == "jsonl");
     match service.id() {
@@ -357,7 +357,7 @@ fn session_files(service: &AgentService, env: &Env, folder: &Path) -> BTreeSet<P
 }
 
 /// The session a file holds: claude's file is named by it, codex's ends with it.
-fn session_of(service: &AgentService, path: &Path) -> Option<String> {
+pub(crate) fn session_of(service: &AgentService, path: &Path) -> Option<String> {
     let stem = path.file_name()?.to_str()?.strip_suffix(".jsonl")?;
     match service.id() {
         ServiceId::Claude => Some(stem.to_owned()),
@@ -384,14 +384,14 @@ fn head(path: &Path) -> Vec<String> {
 }
 
 /// The marker is in the first lines, as it is or as it reads inside a JSON string.
-fn holds(path: &Path, marker: &str) -> bool {
+pub(crate) fn holds(path: &Path, marker: &str) -> bool {
     let quoted = serde_json::to_string(marker).unwrap_or_default();
     let escaped = quoted.get(1..quoted.len().saturating_sub(1)).unwrap_or_default();
     head(path).iter().any(|line| line.contains(marker) || (!escaped.is_empty() && line.contains(escaped)))
 }
 
 /// The first message of the user in a claude session file starts with the marker.
-fn first_message_starts_with(path: &Path, marker: &str) -> bool {
+pub(crate) fn first_message_starts_with(path: &Path, marker: &str) -> bool {
     for line in head(path) {
         let Ok(Value::Object(event)) = serde_json::from_str::<Value>(&line) else { continue };
         if event.get("type").and_then(Value::as_str) != Some("user") {

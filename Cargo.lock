@@ -1827,6 +1827,7 @@ dependencies = [
  "defmt",
  "jiff-core",
  "jiff-static",
+ "jiff-tzdb",
  "jiff-tzdb-platform",
  "log",
  "portable-atomic",
@@ -2954,6 +2955,8 @@ name = "regia-agents"
 version = "0.0.1"
 dependencies = [
  "chrono",
+ "jiff",
+ "regex",
  "regia-core",
  "regia-exec",
  "regia-identity",
