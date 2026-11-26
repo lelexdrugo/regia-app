@@ -1,0 +1,1 @@
+errore: progetto 'nobody' senza task nel tracker

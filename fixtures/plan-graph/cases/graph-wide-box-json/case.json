@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. Under the box: the root's edge to its child in the note, and the task after the box one step outside.",
+  "scenario": "wide",
+  "args": [
+    "plan",
+    "--root",
+    "20",
+    "--mermaid",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--radice",
+    "20",
+    "--mermaid"
+  ]
+}

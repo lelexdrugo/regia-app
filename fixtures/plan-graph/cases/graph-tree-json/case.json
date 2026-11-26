@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. TestAlbero's plan as JSON, with the diagram.",
+  "scenario": "tree",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--mermaid",
+    "--json"
+  ],
+  "python": [
+    "--json",
+    "piano",
+    "--radice",
+    "1",
+    "--mermaid"
+  ]
+}

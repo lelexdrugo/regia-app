@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic. TestComando: without --mermaid, the tree.",
+  "scenario": "command",
+  "args": [
+    "plan",
+    "--project",
+    "p"
+  ],
+  "python": [
+    "piano",
+    "--progetto",
+    "p"
+  ]
+}

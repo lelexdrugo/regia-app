@@ -1,0 +1,248 @@
+{
+  "_note": "Synthetic. The tasks of gamma: a cycle of two and the task after it, a cycle of three and the task after it, a line outside the cycles, and a parent that blocks its child, so the computed edge from the child would close a cycle and does not count.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {
+      "number": 1,
+      "title": "[gamma] objective of gamma",
+      "labels": [
+        "progetto:gamma",
+        "tipo:obiettivo"
+      ],
+      "status": "In corso",
+      "sub": [
+        [
+          10,
+          "OPEN"
+        ],
+        [
+          11,
+          "OPEN"
+        ],
+        [
+          12,
+          "OPEN"
+        ],
+        [
+          13,
+          "OPEN"
+        ],
+        [
+          14,
+          "OPEN"
+        ],
+        [
+          15,
+          "OPEN"
+        ],
+        [
+          16,
+          "OPEN"
+        ],
+        [
+          20,
+          "OPEN"
+        ],
+        [
+          21,
+          "OPEN"
+        ],
+        [
+          22,
+          "OPEN"
+        ],
+        [
+          30,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 10,
+      "title": "two that wait for each other",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          11,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 11,
+      "title": "the other of the two",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          10,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 12,
+      "title": "after the cycle of two",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          11,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 13,
+      "title": "three in a ring",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          15,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 14,
+      "title": "the second of the ring",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "In corso",
+      "parent": 1,
+      "blocked_by": [
+        [
+          13,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 15,
+      "title": "the third of the ring",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Decisione",
+      "parent": 1,
+      "blocked_by": [
+        [
+          14,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 16,
+      "title": "after the ring",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          15,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 20,
+      "title": "a line outside the cycles",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 21,
+      "title": "its second step",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          20,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 22,
+      "title": "its third step",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          21,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 30,
+      "title": "a parent that blocks its child",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "sub": [
+        [
+          31,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 31,
+      "title": "the child it blocks",
+      "labels": [
+        "progetto:gamma",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 30,
+      "blocked_by": [
+        [
+          30,
+          "OPEN"
+        ]
+      ]
+    }
+  ]
+}

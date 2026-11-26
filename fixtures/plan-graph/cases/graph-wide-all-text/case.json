@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. The whole plan as a tree.",
+  "scenario": "wide",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--max-nodes",
+    "100"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "1",
+    "--max-nodi",
+    "100"
+  ]
+}

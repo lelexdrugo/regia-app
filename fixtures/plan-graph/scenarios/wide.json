@@ -1,0 +1,609 @@
+{
+  "_note": "Synthetic. More open tasks under the Objective of alpha than the default cap: a main line with a letter prefix, quotes, angles and a number before a semicolon in its titles, through a decision, a draft and a proposal; a box in a box with an edge between a parent and its child and one out of the box; a cycle and a task after it; two tasks of beta one step outside, one blocking the other; Inbox tasks with and without edges; a task with no status; an open child under a closed parent; a long title; a decision with no edges; filler tasks.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {
+      "number": 1,
+      "title": "[alpha] objective of alpha",
+      "labels": [
+        "progetto:alpha",
+        "tipo:obiettivo"
+      ],
+      "status": "In corso",
+      "sub": [
+        [
+          10,
+          "OPEN"
+        ],
+        [
+          11,
+          "OPEN"
+        ],
+        [
+          12,
+          "OPEN"
+        ],
+        [
+          13,
+          "OPEN"
+        ],
+        [
+          14,
+          "OPEN"
+        ],
+        [
+          15,
+          "OPEN"
+        ],
+        [
+          20,
+          "OPEN"
+        ],
+        [
+          30,
+          "OPEN"
+        ],
+        [
+          40,
+          "OPEN"
+        ],
+        [
+          41,
+          "OPEN"
+        ],
+        [
+          42,
+          "OPEN"
+        ],
+        [
+          70,
+          "OPEN"
+        ],
+        [
+          71,
+          "OPEN"
+        ],
+        [
+          72,
+          "OPEN"
+        ],
+        [
+          73,
+          "OPEN"
+        ],
+        [
+          80,
+          "CLOSED"
+        ],
+        [
+          90,
+          "OPEN"
+        ],
+        [
+          100,
+          "OPEN"
+        ],
+        [
+          101,
+          "OPEN"
+        ],
+        [
+          102,
+          "OPEN"
+        ],
+        [
+          103,
+          "OPEN"
+        ],
+        [
+          104,
+          "OPEN"
+        ],
+        [
+          105,
+          "OPEN"
+        ],
+        [
+          106,
+          "OPEN"
+        ],
+        [
+          107,
+          "OPEN"
+        ],
+        [
+          108,
+          "OPEN"
+        ],
+        [
+          109,
+          "OPEN"
+        ],
+        [
+          110,
+          "OPEN"
+        ],
+        [
+          111,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 2,
+      "title": "[beta] objective of beta",
+      "labels": [
+        "progetto:beta",
+        "tipo:obiettivo"
+      ],
+      "status": "Approvato",
+      "sub": [
+        [
+          60,
+          "OPEN"
+        ],
+        [
+          61,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 10,
+      "title": "[#1 A] the start of the line",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 11,
+      "title": "Il \"resta\" <b> and #12; here",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "In corso",
+      "parent": 1,
+      "blocked_by": [
+        [
+          10,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 12,
+      "title": "[alpha] the prefix of the project drops",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Decisione",
+      "parent": 1,
+      "blocked_by": [
+        [
+          11,
+          "OPEN"
+        ],
+        [
+          60,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 13,
+      "title": "a draft on the line",
+      "labels": [
+        "progetto:alpha",
+        "maturità:abbozzo"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          12,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 14,
+      "title": "the proposal at the end of the line",
+      "labels": [
+        "progetto:alpha",
+        "maturità:abbozzo"
+      ],
+      "status": "Proposta",
+      "parent": 1,
+      "blocked_by": [
+        [
+          13,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 15,
+      "title": "a long title that goes well beyond the thirty-eight characters of a node and the sixty of a tree",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 20,
+      "title": "a box of two",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "sub": [
+        [
+          21,
+          "OPEN"
+        ],
+        [
+          22,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 21,
+      "title": "a box inside the box",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 20,
+      "sub": [
+        [
+          23,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 22,
+      "title": "the child its parent blocks",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 20,
+      "blocked_by": [
+        [
+          20,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 23,
+      "title": "the innermost task",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "In corso",
+      "parent": 21
+    },
+    {
+      "number": 30,
+      "title": "after the box",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          21,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 40,
+      "title": "one side of a cycle",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          41,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 41,
+      "title": "the other side of the cycle",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          40,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 42,
+      "title": "after the cycle",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          41,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 60,
+      "title": "a blocker of another project",
+      "labels": [
+        "progetto:beta",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 2
+    },
+    {
+      "number": 61,
+      "title": "blocked from here, and by its own project",
+      "labels": [
+        "progetto:beta",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 2,
+      "blocked_by": [
+        [
+          13,
+          "OPEN"
+        ],
+        [
+          60,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 70,
+      "title": "an idea with no edges",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "status": "Inbox",
+      "parent": 1
+    },
+    {
+      "number": 71,
+      "title": "another idea with no edges",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "status": "Inbox",
+      "parent": 1
+    },
+    {
+      "number": 72,
+      "title": "an idea with an edge",
+      "labels": [
+        "progetto:alpha"
+      ],
+      "status": "Inbox",
+      "parent": 1,
+      "blocked_by": [
+        [
+          10,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 73,
+      "title": "a task with no status",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "parent": 1,
+      "blocked_by": [
+        [
+          30,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 80,
+      "title": "a parent already done",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Fatto",
+      "parent": 1,
+      "state_reason": "COMPLETED",
+      "closed_at": "2026-01-05T09:00:00Z",
+      "sub": [
+        [
+          81,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 81,
+      "title": "open under the parent done",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 80,
+      "blocked_by": [
+        [
+          10,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 90,
+      "title": "a decision with no edges",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Decisione",
+      "parent": 1
+    },
+    {
+      "number": 100,
+      "title": "filler task 0",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 101,
+      "title": "filler task 1",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 102,
+      "title": "filler task 2",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 103,
+      "title": "filler task 3",
+      "labels": [
+        "progetto:alpha",
+        "maturità:abbozzo"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 104,
+      "title": "filler task 4",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 105,
+      "title": "filler task 5",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 106,
+      "title": "filler task 6",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 107,
+      "title": "filler task 7",
+      "labels": [
+        "progetto:alpha",
+        "maturità:abbozzo"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 108,
+      "title": "filler task 8",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 109,
+      "title": "filler task 9",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 110,
+      "title": "filler task 10",
+      "labels": [
+        "progetto:alpha",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 111,
+      "title": "filler task 11",
+      "labels": [
+        "progetto:alpha",
+        "maturità:abbozzo"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    }
+  ]
+}

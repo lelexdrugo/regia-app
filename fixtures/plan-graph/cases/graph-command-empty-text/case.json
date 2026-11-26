@@ -1,0 +1,14 @@
+{
+  "_note": "Synthetic. TestComando: a root with no open descendant draws nothing.",
+  "scenario": "command",
+  "args": [
+    "plan",
+    "--root",
+    "10"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "10"
+  ]
+}

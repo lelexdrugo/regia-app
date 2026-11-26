@@ -1,0 +1,18 @@
+{
+  "_note": "Synthetic. TestComando: a root and a project together, exit 1 before any read.",
+  "args": [
+    "plan",
+    "--root",
+    "1",
+    "--project",
+    "p"
+  ],
+  "python": [
+    "piano",
+    "--radice",
+    "1",
+    "--progetto",
+    "p"
+  ],
+  "exit": 1
+}

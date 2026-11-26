@@ -1,0 +1,116 @@
+{
+  "_note": "Synthetic. The data of the prototype's own test of the tree (TestAlbero of test_piano_mermaid.py): a parent and the child it blocks, a short line, a task of q at its end, an Inbox with no edges.",
+  "project_id": "PROJECT_FIXTURE",
+  "page_size": 100,
+  "issues": [
+    {
+      "number": 1,
+      "title": "[p] objective of p",
+      "labels": [
+        "progetto:p",
+        "tipo:obiettivo"
+      ],
+      "status": "In corso",
+      "sub": [
+        [
+          10,
+          "OPEN"
+        ],
+        [
+          12,
+          "OPEN"
+        ],
+        [
+          13,
+          "OPEN"
+        ],
+        [
+          20,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 10,
+      "title": "a parent",
+      "labels": [
+        "progetto:p",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "sub": [
+        [
+          11,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 11,
+      "title": "its child, which it blocks",
+      "labels": [
+        "progetto:p",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 10,
+      "blocked_by": [
+        [
+          10,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 12,
+      "title": "the line starts here",
+      "labels": [
+        "progetto:p",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1
+    },
+    {
+      "number": 13,
+      "title": "and goes on here",
+      "labels": [
+        "progetto:p",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "parent": 1,
+      "blocked_by": [
+        [
+          12,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 50,
+      "title": "and ends in another project",
+      "labels": [
+        "progetto:q",
+        "maturità:pronto"
+      ],
+      "status": "Approvato",
+      "blocked_by": [
+        [
+          13,
+          "OPEN"
+        ]
+      ]
+    },
+    {
+      "number": 20,
+      "title": "an idea",
+      "labels": [
+        "progetto:p"
+      ],
+      "status": "Inbox",
+      "parent": 1
+    }
+  ]
+}

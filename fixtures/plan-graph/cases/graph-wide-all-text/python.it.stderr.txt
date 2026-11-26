@@ -1,0 +1,2 @@
+  ! dipendenze in ciclo: #40, #41 (senza ordine del grafo)
+  ! figlio che aspetta il padre: #22 aspetta #20, ma l'arco figlio → padre chiuderebbe un ciclo (o ne allargherebbe uno scritto) e non conta

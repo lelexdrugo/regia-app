@@ -1,0 +1,44 @@
+**Piano dal tracker al 2026-01-10** (`regia piano --progetto alpha --mermaid --max-nodi 12`; ✋ aspetta il titolare, frecce spesse = linea principale)
+
+```mermaid
+%% regia piano --progetto alpha --mermaid --max-nodi 12 · tracker al 2026-01-10
+flowchart LR
+  n10["#10 A · the start of the line<br/>Approvato · sblocca 5 (7 con Inbox e Proposte) · catena 5"]
+  n11["#11 Il #quot;resta#quot; #lt;b#gt; and #12#59; here<br/>In corso · sblocca 3 (4 con Inbox e Proposte) · catena 4"]
+  n12{{"✋ #12 the prefix of the project drops<br/>Decisione · sblocca 2 (3 con Inbox e Proposte) · catena 3"}}
+  n13["#13 a draft on the line<br/>Approvato · abbozzo · sblocca 1 (2 con Inbox e Proposte) · catena 2"]
+  n14{{"✋ #14 the proposal at the end of the line<br/>Proposta"}}
+  n21["#21 a box inside the box<br/>Approvato · sblocca 3 · catena 3"]
+  n30["#30 after the box<br/>Approvato"]
+  n42["#42 after the cycle<br/>Approvato"]
+  n60["#60 a blocker of another project<br/>Approvato · sblocca 3 (4 con Inbox e Proposte) · catena 4 · beta"]
+  n61["#61 blocked from here, and by its own pro…<br/>Approvato · beta"]
+  n72["#72 an idea with an edge<br/>Inbox"]
+  n73["#73 a task with no status<br/>?"]
+  n10 ==> n11
+  n10 --> n72
+  n11 ==> n12
+  n12 ==> n13
+  n13 ==> n14
+  n13 --> n61
+  n21 --> n30
+  n30 --> n73
+  n60 --> n12
+  nota["2 Inbox senza archi: #70, #71<br/>tagliati 20 aperti oltre il tetto, 5 archi persi: #15, #20, #22, #23, #40, #41, #81, #90, #100, #101, #102, #103 … · per il resto usa --radice su un sotto-albero"]
+  class nota nota
+  classDef aspetta fill:#fde68a,stroke:#b45309,color:#111
+  classDef incorso fill:#bfdbfe,stroke:#1d4ed8,color:#111
+  classDef abbozzo fill:#f3f4f6,stroke:#6b7280,color:#111
+  classDef pronto fill:#ffffff,stroke:#374151,color:#111
+  classDef inbox fill:#ffffff,stroke:#9ca3af,stroke-dasharray:4 3,color:#555
+  classDef esterno fill:#ffffff,stroke:#6b7280,stroke-dasharray:2 2,color:#555
+  classDef nota fill:#ffffff,stroke:#ffffff,color:#555
+  classDef linea stroke-width:3px
+  class n12,n14 aspetta
+  class n11 incorso
+  class n13 abbozzo
+  class n10,n21,n30,n42 pronto
+  class n72 inbox
+  class n60,n61 esterno
+  class n10,n11,n12,n13,n14 linea
+```

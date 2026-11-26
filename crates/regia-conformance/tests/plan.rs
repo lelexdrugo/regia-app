@@ -495,6 +495,81 @@ fn every_plan_case_natively_gives_the_prototype_s_output() {
     assert!(failed.is_empty(), "{}", failed.join("\n\n"));
 }
 
+/// The cases show what Acceptance 1 asks: a plan cut over the default cap, one cut with edges lost and the hint of a
+/// root, plans with cycles, boxes in boxes, nodes one step outside, the Inbox left out, a root's edge in the note.
+#[test]
+fn the_plan_cases_show_what_they_claim() {
+    let json = |name: &str| translate_python("plan", &Case::named(name).python_output()).expect("the table covers the plan");
+    let wide = json("graph-wide-root-json");
+    assert_eq!((wide["nodes"].as_array().map(Vec::len), wide["truncated"].as_array().map(Vec::len)), (Some(25), Some(7)), "cut at 25");
+    let project = json("graph-wide-project-json");
+    assert!(project["edges_lost"].as_u64() > Some(0) && project["truncated"].as_array().is_some_and(|cut| !cut.is_empty()));
+    let hint = prototype_root_option();
+    assert!(project["mermaid"].as_str().is_some_and(|text| text.contains(&format!(" {hint} "))), "the hint of a root");
+    for name in ["graph-cycles-json", "graph-wide-all-json"] {
+        let plan = json(name);
+        let cycle = plan["nodes"].as_array().expect("nodes").iter().filter(|node| node["cycle"] == true).count();
+        assert!(cycle >= 2 && plan["truncated"].as_array().is_some_and(Vec::is_empty), "{name}: {cycle} in a cycle, no cut");
+    }
+    let all = json("graph-wide-all-json");
+    let mermaid = all["mermaid"].as_str().expect("the diagram");
+    assert!(mermaid.contains("\n    subgraph "), "a box in a box");
+    assert!(all["nodes"].as_array().expect("nodes").iter().any(|node| node["external"] == true));
+    assert!(all["nodes"].as_array().expect("nodes").iter().any(|node| node["status"].is_null()), "a task with no status");
+    assert_eq!(all["inbox_hidden"], json!([70, 71]));
+    let under = json("graph-wide-box-json");
+    assert!(under["nested"].as_array().expect("nested").contains(&json!([20, 22])), "the root's edge in the note");
+    assert!(under["nodes"].as_array().expect("nodes").iter().all(|node| node["number"] != 20), "the root is not drawn");
+    let text = |name: &str| match Case::named(name).recorded() {
+        Recorded::Text(text) => text,
+        Recorded::Json(_) => panic!("{name} is text"),
+    };
+    assert!(text("graph-wide-project-text").starts_with("**") && text("graph-wide-project-text").contains("```mermaid\n%% "));
+    assert!(!Case::named("graph-cycles-text").recorded_stderr().is_empty(), "the warnings of the cycles");
+}
+
+/// The comparison of the cases can fail: a byte of a diagram, a title of a node, a number of a tree and an exit, altered
+/// in the recordings, are each a difference.
+#[test]
+fn an_altered_recording_of_a_plan_is_noticed() {
+    let case = Case::named("graph-wide-all-json");
+    let run = native("negative-plan-json", &case);
+    assert!(case_differences(&case, &run, None).is_empty());
+    let Recorded::Json(python) = case.recorded() else { panic!("graph-wide-all-json is JSON") };
+    let mut diagram = python.clone();
+    diagram["mermaid"] = json!(diagram["mermaid"].as_str().expect("a diagram").replacen("-->", "==>", 1));
+    let mut title = python.clone();
+    title["nodi"][0]["title"] = json!("another title");
+    for (what, altered) in [("a byte of a diagram", diagram), ("a title of a node", title)] {
+        assert!(!case_differences(&case, &run, Some(&Recorded::Json(altered))).is_empty(), "{what} went unnoticed");
+    }
+    let tree = Case::named("graph-tree-text");
+    let run = native("negative-plan-text", &tree);
+    let Recorded::Text(python) = tree.recorded() else { panic!("graph-tree-text is text") };
+    assert!(!case_differences(&tree, &run, Some(&Recorded::Text(python.replacen("#13", "#14", 1)))).is_empty(), "a number of a tree");
+    let mut wrong = tree.clone();
+    wrong.spec.exit = 1;
+    assert!(!case_differences(&wrong, &run, None).is_empty(), "an exit");
+}
+
+/// The text for people is the catalog's: in English the tree and the line before the diagram are English, while the
+/// diagram, which is data, is the same in both languages.
+#[test]
+fn the_tree_speaks_the_catalog_s_language_and_the_diagram_stays_data() {
+    let english = |label: &str, name: &str| run_case(label, &Case::named(name), |_| vec![(regia_identity::env_var("LANG"), "en".into())]);
+    let tree = english("english-tree", "graph-tree-text");
+    let text = String::from_utf8_lossy(&tree.stdout).into_owned();
+    let catalog = regia_i18n::Catalog::new(regia_i18n::Language::En);
+    assert_eq!(tree.exit, Some(0), "{}", tree.stderr);
+    assert!(text.contains(&catalog.message("plan-outside")) && text.contains(&catalog.message("state-approved")), "{text}");
+    let markdown = english("english-markdown", "graph-command-mermaid-text");
+    let head = catalog.message_with("plan-markdown-head", "date", regia_conformance::FIXTURE_TODAY);
+    assert!(String::from_utf8_lossy(&markdown.stdout).starts_with(&format!("**{head}**")));
+    let json = |run: &CliRun| serde_json::from_slice::<Value>(&run.stdout).expect("JSON")["mermaid"].clone();
+    let case = Case::named("graph-wide-all-json");
+    assert_eq!(json(&english("english-json", "graph-wide-all-json")), json(&native("italian-json", &case)), "the diagram is data");
+}
+
 /// The vectors are the answers of today's prototype: the capture, run again on the dossier named by `REGIA_HOME`, writes
 /// the same file.
 ///

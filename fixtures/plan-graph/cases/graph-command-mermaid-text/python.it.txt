@@ -1,0 +1,25 @@
+**Piano dal tracker al 2026-01-10** (`regia piano --radice 1 --mermaid`; ✋ aspetta il titolare, frecce spesse = linea principale)
+
+```mermaid
+%% regia piano --radice 1 --mermaid · tracker al 2026-01-10
+flowchart LR
+  n10["#10 first step<br/>Approvato · sblocca 2 · catena 3"]
+  n11{{"✋ #11 the decision after it<br/>Decisione · sblocca 1 · catena 2"}}
+  n30["#30 work of another project<br/>Approvato · q"]
+  n10 ==> n11
+  n11 ==> n30
+  nota["1 Inbox senza archi: #20"]
+  class nota nota
+  classDef aspetta fill:#fde68a,stroke:#b45309,color:#111
+  classDef incorso fill:#bfdbfe,stroke:#1d4ed8,color:#111
+  classDef abbozzo fill:#f3f4f6,stroke:#6b7280,color:#111
+  classDef pronto fill:#ffffff,stroke:#374151,color:#111
+  classDef inbox fill:#ffffff,stroke:#9ca3af,stroke-dasharray:4 3,color:#555
+  classDef esterno fill:#ffffff,stroke:#6b7280,stroke-dasharray:2 2,color:#555
+  classDef nota fill:#ffffff,stroke:#ffffff,color:#555
+  classDef linea stroke-width:3px
+  class n11 aspetta
+  class n10 pronto
+  class n30 esterno
+  class n10,n11,n30 linea
+```
