@@ -23,7 +23,7 @@ fn request(trial: &Trial, service: ServiceId) -> ResumeRequest {
     ResumeRequest::new(service, "trial", &trial.folder, SESSION).expect("a valid request")
 }
 
-/// `test_comando_di_ripresa_claude_e_codex`: what each agent gets, the session joined to `--resume` for claude and a
+/// The first case of `RipresaCli`, the argv of a resume: what each agent gets, the session joined to `--resume` for claude and a
 /// positional before stdin's `-` for codex, with the model and the effort the registry has.
 #[test]
 fn claude_and_codex_get_the_resume_s_argv() {
@@ -40,7 +40,7 @@ fn claude_and_codex_get_the_resume_s_argv() {
     assert_eq!(codex[codex.len() - 2..], [SESSION, "-"], "the session, then what it is told from stdin");
 }
 
-/// `test_riprendi_cli_lancia_claude_resume_staccato_con_log_e_continue_da_stdin`.
+/// The second case of `RipresaCli`: claude resumed on its own, with its log, told to go on on stdin.
 #[test]
 fn claude_is_resumed_on_its_own_with_its_log_and_continue_on_stdin() {
     let trial = Trial::new("resume-claude");
@@ -59,7 +59,7 @@ fn claude_is_resumed_on_its_own_with_its_log_and_continue_on_stdin() {
     assert!(resumed.transcript.as_deref().is_some_and(|transcript| Path::new(transcript).is_file()), "{:?}", resumed.transcript);
 }
 
-/// `test_riprendi_cli_segnala_la_sessione_nuova_se_il_resume_fa_un_fork`.
+/// The third case of `RipresaCli`: a resume that forks says its new session.
 #[test]
 fn a_resume_that_forks_names_its_new_session() {
     let trial = Trial::new("resume-fork");
@@ -68,7 +68,8 @@ fn a_resume_that_forks_names_its_new_session() {
     assert_eq!(resumed.session, "bbbbbbbb-1111-2222-3333-444444444444");
 }
 
-/// `test_riprendi_cli_cartella_inesistente`, and an id that is not an agent's: refused before any effect.
+/// The fourth case of `RipresaCli`, a folder that does not exist, and an id that is not an agent's: refused before any
+/// effect.
 #[test]
 fn a_session_without_its_folder_or_with_a_strange_id_is_not_resumed() {
     let trial = Trial::new("resume-refused");

@@ -427,8 +427,8 @@ mod tests {
         assert_eq!(round_line(&bare, &Catalog::new(Language::En)), "round 2 2026-10-22T07:00:00Z: precheck not run -> launch [wake-up: failed (-)]");
     }
 
-    /// The prototype's summary of a round with the resume (#470): the resumes after the launches, `[ripresa: s-a (cli)]`,
-    /// and the wait for a suspended session, `[sospese fino a …]`, before the operations.
+    /// The prototype's summary of a round with the resume (#470): the resumes after the launches, and the wait for a
+    /// suspended session before the operations. The decisions are the format's words, data.
     #[test]
     fn a_round_with_a_resume_or_a_wait_reads_as_the_prototype_s_summary() {
         let summary = Summary {
@@ -438,13 +438,12 @@ mod tests {
             resumes: vec![("s-a".to_owned(), "cli".to_owned())],
             ..Summary::default()
         };
-        let italian = round_line(&summary, &Catalog::new(Language::It));
-        assert_eq!(italian, "giro 3 2026-10-22T07:00:00Z: precheck non eseguito -> ripresa [ripresa: s-a (cli)]");
+        let english = round_line(&summary, &Catalog::new(Language::En));
+        assert_eq!(english, "round 3 2026-10-22T07:00:00Z: precheck not run -> ripresa [resume: s-a (cli)]");
         let waiting = Summary { decision: Some("attesa-sospesa".to_owned()), resumes: Vec::new(), suspended_until: Some("2026-10-22T07:30:00Z".to_owned()), ..summary };
         assert_eq!(
-            round_line(&waiting, &Catalog::new(Language::It)),
-            "giro 3 2026-10-22T07:00:00Z: precheck non eseguito -> attesa-sospesa [sospese fino a 2026-10-22T07:30:00Z]"
+            round_line(&waiting, &Catalog::new(Language::En)),
+            "round 3 2026-10-22T07:00:00Z: precheck not run -> attesa-sospesa [suspended until 2026-10-22T07:30:00Z]"
         );
-        assert!(round_line(&waiting, &Catalog::new(Language::En)).ends_with("[suspended until 2026-10-22T07:30:00Z]"));
     }
 }
