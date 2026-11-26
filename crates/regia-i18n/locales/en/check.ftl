@@ -19,4 +19,4 @@ path-cite = cited as: { $value }
 path-no-dossier = error: the working folder is not a dossier (no .regia/): pass --project
 # `step finish`'s line of checks (#701): unavailable, and how many findings the line does not list.
 check-unavailable = checks: unavailable: { $reason }
-check-more = … and { $count } more (regia check --project …)
+check-more = … and { $count } more ({ -product } check --project …)

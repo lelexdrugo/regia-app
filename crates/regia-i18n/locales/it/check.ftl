@@ -19,4 +19,4 @@ path-cite = si cita: { $value }
 path-no-dossier = errore: la cartella di lavoro non è un dossier (manca .regia/): passa --project
 # `step finish`'s line of checks (#701), the prototype's: unavailable, and how many findings the line does not list.
 check-unavailable = controlli: non disponibile: { $reason }
-check-more = … e altre { $count } (regia controlla --progetto …)
+check-more = … e altre { $count } ({ -product } check --project …)

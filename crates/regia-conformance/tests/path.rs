@@ -126,3 +126,30 @@ fn the_native_path_answers_as_the_prototype_through_the_facade() {
         assert_eq!(native, prototype, "{reference}");
     }
 }
+
+/// #448/V3, #701: through the facade, `path <reference>` with no `--project` resolves where the caller is, as the native
+/// `path` does, and not in the prototype's own dossier, the folder the facade starts it from. The caller is in a
+/// dossier of its own (a synthetic one), not `REGIA_HOME`: the prototype answers for the first only if the facade
+/// passes the caller's folder on.
+#[test]
+#[ignore = "needs the dossier (REGIA_HOME) and Python"]
+fn through_the_facade_path_resolves_in_the_callers_folder() {
+    let home = std::env::var_os("REGIA_HOME").map(PathBuf::from).expect("REGIA_HOME names the dossier");
+    let caller = dossier("facade-caller");
+    assert_ne!(fs::canonicalize(&caller).unwrap(), fs::canonicalize(&home).unwrap());
+    for reference in [".regia/stato.md", ".regia/report", ".regia/manca.md", "nuovo/file.md"] {
+        let native = json_of("path-caller-native", &caller, reference);
+        let prototype = run("path-caller-python", &caller, &["path", reference, "--json"], Some(&home));
+        assert_eq!(prototype.exit, Some(0), "{reference}: {}", prototype.stderr);
+        let prototype: Value = serde_json::from_str(&prototype.stdout).unwrap();
+        assert_eq!(native, prototype, "{reference}: the facade answered for another folder than the caller's");
+        let inside = PathBuf::from(prototype["path"].as_str().expect("a path"));
+        assert!(inside.starts_with(fs::canonicalize(&caller).unwrap()) || inside.starts_with(&caller), "{reference}: {}", inside.display());
+    }
+    // Outside a dossier the facade says so, as the native `path` does: exit 2 and nothing on stdout.
+    let elsewhere = caller.parent().unwrap().join("elsewhere");
+    fs::create_dir_all(&elsewhere).unwrap();
+    let native = run("path-caller-none-native", &elsewhere, &["path", ".regia/stato.md"], None);
+    let prototype = run("path-caller-none-python", &elsewhere, &["path", ".regia/stato.md"], Some(&home));
+    assert_eq!((prototype.exit, prototype.stdout.as_str()), (native.exit, native.stdout.as_str()), "{}", prototype.stderr);
+}

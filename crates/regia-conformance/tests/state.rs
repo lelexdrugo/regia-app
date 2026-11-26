@@ -11,7 +11,7 @@
 //! The normalizations, declared:
 //! - **The reasons** are the product's own sentences, in English: the prototype's are translated by the
 //!   tables of `words` before the comparison, those of a lock or a lease and those of the dossier.
-//! - **The line of the checks** in the text of `step finish` (#701) is the prototype's, character for character, with the checks' ids in the contract's words; see `step_finish_prints_the_prototype_s_line_of_the_checks`.
+//! - **The line of the checks** in the text of `step finish` (#701) is the prototype's, character for character, with the checks' ids and the command of its hint in the contract's words; see `step_finish_prints_the_prototype_s_line_of_the_checks`.
 //! - **The checks** of `step finish` (#448) are compared whole, through the table, when the prototype ran them;
 //!   when it could not, each side says why in its own words, and only that both could not is compared.
 //! - **A generated holder**, `passo-` and 12 random hex digits, reads as `passo-<generated>` on both sides,
@@ -287,7 +287,7 @@ fn contract_id(id: &str) -> String {
     translated["findings"][0]["check"].as_str().expect("an id").to_owned()
 }
 
-/// The prototype's lines of the checks with the checks' ids in the contract's words, the only difference declared
+/// The prototype's lines of the checks with the checks' ids and its hint in the contract's words, the differences declared
 /// between its text and the product's in Italian: the summary's `(id n, …)` and each finding's `[id]`.
 fn in_contract_ids(lines: &[String]) -> Vec<String> {
     lines
@@ -303,6 +303,9 @@ fn in_contract_ids(lines: &[String]) -> Vec<String> {
             } else if let Some((head, rest)) = line.split_once(": [").filter(|_| line.starts_with("  ")) {
                 let (id, tail) = rest.split_once(']').expect("a closing bracket");
                 format!("{head}: [{}]{tail}", contract_id(id))
+            } else if let Some(count) = line.strip_prefix("  … e altre ").and_then(|rest| rest.strip_suffix(" (regia controlla --progetto …)")) {
+                // The prototype's hint names its own command; the product's is `check --project`.
+                format!("  … e altre {count} (regia check --project …)")
             } else {
                 line.clone()
             }
@@ -312,8 +315,8 @@ fn in_contract_ids(lines: &[String]) -> Vec<String> {
 
 /// #701: in text, `step finish` prints the prototype's line of the checks, `controlli: N voci (…)`, the first
 /// three of them and how many more, between the cursor and the dossier. In Italian, the catalog the
-/// prototype's sentences are in, the lines are the prototype's own, character for character, but for the checks' ids,
-/// which are the contract's provisional names (#223), as in `check`'s text; the JSON of
+/// prototype's sentences are in, the lines are the prototype's own, character for character, but for the checks' ids and the
+/// command its hint names, which are the contract's provisional names (#223), as in `check`'s text; the JSON of
 /// `checks` is compared by the cases in JSON. In English only the words of the catalog change.
 #[test]
 fn step_finish_prints_the_prototype_s_line_of_the_checks() {
