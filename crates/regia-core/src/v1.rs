@@ -200,7 +200,7 @@ impl TrackerAnchor {
             .filter(|(_, in_file, held)| in_file.and_then(serde_json::Value::as_str) != *held)
             .map(|(name, in_file, held)| ((name.clone(), shown(in_file)), (name, held.unwrap_or("?").to_owned())))
             .unzip();
-        (!found.is_empty()).then(|| (StatusNames(found), StatusNames(held)))
+        (!found.is_empty()).then_some((StatusNames(found), StatusNames(held)))
     }
 }
 
