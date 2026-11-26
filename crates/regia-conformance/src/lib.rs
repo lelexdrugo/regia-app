@@ -58,6 +58,8 @@ pub const FAKE_PYTHON_SIDECAR: &str = "replay.json";
 
 /// The fake interpreter's exit code when it is started with an argv the case does not expect.
 pub const FAKE_PYTHON_WRONG_ARGV: u8 = 99;
+/// What it exits with when it was started in another folder than the one the case expects (#701).
+pub const FAKE_PYTHON_WRONG_CWD: u8 = 98;
 
 /// The day every fixture is recorded and checked on, so due dates mean the same on both sides: the
 /// prototype gets it through `oracle/fixed_now.py`, the product through `REGIA_TODAY`.
@@ -993,6 +995,9 @@ pub struct Replay {
     /// The stdout is JSON, with the dossier's placeholder inside its strings.
     #[serde(default)]
     pub json: bool,
+    /// The folder the stand-in must be started in; not checked when absent (#701).
+    #[serde(default)]
+    pub cwd: Option<String>,
 }
 
 impl Replay {
@@ -1005,7 +1010,7 @@ impl Replay {
             Recorded::Text(text) => (text, false),
         };
         let argv = regia_exec::python::FLAGS.iter().map(|flag| (*flag).to_owned()).chain([SCRIPT.to_owned()]).chain(python).collect();
-        Replay { argv, stdout, stderr: case.recorded_stderr(), exit: case.spec.exit, json }
+        Replay { argv, stdout, stderr: case.recorded_stderr(), exit: case.spec.exit, json, cwd: None }
     }
 
     /// The replay of a run whose dossier is `dossier`: its folder where the recording has the placeholder.
