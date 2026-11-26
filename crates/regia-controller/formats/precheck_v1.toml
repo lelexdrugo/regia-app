@@ -121,7 +121,9 @@ answer_tasks = "risposte_task"
 # digest, the project's last key. The precheck asks them for its folder, its repo, its products and their sites as
 # the registry writes them (`*_key`), and the tasks in progress of every project; it keeps a warning's `problem`,
 # `branch`, `ahead` and `repo`, and of a worker's branch not pushed (`branch_not_pushed`, #158) its `task` and
-# `expected` too, the first `max_branches` of them and then one entry with the count of the `others`.
+# `expected` too, the first `max_branches` of them and then one entry with the count of the `others`. With less than
+# `left_min_s` seconds before the tick's deadline the dossier is not read, and the line has no key: the prototype's
+# `DOSSIER_RESTO_MIN_S`. Its git's calls never start past the deadline.
 [dossier]
 key = "dossier"
 problem = "problema"
@@ -136,6 +138,7 @@ max_branches = 5
 repo_key = "repo"
 products_key = "prodotti"
 sites_key = "sedi"
+left_min_s = 5.0
 
 # The workers of the tasks in progress (#210, #641 of the dossier, ADR 0027): when each last wrote, from Orca's
 # adapter, read once a tick while the tracker is read, in at most `read_s` seconds, never with less than

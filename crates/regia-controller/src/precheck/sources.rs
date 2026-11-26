@@ -1,6 +1,7 @@
 //! The precheck's sources on the machine: the user's `gh` for the tracker, the state database, the
-//! reports on disk, the budget policy, the user's consent to the usage probes and their cache. The tick
-//! has a deadline, checked before each read of the tracker.
+//! reports on disk, the budget policy, the user's consent to the usage probes and their cache, and the
+//! user's git for the dossiers' warnings. The tick has a deadline, checked before each read of the tracker
+//! and of a dossier.
 
 use std::cell::{Cell, OnceCell, RefCell};
 use std::collections::BTreeSet;
@@ -14,6 +15,7 @@ use chrono::{DateTime, Utc};
 use regia_agents::{Env, Https, Platform, ProbeConsent, Settings, UsageProbes, WorkerBeat, WorkerThresholds, running_workers};
 use regia_core::policy::{file_path, local_file_name, read_local};
 use regia_core::{Policy, RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1, project_label_prefix};
+use regia_git::{DossierProject, Warning, WarningsRequest, dossier_warnings};
 use regia_github::GhTracker;
 use regia_identity::{config_dir, env_var, prototype_env_var, state_dir};
 use regia_store::{CursorName, LeaseEntry, LockStatus, ManualClock, ProjectId, ProviderUsage, Store, ViewField, WallTime, read_state_file, reports_folder};
@@ -40,6 +42,8 @@ pub struct LiveSources {
     /// Shared with the thread of a read that has a deadline of its own: the recent comments (#393).
     tracker: Arc<GhTracker>,
     binding: TrackerBinding,
+    /// The tracker's owner, which a product the registry writes without one takes (the dossier's warnings).
+    owner: String,
     /// The seconds the reads of the recent comments took in this tick, which share one cap.
     recent_spent: Cell<f64>,
     /// The thresholds of the workers, read once; and the read of the workers of this tick.
@@ -98,6 +102,7 @@ pub fn live_sources_in(folder: Option<&Path>, deadline_s: f64, fixed: Option<Wal
     Ok(LiveSources {
         tracker: Arc::new(GhTracker::new(&config)),
         binding,
+        owner: config.owner.clone(),
         recent_spent: Cell::new(0.0),
         thresholds: OnceCell::new(),
         workers: RefCell::new(WorkersRead::NotStarted),
@@ -141,6 +146,25 @@ impl LiveSources {
         let id = ProjectId::new(project).map_err(|error| error.to_string())?;
         let name = CursorName::new(format().detector.cursor.clone()).map_err(|error| error.to_string())?;
         Ok((id, name))
+    }
+}
+
+/// Whether the dossier is read with `left_s` seconds before the tick's deadline: not under the format's margin.
+fn dossier_is_read(left_s: f64) -> bool {
+    left_s >= format().dossier.left_min_s
+}
+
+/// What the line keeps of a warning of `regia-git`: its problem in the prototype's word, its branch and how far ahead
+/// it is, its task, its repo, and whether a gate holds it.
+fn compact_warning(warning: Warning) -> DossierWarning {
+    let number = |value: Option<u64>| value.map(|value| i64::try_from(value).unwrap_or(i64::MAX));
+    DossierWarning {
+        problem: warning.problem.word().to_owned(),
+        branch: warning.branch,
+        ahead: number(warning.ahead),
+        task: number(warning.task),
+        repo: warning.repo,
+        expected: warning.expected,
     }
 }
 
@@ -291,10 +315,24 @@ impl Sources for LiveSources {
         found
     }
 
-    /// Not read yet: the warnings need the prototype's `avvisi_dossier` (git, with the registry's products and sites),
-    /// which #450 of the dossier ports. Until then none is read, as the prototype's when its git does not answer.
-    fn dossier_warnings(&self, _request: &DossierRequest) -> Option<Vec<DossierWarning>> {
-        None
+    /// The prototype's `_dossier_da_regia`: the warnings of `regia-git`, local git only, for the project's folder, its repo,
+    /// its products with their sites and the tasks in progress, with no id, as the prototype asks them. Too close to the
+    /// tick's deadline they are not read; past it no call of git starts, and each call that would is a warning.
+    fn dossier_warnings(&self, request: &DossierRequest) -> Option<Vec<DossierWarning>> {
+        let left = self.deadline_s - self.started.elapsed().as_secs_f64();
+        if !dossier_is_read(left) {
+            return None;
+        }
+        let project = DossierProject {
+            id: None,
+            folder: Some(request.folder.clone()),
+            repo: request.repo.clone(),
+            products: request.products.clone(),
+            sites: request.sites.clone(),
+        };
+        let deadline = Duration::try_from_secs_f64(self.deadline_s.max(0.0)).ok().and_then(|after| self.started.checked_add(after));
+        let asked = WarningsRequest { projects: vec![project], deadline, in_progress: request.in_progress.clone(), owner: Some(self.owner.clone()) };
+        Some(dossier_warnings(&asked).into_iter().map(compact_warning).collect())
     }
 
     fn events_cursor(&self, project: &str) -> Result<Value, String> {
@@ -417,6 +455,44 @@ mod tests {
         assert!(recent_budget(100.0, 15.0) <= 0.0, "the tick's cap spent");
         assert!((recent_budget(25.0, 0.0) - 5.0).abs() < 1e-9, "the deadline's margin");
         assert!(recent_budget(20.0, 0.0) <= 0.0, "too close to the deadline");
+    }
+
+    /// The prototype's tests of the deadline's margin (`test_dossier_avvisi.py`): with less than 5 s left the dossier is
+    /// not read, with more it is.
+    #[test]
+    fn the_dossier_is_not_read_too_close_to_the_deadline() {
+        assert!(!dossier_is_read(1.0) && !dossier_is_read(4.999) && !dossier_is_read(0.0) && !dossier_is_read(-3.0));
+        assert!(dossier_is_read(5.0) && dossier_is_read(90.0));
+    }
+
+    /// A warning of `regia-git` keeps in the line what `_dossier_compatto` keeps, with the word of the precheck's format
+    /// for a worker's branch.
+    #[test]
+    fn a_warning_of_the_dossier_kept_for_the_line() {
+        assert_eq!(regia_git::Problem::BranchNotPushed.word(), format().dossier.branch_not_pushed, "the two formats agree");
+        let warning = Warning {
+            project: None,
+            folder: "f".to_owned(),
+            problem: regia_git::Problem::BranchNotPushed,
+            branch: Some("b".to_owned()),
+            ahead: Some(2),
+            detail: Some("d".to_owned()),
+            repo: Some("o/r".to_owned()),
+            task: Some(7),
+            never_pushed: Some(true),
+            expected: true,
+            site: false,
+        };
+        let kept = compact_warning(warning);
+        let wanted = DossierWarning {
+            problem: format().dossier.branch_not_pushed.clone(),
+            branch: Some("b".to_owned()),
+            ahead: Some(2),
+            task: Some(7),
+            repo: Some("o/r".to_owned()),
+            expected: true,
+        };
+        assert_eq!(kept, wanted);
     }
 
     #[test]

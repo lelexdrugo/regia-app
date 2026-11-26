@@ -40,8 +40,9 @@
 //! slow or failing is no data, never a fault.
 //!
 //! Each project's **dossier's warnings** (#159) are a signal, in no count, event or digest: asked of the sources
-//! with the registry's folder, repo, products and sites and the tasks in progress, and kept compact in the line.
-//! **Not read yet:** the live sources have no warnings until the prototype's `avvisi_dossier` is ported (#450).
+//! with the registry's folder, repo, products and sites and the tasks in progress, and kept compact in the line. The
+//! live sources read them with `regia-git`'s port of the prototype's `avvisi_dossier`, local git only, unless the
+//! tick's deadline is less than its margin away.
 
 mod args;
 mod budget;

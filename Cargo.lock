@@ -3041,6 +3041,7 @@ dependencies = [
  "regia-agents",
  "regia-core",
  "regia-exec",
+ "regia-git",
  "regia-github",
  "regia-identity",
  "regia-store",

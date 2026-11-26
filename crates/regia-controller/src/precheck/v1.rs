@@ -160,6 +160,8 @@ pub(crate) struct DossierWords {
     pub(crate) repo_key: String,
     pub(crate) products_key: String,
     pub(crate) sites_key: String,
+    /// Below this many seconds before the tick's deadline the dossier is not read.
+    pub(crate) left_min_s: f64,
 }
 
 #[derive(Debug, Deserialize)]

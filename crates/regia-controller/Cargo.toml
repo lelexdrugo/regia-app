@@ -17,6 +17,8 @@ chrono.workspace = true
 regia-agents.workspace = true
 regia-core.workspace = true
 regia-exec.workspace = true
+# The dossier's warnings (#159 of the dossier), which the precheck keeps compact in its line: local git only.
+regia-git.workspace = true
 regia-github.workspace = true
 regia-identity.workspace = true
 regia-store.workspace = true
