@@ -38,7 +38,7 @@ pub fn folder_variable() -> &'static str {
     &format().store.variable
 }
 
-/// The store's folder by the prototype's rule (`cartella_store`): the variable when it is set and not empty, else
+/// The store's folder by the prototype's rule (its `store.py`): the variable when it is set and not empty, else
 /// the store's folder under the state folder; `None` when neither names one.
 pub fn folder_rule(variable: Option<&OsStr>, state_dir: Option<&Path>) -> Option<PathBuf> {
     match variable.filter(|value| !value.is_empty()) {

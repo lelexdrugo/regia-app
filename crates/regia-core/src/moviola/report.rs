@@ -156,7 +156,7 @@ fn inline_list(text: &str) -> Option<Json> {
     Some(Json::List(items.iter().filter(|item| !pystr::strip(item).is_empty()).map(|item| scalar(item)).collect()))
 }
 
-/// `_valore`: an inline list, else a scalar.
+/// An inline list, else a scalar.
 fn value(text: &str) -> Json {
     inline_list(text).unwrap_or_else(|| scalar(text))
 }
