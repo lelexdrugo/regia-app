@@ -1,15 +1,15 @@
-// The moviola's quick check of the time per frame, and its screenshots (#486, Acceptance 1 and the screenshots of
-// its conformance): by hand, outside `npm run prove`, on an engine with its GPU and its own window, since a
-// headless browser without GPU says nothing about frames. It serves the harness under the app's CSP, as the proofs
-// do, runs harness/bench.ts at x1 and x10 (the spike's harness on the product's stage), then takes the lanes of
-// alpha in the three directions, the portfolio and the x10 stage.
+// The moviola's screenshots in an engine of choice (the screenshots of #486's conformance) and the bench of its list
+// of moments (#490), by hand, outside `npm run prove`. It serves the harness under the app's CSP, as the proofs do,
+// and takes the lanes of alpha in the three directions and the portfolio. The time per frame is not measured here
+// any more: that is the product's bench, crates/regia-moviola-bench (`npm run bench` there, in the product's
+// webview), which took the place of #486's quick check (#683).
 //
 //   node prove/bench.mjs --engine webview2|edge|chrome|headless --out <folder> [--host <a WebView2 app>] [--args "<more>"] [--list]
 //
 // webview2: an app that hosts WebView2 and does not keep its page from navigating, started with
 // WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS set to open the DevTools on a port; the renderer spike's moviola-bench.exe
-// (84871ea) is one. edge and chrome: the browser in a window with its GPU. headless: the proofs' browser, for the
-// screenshots only. The folder receives bench-<engine>.json and the PNGs.
+// (84871ea) is one. edge and chrome: the browser in a window with its GPU. headless: the proofs' browser. The folder
+// receives shots-<engine>.json, which says what drew them, and the PNGs.
 //
 // --list (#490): the cost of the list of moments instead (harness/bench.ts, `benchList`), at x1, x10 and x100, at the
 // zoom of detail and of groups, against the conformance's bound of 1 ms; the folder receives bench-list-<engine>.json.
@@ -101,21 +101,9 @@ async function listBench() {
   return results;
 }
 
-/** The time per frame at x1 and x10 (not headless), then the screenshots. */
-async function frameBench() {
+/** The screenshots: alpha's lanes in the three directions, then the portfolio. */
+async function screenshots() {
   let n = 0;
-  const results = [];
-  if (engine !== "headless") {
-    for (const scale of [1, 10]) {
-      const route = `#/bench?scale=${scale}&lang=en&dir=montaggio`;
-      await open(page, server.origin, route, ++n);
-      results.push(await page.evaluate("window.benchResult"));
-      if (scale === 10) await shot(page, "bench-x10");
-      const r = results.at(-1);
-      console.log(`x${scale}: ${r.milestones} milestones, ${r.aggregates} aggregates, ${r.lanes} lanes; display ${r.vsync_ms.toFixed(1)} ms;`
-        + ` frame median ${r.all.dt.median.toFixed(1)} ms, p95 ${r.all.dt.p95.toFixed(1)} ms, script p95 ${r.all.js.p95.toFixed(2)} ms, late ${r.all.dropped_pct.toFixed(1)} %`);
-    }
-  }
   for (const direction of ["montaggio", "foglio", "nero"]) {
     await open(page, server.origin, `#/moviola/alpha?data=demo&lang=en&dir=${direction}`, ++n);
     await sleep(200);
@@ -129,8 +117,8 @@ async function frameBench() {
     return { userAgent: navigator.userAgent, dpr: devicePixelRatio, inner: [innerWidth, innerHeight],
       renderer: gl ? gl.getParameter(debug ? debug.UNMASKED_RENDERER_WEBGL : gl.RENDERER) : null };
   })()`);
-  const record = { engine, version: await page.version(), host, date: new Date().toISOString(), results };
-  writeFileSync(join(out, `bench-${engine}.json`), JSON.stringify(record, null, 1) + "\n");
+  const record = { engine, version: await page.version(), host, date: new Date().toISOString() };
+  writeFileSync(join(out, `shots-${engine}.json`), JSON.stringify(record, null, 1) + "\n");
   console.log(`${engine}: ${record.version}; ${host.renderer}; dpr ${host.dpr}; window ${host.inner.join("x")}`);
 }
 
@@ -141,7 +129,7 @@ try {
     writeFileSync(join(out, `bench-list-${engine}.json`), JSON.stringify(record, null, 1) + "\n");
     console.log(`${engine}: ${record.version}`);
   } else {
-    await frameBench();
+    await screenshots();
   }
   const errors = [...new Set(page.consoleErrors)];
   console.log(`errors in the console: ${errors.length}`);
