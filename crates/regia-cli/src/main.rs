@@ -66,8 +66,8 @@ enum Commands {
         #[command(subcommand)]
         command: policy::PolicyCommand,
     },
-    /// The workers of Orca on the tasks given, read only: when each dispatch in progress last wrote, whether it waits for
-    /// a person, whether it is blocked or stopped by its session. Exits 1 when Orca does not answer. Native only: the
+    /// The workers of the agents' app on the tasks given, read only: when each dispatch in progress last wrote, whether it waits for
+    /// a person, whether it is blocked or stopped by its session. Exits 1 when the app does not answer. Native only: the
     /// prototype has it in a script of its own, which the facade does not start.
     #[command(args_override_self = true)]
     Workers(workers::WorkersArgs),

@@ -42,7 +42,7 @@ pub use launch::{
 };
 pub use orca::{
     Auto, Blocked, DispatchRead, DispatchState, Orca, OrcaWaits, OrcaWorkers, PROMPT_IN_ARGV_MAX, SessionCause, TaskDispatches, WAITING_ACTIVITIES, WorkerBeat,
-    WorkerThresholds, read_dispatches, read_workers, running_workers, session_cause, surface,
+    WorkerThresholds, read_dispatches, read_workers, running_dispatches, running_workers, session_cause, surface,
 };
 pub use policy::{Assignment, Diversity, Fallback, Policy, Role, Settings, SettingsError, Tier};
 pub use usage::{

@@ -1,21 +1,20 @@
-//! `workers`, natively (#744): the prototype's `tools/worker_orca.py --task N [N…] [--json] [--dispatch]` (#543,
-//! #641, #644, #698; F277 of the dossier's inventory). For each task asked, every dispatch in progress of Orca whose
+//! `workers`, natively (#744): the prototype's command of the workers, `--task N [N…] [--json] [--dispatch]` (#543,
+//! #641, #644, #698; F277 of the dossier's inventory). For each task asked, every dispatch in progress of the agents' app whose
 //! task's title names it, whatever the tracker says of the task: minutes since its worker's last line, whether it
 //! waits for a person, whether it is past the silence's threshold, why it is blocked past the block's, and why its
 //! session stopped it. With more than one dispatch the task's own line is the one of the dispatch that wrote last, with
-//! the count, and a line follows for each. Read only: Orca's list, the tasks of its runs, transcripts and
+//! the count, and a line follows for each. Read only: the app's list, the tasks of its runs, transcripts and
 //! `worker-show`. Native only, as `policy`: the prototype has it in a script of its own, which the facade does not
 //! start. The JSON is the contract, with provisional names (#223); the text is the catalog's, a line for each of the
-//! prototype's, with a block's case in the contract's word. Without `--dispatch` the output holds no id of Orca. The
-//! exits are the prototype's: 0 when Orca answered, also for a task with no worker; 1, with one line on stderr, when
+//! prototype's, with a block's case in the contract's word. Without `--dispatch` the output holds no id of the app. The
+//! exits are the prototype's: 0 when the app answered, also for a task with no worker; 1, with one line on stderr, when
 //! it did not; 2 for wrong arguments.
 
 use std::process::ExitCode;
 use std::time::{Duration, Instant};
 
 use regia_agents::{
-    Blocked, DispatchState, OrcaWorkers, SessionCause, TaskDispatches, WAITING_ACTIVITIES,
-    WorkerThresholds,
+    Blocked, DispatchState, SessionCause, TaskDispatches, WAITING_ACTIVITIES, WorkerThresholds,
 };
 use regia_i18n::Catalog;
 use regia_runtime::dossier_dir;
@@ -29,7 +28,7 @@ use crate::print_json;
 /// `SCADENZA_CLI_S`).
 const DEADLINE: Duration = Duration::from_secs(120);
 
-/// The exit when Orca does not answer, or cannot be found: the prototype's.
+/// The exit when the agents' app does not answer, or cannot be found: the prototype's.
 const UNREACHABLE: u8 = 1;
 
 #[derive(clap::Args)]
@@ -41,14 +40,14 @@ pub(crate) struct WorkersArgs {
     /// Machine-readable output: this is the contract the agents use.
     #[arg(long)]
     json: bool,
-    /// Adds the ids of Orca's dispatch and run of each worker, which `worker-stop --dispatch` and `worker-show` ask
-    /// for. Without it the output holds no id of Orca: they do not belong in the documents of the state.
+    /// Adds the ids of the dispatch and of the run of each worker in the agents' app, which `worker-stop --dispatch`
+    /// and `worker-show` ask for. Without it the output holds no id: they do not belong in the documents of the state.
     #[arg(long)]
     dispatch: bool,
 }
 
 /// `workers`, at the clock of this process, with the thresholds of the prototype's `policies/worker.yaml` while the
-/// prototype exists, as the precheck reads them, and Orca as setup finds it.
+/// prototype exists, as the precheck reads them, and the agents' app as setup finds it.
 pub(crate) fn run(args: &WorkersArgs, catalog: &Catalog) -> Result<ExitCode, String> {
     let now = Clock::read()?.wall()?;
     let text = dossier_dir()
@@ -61,7 +60,7 @@ pub(crate) fn run(args: &WorkersArgs, catalog: &Catalog) -> Result<ExitCode, Str
         }
     }
     let deadline = Instant::now() + DEADLINE;
-    let found = match OrcaWorkers::new().read_dispatches(&tasks, thresholds, now, deadline) {
+    let found = match regia_agents::running_dispatches(&tasks, thresholds, now, deadline) {
         Ok(found) => found,
         Err(reason) => {
             eprintln!(
@@ -205,7 +204,7 @@ fn cause_word(cause: SessionCause) -> &'static str {
     }
 }
 
-/// How the command prints: the thresholds' minutes, and whether Orca's ids are shown.
+/// How the command prints: the thresholds' minutes, and whether the app's ids are shown.
 struct View {
     minutes: Minutes,
     ids: bool,
@@ -360,7 +359,7 @@ impl View {
         format!("{last}; {waiting}; {threshold}{tail}")
     }
 
-    /// Orca's ids at the end of a dispatch's line, with `--dispatch` only.
+    /// The app's ids at the end of a dispatch's line, with `--dispatch` only.
     fn ids_of(&self, state: &DispatchState) -> String {
         if !self.ids {
             return String::new();
@@ -373,7 +372,7 @@ impl View {
     }
 }
 
-/// The note of Orca's activity, when it is a wait for a person.
+/// The note of the app's activity, when it is a wait for a person.
 fn activity(state: &DispatchState, catalog: &Catalog) -> String {
     match state.activity.as_deref() {
         Some(activity) if WAITING_ACTIVITIES.contains(&activity) => {

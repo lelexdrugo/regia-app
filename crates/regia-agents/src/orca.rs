@@ -528,7 +528,7 @@ pub enum SessionCause {
     Billing,
 }
 
-/// The prototype's `causa_di_sessione` on the texts of system lines: the billing when one of them says it, before the
+/// The cause of a session as the prototype tells it from the texts of system lines: the billing when one of them says it, before the
 /// limit, since a warning can say both and only the billing needs the owner; else the limit when one says it.
 #[must_use]
 pub fn session_cause<S: AsRef<str>>(texts: &[S]) -> Option<SessionCause> {
@@ -844,7 +844,7 @@ fn activity_of(record: &serde_json::Map<String, Value>) -> Option<String> {
     (!activity.is_empty()).then(|| activity.to_lowercase())
 }
 
-/// The prototype's `_in_corso_con_attivita`: every dispatch in progress, the most recent first, to the end of
+/// The prototype's list of the dispatches with their activity (#698): every dispatch in progress, the most recent first, to the end of
 /// `worker-list` within [`ALL_PAGES`] pages, each with its activity.
 fn all_in_progress(call: &mut OrcaCall<'_>, deadline: Instant) -> Result<Vec<Listed>, String> {
     let mut found = Vec::new();
@@ -1043,6 +1043,16 @@ pub fn running_workers(wanted: &BTreeSet<u64>, thresholds: WorkerThresholds, now
     OrcaWorkers::new().read(wanted, thresholds, now, deadline)
 }
 
+/// The dispatches in progress of the tasks asked as this machine's app of agents shows them, with `orca` as setup finds
+/// it: [`OrcaWorkers::read_dispatches`]. The command of the workers names none of this, as the precheck does not.
+///
+/// # Errors
+///
+/// When the app cannot be found, or does not answer the lists.
+pub fn running_dispatches(tasks: &[u64], thresholds: WorkerThresholds, now: WallTime, deadline: Instant) -> Result<Vec<TaskDispatches>, String> {
+    OrcaWorkers::new().read_dispatches(tasks, thresholds, now, deadline)
+}
+
 /// `orca orchestration <words> --json`, each flag with its value as one token, the values typed.
 fn orchestration(words: &[&str]) -> Result<Args, String> {
     let mut args = Args::new().word("orchestration");
@@ -1176,7 +1186,7 @@ mod tests {
         assert_eq!(orca_instant(Some(&json!(true))), None);
     }
 
-    /// The prototype's `causa_di_sessione` and its tests of #644: the billing before the limit, in any of the texts; the
+    /// The prototype's cause of a session and its tests of #644: the billing before the limit, in any of the texts; the
     /// limit in both its forms; a billing whose first eighty characters still say it.
     #[test]
     fn the_cause_of_a_session_is_the_prototype_s() {
