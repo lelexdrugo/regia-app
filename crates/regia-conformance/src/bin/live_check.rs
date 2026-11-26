@@ -1,5 +1,6 @@
 //! Local only: the Rust and the Python reads against the real tracker, right now: `brief`, `projects`,
-//! `task list` with its filters, and `task show` on issues `task list` names. Issue data is private, so this
+//! `task list` with its filters, `task show` on issues `task list` names, and `plan` on a project and on its Objective
+//! (#444), whose command line the native side quotes in its own words (`plan_names.rs`). Issue data is private, so this
 //! prints only JSON paths and counts, with project ids, registry keys and table errors redacted, and writes
 //! nothing. Neither stdout nor stderr of either side is ever printed, only that a run failed. The tracker
 //! can change between the two reads, hence the retries. Sections the Rust brief declares as not ported are
@@ -17,12 +18,16 @@ use regia_conformance::{json_diff, live_python_launch, live_rust_launch, regia_b
 use regia_facade::{PythonPrototype, Table};
 use serde_json::Value;
 
+#[path = "../plan_names.rs"]
+mod plan_names;
+
 /// The keys of the contract a difference path may name; any other key is data and is redacted.
-const CONTRACT_KEYS: [&str; 38] = [
+const CONTRACT_KEYS: [&str; 49] = [
     "waiting_on_owner", "ready", "in_progress", "by_project", "session", "graph", "cycles", "truncated", "children_waiting",
     "due_ignored", "number", "title", "state", "state_reason", "status", "project", "project_field", "maturity", "objective",
     "labels", "parent", "sub_issues", "blocked_by", "blocked_by_total", "url", "updated_at", "created_at", "closed_at", "unblocks",
-    "unblocks_total", "chain", "cycle", "due", "body", "comments", "id", "folder", "products",
+    "unblocks_total", "chain", "cycle", "due", "body", "comments", "id", "folder", "products", "command", "date", "root", "nodes",
+    "external", "edges", "nested", "main_line", "inbox_hidden", "edges_lost", "mermaid",
 ];
 
 /// A difference path without its value, each key that is not the contract's as `<key>`.
@@ -89,6 +94,14 @@ impl Sides<'_> {
                 let object = python.as_object_mut().ok_or("the brief is not an object")?;
                 excluded = not_ported.into_iter().filter(|key| object.remove(key).is_some()).collect();
             }
+            if args[0] == "plan" {
+                // The one normalization of `plan`, declared: the command line the native side quotes, in its words.
+                for key in ["command", "mermaid"] {
+                    if let Some(text) = rust[key].as_str() {
+                        rust[key] = Value::String(plan_names::in_the_prototype_s_names(text));
+                    }
+                }
+            }
             last = json_diff(&rust, &python);
             println!("{label}: attempt {attempt}: {} differences; {}{}", last.len(), counts(&rust), if excluded.is_empty() { String::new() } else { format!("; not ported, present in python: {excluded:?}") });
             if last.is_empty() {
@@ -112,6 +125,11 @@ fn counts(value: &Value) -> String {
                 .map(|key| format!("{key}={}", value[key].as_array().map_or(0, Vec::len)))
                 .collect();
             format!("{}; projects={}", sections.join(" "), value["by_project"].as_object().map_or(0, serde_json::Map::len))
+        }
+        Value::Object(object) if object.contains_key("nodes") => {
+            let length = |key: &str| value[key].as_array().map_or(0, Vec::len);
+            let diagram = value["mermaid"].as_str().map_or(0, |text| text.lines().count());
+            format!("nodes={} edges={} truncated={} main_line={} diagram_lines={diagram}", length("nodes"), length("edges"), length("truncated"), length("main_line"))
         }
         Value::Object(object) => format!("comments={}", object.get("comments").and_then(Value::as_array).map_or(0, Vec::len)),
         _ => String::new(),
@@ -145,6 +163,12 @@ fn main() -> ExitCode {
     let all = run("task list --include-closed --objectives --order graph", strings(&["task", "list", "--include-closed", "--objectives", "--order", "graph", "--json"]));
     if let Some(project) = projects.as_ref().and_then(|projects| projects[0]["id"].as_str()) {
         run("task list --project <first project> --order graph", strings(&["task", "list", "--project", project, "--order", "graph", "--json"]));
+        run("plan --project <first project>", strings(&["plan", "--project", project, "--json"]));
+        run("plan --project <first project> --mermaid --max-nodes 10", strings(&["plan", "--project", project, "--mermaid", "--max-nodes", "10", "--json"]));
+    }
+    // Under the first project's Objective, by its number: data, never printed.
+    if let Some(objective) = projects.as_ref().and_then(|projects| projects[0]["objective"].as_u64()) {
+        run("plan --root <its Objective> --mermaid --max-nodes 200", strings(&["plan", "--root", &objective.to_string(), "--mermaid", "--max-nodes", "200", "--json"]));
     }
     // One open task, one closed issue and one Objective, each by its number: data, never printed.
     let entries = all.as_ref().and_then(Value::as_array).cloned().unwrap_or_default();
