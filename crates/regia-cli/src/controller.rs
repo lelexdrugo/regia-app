@@ -3,7 +3,7 @@
 //!
 //! - **Its arguments** exit 1 when they do not hold, as the prototype's wrong usage does; the other commands keep the
 //!   2 of clap.
-//! - **The surfaces**, by `--launcher`: a step on `auto`, `cli` or `orca`, or on nothing with `fake`. A scheduled chat
+//! - **The surfaces**, by `--launcher`: a step on a surface that starts something, or on nothing with `fake`. A scheduled chat
 //!   opens only where its owner sees it, the format's surface: never with `cli`, whose chat stays to open, and on
 //!   nothing with `fake`. The token's expiry is read around a wake-up that starts a session, never around a fake one.
 //! - **`--shadow`** runs on a fresh copy of the state folder, beside it, and launches nothing: every surface is `Dry`.
@@ -16,8 +16,9 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use clap::builder::PossibleValuesParser;
 use clap::{Parser, Subcommand};
-use regia_agents::{Auto, Cli as CliSurface, Dry, Env, Https, LaunchSurface, Orca, Policy, Role, SurfaceKind, UsageProbes};
+use regia_agents::{Env, Https, LaunchSurface, Policy, Role, SurfaceKind, UsageProbes};
 use regia_controller::engine::native::{NativePrecheck, Processes, TrackerFolders, random_id};
 use regia_controller::interrupt::stop_on_interrupt;
 use regia_controller::resident::{Config, Console, Exit, HostPorts, Notice, Resident, StopSleep, Summary};
@@ -60,7 +61,7 @@ struct RunArgs {
     #[arg(long)]
     interval: Option<f64>,
     /// How a step starts: `fake` starts nothing.
-    #[arg(long, value_parser = ["auto", "cli", "orca", "fake"], default_value = "auto")]
+    #[arg(long, value_parser = PossibleValuesParser::new(launchers()), default_value = "auto")]
     launcher: String,
     /// Only this project; repeatable.
     #[arg(long = "project")]
@@ -118,14 +119,20 @@ fn config_of(args: &RunArgs, folder: PathBuf, policy: &Policy) -> Result<Config,
     Ok(config)
 }
 
-/// A surface of `kind` on this process's environment, shared by the rounds.
+/// The launcher that starts nothing: the surface `Dry`, by the prototype's name of its fake launcher's option.
+const FAKE: &str = "fake";
+
+/// The values of `--launcher`: `auto` first, as the default, then the other surfaces that start something, then
+/// [`FAKE`].
+fn launchers() -> Vec<&'static str> {
+    let starting = SurfaceKind::ALL.into_iter().filter(|kind| !matches!(kind, SurfaceKind::Auto | SurfaceKind::Dry));
+    std::iter::once(SurfaceKind::Auto).chain(starting).map(SurfaceKind::id).chain([FAKE]).collect()
+}
+
+/// A surface of `kind` on this process's environment, shared by the rounds: the agents' own, which names its surfaces
+/// so this command names none.
 fn surface_of(kind: SurfaceKind, env: &Env) -> Arc<dyn LaunchSurface + Send + Sync> {
-    match kind {
-        SurfaceKind::Cli => Arc::new(CliSurface::new(env.clone())),
-        SurfaceKind::Orca => Arc::new(Orca::new(env.clone())),
-        SurfaceKind::Auto => Arc::new(Auto::new(Orca::new(env.clone()), CliSurface::new(env.clone()))),
-        SurfaceKind::Dry => Arc::new(Dry::new()),
-    }
+    Arc::from(regia_agents::surface(kind, env.clone()))
 }
 
 /// Where a scheduled chat opens with the steps on `kind`, as the prototype's launcher of chats: nowhere with `cli`,
@@ -134,7 +141,7 @@ fn chat_kind(kind: SurfaceKind) -> Option<SurfaceKind> {
     match kind {
         SurfaceKind::Dry => Some(SurfaceKind::Dry),
         SurfaceKind::Cli => None,
-        SurfaceKind::Auto | SurfaceKind::Orca => chat_surface_kind(),
+        _ => chat_surface_kind(),
     }
 }
 
@@ -177,7 +184,7 @@ fn controller_run(args: &RunArgs, catalog: &Catalog) -> Result<u8, String> {
         None => store,
     };
     let env = Env::of_this_process();
-    let dry = args.shadow || args.launcher == "fake";
+    let dry = args.shadow || args.launcher == FAKE;
     let kind = if dry { SurfaceKind::Dry } else { SurfaceKind::parse(&args.launcher).unwrap_or(SurfaceKind::Auto) };
     let chat = chat_kind(kind).map_or(ChatSurface::None, |chat| ChatSurface::Open(surface_of(chat, &env)));
     let token_expiry: Option<Arc<dyn Fn() -> Option<String> + Send + Sync>> = (!dry).then(|| {
@@ -338,13 +345,19 @@ mod tests {
     }
 
     /// `test_il_lanciatore_di_chat_dipende_dall_adapter`: the fake launcher's chat starts nothing, the `cli` one opens no
-    /// chat, and with `auto` or `orca` the chat is Orca's, never the fallback of `auto`.
+    /// chat, and with every other launcher the chat is on the format's surface, never on `auto`, whose fallback is a
+    /// session with nobody in front (which surface that is, is a case of `tests/controller_schedule.rs`).
     #[test]
     fn the_chat_s_surface_follows_the_launcher() {
         assert_eq!(chat_kind(SurfaceKind::Dry), Some(SurfaceKind::Dry));
         assert_eq!(chat_kind(SurfaceKind::Cli), None);
-        assert_eq!(chat_kind(SurfaceKind::Auto), Some(SurfaceKind::Orca));
-        assert_eq!(chat_kind(SurfaceKind::Orca), Some(SurfaceKind::Orca));
+        let chat = chat_surface_kind().expect("the format's surface of a chat");
+        assert!(!matches!(chat, SurfaceKind::Auto | SurfaceKind::Cli | SurfaceKind::Dry));
+        for kind in SurfaceKind::ALL.into_iter().filter(|kind| !matches!(kind, SurfaceKind::Cli | SurfaceKind::Dry)) {
+            assert_eq!(chat_kind(kind), Some(chat), "{kind:?}");
+        }
+        assert_eq!(launchers().first().copied(), Some("auto"));
+        assert_eq!((launchers().len(), launchers().last().copied()), (SurfaceKind::ALL.len(), Some(FAKE)));
     }
 
     /// The prototype's summary line: the round and its instant, the precheck, the decision, then what the round did.

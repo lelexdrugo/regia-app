@@ -440,7 +440,7 @@ impl LaunchSurface for Auto {
 
 /// The surface `kind` names, over `env`, with this process's state folder and programs as setup finds
 /// them: what a command or the app launches on.
-pub fn surface(kind: SurfaceKind, env: Env) -> Box<dyn LaunchSurface> {
+pub fn surface(kind: SurfaceKind, env: Env) -> Box<dyn LaunchSurface + Send + Sync> {
     match kind {
         SurfaceKind::Cli => Box::new(Cli::new(env)),
         SurfaceKind::Orca => Box::new(Orca::new(env)),

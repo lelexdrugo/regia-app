@@ -435,7 +435,8 @@ fn a_configuration_of_the_dossier_s_shape_is_valid() {
     ]});
     let (operations, errors) = normalize(&document);
     assert_eq!(errors, Vec::<String>::new());
-    let shape: Vec<(&str, (u32, u32), Action, BTreeSet<u32>)> = operations.iter().map(|op| (op.name.as_str(), op.hour, op.action, op.days.clone())).collect();
+    type Shape<'a> = (&'a str, (u32, u32), Action, BTreeSet<u32>);
+    let shape: Vec<Shape<'_>> = operations.iter().map(|op| (op.name.as_str(), op.hour, op.action, op.days.clone())).collect();
     assert_eq!(
         shape,
         [
