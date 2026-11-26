@@ -445,8 +445,12 @@ fn read_rows(folder: &Path, shown: &str) -> Result<BTreeMap<i128, Object>, Movio
     Ok(out)
 }
 
-/// The moviola's folder of the dossier, created where it is missing, never through a link.
+/// The moviola's folder of the dossier, created where it is missing, never through a link. A dossier's folder that
+/// is not there is made too, as the prototype's `mkdir(parents=True)` makes it.
 fn moviola_dir_for_writing(folder: &Path) -> Result<PathBuf, MoviolaError> {
+    if fs::symlink_metadata(folder).is_err_and(|error| error.kind() == ErrorKind::NotFound) {
+        fs::create_dir_all(folder).map_err(|source| MoviolaError::Write { file: folder.display().to_string(), source })?;
+    }
     let mut dir = folder.to_path_buf();
     let mut walked: Vec<&str> = Vec::new();
     for segment in &format().folder {
