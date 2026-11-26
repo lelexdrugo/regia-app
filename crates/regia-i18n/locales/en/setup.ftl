@@ -168,3 +168,6 @@ init-anchor-file = {" "}({ $anchor })
 init-anchor-found = in the file: { $tracker }
 init-anchor-anchored = anchored:    { $tracker }
 init-anchor-again = if the tracker really moved, run `init derive` again to anchor the app to it
+init-anchor-status-mismatch = { $file } binds the statuses otherwise than the anchor of this app
+init-anchor-invalid = the anchor of this app does not read: { $anchor }
+init-anchor-rewrite = run `init derive` again to write it anew

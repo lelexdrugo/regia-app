@@ -29,6 +29,8 @@ pub enum V1Error {
     InvalidAnchor { path: PathBuf, problem: String },
     #[error("{file} names the tracker {found}, but this app is anchored to {anchored} by {anchor}")]
     AnchorMismatch { file: PathBuf, anchor: PathBuf, found: Box<TrackerNames>, anchored: Box<TrackerNames> },
+    #[error("{file} binds the statuses as {found}, but this app's anchor {anchor} binds them as {anchored}")]
+    StatusMismatch { file: PathBuf, anchor: PathBuf, found: Box<StatusNames>, anchored: Box<StatusNames> },
 }
 
 /// The file of the tracker's anchor in the configuration folder.
@@ -41,16 +43,75 @@ pub fn anchor_file(config_dir: &Path) -> PathBuf {
 }
 
 /// The tracker this machine's app follows, kept in the app's configuration folder, outside the dossier (threat model
-/// T08, V17): `init derive` writes it beside the configuration it derives, and [`TrackerConfigV1::load`] stops on a
-/// `tracker.json` that names another repo or another Project. Not format v1: the prototype has no anchor. The
-/// Project is anchored by its id too, since every read and write of the tracker goes by the id and none by the number.
+/// T08, V17): `init derive` writes it when it writes this machine's configuration, and [`TrackerConfigV1::load`] stops
+/// on a `tracker.json` that names another repo or another Project, or binds the statuses otherwise. Not format v1: the
+/// prototype has no anchor. The Project is anchored by its id too, since every read and write of the tracker goes by
+/// the id and none by the number.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[serde(try_from = "AnchorFile", into = "AnchorFile")]
 pub struct TrackerAnchor {
     pub owner: String,
     pub repo: String,
     pub project_number: u64,
     pub project_id: String,
+    /// `None` in an anchor written before the statuses were anchored (#685): they are checked from the next
+    /// `init derive`, which writes them.
+    pub statuses: Option<StatusAnchor>,
+}
+
+/// The statuses of an anchor, as `init derive` found them: the Project's status field and the option of each status,
+/// by its name. They decide the dispatches.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StatusAnchor {
+    pub field_id: String,
+    pub options: BTreeMap<String, String>,
+}
+
+/// The anchor as its file holds it: the keys of `tracker.json`, the two of the statuses together or not at all, last,
+/// and no other.
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AnchorFile {
+    owner: String,
+    repo: String,
+    project_number: u64,
+    project_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    status_field_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    status_options: Option<BTreeMap<String, String>>,
+}
+
+impl TryFrom<AnchorFile> for TrackerAnchor {
+    type Error = String;
+
+    fn try_from(file: AnchorFile) -> Result<Self, String> {
+        let statuses = match (file.status_field_id, file.status_options) {
+            (Some(field_id), Some(options)) => Some(StatusAnchor { field_id, options }),
+            (None, None) => None,
+            _ => return Err("status_field_id and status_options go together".to_owned()),
+        };
+        Ok(Self { owner: file.owner, repo: file.repo, project_number: file.project_number, project_id: file.project_id, statuses })
+    }
+}
+
+impl From<TrackerAnchor> for AnchorFile {
+    fn from(anchor: TrackerAnchor) -> Self {
+        let (status_field_id, status_options) = anchor.statuses.map(|statuses| (statuses.field_id, statuses.options)).unzip();
+        Self { owner: anchor.owner, repo: anchor.repo, project_number: anchor.project_number, project_id: anchor.project_id, status_field_id, status_options }
+    }
+}
+
+/// How a tracker binds its statuses where an anchor and a `tracker.json` differ, as `name=id`: the status field first,
+/// then the option of each status, in their order. A value that is missing reads `?`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StatusNames(pub Vec<(String, String)>);
+
+impl std::fmt::Display for StatusNames {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let entries: Vec<String> = self.0.iter().map(|(name, id)| format!("{name}={id}")).collect();
+        f.write_str(&entries.join(", "))
+    }
 }
 
 /// What names a tracker, as an anchor holds it or a `tracker.json` says it: `owner/repo #number id`. A value that is
@@ -117,20 +178,49 @@ impl TrackerAnchor {
             project_id: self.project_id.clone(),
         }
     }
+
+    /// Where `config`, a `tracker.json` as JSON, binds the statuses otherwise than this anchor: the status field, then
+    /// the option of each status of the format, which is what [`TrackerBinding`] reads. An option beyond those binds no
+    /// status and is not compared. `None` when they agree, or when the anchor has no statuses (#685).
+    fn status_differences(&self, config: &serde_json::Value) -> Option<(StatusNames, StatusNames)> {
+        let anchored = self.statuses.as_ref()?;
+        let shown = |value: Option<&serde_json::Value>| match value {
+            None | Some(serde_json::Value::Null) => "?".to_owned(),
+            Some(serde_json::Value::String(text)) => text.clone(),
+            Some(other) => other.to_string(),
+        };
+        let options = config.get("status_options");
+        let mut pairs = vec![("status_field_id".to_owned(), config.get("status_field_id"), Some(anchored.field_id.as_str()))];
+        pairs.extend(status_option_names().into_iter().map(|name| {
+            let (in_file, held) = (options.and_then(|options| options.get(&name)), anchored.options.get(&name).map(String::as_str));
+            (name, in_file, held)
+        }));
+        let (found, held): (Vec<_>, Vec<_>) = pairs
+            .into_iter()
+            .filter(|(_, in_file, held)| in_file.and_then(serde_json::Value::as_str) != *held)
+            .map(|(name, in_file, held)| ((name.clone(), shown(in_file)), (name, held.unwrap_or("?").to_owned())))
+            .unzip();
+        (!found.is_empty()).then(|| (StatusNames(found), StatusNames(held)))
+    }
 }
 
-/// Stops on the `tracker.json` at `file`, read as `config`, when the anchor at `anchor` names another tracker. No
-/// configuration folder, or no anchor in it, checks nothing.
+/// Stops on the `tracker.json` at `file`, read as `config`, when the anchor at `anchor` names another tracker, or binds
+/// the statuses otherwise. No configuration folder, or no anchor in it, checks nothing; an anchor without statuses
+/// checks the tracker only.
 fn check_anchor(anchor: Option<&Path>, file: &Path, config: &serde_json::Value) -> Result<(), V1Error> {
     let Some(path) = anchor else { return Ok(()) };
-    match TrackerAnchor::read(path)? {
-        Some(anchored) if !anchored.names(config) => Err(V1Error::AnchorMismatch {
+    let Some(anchored) = TrackerAnchor::read(path)? else { return Ok(()) };
+    if !anchored.names(config) {
+        return Err(V1Error::AnchorMismatch {
             file: file.to_path_buf(),
             anchor: path.to_path_buf(),
             found: Box::new(TrackerNames::of(config)),
             anchored: Box::new(anchored.tracker_names()),
-        }),
-        _ => Ok(()),
+        });
+    }
+    match anchored.status_differences(config) {
+        Some((found, held)) => Err(V1Error::StatusMismatch { file: file.to_path_buf(), anchor: path.to_path_buf(), found: Box::new(found), anchored: Box::new(held) }),
+        None => Ok(()),
     }
 }
 
@@ -301,7 +391,7 @@ impl TrackerConfigV1 {
     pub fn load_for_links(state_dir: Option<&Path>, dossier: Option<&Path>, config_dir: Option<&Path>) -> Result<Option<Self>, V1Error> {
         match Self::load(state_dir, dossier, config_dir) {
             Ok(config) => Ok(Some(config)),
-            Err(error @ (V1Error::AnchorMismatch { .. } | V1Error::InvalidAnchor { .. })) => Err(error),
+            Err(error @ (V1Error::AnchorMismatch { .. } | V1Error::StatusMismatch { .. } | V1Error::InvalidAnchor { .. })) => Err(error),
             Err(error) if state_dir.is_some_and(|dir| local_config_file(dir).is_file()) => Err(error),
             Err(_) => Ok(None),
         }
@@ -634,7 +724,67 @@ mod tests {
     }
 
     fn anchored_to(owner: &str, repo: &str, project_number: u64, project_id: &str) -> TrackerAnchor {
-        TrackerAnchor { owner: owner.into(), repo: repo.into(), project_number, project_id: project_id.into() }
+        TrackerAnchor { owner: owner.into(), repo: repo.into(), project_number, project_id: project_id.into(), statuses: None }
+    }
+
+    /// The statuses of [`write_local`]'s file: the field `f`, and `opt-<name>` for each status.
+    fn local_statuses() -> StatusAnchor {
+        StatusAnchor { field_id: "f".into(), options: status_option_names().into_iter().map(|name| (name.clone(), format!("opt-{name}"))).collect() }
+    }
+
+    fn with_statuses(statuses: StatusAnchor) -> TrackerAnchor {
+        TrackerAnchor { statuses: Some(statuses), ..anchored_to("acme", "tasks", 7, "PVT_7") }
+    }
+
+    /// #685, #456/V16 (T08): an anchor with the statuses stops a `tracker.json` with another status field, another
+    /// option for a status, or no option where the anchor has one, and shows only what differs; an option beyond the
+    /// format's binds no status, on either side, and is not compared. An anchor written before, without statuses,
+    /// checks the tracker only, until the next `init derive` writes them. For the links too.
+    #[test]
+    fn the_anchor_stops_a_tracker_json_that_binds_the_statuses_otherwise() {
+        let root = scratch("statuses");
+        let (state, config) = (root.join("state"), root.join("config"));
+        write_local(&state);
+        let load = || TrackerConfigV1::load(Some(&state), None, Some(&config));
+        let names = status_option_names();
+        write_anchor(&config, &with_statuses(local_statuses()));
+        assert!(load().is_ok(), "the same statuses");
+        let mut beyond = local_statuses();
+        beyond.options.insert("Parked".into(), "opt-parked".into());
+        write_anchor(&config, &with_statuses(beyond));
+        assert!(load().is_ok(), "an option beyond the format's is not compared");
+        let mut field = local_statuses();
+        field.field_id = "g".into();
+        let mut option = local_statuses();
+        option.options.insert(names[2].clone(), "opt-other".into());
+        let mut without = local_statuses();
+        without.options.remove(&names[4]);
+        let pair = |name: &str, id: &str| vec![(name.to_owned(), id.to_owned())];
+        let cases = [
+            ("field", field, pair("status_field_id", "f"), pair("status_field_id", "g")),
+            ("option", option, pair(&names[2], &format!("opt-{}", names[2])), pair(&names[2], "opt-other")),
+            ("without", without, pair(&names[4], &format!("opt-{}", names[4])), pair(&names[4], "?")),
+        ];
+        for (what, statuses, in_file, held) in cases {
+            write_anchor(&config, &with_statuses(statuses));
+            match load() {
+                Err(V1Error::StatusMismatch { file, anchor, found, anchored }) => {
+                    assert_eq!((file, anchor), (local_config_file(&state), anchor_file(&config)), "{what}");
+                    assert_eq!((found.0.clone(), anchored.0.clone()), (in_file, held), "{what}");
+                }
+                result => panic!("{what}: {result:?}"),
+            }
+        }
+        let mut file: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(local_config_file(&state)).unwrap()).unwrap();
+        file["status_field_id"] = "g".into();
+        file["status_options"]["Parked"] = "opt-parked".into();
+        std::fs::write(local_config_file(&state), file.to_string()).unwrap();
+        write_anchor(&config, &anchored_to("acme", "tasks", 7, "PVT_7"));
+        assert!(load().is_ok(), "an anchor without statuses checks the tracker only");
+        write_anchor(&config, &with_statuses(local_statuses()));
+        assert!(matches!(load(), Err(V1Error::StatusMismatch { ref found, .. }) if found.to_string() == "status_field_id=g"), "{:?}", load());
+        assert!(matches!(TrackerConfigV1::load_for_links(Some(&state), None, Some(&config)), Err(V1Error::StatusMismatch { .. })));
+        std::fs::remove_dir_all(&root).unwrap();
     }
 
     fn write_anchor(config: &Path, anchor: &TrackerAnchor) {
@@ -695,8 +845,13 @@ mod tests {
         assert!(matches!(links(), Err(V1Error::AnchorMismatch { .. })), "another tracker is not just no links");
         let anchor = anchored_to("acme", "tasks", 7, "PVT_7");
         assert_eq!(toml::from_str::<TrackerAnchor>(&anchor.file_text()).unwrap(), anchor);
+        let full = with_statuses(local_statuses());
+        assert_eq!(toml::from_str::<TrackerAnchor>(&full.file_text()).unwrap(), full, "{}", full.file_text());
         let more = format!("{}more = 1\n", anchor.file_text());
-        for text in ["owner = ", "owner = \"acme\"\n", more.as_str(), "owner = \"acme\"\nrepo = \"tasks\"\nproject_number = -7\nproject_id = \"PVT_7\"\n"] {
+        let field_alone = format!("{}status_field_id = \"f\"\n", anchor.file_text());
+        let options_alone = format!("{}[status_options]\nParked = \"opt\"\n", anchor.file_text());
+        let broken = ["owner = ", "owner = \"acme\"\n", "owner = \"acme\"\nrepo = \"tasks\"\nproject_number = -7\nproject_id = \"PVT_7\"\n"];
+        for text in broken.into_iter().chain([more.as_str(), field_alone.as_str(), options_alone.as_str()]) {
             std::fs::write(anchor_file(&config), text).unwrap();
             assert!(matches!(load(), Err(V1Error::InvalidAnchor { .. })), "{text}");
             assert!(matches!(links(), Err(V1Error::InvalidAnchor { .. })), "{text}");

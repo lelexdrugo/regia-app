@@ -10,5 +10,7 @@ publish.workspace = true
 regia-core.workspace = true
 regia-git.workspace = true
 regia-github.workspace = true
+# The catalog says the configuration's errors to the CLI and the app alike (#685, #456/V17).
+regia-i18n.workspace = true
 regia-identity.workspace = true
 thiserror.workspace = true

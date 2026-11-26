@@ -8,9 +8,10 @@
 //! when the file was written or was the same already; 1 when the plan cannot be computed; 2 for a wrong argument, as
 //! argparse exits; 3 when the destination exists and differs, without `--overwrite`; 4 when the tracker is not ready.
 //!
-//! `derive` also anchors the app to the tracker it derives, in the app's configuration folder (threat model T08, V17):
-//! from then on every command stops on a `tracker.json` that names another repo or Project. The prototype has no
-//! anchor; nothing it prints changes.
+//! `derive` also anchors the app to the tracker it derives, in the app's configuration folder (threat model T08, V17),
+//! when it writes this machine's configuration, with no `--destination`: from then on every command stops on a
+//! `tracker.json` that names another repo or Project, or binds the statuses otherwise. The prototype has no anchor;
+//! nothing it prints changes.
 
 use std::fs;
 use std::io::{self, Write};
@@ -175,7 +176,8 @@ fn default_destination() -> Result<PathBuf, String> {
 
 /// What `derive` did: its exit code and its outcome in the table's words. The configuration is written only from a
 /// ready tracker, and over a file that says something else only with `overwrite`; a file that says the same is left
-/// as it is. Both anchor the app to that tracker, after the configuration is in place. What it says goes on stdout, or
+/// as it is. Both anchor the app to that tracker, after the configuration is in place, when it is this machine's: a
+/// file at a `--destination` is another machine's and anchors nothing. What it says goes on stdout, or
 /// on stderr with `--json`; the refusals always on stderr.
 fn derive(plan: &Plan, given: Option<&str>, overwrite: bool, json: bool, catalog: &Catalog) -> Result<(u8, &'static str), String> {
     let say = |line: String| if json { eprintln!("{line}") } else { println!("{line}") };
@@ -190,12 +192,16 @@ fn derive(plan: &Plan, given: Option<&str>, overwrite: bool, json: bool, catalog
         Some(given) => PathBuf::from(given),
         None => default_destination()?,
     };
-    let anchor = anchor_destination()?;
+    // The anchor is this machine's: only the configuration of its state folder moves it. A `--destination` is a file
+    // for another machine, and leaves the anchor as it is (#456/V21).
+    let anchor = if given.is_none() { Some(anchor_destination()?) } else { None };
     let shown = python_path(&destination);
     if destination.exists() {
         let existing = fs::read_to_string(&destination).ok().and_then(|text| serde_json::from_str::<Value>(&text).ok());
         if existing.is_some_and(|existing| config.same_as(&existing)) {
-            write_anchor(&anchor, &config)?;
+            if let Some(anchor) = &anchor {
+                write_anchor(anchor, &config)?;
+            }
             say(catalog.message_with("init-derive-same", "path", &shown));
             return Ok((0, "same"));
         }
@@ -205,7 +211,9 @@ fn derive(plan: &Plan, given: Option<&str>, overwrite: bool, json: bool, catalog
         }
     }
     write_atomically(&destination, &config.file_text()).map_err(|error| format!("{shown}: {error}"))?;
-    write_anchor(&anchor, &config)?;
+    if let Some(anchor) = &anchor {
+        write_anchor(anchor, &config)?;
+    }
     say(catalog.message_with("init-derive-written", "path", &shown));
     Ok((0, "written"))
 }

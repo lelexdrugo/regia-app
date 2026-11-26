@@ -197,7 +197,7 @@ fn the_rule_has_one_copy() {
 fn repo_anchor() -> TrackerAnchor {
     let config = repo_config();
     let text = |key: &str| config[key].as_str().unwrap().to_owned();
-    TrackerAnchor { owner: text("owner"), repo: text("repo"), project_number: config["project_number"].as_u64().unwrap(), project_id: text("project_id") }
+    TrackerAnchor { owner: text("owner"), repo: text("repo"), project_number: config["project_number"].as_u64().unwrap(), project_id: text("project_id"), statuses: None }
 }
 
 /// A tracker as the error shows it.

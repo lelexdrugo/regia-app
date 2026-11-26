@@ -30,6 +30,7 @@ use regia_conformance::{
     unplace_json, unplace_text, written_files,
 };
 use regia_core::init::{default_project_title, default_repo};
+use regia_core::v1::StatusAnchor;
 use regia_core::{TrackerAnchor, TrackerConfigV1, anchor_file};
 use regia_exec::{Output, Pin, Program, python};
 use regia_facade::PROTOTYPE_LIMITS;
@@ -183,32 +184,59 @@ fn a_key_more_or_a_byte_less_is_a_difference() {
     assert!(diff.iter().any(|line| line.starts_with("written")), "a missing line break must show: {diff:?}");
 }
 
-/// #456 round 2, Acceptance 2 (threat model T08, V17): `derive` anchors the app to the tracker it derives, in the
-/// configuration folder the harness moves into the case's own folder, while each run stays the prototype's, the file
-/// it writes byte for byte. A destination already the same, or overwritten, anchors it too; a refusal anchors nothing.
-/// The derived file then loads against the anchor beside it.
+/// #685, #456/V21 (threat model T08, V17): every recorded case of `derive` writes at a `--destination`, a file for
+/// another machine, and leaves the app's anchor as it was: an anchor naming another tracker is still there, byte for
+/// byte, after each run, while each run stays the prototype's, the file it writes byte for byte.
 #[test]
-fn derive_anchors_the_app_in_the_configuration_folder_of_its_run() {
-    let expected = TrackerAnchor { owner: "example".into(), repo: "tracker".into(), project_number: 1, project_id: "PROJECT_FIXTURE".into() };
-    let cases = [
-        ("init-derive-written", true),
-        ("init-derive-same", true),
-        ("init-derive-overwrite", true),
-        ("init-derive-different", false),
-        ("init-derive-not-ready", false),
-    ];
-    for (name, anchored) in cases {
+fn derive_to_a_destination_leaves_the_anchor_as_it_was() {
+    let other = TrackerAnchor { owner: "example-other".into(), repo: "tracker".into(), project_number: 1, project_id: "PROJECT_FIXTURE".into(), statuses: None };
+    for name in ["init-derive-written", "init-derive-same", "init-derive-overwrite", "init-derive-different", "init-derive-not-ready"] {
         let case = Case::named(name);
-        let run = native(&format!("native-anchor-{name}"), &case);
+        let run = run_case_on_dossier(&format!("native-anchor-{name}"), &case, |state| {
+            let config = app_config_dir(state);
+            fs::create_dir_all(&config).unwrap();
+            fs::write(anchor_file(&config), other.file_text()).unwrap();
+            native_env(state)
+        });
         let diff = differences(&case, &run, case.written().as_ref());
         assert!(diff.is_empty(), "{name}: {}", diff.join("\n"));
-        let config = app_config_dir(&run.state);
-        assert_eq!(TrackerAnchor::read(&anchor_file(&config)).unwrap(), anchored.then(|| expected.clone()), "{name}");
-        if anchored {
-            let loaded = TrackerConfigV1::load(run.dossier.as_deref(), None, Some(&config)).unwrap();
-            assert_eq!((loaded.owner.as_str(), loaded.project_id.as_str()), ("example", "PROJECT_FIXTURE"), "{name}");
-        }
+        let anchor = fs::read_to_string(anchor_file(&app_config_dir(&run.state))).unwrap();
+        assert_eq!(anchor, other.file_text(), "{name}: the anchor changed");
         let _ = fs::remove_dir_all(&run.state);
+    }
+}
+
+/// #456 round 2, Acceptance 2, and #685: without a destination, `derive` anchors the app to the tracker it derives, in
+/// the configuration folder the harness moves into the run's own folder: the repo, the Project, and the status field
+/// with its options as the derived file has them (#456/V16). A refusal anchors nothing; a file written, or already the
+/// same, anchors it. The derived file then loads against the anchor beside it.
+#[test]
+fn derive_anchors_the_app_in_the_configuration_folder_of_its_run() {
+    let responses = responses_of("init-derive-written");
+    let golden = Case::named("init-derive-written").written().unwrap()["tracker.json"].as_str().unwrap().to_owned();
+    let derived: Value = serde_json::from_str(&golden).unwrap();
+    let options = derived["status_options"].as_object().unwrap().iter().map(|(name, id)| (name.clone(), id.as_str().unwrap().to_owned())).collect();
+    let statuses = StatusAnchor { field_id: derived["status_field_id"].as_str().unwrap().to_owned(), options };
+    let expected = TrackerAnchor { owner: "example".into(), repo: "tracker".into(), project_number: 1, project_id: "PROJECT_FIXTURE".into(), statuses: Some(statuses) };
+    let args = ["init", "derive", "--owner", "example", "--repo", "tracker", "--project-title", "Fixture", "--json"];
+    let (refused, state) = run_with("native-anchor-refused", &args, &responses, |_| Vec::new());
+    assert_eq!(refused.status.code(), Some(3), "the synthetic file differs");
+    assert!(!anchor_file(&app_config_dir(&state)).exists(), "a refusal anchors nothing");
+    let _ = fs::remove_dir_all(&state);
+    let overwrite: Vec<&str> = args.iter().copied().chain(["--overwrite"]).collect();
+    let written = run_with("native-anchor-written", &overwrite, &responses, |_| Vec::new());
+    let same = run_with("native-anchor-same", &args, &responses, |state| {
+        fs::write(state.join("tracker.json"), &golden).unwrap();
+        Vec::new()
+    });
+    for (outcome, (output, state)) in [("written", written), ("same", same)] {
+        let printed: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!((output.status.code(), &printed["outcome"]), (Some(0), &json!(outcome)), "{}", String::from_utf8_lossy(&output.stderr));
+        let config = app_config_dir(&state);
+        assert_eq!(TrackerAnchor::read(&anchor_file(&config)).unwrap(), Some(expected.clone()), "{outcome}");
+        let loaded = TrackerConfigV1::load(Some(&state), None, Some(&config)).unwrap();
+        assert_eq!(loaded.status_field_id, derived["status_field_id"].as_str().unwrap(), "{outcome}");
+        let _ = fs::remove_dir_all(&state);
     }
 }
 
