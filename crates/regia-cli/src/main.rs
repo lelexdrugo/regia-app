@@ -12,6 +12,7 @@ mod reads;
 mod self_update;
 mod state;
 mod task;
+mod workers;
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -65,6 +66,11 @@ enum Commands {
         #[command(subcommand)]
         command: policy::PolicyCommand,
     },
+    /// The workers of Orca on the tasks given, read only: when each dispatch in progress last wrote, whether it waits for
+    /// a person, whether it is blocked or stopped by its session. Exits 1 when Orca does not answer. Native only: the
+    /// prototype has it in a script of its own, which the facade does not start.
+    #[command(args_override_self = true)]
+    Workers(workers::WorkersArgs),
     /// The resident controller: `controller run`, the prototype's `tools/controller.py`. Its arguments exit 1 when
     /// they do not hold, as the prototype's.
     #[command(disable_help_flag = true)]
@@ -253,6 +259,7 @@ fn run(cli: Cli, catalog: &Catalog) -> Result<ExitCode, String> {
             Ok(ExitCode::SUCCESS)
         }
         Commands::Policy { command } => policy::run(command, catalog),
+        Commands::Workers(args) => workers::run(&args, catalog),
         Commands::Controller { args } => controller::run(&args, catalog).map(ExitCode::from),
         Commands::SelfUpdate(args) => self_update::run(&args, catalog),
         Commands::External(argv) => {
@@ -635,6 +642,20 @@ mod tests {
         }
         assert_eq!(args(&[]).min_interval, 300);
         assert!(parse(&["budget", "--min-interval", "soon"]).is_err());
+    }
+
+    /// `workers` (#744): the help of `--dispatch` speaks of the ids, as the prototype's `test_l_help_di_dispatch_dice_degli_id`;
+    /// `--task` takes one number at least, and only numbers.
+    #[test]
+    fn the_workers_command_takes_its_options() {
+        use clap::CommandFactory;
+        let mut command = Cli::command();
+        let help = command.find_subcommand_mut("workers").expect("the workers command").render_long_help().to_string();
+        assert!(help.contains("--dispatch") && help.contains("ids"), "{help}");
+        assert!(parse(&["workers", "--task", "10", "11", "--json", "--dispatch"]).is_ok());
+        for wrong in [&["workers"][..], &["workers", "--task"], &["workers", "--task", "ten"]] {
+            assert!(parse(wrong).is_err(), "{wrong:?}");
+        }
     }
 
     /// Python's `format(x, "g")`, as Python 3.12 prints these values.
