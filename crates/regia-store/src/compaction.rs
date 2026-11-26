@@ -27,6 +27,12 @@ use crate::declaration_reader::{self, LogReadError, LoggedDeclaration};
 use crate::time::WallTime;
 use crate::v1::format;
 
+/// The log's folder under the state folder `state`.
+#[must_use]
+pub fn log_folder(state: &Path) -> PathBuf {
+    state.join(&format().declarations.folder)
+}
+
 /// How a compaction runs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct CompactionPolicy {
@@ -234,7 +240,7 @@ fn merged_texts(
             .collect();
         out.push((month_file.clone(), Some(text)));
     }
-    out.sort_by(|a, b| declaration_reader::sort_key(&a.0).cmp(&declaration_reader::sort_key(&b.0)));
+    out.sort_by_key(|(name, _)| declaration_reader::sort_key(name));
     out
 }
 

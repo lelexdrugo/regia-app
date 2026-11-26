@@ -20,6 +20,7 @@ pub(crate) struct Format {
     pub(crate) config_keys: ConfigKeys,
     pub(crate) days: Days,
     pub(crate) actions: Actions,
+    pub(crate) maintenance: MaintenanceWords,
     pub(crate) cursor: CursorWords,
     pub(crate) entry: EntryWords,
     pub(crate) outcomes: Outcomes,
@@ -151,6 +152,17 @@ pub(crate) struct ToOpen {
 pub(crate) struct Closing {
     pub(crate) folder: String,
     pub(crate) extension: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct MaintenanceWords {
+    pub(crate) action: String,
+    pub(crate) done: String,
+    pub(crate) dry_run: String,
+    pub(crate) error: String,
+    pub(crate) declarations: String,
+    pub(crate) work: String,
 }
 
 #[derive(Debug, Deserialize)]

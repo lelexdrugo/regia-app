@@ -54,6 +54,13 @@ fn config_dir_by(var: impl Fn(&str) -> Option<String>, system: impl FnOnce() -> 
     var(&config_dir_var()).map(PathBuf::from).or_else(system)
 }
 
+/// The product's cache (the class `passaggio` of the dossier's ADR 0019, §5): what a task leaves behind to throw away,
+/// never the state. The system's cache folder of the product: `%LOCALAPPDATA%\<name>\cache` on Windows,
+/// `~/Library/Caches/<id>` on macOS, `$XDG_CACHE_HOME/<name>` elsewhere. Its name is the gate of names' (#226).
+pub fn cache_dir() -> Option<PathBuf> {
+    ProjectDirs::from("", "", PRODUCT_NAME).map(|dirs| dirs.cache_dir().to_path_buf())
+}
+
 /// Default parent folder of the dossiers created by the setup.
 pub fn dossiers_dir() -> Option<PathBuf> {
     BaseDirs::new().map(|dirs| dirs.home_dir().join(format!("{PRODUCT_NAME}-dossiers")))

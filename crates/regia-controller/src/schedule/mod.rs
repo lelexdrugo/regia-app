@@ -19,11 +19,16 @@
 //! - **With a session suspended or resuming** nothing opens and the day is not marked: a later tick of the same
 //!   day runs it.
 //!
+//! - **The maintenance** (#471) has no chat: when due it compacts the log of declarations and cleans the tasks' work
+//!   files ([`Maintenance`]), a dry run the first time and after an error; its entry keeps the outcome and, on an
+//!   error, the reason, which the state file shows.
+//!
 //! The chronicler's operation is checked as the prototype checks it, and left to #493: this hook neither runs it
 //! nor touches its entry. A failure here does not stop the tick (it is recorded in the tick's line); a lost lock
 //! does.
 
 mod config;
+mod maintenance;
 mod words;
 
 use std::path::{Path, PathBuf};
@@ -36,6 +41,7 @@ use regia_store::{CursorName, Fenced, Holder, ProjectId, Store, WallTime};
 use serde_json::{Map, Value, json};
 
 pub use config::{Action, Operation, load, normalize, parse_days};
+pub use maintenance::{ClosedTasks, Maintenance, MaintenanceRun};
 
 use crate::engine::words::format as engine_words;
 use crate::engine::{BeforePrecheck, LockLost, StateError, StepReceipt, TickContext, TickError, iso};
@@ -259,6 +265,7 @@ pub struct Operations {
     home: Option<PathBuf>,
     closings: Option<PathBuf>,
     agent: ChatAgent,
+    maintenance: Option<Maintenance>,
     to_open: Vec<Value>,
     status: Map<String, Value>,
 }
@@ -342,6 +349,7 @@ impl Operations {
             home: None,
             closings: None,
             agent: ChatAgent::default(),
+            maintenance: None,
             to_open: Vec::new(),
             status: Map::new(),
         }
@@ -371,6 +379,13 @@ impl Operations {
     #[must_use]
     pub fn with_agent(mut self, agent: ChatAgent) -> Operations {
         self.agent = agent;
+        self
+    }
+
+    /// What a maintenance operation works on; without it, a due maintenance records an error.
+    #[must_use]
+    pub fn with_maintenance(mut self, maintenance: Maintenance) -> Operations {
+        self.maintenance = Some(maintenance);
         self
     }
 
@@ -428,7 +443,8 @@ impl Operations {
             record.insert(v.config_errors.clone(), json!(errors));
         }
         // The chronicler's operation is #493's.
-        let active: Vec<Operation> = operations.into_iter().filter(|operation| operation.active && operation.action == Action::Chat).collect();
+        let active: Vec<Operation> =
+            operations.into_iter().filter(|operation| operation.active && matches!(operation.action, Action::Chat | Action::Maintenance)).collect();
         if active.is_empty() {
             self.to_open.clear();
             self.status.clear();
@@ -505,6 +521,38 @@ impl Operations {
             if is_today(&entry) && outcome(&entry).as_deref() != Some(o.to_open.as_str()) {
                 voices.push(voice(name, &actions.already_done, [(v.outcome.clone(), entry.get(&e.outcome).cloned().unwrap_or(Value::Null))]));
                 state.insert(name.to_owned(), Value::Object(entry));
+                continue;
+            }
+            if operation.action == Action::Maintenance {
+                // D1: removing files is an effect, as a chat is.
+                tick.guard()?;
+                let m = &w.maintenance;
+                let dry = !outcome(&entry).is_some_and(|last| last == m.done || last == m.dry_run);
+                let at = WallTime::from_unix_secs_f64(now).ok_or_else(|| Stop::Failed(format!("no instant for {now}")))?;
+                let ran = match &self.maintenance {
+                    Some(maintenance) => maintenance.run(at, dry),
+                    None => MaintenanceRun { dry_run: true, declarations: Value::Null, work: Value::Null, errors: vec!["no maintenance is set up for this run".to_owned()] },
+                };
+                let (entry_outcome, action) = match (ran.errors.is_empty(), ran.dry_run) {
+                    (false, _) => (&o.error, &m.error),
+                    (true, true) => (&m.dry_run, &m.dry_run),
+                    (true, false) => (&m.done, &m.done),
+                };
+                entry.insert(e.day.clone(), json!(today_text));
+                entry.insert(e.outcome.clone(), json!(entry_outcome));
+                entry.insert(e.t.clone(), json!(iso(now)));
+                let mut extra = vec![(m.declarations.clone(), ran.declarations), (m.work.clone(), ran.work)];
+                if ran.errors.is_empty() {
+                    entry.remove(&e.reason);
+                } else {
+                    let reason = cut(&ran.errors.join("; "));
+                    entry.insert(e.reason.clone(), json!(reason));
+                    extra.push((v.reason.clone(), json!(reason)));
+                }
+                voices.push(voice(name, action, extra));
+                state.insert(name.to_owned(), Value::Object(entry));
+                self.state.write(&state)?;
+                changed = false;
                 continue;
             }
             if blocked {
@@ -609,6 +657,7 @@ impl Operations {
         let field = |entry: &Map<String, Value>, key: &str| entry.get(key).cloned().unwrap_or(Value::Null);
         self.to_open = active
             .iter()
+            .filter(|operation| operation.action == Action::Chat)
             .filter_map(|operation| {
                 let current = entry(&operation.name);
                 let open = text_of(current.get(&e.day)) == Some(today)
@@ -630,7 +679,11 @@ impl Operations {
             .iter()
             .map(|operation| {
                 let current = entry(&operation.name);
-                let keys = [&e.day, &e.outcome, &e.skipped, &e.open_since, &e.last_launched];
+                let mut keys = vec![&e.day, &e.outcome, &e.skipped, &e.open_since, &e.last_launched];
+                if operation.action == Action::Maintenance {
+                    // Its error is the reason, which only the state file shows.
+                    keys.push(&e.reason);
+                }
                 let fields: Map<String, Value> = keys.iter().map(|key| ((*key).clone(), field(&current, key))).collect();
                 (operation.name.clone(), Value::Object(fields))
             })

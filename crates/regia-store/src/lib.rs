@@ -39,7 +39,7 @@ pub use budget::{BudgetError, MIN_INTERVAL_S, NO_VALUE, NOTE_OVERTAKEN, NOTE_RUN
 pub use clock::{Clock, ManualClock, SystemClock};
 pub use cursor::CursorName;
 pub use db::{BUSY_WAIT, Row, SqliteError};
-pub use compaction::{Compacted, CompactionError, CompactionPolicy, compact_declarations};
+pub use compaction::{Compacted, CompactionError, CompactionPolicy, compact_declarations, log_folder};
 pub use declaration_reader::{LogReadError, LoggedDeclaration, declared_instant, read_declarations, split_lines};
 pub use declarations::{Declaration, DeclarationError, Declared, SessionIds, declarations_folder, step_role, write_declaration};
 pub use folder::{database_name, default_folder, is_within, temporary_folder};

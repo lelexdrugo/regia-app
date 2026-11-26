@@ -23,7 +23,7 @@ use regia_controller::engine::native::{NativePrecheck, Processes, TrackerFolders
 use regia_controller::interrupt::stop_on_interrupt;
 use regia_controller::resident::{Config, Console, Exit, HostPorts, Notice, Resident, StopSleep, Summary};
 use regia_controller::resume::{CliResumer, DryResumer, Resume, Resumer, Settings};
-use regia_controller::schedule::{ChatAgent, ChatSurface, Operations, Source, StoreSchedule, chat_surface_kind};
+use regia_controller::schedule::{ChatAgent, ChatSurface, Maintenance, Operations, Source, StoreSchedule, chat_surface_kind};
 use regia_controller::shadow;
 use regia_exec::{Effort, ModelId};
 use regia_i18n::{Catalog, Language};
@@ -225,7 +225,9 @@ fn controller_run(args: &RunArgs, catalog: &Catalog) -> Result<u8, String> {
     let state = Arc::new(StoreSchedule::new(store, resident.holder().clone()));
     let home = dossier_dir();
     let source = args.config.clone().map_or_else(|| Source::of_home(home.as_deref()), Source::File);
-    let operations = Operations::new(source, state, chat).with_home(home).with_agent(agent);
+    // A run that starts nothing changes nothing: its maintenance only counts (#471).
+    let maintenance = if dry { Maintenance::live(&folder).always_dry() } else { Maintenance::live(&folder) };
+    let operations = Operations::new(source, state, chat).with_home(home).with_agent(agent).with_maintenance(maintenance);
     let exit = resident.with_before_precheck(Box::new(operations)).run();
     report(&exit, catalog);
     Ok(exit.code())

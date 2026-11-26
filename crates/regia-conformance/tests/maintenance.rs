@@ -343,7 +343,7 @@ fn a_run_that_stopped_halfway_is_finished_by_the_next() {
         let done = compact_declarations(&dir, &policy).unwrap();
         assert!(done.recovered, "{done:?}");
         assert_eq!(seen(&dir), before, "replaced: {replaced}");
-        assert_eq!(names(&dir), [month.clone()], "replaced: {replaced}");
+        assert_eq!(names(&dir), std::slice::from_ref(&month), "replaced: {replaced}");
     }
 }
 
@@ -459,13 +459,8 @@ fn the_cleaning_follows_no_link_nor_junction() {
         );
         return;
     }
-    assert!(link_folder(
-        &root.join("gamma"),
-        &task_folder(&cache.join("elsewhere"), "gamma", 31)
-            .parent()
-            .unwrap()
-            .to_path_buf()
-    ));
+    let linked_project = task_folder(&cache.join("elsewhere"), "gamma", 31);
+    assert!(link_folder(&root.join("gamma"), linked_project.parent().unwrap()));
     let done = clean_work(
         &root,
         &closed(&[(31, days_before(now, 31))]),

@@ -114,7 +114,7 @@ pub(crate) fn list(folder: &Path) -> Vec<LogFile> {
             name,
         })
         .collect();
-    files.sort_by(|a, b| sort_key(&a.name).cmp(&sort_key(&b.name)));
+    files.sort_by_key(|file| sort_key(&file.name));
     files
 }
 

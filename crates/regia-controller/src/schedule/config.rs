@@ -19,6 +19,8 @@ pub enum Action {
     /// An idea search (#273 of the dossier), checked here with its levers and never run: whether the product runs
     /// it is to be decided (F315-F317 of the dossier's inventory).
     IdeaSearch,
+    /// The maintenance of the machine's state (#471): no chat, no session; its first run is a dry run.
+    Maintenance,
 }
 
 /// A scheduled operation of the configuration, once checked.
@@ -127,8 +129,9 @@ fn operation(entry: &Value, seen: &BTreeSet<String>) -> Result<Operation, String
         Some(action) if action == actions.chat => Action::Chat,
         Some(action) if action == actions.chronicler => Action::Chronicler,
         Some(action) if action == actions.idea_search => Action::IdeaSearch,
+        Some(action) if action == words().maintenance.action => Action::Maintenance,
         _ => {
-            let known = [&actions.chat, &actions.chronicler, &actions.idea_search].map(String::as_str).join(", ");
+            let known = [&actions.chat, &actions.chronicler, &actions.idea_search, &words().maintenance.action].map(String::as_str).join(", ");
             return Err(format!("the action is unknown: {} (one of {known})", shown(field(&k.action))));
         }
     };

@@ -59,6 +59,18 @@ chronicler = "cronista"
 # product runs it is to be decided (F315-F317 of the dossier's inventory).
 idea_search = "cerca-idee"
 
+# The maintenance of the machine's state (#471): the log of declarations compacted by month, and the work files of
+# the tasks removed 30 days after they closed. Its first run, and the run after an error, is a dry run. `action` is
+# the configuration's action; `done` and `dry_run` are an entry's outcome and a voice's action, `error` a voice's
+# action; `declarations` and `work` the voice's keys of what each part did. Provisional, for the gate of names.
+[maintenance]
+action = "manutenzione"
+done = "eseguita"
+dry_run = "a-secco"
+error = "errore-manutenzione"
+declarations = "dichiarazioni"
+work = "passaggio"
+
 # The cursors with a name of the reserved project: the operations done, and the last start of the dailies by hand
 # (`regia giornalieri avvia`, which writes it).
 [cursor]
