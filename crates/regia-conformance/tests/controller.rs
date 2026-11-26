@@ -305,6 +305,9 @@ impl Precheck for CommandPrecheck {
         let binary = regia_conformance::bin_dir().join(format!("precheck{}", std::env::consts::EXE_SUFFIX));
         let (launch, _) = fixture_for_rust(regia_exec::harness::launch(&binary, &args, &self.state), &self.responses, &self.state);
         let launch = launch.env(&env_var("CONFIG_DIR"), &self.settings).env(&prototype_env_var("HOME"), &self.home).env(&env_var("NOW"), now.to_iso_seconds());
+        // The precheck reads the workers of the tasks in progress from the agents' app (#599): a program that is not
+        // there, so that no case reads the machine's.
+        let launch = launch.env(&regia_exec::Program::Orca.env_name(), self.state.join("no-agents-app"));
         let output = launch.run().expect("run the precheck");
         let run = PrecheckRun::from_output(output.status.code(), &String::from_utf8_lossy(&output.stdout));
         self.lines.lock().expect("lines").push(run.line.as_ref().map_or(Value::Null, Json::to_value));
