@@ -26,12 +26,55 @@ keys!(ProcessKeys { round, checks, defects });
 keys!(DefectsKeys { found, closed, closes });
 keys!(AuthorKeys { role, agent, model, session });
 keys!(DirectionKeys { id, title, opened_by, status, reason });
-keys!(AggregateKeys { project, task, window, round, declared_subagents, models, checks, defects, tokens });
+keys!(AggregateKeys { schema, project, task, window, round, declared_subagents, models, checks, defects, tokens });
 keys!(ModelKeys { agent, model, effort, sessions, via });
 keys!(CheckKeys { kind, outcome, defects, model });
 keys!(TokensKeys { input, output, cache_read, cache_write });
 keys!(SnapshotKeys { id, ts, changed, direction, open_decisions, risks, next, in_brief, changed_claims, deviations, process });
 keys!(DeviationKeys { plan, deviation, reason, impact });
+keys!(RecordKeys { start, end, project, task, agent, model, effort, session, source, dispatch, attribution, tokens, outcome, running });
+
+/// The raw activity store: where it is, its files, and its record of what `consolidate` protected.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct StoreFormat {
+    pub variable: String,
+    pub folder: String,
+    pub month_extension: String,
+    pub retention_days: i64,
+    pub dispatch_prefix: String,
+    pub consolidated: String,
+    pub fingerprint: String,
+    pub stamp: String,
+}
+
+/// The worker's report: where the reports are, and the fields of its front matter the moviola reads.
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ReportFormat {
+    pub folder: Vec<String>,
+    pub extension: String,
+    pub kind: String,
+    pub task: String,
+    pub stop_reason: String,
+    pub round: String,
+    pub session: String,
+    pub subagents: String,
+    pub checks: String,
+    pub closed_defects: String,
+}
+
+impl ReportFormat {
+    /// The fields the moviola reads (`CAMPI` of the prototype's `report.py`), in their order.
+    pub fn fields(&self) -> [&str; 8] {
+        [&self.kind, &self.task, &self.stop_reason, &self.round, &self.session, &self.subagents, &self.checks, &self.closed_defects]
+    }
+
+    /// The fields that make a report one with process fields (`ha_processo`).
+    pub fn process_fields(&self) -> [&str; 4] {
+        [&self.round, &self.subagents, &self.checks, &self.closed_defects]
+    }
+}
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -43,6 +86,8 @@ pub(crate) struct Format {
     pub snapshots: String,
     pub snapshot_extension: String,
     pub main_direction: String,
+    pub aggregate_schema: String,
+    pub via_report: String,
     pub milestone: MilestoneKeys,
     pub refs: RefsKeys,
     pub process: ProcessKeys,
@@ -59,6 +104,9 @@ pub(crate) struct Format {
     pub kinds: BTreeMap<String, String>,
     pub health: BTreeMap<String, String>,
     pub direction_status: BTreeMap<String, String>,
+    pub store: StoreFormat,
+    pub record: RecordKeys,
+    pub report: ReportFormat,
 }
 
 pub(crate) fn format() -> &'static Format {

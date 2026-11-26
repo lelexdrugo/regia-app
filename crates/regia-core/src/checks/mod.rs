@@ -395,7 +395,7 @@ pub fn python_int(digits: &str) -> Option<u64> {
 /// The value of one of Unicode's decimal digits (`\p{Nd}`). They come in runs of ten from a zero, and a run of
 /// consecutive code points is made of whole runs of ten, so the value is the distance from the run's start, modulo
 /// ten.
-fn decimal_digit(c: char) -> Option<u32> {
+pub(crate) fn decimal_digit(c: char) -> Option<u32> {
     if let Some(digit) = c.to_digit(10) {
         return Some(digit);
     }

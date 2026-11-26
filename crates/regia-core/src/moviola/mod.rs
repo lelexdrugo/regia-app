@@ -16,6 +16,7 @@
 mod files;
 mod format;
 mod links;
+pub mod pyjson;
 mod records;
 
 use std::path::{Path, PathBuf};

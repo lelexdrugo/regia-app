@@ -14,6 +14,10 @@ snapshots = "snapshot"
 snapshot_extension = "json"
 # The implicit direction, which has no record (§5.7).
 main_direction = "principale"
+# What `consolidate` writes in a row of the aggregates (§5.2, §5.7): the schema, and the `via` of a model that a
+# report's session field brought.
+aggregate_schema = "moviola.aggregato/v0"
+via_report = "report"
 
 [milestone]
 id = "id"
@@ -57,6 +61,7 @@ status = "stato"
 reason = "motivo"
 
 [aggregate]
+schema = "schema"
 project = "progetto"
 task = "task"
 window = "finestra"
@@ -125,3 +130,50 @@ waiting_on_owner = "in attesa del titolare"
 active = "attiva"
 abandoned = "abbandonata"
 rejoined = "rientrata"
+
+# The raw activity store (§3, §4, §5.1, §5.6): one for every project, outside git, a JSONL file a month named
+# `YYYY-MM.jsonl`. The prototype's variable moves it; else it is this folder under the state folder.
+[store]
+variable = "MOVIOLA_ATTIVITA"
+folder = "attivita"
+month_extension = "jsonl"
+retention_days = 90
+# The key of a dispatch's record is this word, a colon and the dispatch.
+dispatch_prefix = "dispatch"
+# `<project>#<task>` → the fingerprint of the task's records when `consolidate` wrote its row, and the instant.
+consolidated = "consolidati.json"
+fingerprint = "impronta"
+stamp = "ts"
+
+# The keys of a raw record (§5.1, §5.6) that the store and `consolidate` read.
+[record]
+start = "ts_inizio"
+end = "ts_fine"
+project = "progetto"
+task = "task"
+agent = "agente"
+model = "modello"
+effort = "effort"
+session = "sessione"
+source = "fonte"
+dispatch = "dispatch"
+attribution = "attribuzione"
+tokens = "token"
+outcome = "esito"
+# The outcome of a dispatch still open.
+running = "in-corso"
+
+# The worker's report (ARCHITECTURE §5.2 of the dossier, `.regia/report/YYYY-MM-DD-<N>-<slug>.md`): where the reports
+# are, and the fields of its front matter the moviola reads, in this order. Its checks have the aggregate's keys
+# (`[check]`).
+[report]
+folder = [".regia", "report"]
+extension = "md"
+kind = "tipo"
+task = "task"
+stop_reason = "stop_reason"
+round = "round"
+session = "sessione"
+subagents = "sottoagenti"
+checks = "controlli"
+closed_defects = "difetti_chiusi"
