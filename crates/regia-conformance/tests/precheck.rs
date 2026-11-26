@@ -20,12 +20,16 @@
 //! reads its clock at the run's instant too. The product has the user's consent to the probes in a
 //! settings folder of the run, as the prototype, which has no notion of consent, always probes.
 //!
-//! **The comparison is one-sided, and declared.** The prototype's line also carries what #466 has not
-//! ported yet: per project the series of a stall, a postponement, the backlog, the Proposals at their cap,
-//! the silent workers and the dossier's warnings. Those keys are taken out of the prototype's line only,
-//! the product's must not have them, and no recorded run may end with a reason not ported yet, so a case
-//! that such a part decides cannot pass for equal. The `t` of the line is each run's own (the prototype's
-//! comes from the machine's clock), and so is the sentence of an error, whose key is kept.
+//! **The workers (#599).** Each side reads the workers of the tasks in progress through its own adapter of Orca,
+//! behind the fake `orca` of the run's folder, which answers from the run's `workers`; the thresholds are the run's
+//! `policies/worker.yaml`. Neither side ever starts the machine's Orca.
+//!
+//! **The comparison is one-sided, and declared.** The prototype's line also carries what is not ported yet: per
+//! project the dossier's warnings, which need the prototype's `avvisi_dossier` (#450 of the dossier). That key is
+//! taken out of the prototype's line only, the product's must not have it, and no recorded run may end with a
+//! reason not ported yet (none is left), so a case that such a part decides cannot pass for equal. The `t` of the
+//! line is each run's own (the prototype's comes from the machine's clock), and so is the sentence of an error,
+//! whose key is kept.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -47,11 +51,12 @@ use serde_json::{Value, json};
 mod common;
 use common::Bin;
 
-/// The keys of the prototype's payload, and of each of its projects, that #466 has not ported yet.
+/// The keys of the prototype's payload, and of each of its projects, not ported yet: the dossier's warnings, which
+/// need the prototype's `avvisi_dossier` (#450 of the dossier).
 const LATER_PAYLOAD_KEYS: [&str; 0] = [];
-const LATER_PROJECT_KEYS: [&str; 3] = ["dossier", "silenti", "silenti_task"];
+const LATER_PROJECT_KEYS: [&str; 1] = ["dossier"];
 /// The reasons that only the parts not ported yet produce: a recorded run must end with none of them.
-const LATER_REASONS: [&str; 1] = ["worker-silente"];
+const LATER_REASONS: [&str; 0] = [];
 
 /// What the prototype's `t` reads as in a recording.
 const T_PLACEHOLDER: &str = "{precheck-t}";
@@ -63,8 +68,10 @@ const DOSSIER: &str = "{dossier}";
 /// The prototype's side, written into the run's folder: its precheck in process, with its real tracker reader
 /// behind the fake `gh` and the deadline its own command sets, its real runtime on the run's state folder with
 /// its clock at the run's instant (the cache of the budget included), its reports on disk, and the policy of
-/// the run's file with the override of the state folder. The dossier's warnings and the workers have no data.
-/// It prints the exit code and what the precheck printed.
+/// the run's file with the override of the state folder. Its workers come from its real adapter of Orca behind the
+/// fake `orca`, found where the adapter looks for the program, with the thresholds of the run's `worker.yaml` and
+/// the run's instant: the precheck's own reader would ask the machine's clock (#599). The dossier's warnings have
+/// no data. It prints the exit code and what the precheck printed.
 const PROTOTYPE_SIDE: &str = r#"import io
 import json
 import sys
@@ -73,17 +80,25 @@ from pathlib import Path
 
 copy, run = Path(sys.argv[1]), json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 sys.path.insert(0, str(copy / "tools"))
+import shutil  # noqa: E402
 import politica_budget  # noqa: E402
 import precheck  # noqa: E402
 import runtime  # noqa: E402
+import worker_orca  # noqa: E402
 
 regia, _ = precheck._carica()
 regia.gh = precheck._gh_chiuso
 now = datetime.fromisoformat(run["now"].replace("Z", "+00:00"))
 runtime._adesso = lambda: now
+which = shutil.which
+shutil.which = lambda name, *rest, **kw: run["orca"] if name == "orca" else which(name, *rest, **kw)
+soglia_s = worker_orca.carica_soglia_s(Path(run["worker_policy"]))
+blocco_s = worker_orca.carica_blocco_s(Path(run["worker_policy"]))
 amb = precheck.Ambiente(regia, precheck.TrackerGh(regia), runtime, adesso=lambda: now,
-                        dossier=lambda cartella, repo=None: [],
-                        politica=politica_budget.carica(Path(run["policy"]), adesso=now))
+                        dossier=lambda cartella, repo=None, **_: [],
+                        politica=politica_budget.carica(Path(run["policy"]), adesso=now),
+                        worker=lambda voluti, scadenza: worker_orca.leggi(voluti, soglia_s, scadenza, adesso=now, blocco_s=blocco_s),
+                        soglia_silenzio_s=soglia_s, soglia_blocco_s=blocco_s)
 out = io.StringIO()
 code = precheck.main(run["args"], ambiente=amb, out=out)
 print(json.dumps({"exit": code, "stdout": out.getvalue()}))
@@ -206,6 +221,44 @@ struct RunSpec {
     /// Ticks in a row on the run's state, each with its line: without them, the run is one tick.
     #[serde(default)]
     ticks: Vec<TickSpec>,
+    /// The workers Orca shows (#210, #641): none by default, and Orca answers that it has none.
+    #[serde(default)]
+    workers: Vec<WorkerSpec>,
+    /// Every call to Orca fails with this code.
+    orca_fails: Option<String>,
+    /// The list of the dispatches is limited to one run, as it is inside a run.
+    #[serde(default)]
+    orca_scoped: bool,
+    /// The text of `policies/worker.yaml`; without it the file is not there and the defaults hold.
+    worker_policy: Option<String>,
+}
+
+/// A worker of Orca on a task of the regia, compactly: one dispatch with its transcript and what `worker-show` says.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WorkerSpec {
+    task: u64,
+    /// When its last line was written; none for a transcript without one.
+    last: Option<String>,
+    /// Its last line has a call to a tool still running, with no result.
+    #[serde(default)]
+    open_call: bool,
+    /// Its last line is a request of permission ("Allow Bash?").
+    #[serde(default)]
+    permission: bool,
+    /// Orca's `agentWait`: it waits for a person.
+    #[serde(default)]
+    waiting: bool,
+    /// Orca's own beat, and when the dispatch started.
+    heartbeat: Option<String>,
+    dispatched: Option<String>,
+    /// Orca's outcome of the dispatch, in progress by default.
+    outcome: Option<String>,
+    /// The title of its task in Orca, `<product> #<task> work` by default.
+    title: Option<String>,
+    /// Its transcript does not read.
+    #[serde(default)]
+    unreadable: bool,
 }
 
 /// A tick of a run: how many minutes after the one before (the first after the fixtures' instant), and
@@ -231,6 +284,8 @@ struct TickSpec {
     signals: BTreeMap<String, Value>,
     /// Claude's reading from this tick on.
     usage: Option<UsageSpec>,
+    /// The workers from this tick on.
+    workers: Option<Vec<WorkerSpec>>,
 }
 
 /// Claude's reading as the cache stores it: the last valid one, with its 5-hour window, and the last
@@ -370,10 +425,58 @@ fn comment_body(spec: &CommentSpec) -> String {
     }
 }
 
-/// The answers of the fake `gh` for a run at `now`.
-fn responses(issues: &[IssueSpec], comments: &BTreeMap<String, Vec<CommentSpec>>, run: &RunSpec, dossier: &str, now: &str) -> Value {
+/// Milliseconds since the epoch of an instant of a case, as Orca writes the times of a transcript.
+fn millis(instant: &str) -> i64 {
+    regia_store::WallTime::parse_iso(instant).unwrap_or_else(|| panic!("an instant: {instant}")).unix_micros() / 1000
+}
+
+/// What the fake `orca` answers for `workers`: one page of dispatches, the tasks of their run with their titles, each
+/// transcript in two pages, its lines and then none, with a line of the owner after the worker's, and what
+/// `worker-show` says of each.
+fn orca_answers(workers: &[WorkerSpec], run: &RunSpec) -> Value {
+    if let Some(code) = &run.orca_fails {
+        return json!({"fail": code});
+    }
+    let (mut list, mut tasks, mut transcripts, mut shows) = (Vec::new(), Vec::new(), serde_json::Map::new(), serde_json::Map::new());
+    for (at, worker) in workers.iter().enumerate() {
+        let (dispatch, task) = (format!("ctx_fake{at}"), format!("task_fake{at}"));
+        let outcome = worker.outcome.clone().unwrap_or_else(|| "in_progress".to_owned());
+        list.push(json!({"dispatchId": dispatch, "taskId": task, "runId": "run_fake", "projection": {"outcome": outcome}}));
+        let title = worker.title.clone().unwrap_or_else(|| format!("{} #{} work", regia_identity::PRODUCT_NAME, worker.task));
+        tasks.push(json!({"id": task, "title": title}));
+        let mut lines = Vec::new();
+        if let Some(last) = &worker.last {
+            let blocks = if worker.open_call {
+                json!([{"type": "text", "text": "running a command"}, {"type": "tool-call", "callId": "call-1", "name": "Bash", "state": "running"}])
+            } else {
+                json!([{"type": "tool-call", "callId": "call-1", "name": "Bash", "state": "completed"}, {"type": "tool-result", "callId": "call-1"}])
+            };
+            lines.push(json!({"role": "assistant", "timestamp": millis(last), "blocks": blocks}));
+            if worker.permission {
+                lines.push(json!({"role": "system", "timestamp": millis(last), "blocks": [{"type": "text", "text": "Allow Bash?"}]}));
+            }
+            lines.push(json!({"role": "user", "timestamp": millis(last) + 300_000, "blocks": [{"type": "text", "text": "status?"}]}));
+        }
+        let pages = if worker.unreadable {
+            json!("source_changed")
+        } else {
+            json!([{"transcript": {"messages": lines, "nextCursor": "page-1"}}, {"transcript": {"messages": []}}])
+        };
+        transcripts.insert(dispatch.clone(), pages);
+        let wait = if worker.waiting { json!({"kind": "permission"}) } else { Value::Null };
+        shows.insert(dispatch, json!({"dispatch": {"lastHeartbeatAt": worker.heartbeat, "dispatchedAt": worker.dispatched}, "observation": {"agentWait": wait}}));
+    }
+    let scope = if run.orca_scoped { json!({"source": "run"}) } else { json!({"source": "all"}) };
+    json!({
+        "worker_list": [{"scope": scope, "workers": list, "page": {"hasMore": false, "nextCursor": null}}],
+        "task_lists": {"run_fake": {"tasks": tasks}}, "transcripts": transcripts, "shows": shows,
+    })
+}
+
+/// The answers of the fake `gh` for a run at `now`, and of the fake `orca` for its `workers`.
+fn responses(issues: &[IssueSpec], comments: &BTreeMap<String, Vec<CommentSpec>>, run: &RunSpec, workers: &[WorkerSpec], dossier: &str, now: &str) -> Value {
     if let Some(error) = &run.tracker_fails {
-        return json!({"fail": {"error": error, "exit": 1}});
+        return json!({"fail": {"error": error, "exit": 1}, "orca": orca_answers(workers, run)});
     }
     let config = tracker_config();
     let nodes: Vec<Value> = issues.iter().filter(|spec| !spec.closed).map(|spec| node(spec, dossier, &config, now)).collect();
@@ -416,7 +519,32 @@ fn responses(issues: &[IssueSpec], comments: &BTreeMap<String, Vec<CommentSpec>>
         "blocker_pages": {}, "sub_issue_pages": {}, "issues": by_number,
         "comment_pages": [{"repository": {"issues": {"pageInfo": {"hasNextPage": false, "endCursor": null}, "nodes": all}}}],
         "recent_by_label": by_label,
+        "orca": orca_answers(workers, run),
     })
+}
+
+/// The fake `orca` of a run's state folder, `<state>/fake-orca/orca`, with the file beside it that names the
+/// run's answers and the log of its calls: both sides start this one, never the machine's.
+fn fake_orca(state: &Path, responses: &Path) -> PathBuf {
+    let dir = state.join("fake-orca");
+    fs::create_dir_all(&dir).expect("the fake orca's folder");
+    let target = dir.join(format!("orca{}", std::env::consts::EXE_SUFFIX));
+    if !target.is_file() {
+        // A hard link on Linux, as the fake `gh`'s: a copy in each of the runs' folders filled a runner's disk (#610).
+        regia_conformance::place_fake(&bin_dir().join(format!("fake-orca{}", std::env::consts::EXE_SUFFIX)), &target);
+    }
+    let sidecar = json!({"responses": responses, "log": dir.join("calls.log")});
+    fs::write(dir.join("fixture.json"), sidecar.to_string()).expect("the fake orca's fixture");
+    target
+}
+
+/// The run's `policies/worker.yaml` under its home, when it gives one: its path either way.
+fn worker_policy(state: &Path, run: &RunSpec) -> PathBuf {
+    let file = policy_home(state, run).join("policies").join("worker.yaml");
+    if let Some(text) = &run.worker_policy {
+        fs::write(&file, text).expect("the workers' policy");
+    }
+    file
 }
 
 /// An instant `ago_s` seconds before `now`, as the state writes one.
@@ -651,7 +779,9 @@ fn product(state: &Path, responses: &Path, args: &[String], run: &RunSpec, now: 
     let launch = launch
         .env(&env_var(SETTINGS_DIR_SUFFIX), settings_dir(state, consent))
         .env(&prototype_env_var("HOME"), policy_home(state, run))
+        .env(&Program::Orca.env_name(), fake_orca(state, responses))
         .env(&env_var("NOW"), now);
+    worker_policy(state, run);
     let output = launch.run().expect("run the precheck");
     let text = |bytes: &[u8]| String::from_utf8_lossy(bytes).replace("\r\n", "\n");
     Ran { exit: output.status.code(), stdout: text(&output.stdout), stderr: text(&output.stderr) }
@@ -671,7 +801,8 @@ fn prototype_side(home: &Path, state: &Path, responses: &Path, args: &[String], 
     fs::write(&script, PROTOTYPE_SIDE).expect("the prototype's side");
     let input = state.join("run.json");
     let policy = policy_home(state, run).join(regia_core::policy::file_path());
-    fs::write(&input, json!({"now": now, "args": args, "policy": policy}).to_string()).expect("the run");
+    let (orca, workers) = (fake_orca(state, responses), worker_policy(state, run));
+    fs::write(&input, json!({"now": now, "args": args, "policy": policy, "orca": orca, "worker_policy": workers}).to_string()).expect("the run");
     let interpreter = Pin::resolve(Program::Python).expect("a Python interpreter");
     let mut argv: Vec<String> = python::FLAGS.map(str::to_owned).to_vec();
     argv.extend([script.display().to_string(), home.display().to_string(), input.display().to_string()]);
@@ -908,7 +1039,7 @@ fn prepare(case: &Case, index: usize, run: &RunSpec, side: &str) -> Prepared {
     let dossier = prepare_dossier(&label, run);
     let issues = run.issues.clone().unwrap_or_else(|| case.file.issues.clone());
     let comments = run.comments.clone().unwrap_or_else(|| case.file.comments.clone());
-    let responses = responses(&issues, &comments, run, &slashed(&dossier), FIXTURE_NOW);
+    let responses = responses(&issues, &comments, run, &run.workers, &slashed(&dossier), FIXTURE_NOW);
     Prepared { label, responses, run: run.clone() }
 }
 
@@ -973,6 +1104,7 @@ fn run_ticks(case: &Case, index: usize, run: &RunSpec, side: &str, mut each: imp
     let prepared = prepare(case, index, run, side);
     let (state, responses_path) = prepare_side(&prepared.label, &prepared.run, &prepared.responses, FIXTURE_NOW);
     let (mut minutes, mut issues, mut usage) = (0.0, run.issues.clone().unwrap_or_else(|| case.file.issues.clone()), run.usage.clone());
+    let mut workers = run.workers.clone();
     let comments = run.comments.clone().unwrap_or_else(|| case.file.comments.clone());
     let dossier = bin_dir().join("conformance-state").join(format!("{}-dossier", prepared.label));
     for tick in &ticks_of(run) {
@@ -984,8 +1116,11 @@ fn run_ticks(case: &Case, index: usize, run: &RunSpec, side: &str, mut each: imp
         if tick.usage.is_some() {
             usage = tick.usage.clone();
         }
+        if let Some(changed) = &tick.workers {
+            workers = changed.clone();
+        }
         if !run.ticks.is_empty() {
-            let answers = responses(&issues, &comments, run, &slashed(&dossier), &now);
+            let answers = responses(&issues, &comments, run, &workers, &slashed(&dossier), &now);
             fs::write(&responses_path, serde_json::to_string_pretty(&answers).expect("JSON")).expect("the responses");
             let usage = usage.clone().unwrap_or(UsageSpec { pct: Some(DEFAULT_PCT), ..UsageSpec::default() });
             put_rows(&state, &tick_rows(tick, &usage, &now));
@@ -1154,8 +1289,11 @@ fn the_comparison_notices_a_difference() {
     ] {
         assert!(!differences(&ran(&altered), &recorded).is_empty(), "unnoticed: {altered}");
     }
-    let later = json!({"exit": 0, "line": line.replace("\"motivo\":\"pronti\",\"cursore\"", "\"motivo\":\"worker-silente\",\"cursore\"")});
-    assert!(std::panic::catch_unwind(|| without_later(later["line"].as_str().unwrap())).is_err(), "a reason not ported yet cannot be recorded");
+    // Every reason is ported (#599): a recorded `worker-silente` compares as any other.
+    let silent = line.replace("\"motivo\":\"pronti\",\"cursore\"", "\"motivo\":\"worker-silente\",\"cursore\"");
+    let recorded = json!({"exit": 0, "line": with_placeholder_t(&silent)});
+    assert_eq!(differences(&ran(&silent), &recorded), Vec::<String>::new());
+    assert!(!differences(&ran(line), &recorded).is_empty());
 }
 
 /// TestVincoli of the prototype: the command never reads stdin, and the engine has no way to write the
@@ -1244,7 +1382,7 @@ fn product_run(label: &str, issues: Value, run: Value) -> (PathBuf, PathBuf, Run
     let run: RunSpec = serde_json::from_value(run).expect("a run");
     let issues: Vec<IssueSpec> = serde_json::from_value(issues).expect("issues");
     let dossier = prepare_dossier(label, &run);
-    let responses = responses(&issues, &BTreeMap::new(), &run, &slashed(&dossier), FIXTURE_NOW);
+    let responses = responses(&issues, &BTreeMap::new(), &run, &run.workers, &slashed(&dossier), FIXTURE_NOW);
     let (state, responses) = prepare_side(label, &run, &responses, FIXTURE_NOW);
     (state, responses, run)
 }

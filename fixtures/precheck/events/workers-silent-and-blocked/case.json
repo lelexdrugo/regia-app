@@ -1,0 +1,111 @@
+{
+  "_note": "Synthetic. #210 and #641: the workers of the tasks in progress, from Orca through each side's own adapter behind the fake orca. A worker silent past 30 minutes that waits for nobody wakes, below the reports and above the ready; past 180 minutes one with an open call or a person awaited is blocked, in its own list and not among the silent; once an episode, from the instant its threshold passed when that is after the cursor's. Of several dispatches of a task the most recent counts; Orca failing, a list limited to a run, a transcript that does not read and a worker of another task are no data for it.",
+  "transcribes": [
+    "test_precheck_worker.py::TestWorkerSilente::test_senza_battito_da_31_minuti_sveglia",
+    "test_precheck_worker.py::TestWorkerSilente::test_a_29_minuti_non_sveglia",
+    "test_precheck_worker.py::TestWorkerSilente::test_un_solo_risveglio_per_episodio",
+    "test_precheck_worker.py::TestWorkerSilente::test_senza_che_il_passo_avanzi_il_cursore_il_risveglio_si_ripete",
+    "test_precheck_worker.py::TestWorkerSilente::test_se_il_worker_riprende_e_si_ferma_e_un_episodio_nuovo",
+    "test_precheck_worker.py::TestWorkerSilente::test_attesa_di_una_persona_non_e_silenzio",
+    "test_precheck_worker.py::TestWorkerSilente::test_adapter_che_fallisce_il_giro_finisce_normale",
+    "test_precheck_worker.py::TestWorkerSilente::test_piu_dispatch_per_lo_stesso_task_vale_il_piu_recente",
+    "test_precheck_worker.py::TestWorkerSilente::test_priorita_sotto_report_sopra_pronti_e_inbox",
+    "test_precheck_worker.py::TestWorkerSilente::test_una_volta_per_giro_anche_con_piu_progetti",
+    "test_precheck_worker.py::TestWorkerSilente::test_la_soglia_viene_dall_ambiente (from the run's policies/worker.yaml)",
+    "test_precheck_blocco.py::TestBloccati::test_chiamata_aperta_oltre_180_minuti_va_nel_payload",
+    "test_precheck_blocco.py::TestBloccati::test_attesa_di_una_persona_oltre_180_minuti_e_bloccata",
+    "test_precheck_blocco.py::TestBloccati::test_a_179_minuti_non_e_ancora_blocco",
+    "test_precheck_blocco.py::TestBloccati::test_silenzio_senza_chiamata_aperta_non_e_blocco",
+    "test_precheck_blocco.py::TestBloccati::test_un_bloccato_non_conta_anche_fra_i_silenti",
+    "test_precheck_blocco.py::TestBloccati::test_due_task_bloccati_e_uno_silente_nel_payload",
+    "test_worker_orca.py (the adapter's reading of the transcript, the beat, agentWait, the request of permission and the titles)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 9\npriorita: 3"},
+    {"n": 2, "status": "In corso"},
+    {"n": 3, "status": "In corso"},
+    {"n": 7, "status": "Approvato"}
+  ],
+  "runs": [
+    {
+      "note": "silent 31 minutes wakes, 29 does not, before the ready",
+      "workers": [{"task": 2, "last": "2026-01-10T08:29:00Z"}, {"task": 3, "last": "2026-01-10T08:31:00Z"}]
+    },
+    {
+      "note": "a person awaited is no silence",
+      "workers": [{"task": 2, "last": "2026-01-10T08:20:00Z", "waiting": true}]
+    },
+    {
+      "note": "an open call past 180 minutes is blocked and not silent; at 179 only silent",
+      "workers": [{"task": 2, "last": "2026-01-10T05:59:00Z", "open_call": true}, {"task": 3, "last": "2026-01-10T06:01:00Z", "open_call": true}]
+    },
+    {
+      "note": "a request of permission past 180 minutes is a person awaited; silence with no call is only silent",
+      "workers": [{"task": 2, "last": "2026-01-10T05:00:00Z", "permission": true}, {"task": 3, "last": "2026-01-10T05:00:00Z"}]
+    },
+    {
+      "note": "Orca's agentWait past 180 minutes is blocked",
+      "workers": [{"task": 2, "last": "2026-01-10T05:00:00Z", "waiting": true}, {"task": 3, "last": "2026-01-10T05:00:00Z", "open_call": true}]
+    },
+    {
+      "note": "the step looked after the threshold passed: the episode wakes no more",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:59:30Z"}},
+      "workers": [{"task": 2, "last": "2026-01-10T08:29:00Z"}]
+    },
+    {
+      "note": "a cursor before the threshold: the episode wakes again",
+      "cursor": {"p": {"v": 1, "t": "2026-01-10T08:58:00Z"}},
+      "workers": [{"task": 2, "last": "2026-01-10T08:29:00Z"}]
+    },
+    {
+      "note": "two dispatches of a task: the most recent counts",
+      "workers": [{"task": 2, "last": "2026-01-10T08:00:00Z"}, {"task": 2, "last": "2026-01-10T08:50:00Z"}]
+    },
+    {
+      "note": "Orca fails: no data, the tick goes on",
+      "orca_fails": "runtime_unavailable",
+      "workers": [{"task": 2, "last": "2026-01-10T08:00:00Z"}]
+    },
+    {
+      "note": "a list limited to one run is no answer",
+      "orca_scoped": true,
+      "workers": [{"task": 2, "last": "2026-01-10T08:00:00Z"}]
+    },
+    {
+      "note": "a transcript that does not read skips its worker, the other counts",
+      "workers": [{"task": 2, "last": "2026-01-10T08:00:00Z", "unreadable": true}, {"task": 3, "last": "2026-01-10T08:00:00Z"}]
+    },
+    {
+      "note": "a title of another kind, and a dispatch no longer in progress, are not the task's worker",
+      "workers": [{"task": 2, "last": "2026-01-10T08:00:00Z", "title": "other #2"}, {"task": 3, "last": "2026-01-10T08:00:00Z", "outcome": "done"}]
+    },
+    {
+      "note": "Orca's own beat later than the last line counts; with no line, the dispatch's start",
+      "workers": [{"task": 2, "last": "2026-01-10T08:00:00Z", "heartbeat": "2026-01-10T08:45:00Z"}, {"task": 3, "dispatched": "2026-01-10T08:10:00Z"}]
+    },
+    {
+      "note": "the thresholds of the policy's file",
+      "worker_policy": "silenzio_minuti: 10\nblocco_minuti: 60\n",
+      "workers": [{"task": 2, "last": "2026-01-10T08:45:00Z"}, {"task": 3, "last": "2026-01-10T07:50:00Z", "open_call": true}]
+    },
+    {
+      "note": "two projects: one read for both, each its own workers",
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true},
+        {"n": 2, "status": "In corso"},
+        {"n": 8, "status": "Approvato", "project": "q", "objective": true},
+        {"n": 9, "status": "In corso", "project": "q"}
+      ],
+      "workers": [{"task": 2, "last": "2026-01-10T08:50:00Z"}, {"task": 9, "last": "2026-01-10T08:00:00Z"}]
+    },
+    {
+      "note": "a worker that writes again and stops is a new episode",
+      "workers": [{"task": 2, "last": "2026-01-10T08:25:00Z"}],
+      "ticks": [
+        {"minutes": 0, "note": "silent: wakes"},
+        {"minutes": 10, "note": "the step looked: the same episode does not wake", "cursor": {"p": {"v": 1, "t": "2026-01-10T09:05:00Z"}}},
+        {"minutes": 30, "note": "it wrote and stopped again: a new episode", "workers": [{"task": 2, "last": "2026-01-10T09:06:00Z"}]}
+      ]
+    }
+  ]
+}

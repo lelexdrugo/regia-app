@@ -33,8 +33,13 @@
 //! facts, by their digest, in the detector's own row. Three ticks and an hour of them is a stall, the
 //! tick's outcome before any new activity, unless it was reported already.
 //!
-//! **Not here yet (#466):** the silent workers and the dossier's warnings. Each has its place below,
-//! marked, and none of their reasons or keys is produced.
+//! The **workers** of the tasks in progress (#210, #641): Orca's adapter says when each last wrote, read once a
+//! tick while the tracker is read. A worker silent past its threshold, waiting for nobody, is an event of its own
+//! (`worker-silente`), and so is one blocked past the block's threshold, by an open call or a person awaited: each
+//! once an episode, from the instant its threshold passed when that is after the step's, never both. Orca missing,
+//! slow or failing is no data, never a fault.
+//!
+//! **Not here yet (#599):** the dossier's warnings, which need the prototype's `avvisi_dossier` (#450).
 
 mod args;
 mod budget;
@@ -45,7 +50,9 @@ mod series;
 mod sources;
 pub(crate) mod v1;
 
-use regia_agents::{Platform, ProbeConsent};
+use std::collections::BTreeSet;
+
+use regia_agents::{Platform, ProbeConsent, WorkerBeat, WorkerThresholds};
 use regia_core::{Policy, RawComment, Task};
 use regia_store::{ProviderUsage, WallTime};
 use serde_json::Value;
@@ -133,6 +140,18 @@ pub trait Sources {
     /// dossier). `None` when they were not read: too close to the tick's deadline, past the time the tick gives
     /// such reads, or a read that failed. A read more, which never fails the tick.
     fn recent_comments(&self, project: &str, since: WallTime) -> Option<Vec<RecentComment>>;
+
+    /// The thresholds of the workers (#210, #641): the prototype's `policies/worker.yaml` while the prototype exists,
+    /// else the defaults.
+    fn worker_thresholds(&self) -> WorkerThresholds;
+
+    /// Starts the read of the workers of `wanted`, the tasks in progress of every project, at `now`: once a tick, the
+    /// first time a project has work in progress, going on while the tracker is read, within its own deadline (#210).
+    fn start_workers(&self, wanted: &BTreeSet<u64>, now: WallTime);
+
+    /// What that read found, once it ended: `None` without a read, or when Orca failed or did not answer in time. Never
+    /// a fault: no data is no silence.
+    fn workers(&self) -> Option<Vec<WorkerBeat>>;
 
     /// The value of the project's events cursor, `null` without one.
     ///

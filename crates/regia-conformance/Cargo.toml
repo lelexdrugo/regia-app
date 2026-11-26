@@ -18,6 +18,11 @@ path = "src/bin/fake_gh.rs"
 name = "fake-git"
 path = "src/bin/fake_git.rs"
 
+# A stand-in for `orca`: the four reads of the workers of the precheck (#599), from a run's fixture.
+[[bin]]
+name = "fake-orca"
+path = "src/bin/fake_orca.rs"
+
 # Stands in for the interpreter where the prototype is not, as in CI: checks the argv the facade
 # built and replays what the prototype printed for a case, with its exit code.
 [[bin]]

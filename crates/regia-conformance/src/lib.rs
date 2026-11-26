@@ -798,7 +798,7 @@ pub fn fixture_for_python(launch: Launch, responses: &Path, state: &Path) -> Lau
 /// beside that path. On Linux it is a hard link, so the state folders of a test run, some four hundred,
 /// share one file on disk: a copy in each filled the Linux runner's disk (#610). Elsewhere it is a copy,
 /// as before.
-fn place_fake(source: &Path, target: &Path) {
+pub fn place_fake(source: &Path, target: &Path) {
     // A link left by an earlier run in the same folder: a copy over it would empty the file it shares.
     let _ = fs::remove_file(target);
     #[cfg(target_os = "linux")]

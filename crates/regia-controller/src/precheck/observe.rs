@@ -1,8 +1,9 @@
 //! A tick of the precheck: the registry of the active projects, each project observed, and the decision
 //! among them. The order of the reads is the prototype's, so the first fault is the same one.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
+use regia_agents::{WorkerBeat, WorkerThresholds};
 use regia_core::{GraphOrder, IssueState, Lever, LeverValue, Local, LocalStatus, Origin, Policy, Status, Task, graph_order, signature_role};
 use regia_store::WallTime;
 
@@ -143,14 +144,47 @@ fn drainable(task: &Task) -> bool {
         && !task.labels.iter().any(|label| *label == format().backlog.parked)
 }
 
-/// Observes one active project. `issues` are every open issue, of every project.
+/// The episodes of the workers of the project's tasks in progress (#210, #641), each a task with the instant its
+/// threshold passed: the silent ones, which wait for nobody and are not blocked, then the blocked ones. An episode
+/// counts once its instant is past `now` and after the cursor's `t`: the step that looks moves `t`, and the same
+/// episode wakes no more; a worker that writes again and stops is another instant. Of several dispatches of a task
+/// the most recent counts.
+fn episodes(beats: Option<Vec<WorkerBeat>>, wanted: &BTreeSet<u64>, in_progress: &BTreeSet<u64>, now: WallTime, t: Option<WallTime>, thresholds: WorkerThresholds) -> (Vec<(u64, WallTime)>, Vec<(u64, WallTime)>) {
+    let mut last: BTreeMap<u64, WorkerBeat> = BTreeMap::new();
+    for beat in beats.into_iter().flatten().filter(|beat| wanted.contains(&beat.task)) {
+        if last.get(&beat.task).is_none_or(|seen| beat.last > seen.last) {
+            last.insert(beat.task, beat);
+        }
+    }
+    let (mut silent, mut blocked) = (Vec::new(), Vec::new());
+    for (task, beat) in last.iter().filter(|(task, _)| in_progress.contains(task)) {
+        let new = |threshold: f64| beat.last.checked_add_secs(threshold).filter(|at| now > *at && t.is_none_or(|t| *at > t));
+        if !beat.waiting && beat.blocked.is_none()
+            && let Some(at) = new(thresholds.silence_s)
+        {
+            silent.push((*task, at));
+        }
+        if beat.blocked.is_some()
+            && let Some(at) = new(thresholds.block_s)
+        {
+            blocked.push((*task, at));
+        }
+    }
+    (silent, blocked)
+}
+
+/// Observes one active project at `now`. `issues` are every open issue, of every project, and `in_progress_all`
+/// their tasks in progress, whose workers are read once a tick.
+#[allow(clippy::too_many_arguments)]
 fn observe(
     sources: &dyn Sources,
     project: &Project<'_>,
     issues: &[Issue],
+    in_progress_all: &BTreeSet<u64>,
     graph: &GraphOrder,
     leases: &[super::ExpiredLease],
     policy: &Policy,
+    now: WallTime,
 ) -> Result<Observation, Fault> {
     let wip = registry_number(project.wip, "wip", DEFAULT_WIP)?;
     let mine: Vec<&Task> = issues.iter().map(|issue| &issue.task).filter(|task| task.project.as_deref() == Some(project.id.as_str())).collect();
@@ -221,6 +255,10 @@ fn observe(
         .collect();
     new_reports.sort_unstable();
     let reports = new_reports.len();
+    if !in_progress.is_empty() {
+        // While the comments are read (#210).
+        sources.start_workers(in_progress_all, now);
+    }
     let waiting: Vec<&Task> = mine.iter().copied().filter(|task| task.status.is_some_and(Status::waits_on_owner)).collect();
     let mut answer_ids: Vec<i64> = Vec::new();
     // The issues whose comments this loop read: a stale one (#589) is left to the read of the recent comments,
@@ -272,7 +310,9 @@ fn observe(
     }
     answer_ids.sort_unstable();
     let answers = answer_ids.len();
-    // #599: the silent workers of the tasks in progress are read here, after the comments.
+    // After the comments of the tracker: the read of the workers started before them.
+    let beats = if in_progress.is_empty() { None } else { sources.workers() };
+    let (silent, blocked) = episodes(beats, in_progress_all, &in_progress, now, t, sources.worker_thresholds());
 
     let words = &format().project;
     let count = |n: usize| i64::try_from(n).unwrap_or(i64::MAX);
@@ -283,6 +323,11 @@ fn observe(
         (words.inbox.as_str(), count(inbox)),
         (words.leases.as_str(), count(expired)),
     ];
+    for (key, episodes) in [(&words.silent, &silent), (&words.blocked, &blocked)] {
+        if !episodes.is_empty() {
+            counts.push((key.as_str(), count(episodes.len())));
+        }
+    }
     if ready_all.len() > ready.len() {
         counts.push((words.blocked_by_wip.as_str(), count(ready_all.len() - ready.len())));
     }
@@ -309,6 +354,8 @@ fn observe(
         Reason::Answers => answers,
         Reason::Reports => reports,
         Reason::Leases => expired,
+        // The blocked first, then the silent: one reason.
+        Reason::SilentWorkers => blocked.len() + silent.len(),
         Reason::Ready => ready.len(),
         Reason::Inbox if !at_cap => inbox,
         _ => 0,
@@ -353,6 +400,13 @@ fn observe(
             numbers(&inbox_items),
             numbers(&expired_tasks),
         ];
+        // An episode is its task and the instant its threshold passed.
+        for (tag, episodes) in [(&series.silent, &silent), (&series.blocked, &blocked)] {
+            if !episodes.is_empty() {
+                let pairs = episodes.iter().map(|(task, at)| Json::List(vec![Json::Int(i64::try_from(*task).unwrap_or(i64::MAX)), Json::Str(at.to_iso_seconds())]));
+                facts.extend([Json::Str(tag.clone()), Json::List(pairs.collect())]);
+            }
+        }
         if !backlog.is_empty() {
             let mut sorted = backlog.clone();
             sorted.sort_unstable();
@@ -369,8 +423,8 @@ fn observe(
         counts,
         tasks,
         backlog,
-        silent_tasks: Vec::new(),
-        blocked_tasks: Vec::new(),
+        silent_tasks: silent.iter().map(|(task, _)| *task).collect(),
+        blocked_tasks: blocked.iter().map(|(task, _)| *task).collect(),
         answer_tasks: answer_tasks.into_iter().take(words.max_tasks).collect(),
         countable,
         digest,
@@ -532,11 +586,14 @@ fn tick(sources: &dyn Sources, options: &Options, now: WallTime) -> Result<Verdi
     // The graph's measures, once a tick, on every open issue of every project.
     let tasks: Vec<Task> = issues.iter().map(|issue| issue.task.clone()).filter(|task| task.state == IssueState::Open).collect();
     let graph = graph_order(&tasks);
+    // The tasks in progress of every project, whose workers are read once a tick.
+    let in_progress_all: BTreeSet<u64> =
+        issues.iter().map(|issue| &issue.task).filter(|task| !task.objective && task.status == Some(Status::InProgress)).map(|task| task.number).collect();
 
     let policy = sources.policy();
     let mut observations = Vec::new();
     for (_, project) in &active {
-        observations.push(observe(sources, project, &issues, &graph, &leases, &policy)?);
+        observations.push(observe(sources, project, &issues, &in_progress_all, &graph, &leases, &policy, now)?);
     }
     let max = options.budget_max.unwrap_or(policy.automatic_max_pct);
     let budget = budget_gate(sources, &mut observations, &policy, max, now)?;
@@ -591,7 +648,7 @@ mod tests {
     use std::cell::RefCell;
     use std::collections::BTreeMap;
 
-    use regia_agents::{Platform, ProbeConsent};
+    use regia_agents::{Platform, ProbeConsent, WorkerBeat, WorkerThresholds};
     use regia_core::{Maturity, RawComment, SignatureRole, sign};
     use regia_store::{ProviderUsage, Served, Window};
     use serde_json::{Value, json};
@@ -625,6 +682,9 @@ mod tests {
         /// The answer of the read of the recent comments, `None` for no answer; and the projects it was asked for.
         recent: Option<Vec<RecentComment>>,
         recent_asked: RefCell<Vec<String>>,
+        /// What Orca's adapter answers, and the reads it was asked for.
+        beats: Option<Vec<WorkerBeat>>,
+        started: RefCell<Vec<BTreeSet<u64>>>,
     }
 
     impl Default for Fake {
@@ -632,6 +692,8 @@ mod tests {
             Fake {
                 recent: Some(Vec::new()),
                 recent_asked: RefCell::default(),
+                beats: None,
+                started: RefCell::default(),
                 issues: Vec::new(),
                 comments: BTreeMap::new(),
                 cursors: BTreeMap::new(),
@@ -660,6 +722,20 @@ mod tests {
         fn recent_comments(&self, project: &str, _since: WallTime) -> Option<Vec<RecentComment>> {
             self.recent_asked.borrow_mut().push(project.to_owned());
             self.recent.clone()
+        }
+
+        fn worker_thresholds(&self) -> WorkerThresholds {
+            WorkerThresholds::from_policy(None)
+        }
+
+        fn start_workers(&self, wanted: &BTreeSet<u64>, _now: WallTime) {
+            if self.started.borrow().is_empty() {
+                self.started.borrow_mut().push(wanted.clone());
+            }
+        }
+
+        fn workers(&self) -> Option<Vec<WorkerBeat>> {
+            if self.started.borrow().is_empty() { None } else { self.beats.clone() }
         }
 
         fn events_cursor(&self, project: &str) -> Result<Value, String> {
@@ -858,6 +934,51 @@ mod tests {
         let fake = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3"), waiting(2, "2026-01-01T00:00:00Z")], ..Fake::default() };
         let _ = super::tests::line(&fake);
         assert_eq!((fake.read.borrow().clone(), fake.recent_asked.borrow().len()), (vec![2], 0));
+    }
+
+    /// `test_precheck_worker.py` and `test_precheck_blocco.py` of the prototype (#210, #641): a worker silent past 30
+    /// minutes wakes, once an episode, unless it waits for a person; one blocked past 180 minutes is in its own list and
+    /// not among the silent; the events come after the reports and before the ready; Orca is asked once a tick, for
+    /// the tasks in progress of every project, and only when a project has some.
+    #[test]
+    fn the_silent_and_the_blocked_workers_wake_once_an_episode() {
+        let ago = |minutes: f64| now().checked_add_secs(-minutes * 60.0).unwrap();
+        let beat = |task: u64, minutes: f64, waiting: bool, blocked: Option<regia_agents::Blocked>| WorkerBeat { task, last: ago(minutes), waiting, blocked };
+        let issues = vec![
+            objective(1, "p", Status::Approved, "5", "3"),
+            issue(task(2, "p", Status::InProgress)),
+            issue(task(3, "p", Status::InProgress)),
+            issue(task(4, "p", Status::InProgress)),
+            issue(task(5, "p", Status::InProgress)),
+            issue(task(6, "p", Status::Approved)),
+            issue(task(9, "q", Status::InProgress)),
+        ];
+        let beats = vec![
+            beat(2, 31.0, false, None),
+            beat(3, 29.0, false, None),
+            beat(4, 200.0, false, Some(regia_agents::Blocked::OpenCall)),
+            beat(5, 40.0, true, None),
+            beat(5, 45.0, false, None),
+        ];
+        let fake = Fake { issues: issues.clone(), beats: Some(beats.clone()), ..Fake::default() };
+        let line = line(&fake);
+        let project = project_of(&line, "p");
+        let words = &format().project;
+        assert_eq!(line[&format().line.keys.reason], Reason::SilentWorkers.word(), "before the ready");
+        assert_eq!((project[&words.silent].clone(), project[&words.blocked].clone(), project[&words.events].clone()), (json!(1), json!(1), json!(3)));
+        assert_eq!((project[&words.silent_tasks].clone(), project[&words.blocked_tasks].clone()), (json!([2]), json!([4])));
+        assert_eq!(*fake.started.borrow(), [BTreeSet::from([2, 3, 4, 5, 9])], "every project's tasks in progress, once");
+        // The step looked after both thresholds passed: the same episodes wake no more, and the ready task does.
+        let cursors = BTreeMap::from([("p".to_owned(), json!({format().events.t.as_str(): ago(0.5).to_iso_seconds()}))]);
+        let fake = Fake { issues: issues.clone(), beats: Some(beats), cursors, ..Fake::default() };
+        let project = project_of(&super::tests::line(&fake), "p");
+        assert_eq!((project[&words.reason].clone(), project.get(&words.silent_tasks)), (json!(Reason::Ready.word()), None));
+        // No data is no silence; and without tasks in progress Orca is not asked.
+        let fake = Fake { issues: issues.clone(), ..Fake::default() };
+        assert_eq!(project_of(&super::tests::line(&fake), "p")[&words.reason], Reason::Ready.word());
+        let fake = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3")], beats: Some(Vec::new()), ..Fake::default() };
+        let _ = super::tests::line(&fake);
+        assert!(fake.started.borrow().is_empty());
     }
 
     #[test]

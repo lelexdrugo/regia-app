@@ -13,6 +13,7 @@ pub(crate) struct Format {
     pub(crate) outcomes: Outcomes,
     pub(crate) payload: PayloadWords,
     pub(crate) project: ProjectWords,
+    pub(crate) workers: WorkersWords,
     pub(crate) answers: AnswersWords,
     pub(crate) backlog: BacklogWords,
     pub(crate) cursor: CursorWords,
@@ -144,6 +145,14 @@ pub(crate) struct ProjectWords {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub(crate) struct WorkersWords {
+    pub(crate) read_s: f64,
+    pub(crate) margin_s: f64,
+    pub(crate) grace_s: f64,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct AnswersWords {
     pub(crate) consultation: String,
     pub(crate) stale_margin_s: f64,
@@ -260,6 +269,8 @@ pub(crate) struct SeriesWords {
     pub(crate) contended: String,
     pub(crate) events: String,
     pub(crate) backlog: String,
+    pub(crate) silent: String,
+    pub(crate) blocked: String,
     pub(crate) digest_length: usize,
 }
 

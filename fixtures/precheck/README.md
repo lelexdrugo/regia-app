@@ -19,11 +19,11 @@ The cases are under `events/`, not `cases/`: the harness reads every family's `c
 2. the state folder: the synthetic `tracker.json`, and the rows of `regia.db` (the cursor's value with its date, a lock or a lease that expires in 2999 or in 2000, a row that is not a document);
 3. a dossier folder, with each report at `<project>/.regia/report/<name>` and its date, to the 100 nanoseconds.
 
-The product runs its `precheck` binary there, at `2026-01-10T09:00:00Z`. The prototype runs its precheck in process, with its own tracker reader behind the fake `gh`, its runtime on the state folder and its reports on disk; only the usage probe answers a known budget of 10 %, and the dossier's warnings and the workers have no data.
+The product runs its `precheck` binary there, at `2026-01-10T09:00:00Z`. The prototype runs its precheck in process, with its own tracker reader behind the fake `gh`, its runtime on the state folder and its reports on disk; only the usage probe answers a known budget of 10 %, and the dossier's warnings have no data. The workers of the tasks in progress (#210 and #641 of the dossier) come from each side's own adapter of Orca behind the fake `orca` of the run's folder, which answers its four reads from the run's `workers`, with the thresholds of the run's `policies/worker.yaml` (the defaults without one) and the run's instant: the prototype's own reader would ask the machine's clock. The product finds the fake by `REGIA_ORCA`, the prototype's adapter where it looks the program up; neither ever starts the machine's Orca.
 
 ## The comparison
 
-The line must be the prototype's, key order included, once these are taken out of the prototype's side only: the payload's `budget`, `politica`, `politica_motivo`, `politica_locale`, and each project's `serie`, `rinviato`, `arretrato`, `arretrato_task`, `proposte`, `dossier`, `silenti`, `silenti_task`. No recorded run ends with a reason of #466, and the product's line must have none of those keys.
+The line must be the prototype's, key order included, once each project's `dossier` is taken out of the prototype's side only: the dossier's warnings need the prototype's `avvisi_dossier`, which #450 of the dossier ports, and the product's line must not have the key. Every reason is ported. The detector's rows must be the prototype's too, the digests of the series byte for byte.
 
 ## Recording again
 

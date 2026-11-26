@@ -117,6 +117,17 @@ answer_tasks = "risposte_task"
 # after the instant, open or closed: at most `recent_s` seconds of it, `recent_total_s` for every project of a
 # tick, and none with less than `recent_margin_s` seconds left before the tick's deadline. That read never fails
 # the tick: whatever goes wrong, it is as if it had not been made.
+# The workers of the tasks in progress (#210, #641 of the dossier, ADR 0027): when each last wrote, from Orca's
+# adapter, read once a tick while the tracker is read, in at most `read_s` seconds, never with less than
+# `margin_s` left before the tick's deadline, and waited for `grace_s` more. A worker silent past the policy's
+# threshold that waits for nobody is one event, once an episode: from the instant its threshold passed, when that is
+# after the cursor's. One blocked past the block's threshold is another, never both, with the same reason. No data
+# is no silence: Orca missing, slow or failing leaves the tick as it was.
+[workers]
+read_s = 25.0
+margin_s = 15.0
+grace_s = 2.0
+
 [answers]
 consultation = "Consultazione:"
 stale_margin_s = 120.0
@@ -240,6 +251,9 @@ held = "occupato"
 contended = "illeggibile"
 events = "ev"
 backlog = "arretrato"
+# The episodes of the workers, each a task with the instant its threshold passed (#210, #641), before the backlog.
+silent = "silenti"
+blocked = "bloccati"
 digest_length = 12
 
 # The arguments of the prototype's command line, and their defaults. A wrong argument is an error of the

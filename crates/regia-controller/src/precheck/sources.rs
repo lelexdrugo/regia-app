@@ -2,7 +2,8 @@
 //! reports on disk, the budget policy, the user's consent to the usage probes and their cache. The tick
 //! has a deadline, checked before each read of the tracker.
 
-use std::cell::Cell;
+use std::cell::{Cell, OnceCell, RefCell};
+use std::collections::BTreeSet;
 use std::convert::Infallible;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, mpsc};
@@ -10,7 +11,7 @@ use std::thread;
 use std::time::{Duration, Instant, UNIX_EPOCH};
 
 use chrono::{DateTime, Utc};
-use regia_agents::{Env, Https, Platform, ProbeConsent, Settings, UsageProbes};
+use regia_agents::{Env, Https, OrcaWorkers, Platform, ProbeConsent, Settings, UsageProbes, WorkerBeat, WorkerThresholds};
 use regia_core::policy::{file_path, local_file_name, read_local};
 use regia_core::{Policy, RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1, project_label_prefix};
 use regia_github::GhTracker;
@@ -41,6 +42,9 @@ pub struct LiveSources {
     binding: TrackerBinding,
     /// The seconds the reads of the recent comments took in this tick, which share one cap.
     recent_spent: Cell<f64>,
+    /// The thresholds of the workers, read once; and the read of the workers of this tick.
+    thresholds: OnceCell<WorkerThresholds>,
+    workers: RefCell<WorkersRead>,
     /// Opened before the tick, failing at its first read, where the prototype's state fails.
     store: Result<Store, String>,
     /// The state folder, where the budget policy's local override is read.
@@ -95,12 +99,21 @@ pub fn live_sources_in(folder: Option<&Path>, deadline_s: f64, fixed: Option<Wal
         tracker: Arc::new(GhTracker::new(&config)),
         binding,
         recent_spent: Cell::new(0.0),
+        thresholds: OnceCell::new(),
+        workers: RefCell::new(WorkersRead::NotStarted),
         store,
         state,
         started: Instant::now(),
         deadline_s,
         fixed,
     })
+}
+
+/// The read of the workers of a tick (#210): not asked yet, going on in its thread until a moment, or ended.
+enum WorkersRead {
+    NotStarted,
+    Running { answer: mpsc::Receiver<Result<Vec<WorkerBeat>, String>>, until: Instant },
+    Ended(Option<Vec<WorkerBeat>>),
 }
 
 /// The seconds a read of the recent comments may take (#393): its own cap, what is left of the tick's cap for all
@@ -229,6 +242,48 @@ impl Sources for LiveSources {
                 })
                 .collect(),
         )
+    }
+
+    /// The prototype's `carica_soglia_s` and `carica_blocco_s`, on its file while the prototype exists.
+    fn worker_thresholds(&self) -> WorkerThresholds {
+        *self.thresholds.get_or_init(|| {
+            let text = dossier_dir().and_then(|dossier| std::fs::read_to_string(dossier.join(WorkerThresholds::FILE)).ok());
+            WorkerThresholds::from_policy(text.as_deref())
+        })
+    }
+
+    /// The prototype's `_avvia_battiti`: Orca's adapter in a thread, with what the tick's deadline leaves it past its
+    /// margin, at most its own cap. Once a tick: a read that did not start does not start later.
+    fn start_workers(&self, wanted: &BTreeSet<u64>, now: WallTime) {
+        let mut read = self.workers.borrow_mut();
+        if !matches!(*read, WorkersRead::NotStarted) {
+            return;
+        }
+        let words = &format().workers;
+        let budget = words.read_s.min(self.deadline_s - self.started.elapsed().as_secs_f64() - words.margin_s);
+        if wanted.is_empty() || budget <= 0.0 {
+            *read = WorkersRead::Ended(None);
+            return;
+        }
+        let deadline = Instant::now() + Duration::from_secs_f64(budget);
+        let (sender, answer) = mpsc::channel();
+        let (wanted, thresholds) = (wanted.clone(), self.worker_thresholds());
+        thread::spawn(move || {
+            let _ = sender.send(OrcaWorkers::new().read(&wanted, thresholds, now, deadline));
+        });
+        *read = WorkersRead::Running { answer, until: deadline + Duration::from_secs_f64(words.grace_s) };
+    }
+
+    /// The prototype's `_battiti`, the collection: waited for until the read's deadline and its grace, once.
+    fn workers(&self) -> Option<Vec<WorkerBeat>> {
+        let mut read = self.workers.borrow_mut();
+        let found = match std::mem::replace(&mut *read, WorkersRead::Ended(None)) {
+            WorkersRead::NotStarted => None,
+            WorkersRead::Running { answer, until } => answer.recv_timeout(until.saturating_duration_since(Instant::now())).ok().and_then(Result::ok),
+            WorkersRead::Ended(found) => found,
+        };
+        *read = WorkersRead::Ended(found.clone());
+        found
     }
 
     fn events_cursor(&self, project: &str) -> Result<Value, String> {
