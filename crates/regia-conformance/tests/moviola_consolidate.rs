@@ -356,6 +356,22 @@ fn without_a_store_nothing_fails_and_no_store_is_made() {
     assert!(row.value("token").is_null());
 }
 
+/// A difference, pinned: a row already written that Python reads and this port's JSON reader does not (`NaN`) makes
+/// `consolidate` fail and leaves the file as it was, where dropping it, as an unreadable line is dropped, would lose
+/// it at the next write.
+#[test]
+fn a_row_past_the_reader_s_limits_is_an_error_and_the_file_stays() {
+    let root = case_folder("row-past-the-limits");
+    let project = root.join("project");
+    let file = moviola::aggregates_file(&project);
+    fs::create_dir_all(file.parent().unwrap()).unwrap();
+    let text = "{\"task\": 3, \"round\": NaN}\nnot json\n";
+    fs::write(&file, text).unwrap();
+    let store = ActivityStore::new(root.join("no-store"));
+    assert!(moviola::consolidate("alpha", &project, &store, instant("2026-11-26T00:00:00Z")).is_err());
+    assert_eq!(fs::read_to_string(&file).unwrap(), text);
+}
+
 /// The copy of the prototype in `REGIA_HOME`.
 fn prototype() -> PathBuf {
     let home = std::env::var_os(prototype_env_var("HOME")).filter(|value| !value.is_empty()).map(PathBuf::from);

@@ -18,7 +18,8 @@
 //!   `via: report` that counts the sessions named; its tokens are not summed. Those entries outlive the store.
 //!
 //! Where it differs from the prototype: a record's task that is not a whole number is an error, where Python groups
-//! by the value as it is; a link on the way to the aggregates, or the aggregates' file a link, is refused, as the
+//! by the value as it is; a row already written that may hold a value past the JSON reader's limits is an error,
+//! where Python keeps it; a link on the way to the aggregates, or the aggregates' file a link, is refused, as the
 //! moviola's reads refuse one (threat model T05); a token count that is a float sums from left to right, where
 //! Python 3.12 compensates the rounding. The other errors are the prototype's: what makes Python raise is an error.
 
@@ -424,7 +425,7 @@ fn with_earlier_citations(mut row: Object, existing: Option<&Object>, place: &st
 }
 
 /// `_leggi_righe`: the rows already written, by task. A line that is not JSON, or has no task Python's `int()` reads,
-/// is dropped, as the prototype drops it.
+/// is dropped, as the prototype drops it; one that may be JSON to Python and not to this reader is an error.
 fn read_rows(folder: &Path, shown: &str) -> Result<BTreeMap<i128, Object>, MoviolaError> {
     let mut out = BTreeMap::new();
     let Some(dir) = super::files::moviola_dir(folder)? else { return Ok(out) };
@@ -433,7 +434,13 @@ fn read_rows(folder: &Path, shown: &str) -> Result<BTreeMap<i128, Object>, Movio
         if pystr::strip(line).is_empty() {
             continue;
         }
-        let Ok(Json::Object(row)) = pyjson::loads(line) else { continue };
+        let row = match pyjson::loads(line) {
+            Ok(Json::Object(row)) => row,
+            Ok(_) => continue,
+            // Dropped, the row would be lost at the next write, where Python keeps it.
+            Err(_) if pyjson::past_the_limits(line) => return Err(invalid(shown, "a row that Python reads and this port cannot read")),
+            Err(_) => continue,
+        };
         match row.get(&format().aggregate.task).map(pyjson::int_of) {
             Some(pyjson::IntOf::Value(task)) => {
                 out.insert(task, row);

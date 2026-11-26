@@ -293,6 +293,74 @@ pub fn loads(text: &str) -> Result<Json, JsonError> {
     serde_json::from_str(text).map_err(|error| JsonError(error.to_string()))
 }
 
+/// Whether a text may hold a value past this reader's limits, one that Python's `json.loads` reads and [`loads`]
+/// does not: `NaN` or `Infinity` outside a string, a number with twenty digits or more or a three-digit exponent, an
+/// escaped surrogate, nesting deeper than 128. A caller that would drop what does not read asks this first, so as
+/// not to drop what Python keeps.
+pub fn past_the_limits(text: &str) -> bool {
+    let bytes = text.as_bytes();
+    let (mut at, mut depth, mut deepest) = (0, 0usize, 0usize);
+    let mut in_string = false;
+    while at < bytes.len() {
+        let byte = bytes[at];
+        if in_string {
+            match byte {
+                b'\\' if bytes.get(at + 1) == Some(&b'u') => {
+                    let digits = text.get(at + 2..at + 6).and_then(|hex| u32::from_str_radix(hex, 16).ok());
+                    if digits.is_some_and(|code| (0xD800..=0xDFFF).contains(&code)) {
+                        return true;
+                    }
+                    at += 2;
+                    continue;
+                }
+                b'\\' => at += 1,
+                b'"' => in_string = false,
+                _ => {}
+            }
+            at += 1;
+            continue;
+        }
+        match byte {
+            b'"' => in_string = true,
+            b'[' | b'{' => {
+                depth += 1;
+                deepest = deepest.max(depth);
+            }
+            b']' | b'}' => depth = depth.saturating_sub(1),
+            b'N' | b'I' if text[at..].starts_with("NaN") || text[at..].starts_with("Infinity") => return true,
+            b'0'..=b'9' => {
+                let start = at;
+                while at < bytes.len() && bytes[at].is_ascii_digit() {
+                    at += 1;
+                }
+                if at - start >= 20 {
+                    return true;
+                }
+                while at < bytes.len() && (bytes[at].is_ascii_digit() || bytes[at] == b'.') {
+                    at += 1;
+                }
+                if matches!(bytes.get(at), Some(b'e' | b'E')) {
+                    at += 1;
+                    if matches!(bytes.get(at), Some(b'+' | b'-')) {
+                        at += 1;
+                    }
+                    let exponent = at;
+                    while at < bytes.len() && bytes[at].is_ascii_digit() {
+                        at += 1;
+                    }
+                    if at - exponent >= 3 {
+                        return true;
+                    }
+                }
+                continue;
+            }
+            _ => {}
+        }
+        at += 1;
+    }
+    deepest > 128
+}
+
 impl<'de> Deserialize<'de> for Json {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Json, D::Error> {
         deserializer.deserialize_any(JsonVisitor)
@@ -609,6 +677,17 @@ mod tests {
         // The limits of the module's documentation, which Python reads.
         for text in ["NaN", "[Infinity]", "1e400", "\"\\ud800\""] {
             assert!(loads(text).is_err(), "{text:?}");
+        }
+    }
+
+    #[test]
+    fn what_may_be_past_the_limits_is_told_apart() {
+        let deep = "[".repeat(129);
+        for text in ["[NaN]", "{\"a\": Infinity}", "123456789012345678901", "1e400", "\"\\ud800\"", deep.as_str()] {
+            assert!(past_the_limits(text), "{text:?}");
+        }
+        for text in ["not json", "{\"a\": \"NaN\"}", "[1, 2.5e10]", "\"\\u00e8\"", "{\"a\": 1,}"] {
+            assert!(!past_the_limits(text), "{text:?}");
         }
     }
 
