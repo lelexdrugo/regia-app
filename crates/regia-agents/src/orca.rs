@@ -1053,7 +1053,39 @@ pub fn running_dispatches(tasks: &[u64], thresholds: WorkerThresholds, now: Wall
     OrcaWorkers::new().read_dispatches(tasks, thresholds, now, deadline)
 }
 
-/// `orca orchestration <words> --json`, each flag with its value as one token, the values typed.
+/// What the resume of a session a usage limit stopped sends it (#576): a status message, from a sender, to a step's
+/// chat or a worker's dispatch, with the worker's task and dispatch when it is one.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StatusMessage<'a> {
+    pub from: &'a str,
+    pub to: &'a str,
+    pub subject: &'a str,
+    pub body: &'a str,
+    pub ids: Option<(&'a str, &'a str)>,
+}
+
+impl OrcaWorkers {
+    /// The status message that wakes a session of the app (#576, F290 of the dossier's inventory): `orca orchestration
+    /// send --from=… --to=… --type=status --subject=… --body=… [--task-id=… --dispatch-id=…] --json`. The id Orca gave
+    /// the message. Orca refuses one without a sender (`no_active_sender_terminal`), and takes any sender, also a
+    /// label that names no terminal (the dossier's `.regia/prove/576/prova-mittente.md`).
+    ///
+    /// # Errors
+    ///
+    /// When `orca` cannot be found, or does not take the message: its code, as the other calls give it.
+    pub fn send_status(&self, message: &StatusMessage<'_>, deadline: Instant) -> Result<Option<String>, String> {
+        let pin = self.pin()?;
+        let mut words = vec!["send", "--from", message.from, "--to", message.to, "--type", "status", "--subject", message.subject, "--body", message.body];
+        if let Some((task, dispatch)) = message.ids {
+            words.extend(["--task-id", task, "--dispatch-id", dispatch]);
+        }
+        let result = orca_call(&pin)(&words, deadline)?;
+        Ok(result.get("messageId").and_then(Value::as_str).map(str::to_owned))
+    }
+}
+
+/// `orca orchestration <words> --json`, each flag with its value as one token, the values typed. The reads, and the one
+/// message the product sends: a status (#576), never another type, never an outcome or a payload.
 fn orchestration(words: &[&str]) -> Result<Args, String> {
     let mut args = Args::new().word("orchestration");
     let mut rest = words.iter();
@@ -1063,6 +1095,23 @@ fn orchestration(words: &[&str]) -> Result<Args, String> {
             "worker-read" => args.word("worker-read"),
             "worker-show" => args.word("worker-show"),
             "task-list" => args.word("task-list"),
+            "send" => args.word("send"),
+            "--type" => match rest.next() {
+                Some(&"status") => args.word("--type=status"),
+                other => return Err(format!("orca: --type {} is not sent", other.copied().unwrap_or_default())),
+            },
+            flag @ ("--from" | "--to" | "--subject" | "--body" | "--task-id" | "--dispatch-id") => {
+                let value = Text::parse(rest.next().ok_or_else(|| format!("orca: {flag} without a value"))?).map_err(|error| format!("orca: {flag}: {error}"))?;
+                let name = match flag {
+                    "--from" => "--from",
+                    "--to" => "--to",
+                    "--subject" => "--subject",
+                    "--body" => "--body",
+                    "--task-id" => "--task-id",
+                    _ => "--dispatch-id",
+                };
+                args.opt(name, &value)
+            }
             "--full" => args.word("--full"),
             flag @ ("--limit" | "--cursor" | "--dispatch" | "--run") => {
                 let value = Text::parse(rest.next().ok_or_else(|| format!("orca: {flag} without a value"))?).map_err(|error| format!("orca: {flag}: {error}"))?;
@@ -1120,6 +1169,27 @@ mod tests {
             assert_eq!(name(&other), None, "{other}");
         }
         assert_eq!(session_of(&AgentService::known(ServiceId::Claude), Path::new(&format!("{sid}.jsonl"))).as_deref(), Some(sid));
+    }
+
+    /// The argv of the resume's message, as the probe of #576 sent it to the real Orca: one token a flag, `--json` last;
+    /// a type other than a status, an outcome, or a value that reads as a flag is refused before `orca` starts.
+    #[test]
+    fn the_resume_s_message_is_the_only_send_and_a_status() {
+        let tokens = |words: &[&str]| orchestration(words).map(|args| args.tokens().map(|token| token.to_string_lossy().into_owned()).collect::<Vec<_>>());
+        let words = [
+            "send", "--from", "app-x", "--to", "dispatch:ctx_1", "--type", "status", "--subject", "Continue where you left off", "--body",
+            "The limit's reset is past: café", "--task-id", "task_1", "--dispatch-id", "ctx_1",
+        ];
+        assert_eq!(
+            tokens(&words).unwrap(),
+            [
+                "orchestration", "send", "--from=app-x", "--to=dispatch:ctx_1", "--type=status", "--subject=Continue where you left off",
+                "--body=The limit's reset is past: café", "--task-id=task_1", "--dispatch-id=ctx_1", "--json",
+            ]
+        );
+        for refused in [&["send", "--type", "question"][..], &["send", "--type"], &["send", "--outcome", "succeeded"], &["send", "--body", "-x"], &["send", "--payload", "{}"]] {
+            assert!(tokens(refused).is_err(), "{refused:?}");
+        }
     }
 
     /// `test_worker_orca.py` of the prototype, on the policy's file: one key a line, the defaults for a file that does not

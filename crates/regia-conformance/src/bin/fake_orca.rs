@@ -1,7 +1,9 @@
 //! A stand-in for `orca`, for the precheck's workers (#599, F275 of the dossier's inventory) and the command of the
 //! workers (#744, F277): it answers the four reads of Orca's adapter, `orchestration worker-list`, `task-list`,
-//! `worker-read` and `worker-show`, each with `--json`, from the `orca` part of a run's fixture, and fails on anything
-//! else. Both sides start it: the product by its absolute path, the prototype's adapter through its search of the
+//! `worker-read` and `worker-show`, each with `--json`, from the `orca` part of a run's fixture, and the resume's
+//! status message, `orchestration send` (#576), as the real Orca does: refused without `--from`
+//! (`no_active_sender_terminal`), taken from any sender, or refused with the code the fixture's `send_fail` names.
+//! It fails on anything else. Both sides start it: the product by its absolute path, the prototype's adapter through its search of the
 //! program. It takes a flag's value in both forms, `--limit 100` as the prototype sends it and `--limit=100` as the
 //! product does.
 //!
@@ -103,6 +105,19 @@ fn answer(args: &[String]) -> Result<Value, String> {
                 return Err(code.to_owned());
             }
             Ok(shown.clone())
+        }
+        Some("send") => {
+            value(&words, "--to").ok_or("send without --to")?;
+            if value(&words, "--type") != Some("status") {
+                return Err("send of a type other than status".to_owned());
+            }
+            if value(&words, "--from").is_none() {
+                return Err("no_active_sender_terminal".to_owned());
+            }
+            if let Some(code) = orca["send_fail"].as_str() {
+                return Err(code.to_owned());
+            }
+            Ok(json!({"messageId": "msg-fake"}))
         }
         other => Err(format!("unexpected command {other:?}")),
     }
