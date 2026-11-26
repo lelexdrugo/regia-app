@@ -187,15 +187,23 @@ enum Shape {
     Spanning,
 }
 
+/// Whether `text` is `lines`, each ended by `\n` or by `\r\n`: the prototype's writer opens its file in text mode,
+/// so on Windows its `\n` is written `\r\n`. The month file ends each line with `\n`, which the reader reads the same.
+fn ends_plainly(text: &str, lines: &[&str]) -> bool {
+    let mut rest = text;
+    for line in lines {
+        let Some(after) = rest.strip_prefix(line) else { return false };
+        match after.strip_prefix("\r\n").or_else(|| after.strip_prefix('\n')) {
+            Some(next) => rest = next,
+            None => return false,
+        }
+    }
+    rest.is_empty()
+}
+
 fn shape(name: &str, text: &str) -> Shape {
     let lines = declaration_reader::split_lines(text);
-    if lines.is_empty()
-        || lines
-            .iter()
-            .map(|line| format!("{line}\n"))
-            .collect::<String>()
-            != text
-    {
+    if lines.is_empty() || !ends_plainly(text, &lines) {
         return Shape::Unclean;
     }
     let mut months = BTreeSet::new();
@@ -508,6 +516,15 @@ fn read_seen(folder: &Path) -> Result<Vec<(i64, String)>, CompactionError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The prototype's writer on Windows ends its lines with `\r\n`; any other end leaves the file as it is.
+    #[test]
+    fn a_line_ends_with_a_newline_or_a_carriage_return_and_a_newline() {
+        assert!(ends_plainly("a\r\nb\n", &["a", "b"]));
+        assert!(!ends_plainly("a\rb\n", &["a", "b"]));
+        assert!(!ends_plainly("a\nb", &["a", "b"]), "the last line too");
+        assert!(!ends_plainly("a\u{2028}b\n", &["a", "b"]));
+    }
 
     #[test]
     fn a_month_file_is_the_prefix_a_month_and_the_extension() {
