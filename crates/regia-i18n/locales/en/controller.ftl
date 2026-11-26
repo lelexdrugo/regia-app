@@ -36,3 +36,7 @@ controller-fixed-clock = { $variable } fixes the clock: it holds for a single ro
 # A shadow run.
 controller-shadow = shadow run: a fresh copy of the state in { $folder }, and nothing is launched
 controller-shadow-released = in the copy, the controller's lock of { $holder } is released
+# The sessions the usage limit stopped (#470): "[resume: <session> (<adapter>), ...]" after the launches, and
+# "[suspended until <instant>]" before the operations.
+controller-resumes = [resume: { $list }]
+controller-suspended-until = [suspended until { $until }]

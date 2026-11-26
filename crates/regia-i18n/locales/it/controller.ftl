@@ -36,3 +36,7 @@ controller-fixed-clock = { $variable } ferma l'orologio: vale per un solo giro (
 # Un giro in ombra.
 controller-shadow = giro in ombra: una copia nuova dello stato in { $folder }, e non si lancia nulla
 controller-shadow-released = nella copia, il lock del controller di { $holder } è rilasciato
+# Le sessioni fermate dal limite d'uso (#470): "[ripresa: <sessione> (<adapter>), ...]" dopo i lanci, e
+# "[sospese fino a <istante>]" prima delle operazioni.
+controller-resumes = [ripresa: { $list }]
+controller-suspended-until = [sospese fino a { $until }]

@@ -18,10 +18,11 @@ use std::sync::Arc;
 
 use clap::builder::PossibleValuesParser;
 use clap::{Parser, Subcommand};
-use regia_agents::{Env, Https, LaunchSurface, Policy, Role, SurfaceKind, UsageProbes};
+use regia_agents::{ChatHost, Cli, Env, Https, LaunchSurface, NoChatHost, Policy, Role, SurfaceKind, UsageProbes, chat_host};
 use regia_controller::engine::native::{NativePrecheck, Processes, TrackerFolders, random_id};
 use regia_controller::interrupt::stop_on_interrupt;
 use regia_controller::resident::{Config, Console, Exit, HostPorts, Notice, Resident, StopSleep, Summary};
+use regia_controller::resume::{CliResumer, DryResumer, Resume, Resumer, Settings};
 use regia_controller::schedule::{ChatAgent, ChatSurface, Operations, Source, StoreSchedule, chat_surface_kind};
 use regia_controller::shadow;
 use regia_exec::{Effort, ModelId};
@@ -81,12 +82,21 @@ struct RunArgs {
     /// Without it: 120.
     #[arg(long)]
     precheck_timeout: Option<f64>,
+    /// Does not look at the sessions stopped by the usage limit.
+    #[arg(long)]
+    no_resume: bool,
     /// With Claude's budget unknown, no minimal session wakes the token up.
     #[arg(long)]
     no_wake: bool,
+    /// The sessions and folders allowed to resume besides the regia's steps. Without it: the file beside the state.
+    #[arg(long)]
+    opt_in: Option<PathBuf>,
     /// The scheduled operations. Without it: the regia's home's configuration, when there is a home.
     #[arg(long)]
     config: Option<PathBuf>,
+    /// A stopped session the controller cannot resume holds only its own project. Without it: nothing else starts.
+    #[arg(long)]
+    only_project_of_resumed: bool,
 }
 
 /// `controller` with its arguments: its exit code, or the error to print.
@@ -207,7 +217,11 @@ fn controller_run(args: &RunArgs, catalog: &Catalog) -> Result<u8, String> {
         console: Arc::new(Terminal { language: Language::detect() }),
         stop,
     };
-    let resident = Resident::new(config, ports);
+    let pid = config.pid;
+    let mut resident = Resident::new(config, ports);
+    if !args.no_resume {
+        resident = resident.with_before_precheck(Box::new(resume_of(args, &folder, &env, dry, pid)));
+    }
     let state = Arc::new(StoreSchedule::new(store, resident.holder().clone()));
     let home = dossier_dir();
     let source = args.config.clone().map_or_else(|| Source::of_home(home.as_deref()), Source::File);
@@ -215,6 +229,18 @@ fn controller_run(args: &RunArgs, catalog: &Catalog) -> Result<u8, String> {
     let exit = resident.with_before_precheck(Box::new(operations)).run();
     report(&exit, catalog);
     Ok(exit.code())
+}
+
+/// The resume of the sessions the usage limit stopped (#470), the first hook of a round, on the state folder `folder`. A
+/// run that starts nothing resumes nothing and asks no app: a session the regia did not start stays the owner's.
+fn resume_of(args: &RunArgs, folder: &std::path::Path, env: &Env, dry: bool, pid: u32) -> Resume {
+    let (resumer, host): (Arc<dyn Resumer>, Arc<dyn ChatHost>) = if dry {
+        (Arc::new(DryResumer), Arc::new(NoChatHost))
+    } else {
+        (Arc::new(CliResumer::new(Cli::new(env.clone()).with_state(folder.to_path_buf()))), Arc::from(chat_host()))
+    };
+    let settings = Settings { opt_in: args.opt_in.clone(), only_project: args.only_project_of_resumed };
+    Resume::new(folder, env.clone(), resumer, host).with_settings(settings).with_pid(pid)
 }
 
 /// What the user reads of a resident's exit.
@@ -286,6 +312,15 @@ fn round_line(summary: &Summary, catalog: &Catalog) -> String {
         let launched: Vec<String> = summary.launched.iter().map(|(project, surface)| format!("{project} ({surface})")).collect();
         line.push_str(&format!(" [{}]", launched.join(", ")));
     }
+    if !summary.resumes.is_empty() {
+        let resumes: Vec<String> = summary.resumes.iter().map(|(session, surface)| format!("{session} ({surface})")).collect();
+        line.push(' ');
+        line.push_str(&catalog.message_with("controller-resumes", "list", &resumes.join(", ")));
+    }
+    if let Some(until) = &summary.suspended_until {
+        line.push(' ');
+        line.push_str(&catalog.message_with("controller-suspended-until", "until", until));
+    }
     if !summary.operations.is_empty() {
         let operations: Vec<String> = summary.operations.iter().map(|(name, action)| format!("{name} {action}")).collect();
         line.push(' ');
@@ -339,9 +374,15 @@ mod tests {
         assert_eq!((config.rounds, config.interval_s, config.options.max_steps), (3, 60.0, 2));
         assert_eq!((config.options.model.as_ref().map(ModelId::as_str), config.options.effort), (Some("haiku"), Some(Effort::Low)));
         assert_eq!(config_of(&parsed(&["--once", "--rounds", "5"]).unwrap(), PathBuf::from("state"), &policy).unwrap().rounds, 1);
-        for wrong in [&["--launcher", "dry"][..], &["--rounds", "-1"], &["--max-steps", "x"], &["--nope"]] {
+        for wrong in [&["--launcher", "dry"][..], &["--rounds", "-1"], &["--max-steps", "x"], &["--nope"], &["--opt-in"]] {
             assert!(parsed(wrong).is_err(), "{wrong:?}");
         }
+        // The resume's (#470): the table's `--no-resume`, `--opt-in <file>` and `--only-project-of-resumed`.
+        let resume = parsed(&["--no-resume", "--opt-in", "allowed.json", "--only-project-of-resumed"]).unwrap();
+        assert!(resume.no_resume && resume.only_project_of_resumed);
+        assert_eq!(resume.opt_in, Some(PathBuf::from("allowed.json")));
+        let defaults = parsed(&[]).unwrap();
+        assert!(!defaults.no_resume && !defaults.only_project_of_resumed && defaults.opt_in.is_none());
     }
 
     /// `test_il_lanciatore_di_chat_dipende_dall_adapter`: the fake launcher's chat starts nothing, the `cli` one opens no
@@ -373,6 +414,8 @@ mod tests {
             operations: vec![("dailies".to_owned(), "launched".to_owned())],
             wake: Some(WakeSummary { ok: true, error: None, renewed: true }),
             wakeup: true,
+            resumes: Vec::new(),
+            suspended_until: None,
         };
         let english = round_line(&summary, &Catalog::new(Language::En));
         assert_eq!(
@@ -382,5 +425,26 @@ mod tests {
         );
         let bare = Summary { precheck: None, launched: Vec::new(), operations: Vec::new(), wake: Some(WakeSummary { ok: false, error: None, renewed: false }), wakeup: false, ..summary };
         assert_eq!(round_line(&bare, &Catalog::new(Language::En)), "round 2 2026-10-22T07:00:00Z: precheck not run -> launch [wake-up: failed (-)]");
+    }
+
+    /// The prototype's summary of a round with the resume (#470): the resumes after the launches, `[ripresa: s-a (cli)]`,
+    /// and the wait for a suspended session, `[sospese fino a …]`, before the operations.
+    #[test]
+    fn a_round_with_a_resume_or_a_wait_reads_as_the_prototype_s_summary() {
+        let summary = Summary {
+            round: 3,
+            t: "2026-10-22T07:00:00Z".to_owned(),
+            decision: Some("ripresa".to_owned()),
+            resumes: vec![("s-a".to_owned(), "cli".to_owned())],
+            ..Summary::default()
+        };
+        let italian = round_line(&summary, &Catalog::new(Language::It));
+        assert_eq!(italian, "giro 3 2026-10-22T07:00:00Z: precheck non eseguito -> ripresa [ripresa: s-a (cli)]");
+        let waiting = Summary { decision: Some("attesa-sospesa".to_owned()), resumes: Vec::new(), suspended_until: Some("2026-10-22T07:30:00Z".to_owned()), ..summary };
+        assert_eq!(
+            round_line(&waiting, &Catalog::new(Language::It)),
+            "giro 3 2026-10-22T07:00:00Z: precheck non eseguito -> attesa-sospesa [sospese fino a 2026-10-22T07:30:00Z]"
+        );
+        assert!(round_line(&waiting, &Catalog::new(Language::En)).ends_with("[suspended until 2026-10-22T07:30:00Z]"));
     }
 }
