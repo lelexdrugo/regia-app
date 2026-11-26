@@ -408,8 +408,8 @@ mod tests {
         assert_eq!(task_number(None), None);
     }
 
-    /// `test_un_tracker_lento_non_allunga_il_giro` and `test_piu_progetti_lenti_dividono_un_solo_tetto` of the
-    /// prototype, in their sums: a read's own cap, the tick's cap shared by every project, the deadline's margin.
+    /// The prototype's tests of a slow tracker and of several slow projects (`test_precheck_risposte.py`), in their
+    /// sums: a read's own cap, the tick's cap shared by every project, the deadline's margin.
     #[test]
     fn the_recent_comments_share_one_cap_and_keep_off_the_deadline() {
         assert!((recent_budget(100.0, 0.0) - 12.0).abs() < 1e-9, "a read's own cap");

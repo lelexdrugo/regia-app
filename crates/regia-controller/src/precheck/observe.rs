@@ -450,7 +450,7 @@ fn blank(text: &str) -> bool {
     text.trim_matches(|c: char| c.is_whitespace() || ('\u{1c}'..='\u{1f}').contains(&c)).is_empty()
 }
 
-/// The prototype's `_dossier_del_progetto`: the warnings of the project's dossier, asked after the reads of its
+/// The prototype's reading of a project's dossier in `osserva`: the warnings of its dossier, asked after the reads of its
 /// events, so that a slow git does not delay them. Without a folder they are not asked; the products and their
 /// sites go with the question only when the registry names products, and the tasks in progress only when there are
 /// some (#549, #646).
@@ -1072,9 +1072,9 @@ mod tests {
         assert!(fake.started.borrow().is_empty());
     }
 
-    /// `_dossier_del_progetto` and `_dossier_compatto` of the prototype (#159, #158, #549, #646): asked with the
+    /// The prototype's reading of a dossier's warnings and `_dossier_compatto` (#159, #158, #549, #646): asked with the
     /// registry's folder, repo, products and sites and every task in progress, even of a project held by its lock; the
-    /// line keeps a few fields, a worker's branch its task and `atteso`, five branches and then the count of the others;
+    /// line keeps a few fields, a worker's branch its task and whether a gate holds it, five branches and then the count of the others;
     /// no folder, nothing read or nothing to say is no key.
     #[test]
     fn the_dossier_s_warnings_are_asked_and_kept_compact() {
@@ -1082,7 +1082,7 @@ mod tests {
         let mut with_registry = objective(1, "p", Status::Approved, "2", "3");
         let registry = with_registry.registry.as_mut().unwrap();
         (registry.folder, registry.repo, registry.products, registry.sites) =
-            (Some("f".to_owned()), Some("o/d".to_owned()), Some(" o/x ".to_owned()), Some("o/x=progetti/x".to_owned()));
+            (Some("f".to_owned()), Some("o/d".to_owned()), Some(" o/x ".to_owned()), Some("o/x=alias/x".to_owned()));
         let warning = |problem: &str, branch: Option<&str>, task: Option<i64>| DossierWarning {
             problem: problem.to_owned(),
             branch: branch.map(str::to_owned),
@@ -1099,22 +1099,19 @@ mod tests {
         let issues = vec![with_registry, issue(task(2, "p", Status::InProgress)), issue(task(9, "q", Status::InProgress))];
         let fake = Fake { issues: issues.clone(), dossier: Some(warnings), busy: vec!["p".to_owned()], ..Fake::default() };
         let project = project_of(&line(&fake), "p");
-        let expected = json!([
-            {"problema": "senza-upstream", "branch": "main", "avanti": 2},
-            {"problema": "branch-non-pushato", "branch": "o/regia-0-x", "avanti": 2, "task": 0},
-            {"problema": "branch-non-pushato", "branch": "o/regia-1-x", "avanti": 2, "task": 1, "atteso": true},
-            {"problema": "branch-non-pushato", "branch": "o/regia-2-x", "avanti": 2, "task": 2, "repo": "o/x"},
-            {"problema": "branch-non-pushato", "branch": "o/regia-3-x", "avanti": 2, "task": 3},
-            {"problema": "branch-non-pushato", "branch": "o/regia-4-x", "avanti": 2, "task": 4},
-            {"problema": "branch-non-pushato", "altri": 2},
-        ]);
-        assert_eq!(project[&words.key], expected, "the last key, of a held project too");
+        let (problem, branch, ahead) = (words.problem.as_str(), words.branch.as_str(), words.ahead.as_str());
+        let of_branch = |n: i64| json!({problem: words.branch_not_pushed.as_str(), branch: format!("o/regia-{n}-x"), ahead: 2, words.task.as_str(): n});
+        let mut expected = vec![json!({problem: "senza-upstream", branch: "main", ahead: 2})];
+        expected.extend((0..5).map(of_branch));
+        (expected[2][&words.expected], expected[3][&words.repo]) = (json!(true), json!("o/x"));
+        expected.push(json!({problem: words.branch_not_pushed.as_str(), words.others.as_str(): 2}));
+        assert_eq!(project[&words.key], json!(expected), "the last key, of a held project too");
         let request = fake.dossier_asked.borrow()[0].clone();
         let asked = DossierRequest {
             folder: "f".to_owned(),
             repo: Some("o/d".to_owned()),
             products: Some(" o/x ".to_owned()),
-            sites: Some("o/x=progetti/x".to_owned()),
+            sites: Some("o/x=alias/x".to_owned()),
             in_progress: BTreeSet::from([2, 9]),
         };
         assert_eq!(request, asked);
