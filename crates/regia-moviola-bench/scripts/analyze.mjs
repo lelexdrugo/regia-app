@@ -24,8 +24,8 @@ const fmt = (v, d = 1) => (Number.isFinite(v) ? v.toFixed(d) : 'n/a');
  * The display's refresh interval for a block's verdicts (README.md, "Read the result"). The harness calibrates it
  * before the block on a second of empty frames, and Windows lowers a dynamic refresh rate while nothing moves: the
  * calibration can read 60 Hz on a 120 Hz display while the stage's frames run at 120 (#489). A display cannot hand
- * over a frame sooner than its interval, and jitter puts few frames there (at most 2 % under 0.75 intervals on the
- * macOS runner, the jitteriest seen). So when at least a quarter of the block's frames are shorter than 0.75
+ * over a frame sooner than its interval, and jitter puts few frames there (about 2 % at most under 0.75 intervals on
+ * the macOS runner, the jitteriest seen). So when at least a quarter of the block's frames are shorter than 0.75
  * calibrated intervals, the display ran faster, and its interval is the median of those frames; otherwise the
  * calibration stands. The interval only ever goes down: a slow renderer cannot raise it.
  */
