@@ -13,6 +13,11 @@ on:
         type: choice
         options: [linux-macos, linux, macos, windows, all]
         default: linux-macos
+      repeat:
+        description: "1: T5 and the sanity check, as npm run bench. 10: the headroom, x100 with every frame drawn 10 times"
+        type: choice
+        options: ["1", "10"]
+        default: "1"
 
 permissions:
   contents: read
@@ -64,9 +69,20 @@ jobs:
         working-directory: crates/regia-moviola-bench
         run: npm test
       # T5 at x1, x10, x100 and x10 dense, three repetitions, then the sanity check: a failed check fails the job.
+      # With repeat 10, the suite's headroom step instead (README.md): x100 with every frame drawn 10 times, the
+      # cost that the refresh interval hides, in phases of 5 s so that a slow zoom still has 30 frames (#398/V5).
       - name: Benchmark
         working-directory: crates/regia-moviola-bench
-        run: npm run bench -- --label ci-${{ matrix.label }} --phase-ms 2000 --warmup-ms 800 --timeout-s 1500
+        env:
+          LABEL: ci-${{ matrix.label }}
+          REPEAT: ${{ inputs.repeat }}
+        run: |
+          if [ "$REPEAT" = 1 ]; then
+            npm run bench -- --label "$LABEL" --phase-ms 2000 --warmup-ms 800 --timeout-s 1500
+          else
+            npm run bench -- --label "$LABEL-headroom" --only main --scales 100 --repeat "$REPEAT" --no-shots \
+              --phase-ms 5000 --warmup-ms 800 --timeout-s 1500
+          fi
       - name: Summary in the job page
         if: always()
         run: |

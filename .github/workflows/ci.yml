@@ -133,6 +133,12 @@ jobs:
         run: |
           google-chrome --version
           npm run prove
+      # The moviola's bench imports app/ui's stage: its tests and its page build here, so a change of the stage
+      # breaks it at this push and not at its next run by hand (#488/V18). Node only; the bench itself runs by hand.
+      - name: The moviola bench's own tests and its page (Linux)
+        if: runner.os == 'Linux' && !cancelled()
+        working-directory: crates/regia-moviola-bench
+        run: npm ci --ignore-scripts && npm test && npx vite build
       - name: The disk at the end, and the job's lowest free space (Linux)
         if: runner.os == 'Linux' && always()
         run: |
