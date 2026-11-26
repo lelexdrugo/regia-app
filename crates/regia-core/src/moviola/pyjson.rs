@@ -74,6 +74,11 @@ impl Object {
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
+
+    /// Python's `==` of two `dict`s: the same keys with equal values, whatever their order.
+    pub fn py_eq(&self, other: &Object) -> bool {
+        self.len() == other.len() && self.iter().all(|(key, value)| other.get(key).is_some_and(|theirs| value.py_eq(theirs)))
+    }
 }
 
 impl FromIterator<(String, Json)> for Object {
@@ -218,9 +223,7 @@ impl Json {
             (Json::Null, Json::Null) => true,
             (Json::Str(a), Json::Str(b)) => a == b,
             (Json::List(a), Json::List(b)) => a.len() == b.len() && a.iter().zip(b).all(|(a, b)| a.py_eq(b)),
-            (Json::Object(a), Json::Object(b)) => {
-                a.len() == b.len() && a.iter().all(|(key, value)| b.get(key).is_some_and(|other| value.py_eq(other)))
-            }
+            (Json::Object(a), Json::Object(b)) => a.py_eq(b),
             _ => false,
         }
     }
@@ -368,6 +371,26 @@ pub fn dumps(value: &Json) -> String {
     out
 }
 
+/// [`dumps`] of an object.
+pub fn dumps_object(object: &Object) -> String {
+    let mut out = String::new();
+    write_object(object, &mut out);
+    out
+}
+
+fn write_object(object: &Object, out: &mut String) {
+    out.push('{');
+    for (n, (key, item)) in object.iter().enumerate() {
+        if n > 0 {
+            out.push(',');
+        }
+        write_str(key, false, out);
+        out.push(':');
+        write_compact(item, out);
+    }
+    out.push('}');
+}
+
 fn write_compact(value: &Json, out: &mut String) {
     match value {
         Json::List(items) => {
@@ -380,18 +403,7 @@ fn write_compact(value: &Json, out: &mut String) {
             }
             out.push(']');
         }
-        Json::Object(object) => {
-            out.push('{');
-            for (n, (key, item)) in object.iter().enumerate() {
-                if n > 0 {
-                    out.push(',');
-                }
-                write_str(key, false, out);
-                out.push(':');
-                write_compact(item, out);
-            }
-            out.push('}');
-        }
+        Json::Object(object) => write_object(object, out),
         scalar => write_scalar(scalar, false, out),
     }
 }

@@ -20,6 +20,8 @@ pulldown-cmark.workspace = true
 regex.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+# The fingerprints of the moviola's raw store, which the prototype takes with `hashlib.sha256`.
+sha2 = "0.10.9"
 thiserror.workspace = true
 toml.workspace = true
 ts-rs = { workspace = true, optional = true }

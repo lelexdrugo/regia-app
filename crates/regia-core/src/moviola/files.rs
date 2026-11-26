@@ -78,7 +78,7 @@ fn relative(rest: &[&str]) -> String {
 
 /// The text of a regular file at `path`: `None` when nothing is there, an error for a link or anything that
 /// is not a file.
-fn read_regular(path: &Path, shown: &str) -> Result<Option<String>, MoviolaError> {
+pub(crate) fn read_regular(path: &Path, shown: &str) -> Result<Option<String>, MoviolaError> {
     match fs::symlink_metadata(path) {
         Err(error) if error.kind() == ErrorKind::NotFound => return Ok(None),
         Err(source) => return Err(MoviolaError::Read { file: shown.to_owned(), source }),

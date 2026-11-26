@@ -13,22 +13,28 @@
 //! - titles and texts are normalized (threat model T19);
 //! - a link in the way to a file is refused, not followed (`files.rs`).
 
+mod consolidate;
 mod files;
 mod format;
 mod links;
 pub mod pyjson;
 mod records;
+mod report;
+mod store;
 
 use std::path::{Path, PathBuf};
 
 use chrono::{DateTime, Duration, Utc};
 use serde::Serialize;
 
+pub use consolidate::{Consolidated, aggregates_file, consolidate};
 pub use links::{CommitLink, IssueLink, LinkSettings, Links, ReportKind, ReportLink, links, normalize_remote};
 pub use records::{
     Aggregate, AggregateDefects, Author, Check, Deviation, Direction, DirectionStatus, Health, Milestone, MilestoneKind, ModelUse,
     Process, ProcessDefects, Refs, Snapshot, Tokens,
 };
+pub use report::{Report, front_matter, read_reports};
+pub use store::{ActivityStore, Pruned, Upserted, fingerprint, folder_rule, folder_variable, key, line, needs_consolidation, task_key};
 
 use crate::comment::parse_instant;
 use crate::pystr;
@@ -41,6 +47,8 @@ use format::format;
 pub enum MoviolaError {
     #[error("{file}: {source}")]
     Read { file: String, source: std::io::Error },
+    #[error("{file}: not written: {source}")]
+    Write { file: String, source: std::io::Error },
     #[error("{place}: {problem}")]
     Invalid { place: String, problem: String },
     #[error("{0}: a link, which the moviola does not follow")]
