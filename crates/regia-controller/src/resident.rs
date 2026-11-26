@@ -112,6 +112,40 @@ impl Sleep for SystemSleep {
     }
 }
 
+/// How often a [`StopSleep`] looks at its flag.
+const STOP_LOOK: Duration = Duration::from_millis(100);
+
+/// The system's sleep, cut short by a stop: it looks at the flag every tenth of a second, so a stop asked during
+/// the wait (Ctrl+C, #468/V3) ends it at once instead of at its slice's end.
+#[derive(Debug, Clone)]
+pub struct StopSleep {
+    stop: Arc<AtomicBool>,
+}
+
+impl StopSleep {
+    #[must_use]
+    pub fn new(stop: Arc<AtomicBool>) -> StopSleep {
+        StopSleep { stop }
+    }
+}
+
+impl Sleep for StopSleep {
+    fn sleep(&self, secs: f64) {
+        if !(secs.is_finite() && secs > 0.0) {
+            return;
+        }
+        let span = Duration::try_from_secs_f64(secs).unwrap_or(Duration::MAX);
+        let start = std::time::Instant::now();
+        while !self.stop.load(Ordering::SeqCst) {
+            let left = span.saturating_sub(start.elapsed());
+            if left.is_zero() {
+                return;
+            }
+            std::thread::sleep(left.min(STOP_LOOK));
+        }
+    }
+}
+
 /// What a resident tells its user, as data: the command renders it in the user's language (#469).
 #[derive(Debug, Clone, PartialEq)]
 pub enum Notice {
@@ -283,7 +317,7 @@ enum Waited {
 pub struct Resident {
     config: Config,
     ports: HostPorts,
-    before_precheck: Option<Box<dyn BeforePrecheck>>,
+    before_precheck: Vec<Box<dyn BeforePrecheck>>,
     holder: Holder,
     started: f64,
 }
@@ -345,14 +379,14 @@ impl Resident {
     pub fn new(config: Config, ports: HostPorts) -> Resident {
         let holder = Holder::new(format!("{}-{}-{}", words().reserved_project, config.pid, random_id())).expect("a holder with letters");
         let started = ports.clock.now().unix_secs_f64();
-        Resident { config, ports, before_precheck: None, holder, started }
+        Resident { config, ports, before_precheck: Vec::new(), holder, started }
     }
 
-    /// What runs in each tick before the precheck, and may end the tick there: the resume of the suspended
-    /// sessions (#470) and the scheduled operations (#469).
+    /// What runs in each tick before the precheck, and may end the tick there, after the hooks given before it:
+    /// the resume of the suspended sessions (#470), then the scheduled operations (#469).
     #[must_use]
     pub fn with_before_precheck(mut self, hook: Box<dyn BeforePrecheck>) -> Resident {
-        self.before_precheck = Some(hook);
+        self.before_precheck.push(hook);
         self
     }
 
@@ -424,7 +458,7 @@ impl Resident {
         };
         let wake_up = WakeUp::new(self.ports.consent).after(earlier.wake);
         let mut controller = Controller::new(self.config.options.clone(), ports, wake_up).with_unknown_budget(earlier.unknown);
-        if let Some(hook) = self.before_precheck.take() {
+        for hook in std::mem::take(&mut self.before_precheck) {
             controller = controller.with_before_precheck(hook);
         }
         for step in steps.launched_steps(self.started) {

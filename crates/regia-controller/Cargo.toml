@@ -20,6 +20,9 @@ regia-exec.workspace = true
 regia-github.workspace = true
 regia-identity.workspace = true
 regia-store.workspace = true
+# The shadow run's copy of the state database (ADR 0001 §7): `VACUUM INTO` from a read-only connection, which
+# regia-store does not offer. The version regia-store already locks.
+rusqlite.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 # The digest of a stall's series is the prototype's SHA-256: the version the workspace's graph already locks.
@@ -27,9 +30,9 @@ sha2 = "0.10.9"
 toml.workspace = true
 
 # Whether a launched session's process lives, and its reaping once it ended (#460/V5): the prototype's
-# `processo_vivo`. The versions regia-exec already locks.
+# `processo_vivo`; and Ctrl+C for a command line's resident (#468/V3). The versions regia-exec already locks.
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Threading"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Console", "Win32_System_Threading"] }

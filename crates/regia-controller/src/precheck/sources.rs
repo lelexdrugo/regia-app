@@ -37,6 +37,8 @@ pub struct LiveSources {
     binding: TrackerBinding,
     /// Opened before the tick, failing at its first read, where the prototype's state fails.
     store: Result<Store, String>,
+    /// The state folder, where the budget policy's local override is read.
+    state: Option<PathBuf>,
     started: Instant,
     deadline_s: f64,
     /// The clock, when the run fixes it.
@@ -61,14 +63,29 @@ fn settings_dir() -> Option<PathBuf> {
 ///
 /// When the tracker's configuration cannot be read.
 pub fn live_sources(deadline_s: f64, fixed: Option<WallTime>) -> Result<LiveSources, String> {
-    let config = TrackerConfigV1::load(state_dir().as_deref(), dossier_dir().as_deref(), config_dir().as_deref()).map_err(|error| error.to_string())?;
+    live_sources_in(None, deadline_s, fixed)
+}
+
+/// As [`live_sources`], on the state folder `folder` when one is given, in place of the one the environment names:
+/// a shadow run's copy, whose precheck writes its detector and its budget's cache there and never in the live
+/// folder (ADR 0001 §7).
+///
+/// # Errors
+///
+/// When the tracker's configuration cannot be read.
+pub fn live_sources_in(folder: Option<&Path>, deadline_s: f64, fixed: Option<WallTime>) -> Result<LiveSources, String> {
+    let state = folder.map(Path::to_path_buf).or_else(state_dir);
+    let config = TrackerConfigV1::load(state.as_deref(), dossier_dir().as_deref(), config_dir().as_deref()).map_err(|error| error.to_string())?;
     let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
-    let store = Store::open().map_err(|error| error.to_string());
-    let store = store.map(|store| match fixed {
+    let store = match folder {
+        Some(folder) => Store::at(folder),
+        None => Store::open(),
+    };
+    let store = store.map_err(|error| error.to_string()).map(|store| match fixed {
         Some(at) => store.with_clock(ManualClock::fixed(at)),
         None => store,
     });
-    Ok(LiveSources { tracker: GhTracker::new(&config), binding, store, started: Instant::now(), deadline_s, fixed })
+    Ok(LiveSources { tracker: GhTracker::new(&config), binding, store, state, started: Instant::now(), deadline_s, fixed })
 }
 
 impl LiveSources {
@@ -221,8 +238,8 @@ impl Sources for LiveSources {
             Some(dossier) => Policy::from_file(std::fs::read(dossier.join(file_path()))),
             None => Policy::defaults(),
         };
-        let Ok(folder) = regia_store::default_folder() else { return file };
-        file.with_local(read_local(read_state_file(&folder, local_file_name()), utc(self.now()), &chrono::Local))
+        let Some(folder) = &self.state else { return file };
+        file.with_local(read_local(read_state_file(folder, local_file_name()), utc(self.now()), &chrono::Local))
     }
 
     fn probe_consent(&self) -> Result<ProbeConsent, String> {

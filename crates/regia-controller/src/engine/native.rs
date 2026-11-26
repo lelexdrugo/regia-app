@@ -9,6 +9,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::hash::{BuildHasher, Hasher, RandomState};
+use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard};
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -20,7 +21,7 @@ use serde_json::{Map, Value, json};
 
 use super::words::format as words;
 use super::{AliveStep, ControllerLock, Folders, LaunchedStep, Liveness, LockLost, Precheck, PrecheckRun, Signals, StateError, Steps, iso};
-use crate::precheck::{Fault, Verdict, evaluate, live_sources};
+use crate::precheck::{Fault, Verdict, evaluate, live_sources_in};
 
 /// How long the controller's lock lasts from a renewal: the prototype's `LOCK_TTL_S`, the TTL both languages
 /// share (ADR 0001 §7). Longer than a precheck and a launch; a tick renews it at each of its launch points.
@@ -33,13 +34,15 @@ pub const LOCK_TTL_S: u64 = 600;
 pub struct NativePrecheck {
     /// The clock of the reads, when a run fixes it.
     pub fixed: Option<WallTime>,
+    /// The state folder, when a run names one in place of the environment's: a shadow run's copy.
+    pub folder: Option<PathBuf>,
 }
 
 impl Precheck for NativePrecheck {
     fn run(&self, projects: &[String], _timeout_s: f64) -> PrecheckRun {
         let options = crate::precheck::Options { projects: projects.to_vec(), ..crate::precheck::Options::default() };
         let now = self.fixed.unwrap_or_else(WallTime::now);
-        let verdict = match live_sources(options.deadline_s, self.fixed) {
+        let verdict = match live_sources_in(self.folder.as_deref(), options.deadline_s, self.fixed) {
             Ok(sources) => evaluate(&sources, &options, now),
             Err(detail) => Verdict::of_fault(&Fault::internal(detail)),
         };
@@ -49,13 +52,17 @@ impl Precheck for NativePrecheck {
 }
 
 /// The folder of each project, from the registry of the Objectives in the tracker, as `projects` reads it.
-#[derive(Debug, Clone, Copy, Default)]
-pub struct TrackerFolders;
+#[derive(Debug, Clone, Default)]
+pub struct TrackerFolders {
+    /// The state folder whose `tracker.json` is read, when a run names one: a shadow run's copy.
+    pub folder: Option<PathBuf>,
+}
 
 impl Folders for TrackerFolders {
     fn folders(&self) -> Result<BTreeMap<String, Option<String>>, String> {
-        let dossier = std::env::var_os(prototype_env_var("HOME")).filter(|value| !value.is_empty()).map(std::path::PathBuf::from);
-        let config = TrackerConfigV1::load(state_dir().as_deref(), dossier.as_deref(), config_dir().as_deref()).map_err(|error| error.to_string())?;
+        let dossier = std::env::var_os(prototype_env_var("HOME")).filter(|value| !value.is_empty()).map(PathBuf::from);
+        let state = self.folder.clone().or_else(state_dir);
+        let config = TrackerConfigV1::load(state.as_deref(), dossier.as_deref(), config_dir().as_deref()).map_err(|error| error.to_string())?;
         let binding = TrackerBinding::new(&config).map_err(|error| error.to_string())?;
         let tracker = GhTracker::new(&config);
         let mut folders = BTreeMap::new();
