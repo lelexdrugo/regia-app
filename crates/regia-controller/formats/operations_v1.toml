@@ -38,6 +38,12 @@ folder = "cartella"
 model = "modello"
 effort = "effort"
 active = "attiva"
+# The levers of an idea search: the projects it looks at and the ideas a session proposes, from `ideas_min` to
+# `ideas_max`.
+projects = "progetti"
+ideas = "idee"
+ideas_min = 1
+ideas_max = 5
 
 # The days of an operation: Monday first, as Python's `weekday()`; a span may pass Sunday (`ven-lun`).
 [days]
@@ -49,6 +55,9 @@ default = "tutti"
 chat = "chat"
 # The chronicler's operation (#59 of the dossier): checked as the prototype checks it; it runs with #493.
 chronicler = "cronista"
+# The idea search (#273 of the dossier, ADR 0029): checked as the prototype checks it, and not run; whether the
+# product runs it is to be decided (F315-F317 of the dossier's inventory).
+idea_search = "cerca-idee"
 
 # The cursors with a name of the reserved project: the operations done, and the last start of the dailies by hand
 # (`regia giornalieri avvia`, which writes it).

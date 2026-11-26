@@ -43,6 +43,10 @@ pub(crate) struct ConfigKeys {
     pub(crate) model: String,
     pub(crate) effort: String,
     pub(crate) active: String,
+    pub(crate) projects: String,
+    pub(crate) ideas: String,
+    pub(crate) ideas_min: i64,
+    pub(crate) ideas_max: i64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -58,6 +62,7 @@ pub(crate) struct Days {
 pub(crate) struct Actions {
     pub(crate) chat: String,
     pub(crate) chronicler: String,
+    pub(crate) idea_search: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -171,5 +176,6 @@ mod tests {
         assert_eq!((format.version, format.lookback_days, format.skipped_kept), (1, 14, 10));
         assert_eq!((format.reason_chars, format.file_error_chars), (300, 200));
         assert_eq!(format.days.names.len(), 7);
+        assert_eq!((format.config_keys.ideas_min, format.config_keys.ideas_max), (1, 5));
     }
 }

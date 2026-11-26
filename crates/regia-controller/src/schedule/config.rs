@@ -16,6 +16,9 @@ pub enum Action {
     Chat,
     /// The chronicler's sessions (#59 of the dossier), checked here; they run with #493.
     Chronicler,
+    /// An idea search (#273 of the dossier), checked here with its levers and never run: whether the product runs
+    /// it is to be decided (F315-F317 of the dossier's inventory).
+    IdeaSearch,
 }
 
 /// A scheduled operation of the configuration, once checked.
@@ -38,6 +41,10 @@ pub struct Operation {
     pub effort: Option<String>,
     /// False only when the configuration says false.
     pub active: bool,
+    /// An idea search's projects, when the configuration names them.
+    pub projects: Option<Vec<String>>,
+    /// An idea search's ideas a session, when the configuration says how many.
+    pub ideas: Option<i64>,
 }
 
 /// The days of `text`: `lun-ven`, `lun,mer,ven`, a span that passes Sunday (`ven-lun`), or every day, in the
@@ -119,7 +126,11 @@ fn operation(entry: &Value, seen: &BTreeSet<String>) -> Result<Operation, String
     let action = match field(&k.action).and_then(Value::as_str) {
         Some(action) if action == actions.chat => Action::Chat,
         Some(action) if action == actions.chronicler => Action::Chronicler,
-        _ => return Err(format!("the action is unknown: {} (one of {}, {})", shown(field(&k.action)), actions.chat, actions.chronicler)),
+        Some(action) if action == actions.idea_search => Action::IdeaSearch,
+        _ => {
+            let known = [&actions.chat, &actions.chronicler, &actions.idea_search].map(String::as_str).join(", ");
+            return Err(format!("the action is unknown: {} (one of {known})", shown(field(&k.action))));
+        }
     };
     let prompt = text(field(&k.prompt));
     if action == Action::Chat && prompt.as_deref().is_none_or(|prompt| prompt.trim().is_empty()) {
@@ -130,6 +141,7 @@ fn operation(entry: &Value, seen: &BTreeSet<String>) -> Result<Operation, String
         Some(Value::String(spec)) => Some(spec.clone()),
         Some(_) => return Err("the spec must be a path, relative to the regia's home".to_owned()),
     };
+    let (projects, ideas) = if action == Action::IdeaSearch { levers(field(&k.projects), field(&k.ideas))? } else { (None, None) };
     let days = match field(&k.days) {
         None => parse_days(&words().days.default)?,
         Some(Value::String(days)) => parse_days(days)?,
@@ -146,7 +158,36 @@ fn operation(entry: &Value, seen: &BTreeSet<String>) -> Result<Operation, String
         model: text(field(&k.model)),
         effort: text(field(&k.effort)),
         active: field(&k.active) != Some(&Value::Bool(false)),
+        projects,
+        ideas,
     })
+}
+
+/// The prototype's check of an idea search's levers: a list of ids without repeats, and a whole number of ideas in
+/// the format's range. A lever the configuration does not give takes the prototype's default, which holds.
+fn levers(projects: Option<&Value>, ideas: Option<&Value>) -> Result<(Option<Vec<String>>, Option<i64>), String> {
+    let k = &words().config_keys;
+    let projects = match projects {
+        None => None,
+        Some(value) => {
+            let ids: Option<Vec<String>> = value.as_array().filter(|ids| !ids.is_empty()).and_then(|ids| {
+                ids.iter().map(|id| id.as_str().filter(|id| valid_name(id)).map(str::to_owned)).collect()
+            });
+            let ids = ids.ok_or_else(|| format!("the projects must be a list of ids, not empty (lowercase letters, digits, dashes): {value}"))?;
+            if ids.iter().collect::<BTreeSet<_>>().len() != ids.len() {
+                return Err(format!("the projects repeat an id: {value}"));
+            }
+            Some(ids)
+        }
+    };
+    let ideas = match ideas {
+        None => None,
+        Some(value) => {
+            let count = value.as_i64().filter(|count| (k.ideas_min..=k.ideas_max).contains(count) && !value.is_f64());
+            Some(count.ok_or_else(|| format!("the ideas must be a whole number from {} to {}: {value}", k.ideas_min, k.ideas_max))?)
+        }
+    };
+    Ok((projects, ideas))
 }
 
 /// The operations of a configuration's document, and why each entry left out was: the others stay.

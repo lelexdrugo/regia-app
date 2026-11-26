@@ -1,20 +1,20 @@
 //! The scheduled operations (F133, F148-F153, F256 of the dossier's inventory; #133 and #209 of the dossier): the
-//! prototype's `_operazioni` and `_operazioni_giro`, as a hook before the precheck of every tick.
+//! prototype's operations of a tick (F152, F153), as a hook before the precheck of every tick.
 //!
 //! - **Once a day, at the first tick after the hour**, on the days the configuration names, by the machine's local
 //!   time. A tick that comes late the same day (after a suspension) still runs it; the days missed before today
 //!   are recorded as skipped, once, at most `lookback_days` back, and never run. The first time there is no past.
 //! - **What is done is in the state, before the effect.** The cursor `operazioni` of the reserved project says
-//!   which day each operation ran and how; it is written with the outcome `in-corso` before the chat opens, so a
+//!   which day each operation ran and how; it is written with the outcome in progress before the chat opens, so a
 //!   launch that falls halfway is not repeated. Every read and write is the lock holder's (#582): one transaction
 //!   checks the lock, then reads or writes.
 //! - **D1** (ADR 0001 §7): the chat is a launch point, so the tick's guard renews the lock right before the entry
-//!   is marked `in-corso` and the chat opens, outside the chat's own error handling, and again after it.
+//!   is marked in progress and the chat opens, outside the chat's own error handling, and again after it.
 //! - **A chat waits for its owner** on the surface the format names, never on one that falls back to a session
 //!   with nobody in front. Without that surface it stays to open: the state file lists it for the brief, and the
 //!   next ticks of the day try again. A failure after the effect is not repeated: the chat may exist.
 //! - **One chat of the dailies waiting** (#209): while the last one (scheduled, or started by hand with
-//!   `regia giornalieri avvia`) has no closing file, today's is skipped, and a start by hand of today counts as
+//!   `dailies start`, F274) has no closing file, today's is skipped, and a start by hand of today counts as
 //!   today's.
 //! - **With a session suspended or resuming** nothing opens and the day is not marked: a later tick of the same
 //!   day runs it.
@@ -124,7 +124,7 @@ pub trait ScheduleState: Send + Sync {
     /// The lock is lost, or the state cannot be read.
     fn operations(&self) -> Result<Map<String, Value>, StateError>;
 
-    /// The last start of the dailies by hand, as `regia giornalieri avvia` writes it; empty without one.
+    /// The last start of the dailies by hand, as `dailies start` (F274) writes it; empty without one.
     ///
     /// # Errors
     ///
@@ -203,7 +203,7 @@ impl ScheduleState for StoreSchedule {
             let mut merged = stored.get(&c.ops).and_then(Value::as_object).cloned().unwrap_or_default();
             merged.extend(operations.iter().map(|(name, entry)| (name.clone(), entry.clone())));
             let mut document = Map::new();
-            document.insert(c.v.clone(), json!(1));
+            document.insert(c.v.clone(), json!(words().version));
             document.insert(c.ops.clone(), Value::Object(merged));
             (Some(Value::Object(document)), ())
         });
@@ -403,7 +403,7 @@ impl Operations {
         }
     }
 
-    /// The prototype's `_operazioni_giro`.
+    /// The prototype's operations of a tick (F153).
     #[allow(clippy::too_many_lines)]
     fn run(&mut self, record: &mut Map<String, Value>, tick: &TickContext<'_>) -> Result<(), Stop> {
         let (w, e, o, v) = (words(), &words().entry, &words().outcomes, &words().voices);
@@ -504,7 +504,7 @@ impl Operations {
                 && chat_open(closings, last)
             {
                 // One chat waiting (#209): the last one has no closing file. The day is spent: closed later, the new
-                // one does not start by itself; `regia giornalieri avvia` starts it.
+                // one does not start by itself; `dailies start` starts it.
                 let reason = w.reasons.previous_open.replace("{t}", last).replace("{folder}", &w.closing.folder);
                 entry.insert(e.day.clone(), json!(today_text));
                 entry.insert(e.outcome.clone(), json!(o.previous_open));
@@ -518,7 +518,7 @@ impl Operations {
                 changed = false;
                 continue;
             }
-            // D1, before `in-corso` and the effect, outside the chat's error handling: a controller that lost its
+            // D1, before the entry in progress and the effect, outside the chat's error handling: a controller that lost its
             // lock does not spend the day for the new one.
             tick.guard()?;
             let attempts = if is_today(&entry) { entry.get(&e.attempts).and_then(Value::as_i64).unwrap_or(0) + 1 } else { 1 };
@@ -624,7 +624,7 @@ impl Operations {
 }
 
 impl BeforePrecheck for Operations {
-    /// The prototype's `_operazioni`: a failure stays in the tick's line and the tick goes on; a lost lock ends it.
+    /// The prototype's hook of the operations (F152): a failure stays in the tick's line and the tick goes on; a lost lock ends it.
     /// The operations never end the tick.
     fn before(&mut self, record: &mut Map<String, Value>, tick: &TickContext<'_>) -> Result<bool, TickError> {
         match self.run(record, tick) {

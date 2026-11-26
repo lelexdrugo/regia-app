@@ -195,7 +195,7 @@ impl Console for Recorder {
 struct FailsOnce(bool);
 
 impl BeforePrecheck for FailsOnce {
-    fn before(&mut self, _record: &mut Map<String, Value>, _now: f64) -> Result<bool, TickError> {
+    fn before(&mut self, _record: &mut Map<String, Value>, _tick: &regia_controller::engine::TickContext<'_>) -> Result<bool, TickError> {
         if std::mem::replace(&mut self.0, false) {
             return Err(TickError::Failed("RuntimeError: boom".to_owned()));
         }

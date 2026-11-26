@@ -3040,6 +3040,7 @@ dependencies = [
  "regia-github",
  "regia-identity",
  "regia-store",
+ "rusqlite",
  "serde",
  "serde_json",
  "sha2",
