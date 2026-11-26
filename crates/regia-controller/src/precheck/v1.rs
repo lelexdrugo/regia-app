@@ -13,6 +13,7 @@ pub(crate) struct Format {
     pub(crate) outcomes: Outcomes,
     pub(crate) payload: PayloadWords,
     pub(crate) project: ProjectWords,
+    pub(crate) dossier: DossierWords,
     pub(crate) workers: WorkersWords,
     pub(crate) answers: AnswersWords,
     pub(crate) backlog: BacklogWords,
@@ -141,6 +142,24 @@ pub(crate) struct ProjectWords {
     pub(crate) silent_tasks: String,
     pub(crate) blocked_tasks: String,
     pub(crate) answer_tasks: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct DossierWords {
+    pub(crate) key: String,
+    pub(crate) problem: String,
+    pub(crate) branch: String,
+    pub(crate) ahead: String,
+    pub(crate) task: String,
+    pub(crate) repo: String,
+    pub(crate) expected: String,
+    pub(crate) others: String,
+    pub(crate) branch_not_pushed: String,
+    pub(crate) max_branches: usize,
+    pub(crate) repo_key: String,
+    pub(crate) products_key: String,
+    pub(crate) sites_key: String,
 }
 
 #[derive(Debug, Deserialize)]

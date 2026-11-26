@@ -33,13 +33,15 @@
 //! facts, by their digest, in the detector's own row. Three ticks and an hour of them is a stall, the
 //! tick's outcome before any new activity, unless it was reported already.
 //!
-//! The **workers** of the tasks in progress (#210, #641): Orca's adapter says when each last wrote, read once a
+//! The **workers** of the tasks in progress (#210, #641): the agents' app says when each last wrote, read once a
 //! tick while the tracker is read. A worker silent past its threshold, waiting for nobody, is an event of its own
 //! (`worker-silente`), and so is one blocked past the block's threshold, by an open call or a person awaited: each
-//! once an episode, from the instant its threshold passed when that is after the step's, never both. Orca missing,
+//! once an episode, from the instant its threshold passed when that is after the step's, never both. The app missing,
 //! slow or failing is no data, never a fault.
 //!
-//! **Not here yet (#599):** the dossier's warnings, which need the prototype's `avvisi_dossier` (#450).
+//! Each project's **dossier's warnings** (#159) are a signal, in no count, event or digest: asked of the sources
+//! with the registry's folder, repo, products and sites and the tasks in progress, and kept compact in the line.
+//! **Not read yet:** the live sources have no warnings until the prototype's `avvisi_dossier` is ported (#450).
 
 mod args;
 mod budget;
@@ -79,6 +81,35 @@ pub struct ObjectiveRegistry {
     pub priority: Option<String>,
     /// The project's folder, `None` when the registry names none or an empty one.
     pub folder: Option<String>,
+    /// The dossier's repo, its products and their sites, as the registry writes them: what the dossier's warnings
+    /// are asked with.
+    pub repo: Option<String>,
+    pub products: Option<String>,
+    pub sites: Option<String>,
+}
+
+/// What the precheck asks of a project's dossier's warnings (#159, #549, #646 of the dossier): its folder and repo,
+/// its products and their sites when the registry names products, and the tasks in progress of every project, whose
+/// branches are no warning, when there are some.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DossierRequest {
+    pub folder: String,
+    pub repo: Option<String>,
+    pub products: Option<String>,
+    pub sites: Option<String>,
+    pub in_progress: BTreeSet<u64>,
+}
+
+/// A warning of a dossier, with the fields the precheck's line keeps of it: its problem, the branch and how many
+/// commits it is ahead, the task of a worker's branch, the product's repo, and whether a gate holds it on purpose.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct DossierWarning {
+    pub problem: String,
+    pub branch: Option<String>,
+    pub ahead: Option<i64>,
+    pub task: Option<i64>,
+    pub repo: Option<String>,
+    pub expected: bool,
 }
 
 /// A lock someone may hold, as the digest of a stall reads it: whether the state was held by another
@@ -149,9 +180,13 @@ pub trait Sources {
     /// first time a project has work in progress, going on while the tracker is read, within its own deadline (#210).
     fn start_workers(&self, wanted: &BTreeSet<u64>, now: WallTime);
 
-    /// What that read found, once it ended: `None` without a read, or when Orca failed or did not answer in time. Never
+    /// What that read found, once it ended: `None` without a read, or when the app failed or did not answer in time. Never
     /// a fault: no data is no silence.
     fn workers(&self) -> Option<Vec<WorkerBeat>>;
+
+    /// The warnings of a project's dossier, as the prototype's `avvisi_dossier` gives them: none when it is in order,
+    /// `None` when they were not read. Never a fault: they are a signal, not an event.
+    fn dossier_warnings(&self, request: &DossierRequest) -> Option<Vec<DossierWarning>>;
 
     /// The value of the project's events cursor, `null` without one.
     ///

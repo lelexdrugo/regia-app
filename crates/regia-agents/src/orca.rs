@@ -538,7 +538,7 @@ fn object<'a>(value: &'a Value, what: &str) -> Result<&'a serde_json::Map<String
 }
 
 /// The objects of a list, those that are; none when it is no list.
-fn objects<'a>(value: Option<&'a Value>) -> impl Iterator<Item = &'a serde_json::Map<String, Value>> {
+fn objects(value: Option<&Value>) -> impl Iterator<Item = &serde_json::Map<String, Value>> {
     value.and_then(Value::as_array).into_iter().flatten().filter_map(Value::as_object)
 }
 
@@ -579,6 +579,9 @@ fn system_text(line: &serde_json::Map<String, Value>) -> String {
     texts.join(" ").trim().chars().take(80).collect()
 }
 
+/// A line of a transcript, or a block of one: Orca's object.
+type Line = serde_json::Map<String, Value>;
+
 /// What a transcript says of its worker: when it last wrote, whether its last line of the assistant has an open call,
 /// and whether its last line asks for a permission.
 #[derive(Debug, Default)]
@@ -594,9 +597,9 @@ type OrcaCall<'a> = dyn FnMut(&[&str], Instant) -> Result<Value, String> + 'a;
 /// The prototype's `_leggi_transcript`: page after page, until one is empty or names no next; a line of a person does not
 /// count, of a line the later of `timestamp` and `completedAt`.
 fn read_transcript(call: &mut OrcaCall<'_>, deadline: Instant, dispatch: &str) -> Result<Transcript, String> {
-    let (mut cursor, mut last, mut assistant, mut final_line): (Option<String>, Option<WallTime>, Option<serde_json::Map<String, Value>>, Option<serde_json::Map<String, Value>>) =
-        (None, None, None, None);
-    let outcome = |last, assistant: &Option<serde_json::Map<String, Value>>, final_line: &Option<serde_json::Map<String, Value>>| Transcript {
+    let (mut cursor, mut last): (Option<String>, Option<WallTime>) = (None, None);
+    let (mut assistant, mut final_line): (Option<Line>, Option<Line>) = (None, None);
+    let outcome = |last, assistant: &Option<Line>, final_line: &Option<Line>| Transcript {
         last,
         open_call: assistant.as_ref().is_some_and(open_call),
         permission: final_line.as_ref().is_some_and(|line| PERMISSION.is_match(&system_text(line))),
@@ -723,16 +726,16 @@ pub fn read_workers(call: &mut OrcaCall<'_>, wanted: &BTreeSet<u64>, thresholds:
             Err(_) => continue,
         };
         if let Some(last) = last {
-            let blocked = (elapsed(last) > thresholds.block_s).then(|| {
-                if waiting || transcript.permission {
-                    Some(Blocked::WaitingForPerson)
-                } else if transcript.open_call {
-                    Some(Blocked::OpenCall)
-                } else {
-                    None
-                }
-            });
-            beats.push(WorkerBeat { task: number, last, waiting, blocked: blocked.flatten() });
+            let blocked = if elapsed(last) <= thresholds.block_s {
+                None
+            } else if waiting || transcript.permission {
+                Some(Blocked::WaitingForPerson)
+            } else if transcript.open_call {
+                Some(Blocked::OpenCall)
+            } else {
+                None
+            };
+            beats.push(WorkerBeat { task: number, last, waiting, blocked });
         }
     }
     Ok(beats)
@@ -795,6 +798,16 @@ impl OrcaWorkers {
         };
         read_workers(&mut call, wanted, thresholds, now, deadline)
     }
+}
+
+/// The workers of the tasks in progress as this machine's app of agents shows them, with `orca` as setup finds it:
+/// [`OrcaWorkers::read`]. The rest of the product names none of this, as it asks a [`crate::ChatHost`] for the chats.
+///
+/// # Errors
+///
+/// When the app cannot be found, or does not answer the lists.
+pub fn running_workers(wanted: &BTreeSet<u64>, thresholds: WorkerThresholds, now: WallTime, deadline: Instant) -> Result<Vec<WorkerBeat>, String> {
+    OrcaWorkers::new().read(wanted, thresholds, now, deadline)
 }
 
 /// `orca orchestration <words> --json`, each flag with its value as one token, the values typed.

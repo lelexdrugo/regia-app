@@ -11,7 +11,7 @@ use std::thread;
 use std::time::{Duration, Instant, UNIX_EPOCH};
 
 use chrono::{DateTime, Utc};
-use regia_agents::{Env, Https, OrcaWorkers, Platform, ProbeConsent, Settings, UsageProbes, WorkerBeat, WorkerThresholds};
+use regia_agents::{Env, Https, Platform, ProbeConsent, Settings, UsageProbes, WorkerBeat, WorkerThresholds, running_workers};
 use regia_core::policy::{file_path, local_file_name, read_local};
 use regia_core::{Policy, RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1, project_label_prefix};
 use regia_github::GhTracker;
@@ -20,7 +20,7 @@ use regia_store::{CursorName, LeaseEntry, LockStatus, ManualClock, ProjectId, Pr
 use serde_json::Value;
 
 use super::v1::format;
-use super::{ExpiredLease, HeldLock, Issue, ObjectiveRegistry, RecentComment, Report, Sources};
+use super::{DossierRequest, DossierWarning, ExpiredLease, HeldLock, Issue, ObjectiveRegistry, RecentComment, Report, Sources};
 
 /// The variable that names the folder of the user's settings in place of the system's, for the harness:
 /// `REGIA_CONFIG_DIR`. The system's folder is not one a variable moves on every system, and the harness
@@ -187,10 +187,15 @@ impl Sources for LiveSources {
             task.status = self.binding.status(number, option.as_deref()).ok().flatten();
             let registry = task.objective.then(|| {
                 let registry = Registry::parse(&body);
+                let raw = |key: &str| registry.get(key).map(str::to_owned);
+                let words = &format().dossier;
                 ObjectiveRegistry {
                     wip: registry.wip().map(str::to_owned),
                     priority: registry.priority().map(str::to_owned),
                     folder: registry.folder().map(str::to_owned),
+                    repo: raw(&words.repo_key),
+                    products: raw(&words.products_key),
+                    sites: raw(&words.sites_key),
                 }
             });
             issues.push(Issue { task, registry });
@@ -252,7 +257,7 @@ impl Sources for LiveSources {
         })
     }
 
-    /// The prototype's `_avvia_battiti`: Orca's adapter in a thread, with what the tick's deadline leaves it past its
+    /// The prototype's `_avvia_battiti`: the agents' app's adapter in a thread, with what the tick's deadline leaves it past its
     /// margin, at most its own cap. Once a tick: a read that did not start does not start later.
     fn start_workers(&self, wanted: &BTreeSet<u64>, now: WallTime) {
         let mut read = self.workers.borrow_mut();
@@ -269,7 +274,7 @@ impl Sources for LiveSources {
         let (sender, answer) = mpsc::channel();
         let (wanted, thresholds) = (wanted.clone(), self.worker_thresholds());
         thread::spawn(move || {
-            let _ = sender.send(OrcaWorkers::new().read(&wanted, thresholds, now, deadline));
+            let _ = sender.send(running_workers(&wanted, thresholds, now, deadline));
         });
         *read = WorkersRead::Running { answer, until: deadline + Duration::from_secs_f64(words.grace_s) };
     }
@@ -284,6 +289,12 @@ impl Sources for LiveSources {
         };
         *read = WorkersRead::Ended(found.clone());
         found
+    }
+
+    /// Not read yet: the warnings need the prototype's `avvisi_dossier` (git, with the registry's products and sites),
+    /// which #450 of the dossier ports. Until then none is read, as the prototype's when its git does not answer.
+    fn dossier_warnings(&self, _request: &DossierRequest) -> Option<Vec<DossierWarning>> {
+        None
     }
 
     fn events_cursor(&self, project: &str) -> Result<Value, String> {

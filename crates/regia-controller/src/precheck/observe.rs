@@ -13,7 +13,7 @@ use super::series;
 use super::cursor::{self, Since};
 use super::line::{Json, Reason};
 use super::v1::format;
-use super::{Fault, Issue, Options, Sources, Verdict};
+use super::{DossierRequest, DossierWarning, Fault, Issue, Options, Sources, Verdict};
 
 /// The statuses of an active project's Objective.
 const ACTIVE: [Status; 3] = [Status::Approved, Status::InProgress, Status::Decision];
@@ -27,6 +27,9 @@ struct Project<'a> {
     id: String,
     wip: Option<&'a str>,
     folder: Option<&'a str>,
+    repo: Option<&'a str>,
+    products: Option<&'a str>,
+    sites: Option<&'a str>,
 }
 
 /// What a project's observation found: its reason, the instant of its cursor as the line writes it, and
@@ -39,7 +42,7 @@ struct Observation {
     tasks: Vec<u64>,
     /// The first numbers of the backlog to formulate, in the graph's order.
     backlog: Vec<u64>,
-    /// The tasks whose worker went silent, then blocked, in a new episode (#210, #641): their numbers only, Orca's
+    /// The tasks whose worker went silent, then blocked, in a new episode (#210, #641): their numbers only, the app's
     /// ids stay in its adapter.
     silent_tasks: Vec<u64>,
     blocked_tasks: Vec<u64>,
@@ -53,6 +56,8 @@ struct Observation {
     objective_in_decision: bool,
     /// The series after this tick.
     accounted: series::Accounted,
+    /// The dossier's warnings, `None` when they were not read.
+    dossier: Option<Vec<DossierWarning>>,
 }
 
 impl Observation {
@@ -91,7 +96,9 @@ impl Observation {
         if self.accounted.postponed {
             fields.push((format().series.postponed.clone(), Json::Bool(true)));
         }
-        // #466: the dossier's warnings follow here.
+        if let Some(warnings) = self.dossier.as_ref().filter(|warnings| !warnings.is_empty()) {
+            fields.push((format().dossier.key.clone(), compact_dossier(warnings)));
+        }
         Json::Object(fields)
     }
 }
@@ -144,12 +151,15 @@ fn drainable(task: &Task) -> bool {
         && !task.labels.iter().any(|label| *label == format().backlog.parked)
 }
 
+/// Episodes of the workers: each a task, with the instant its threshold passed.
+type Episodes = Vec<(u64, WallTime)>;
+
 /// The episodes of the workers of the project's tasks in progress (#210, #641), each a task with the instant its
 /// threshold passed: the silent ones, which wait for nobody and are not blocked, then the blocked ones. An episode
 /// counts once its instant is past `now` and after the cursor's `t`: the step that looks moves `t`, and the same
 /// episode wakes no more; a worker that writes again and stops is another instant. Of several dispatches of a task
 /// the most recent counts.
-fn episodes(beats: Option<Vec<WorkerBeat>>, wanted: &BTreeSet<u64>, in_progress: &BTreeSet<u64>, now: WallTime, t: Option<WallTime>, thresholds: WorkerThresholds) -> (Vec<(u64, WallTime)>, Vec<(u64, WallTime)>) {
+fn episodes(beats: Option<Vec<WorkerBeat>>, wanted: &BTreeSet<u64>, in_progress: &BTreeSet<u64>, now: WallTime, t: Option<WallTime>, thresholds: WorkerThresholds) -> (Episodes, Episodes) {
     let mut last: BTreeMap<u64, WorkerBeat> = BTreeMap::new();
     for beat in beats.into_iter().flatten().filter(|beat| wanted.contains(&beat.task)) {
         if last.get(&beat.task).is_none_or(|seen| beat.last > seen.last) {
@@ -217,6 +227,7 @@ fn observe(
             digest: Some(series::digest(&Json::List(facts))),
             objective_in_decision,
             accounted: series::Accounted::default(),
+            dossier: None,
         });
     }
 
@@ -430,7 +441,64 @@ fn observe(
         digest,
         objective_in_decision,
         accounted: series::Accounted::default(),
+        dossier: None,
     })
+}
+
+/// Python's `str.strip()` leaves nothing of `text`: its blanks, `\x1c` to `\x1f` included.
+fn blank(text: &str) -> bool {
+    text.trim_matches(|c: char| c.is_whitespace() || ('\u{1c}'..='\u{1f}').contains(&c)).is_empty()
+}
+
+/// The prototype's `_dossier_del_progetto`: the warnings of the project's dossier, asked after the reads of its
+/// events, so that a slow git does not delay them. Without a folder they are not asked; the products and their
+/// sites go with the question only when the registry names products, and the tasks in progress only when there are
+/// some (#549, #646).
+fn dossier_of(sources: &dyn Sources, project: &Project<'_>, in_progress_all: &BTreeSet<u64>) -> Option<Vec<DossierWarning>> {
+    let folder = project.folder?;
+    let products = project.products.filter(|products| !blank(products));
+    let request = DossierRequest {
+        folder: folder.to_owned(),
+        repo: project.repo.map(str::to_owned),
+        products: products.map(str::to_owned),
+        sites: products.and(project.sites).filter(|sites| !blank(sites)).map(str::to_owned),
+        in_progress: in_progress_all.clone(),
+    };
+    sources.dossier_warnings(&request)
+}
+
+/// The prototype's `_dossier_compatto`: of each warning its problem, branch, commits ahead and repo; of a worker's
+/// branch not pushed its task and whether a gate holds it too, the first few, then one entry with how many others.
+fn compact_dossier(warnings: &[DossierWarning]) -> Json {
+    let words = &format().dossier;
+    let entry = |warning: &DossierWarning, of_branch: bool| {
+        let mut fields = vec![(words.problem.clone(), Json::Str(warning.problem.clone()))];
+        if let Some(branch) = &warning.branch {
+            fields.push((words.branch.clone(), Json::Str(branch.clone())));
+        }
+        if let Some(ahead) = warning.ahead {
+            fields.push((words.ahead.clone(), Json::Int(ahead)));
+        }
+        if let Some(task) = warning.task.filter(|_| of_branch) {
+            fields.push((words.task.clone(), Json::Int(task)));
+        }
+        if let Some(repo) = &warning.repo {
+            fields.push((words.repo.clone(), Json::Str(repo.clone())));
+        }
+        if of_branch && warning.expected {
+            fields.push((words.expected.clone(), Json::Bool(true)));
+        }
+        Json::Object(fields)
+    };
+    let of_branch = |warning: &&DossierWarning| warning.problem == words.branch_not_pushed;
+    let branches: Vec<&DossierWarning> = warnings.iter().filter(of_branch).collect();
+    let mut out: Vec<Json> = warnings.iter().filter(|warning| !of_branch(warning)).map(|warning| entry(warning, false)).collect();
+    out.extend(branches.iter().take(words.max_branches).map(|warning| entry(warning, true)));
+    if branches.len() > words.max_branches {
+        let others = i64::try_from(branches.len() - words.max_branches).unwrap_or(i64::MAX);
+        out.push(Json::Object(vec![(words.problem.clone(), Json::Str(words.branch_not_pushed.clone())), (words.others.clone(), Json::Int(others))]));
+    }
+    Json::List(out)
 }
 
 /// The policy's source as the prototype names it: `file` or `default`, with `+locale` when an override
@@ -573,7 +641,18 @@ fn tick(sources: &dyn Sources, options: &Options, now: WallTime) -> Result<Verdi
         if status.is_some_and(|status| ACTIVE.contains(&status)) && (options.projects.is_empty() || options.projects.contains(id)) {
             let fields = issue.registry.as_ref();
             let priority = registry_number(fields.and_then(|fields| fields.priority.as_deref()), "priority", DEFAULT_PRIORITY)?;
-            active.push((priority, Project { id: id.clone(), wip: fields.and_then(|fields| fields.wip.as_deref()), folder: fields.and_then(|fields| fields.folder.as_deref()) }));
+            let field = |pick: fn(&super::ObjectiveRegistry) -> &Option<String>| fields.and_then(|fields| pick(fields).as_deref());
+            active.push((
+                priority,
+                Project {
+                    id: id.clone(),
+                    wip: field(|fields| &fields.wip),
+                    folder: field(|fields| &fields.folder),
+                    repo: field(|fields| &fields.repo),
+                    products: field(|fields| &fields.products),
+                    sites: field(|fields| &fields.sites),
+                },
+            ));
         }
     }
     active.sort_by(|(a, left), (b, right)| (a, &left.id).cmp(&(b, &right.id)));
@@ -593,7 +672,9 @@ fn tick(sources: &dyn Sources, options: &Options, now: WallTime) -> Result<Verdi
     let policy = sources.policy();
     let mut observations = Vec::new();
     for (_, project) in &active {
-        observations.push(observe(sources, project, &issues, &in_progress_all, &graph, &leases, &policy, now)?);
+        let mut observation = observe(sources, project, &issues, &in_progress_all, &graph, &leases, &policy, now)?;
+        observation.dossier = dossier_of(sources, project, &in_progress_all);
+        observations.push(observation);
     }
     let max = options.budget_max.unwrap_or(policy.automatic_max_pct);
     let budget = budget_gate(sources, &mut observations, &policy, max, now)?;
@@ -654,7 +735,7 @@ mod tests {
     use serde_json::{Value, json};
 
     use super::*;
-    use crate::precheck::{ExpiredLease, ObjectiveRegistry, RecentComment, Report};
+    use crate::precheck::{DossierRequest, DossierWarning, ExpiredLease, ObjectiveRegistry, RecentComment, Report};
 
     /// Claude's reading as the cache gives it: `pct` of the 5-hour window, read `age_s` ago.
     fn usage(pct: f64, age_s: i64) -> ProviderUsage {
@@ -682,9 +763,12 @@ mod tests {
         /// The answer of the read of the recent comments, `None` for no answer; and the projects it was asked for.
         recent: Option<Vec<RecentComment>>,
         recent_asked: RefCell<Vec<String>>,
-        /// What Orca's adapter answers, and the reads it was asked for.
+        /// What the agents' app answers, and the reads it was asked for.
         beats: Option<Vec<WorkerBeat>>,
         started: RefCell<Vec<BTreeSet<u64>>>,
+        /// The dossier's warnings it answers, and what it was asked.
+        dossier: Option<Vec<DossierWarning>>,
+        dossier_asked: RefCell<Vec<DossierRequest>>,
     }
 
     impl Default for Fake {
@@ -694,6 +778,8 @@ mod tests {
                 recent_asked: RefCell::default(),
                 beats: None,
                 started: RefCell::default(),
+                dossier: None,
+                dossier_asked: RefCell::default(),
                 issues: Vec::new(),
                 comments: BTreeMap::new(),
                 cursors: BTreeMap::new(),
@@ -732,6 +818,11 @@ mod tests {
             if self.started.borrow().is_empty() {
                 self.started.borrow_mut().push(wanted.clone());
             }
+        }
+
+        fn dossier_warnings(&self, request: &DossierRequest) -> Option<Vec<DossierWarning>> {
+            self.dossier_asked.borrow_mut().push(request.clone());
+            self.dossier.clone()
         }
 
         fn workers(&self) -> Option<Vec<WorkerBeat>> {
@@ -816,7 +907,7 @@ mod tests {
     fn objective(number: u64, project: &str, status: Status, wip: &str, priority: &str) -> Issue {
         let mut task = task(number, project, status);
         (task.objective, task.maturity) = (true, None);
-        let registry = ObjectiveRegistry { wip: Some(wip.to_owned()), priority: Some(priority.to_owned()), folder: None };
+        let registry = ObjectiveRegistry { wip: Some(wip.to_owned()), priority: Some(priority.to_owned()), ..ObjectiveRegistry::default() };
         Issue { task, registry: Some(registry) }
     }
 
@@ -938,7 +1029,7 @@ mod tests {
 
     /// `test_precheck_worker.py` and `test_precheck_blocco.py` of the prototype (#210, #641): a worker silent past 30
     /// minutes wakes, once an episode, unless it waits for a person; one blocked past 180 minutes is in its own list and
-    /// not among the silent; the events come after the reports and before the ready; Orca is asked once a tick, for
+    /// not among the silent; the events come after the reports and before the ready; the app is asked once a tick, for
     /// the tasks in progress of every project, and only when a project has some.
     #[test]
     fn the_silent_and_the_blocked_workers_wake_once_an_episode() {
@@ -973,12 +1064,71 @@ mod tests {
         let fake = Fake { issues: issues.clone(), beats: Some(beats), cursors, ..Fake::default() };
         let project = project_of(&super::tests::line(&fake), "p");
         assert_eq!((project[&words.reason].clone(), project.get(&words.silent_tasks)), (json!(Reason::Ready.word()), None));
-        // No data is no silence; and without tasks in progress Orca is not asked.
+        // No data is no silence; and without tasks in progress the app is not asked.
         let fake = Fake { issues: issues.clone(), ..Fake::default() };
         assert_eq!(project_of(&super::tests::line(&fake), "p")[&words.reason], Reason::Ready.word());
         let fake = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3")], beats: Some(Vec::new()), ..Fake::default() };
         let _ = super::tests::line(&fake);
         assert!(fake.started.borrow().is_empty());
+    }
+
+    /// `_dossier_del_progetto` and `_dossier_compatto` of the prototype (#159, #158, #549, #646): asked with the
+    /// registry's folder, repo, products and sites and every task in progress, even of a project held by its lock; the
+    /// line keeps a few fields, a worker's branch its task and `atteso`, five branches and then the count of the others;
+    /// no folder, nothing read or nothing to say is no key.
+    #[test]
+    fn the_dossier_s_warnings_are_asked_and_kept_compact() {
+        let words = &format().dossier;
+        let mut with_registry = objective(1, "p", Status::Approved, "2", "3");
+        let registry = with_registry.registry.as_mut().unwrap();
+        (registry.folder, registry.repo, registry.products, registry.sites) =
+            (Some("f".to_owned()), Some("o/d".to_owned()), Some(" o/x ".to_owned()), Some("o/x=progetti/x".to_owned()));
+        let warning = |problem: &str, branch: Option<&str>, task: Option<i64>| DossierWarning {
+            problem: problem.to_owned(),
+            branch: branch.map(str::to_owned),
+            ahead: branch.map(|_| 2),
+            task,
+            ..DossierWarning::default()
+        };
+        let mut warnings = vec![warning("senza-upstream", Some("main"), Some(4))];
+        for n in 0..7 {
+            let mut branch = warning(&words.branch_not_pushed, Some(&format!("o/regia-{n}-x")), Some(n));
+            (branch.expected, branch.repo) = (n == 1, (n == 2).then(|| "o/x".to_owned()));
+            warnings.push(branch);
+        }
+        let issues = vec![with_registry, issue(task(2, "p", Status::InProgress)), issue(task(9, "q", Status::InProgress))];
+        let fake = Fake { issues: issues.clone(), dossier: Some(warnings), busy: vec!["p".to_owned()], ..Fake::default() };
+        let project = project_of(&line(&fake), "p");
+        let expected = json!([
+            {"problema": "senza-upstream", "branch": "main", "avanti": 2},
+            {"problema": "branch-non-pushato", "branch": "o/regia-0-x", "avanti": 2, "task": 0},
+            {"problema": "branch-non-pushato", "branch": "o/regia-1-x", "avanti": 2, "task": 1, "atteso": true},
+            {"problema": "branch-non-pushato", "branch": "o/regia-2-x", "avanti": 2, "task": 2, "repo": "o/x"},
+            {"problema": "branch-non-pushato", "branch": "o/regia-3-x", "avanti": 2, "task": 3},
+            {"problema": "branch-non-pushato", "branch": "o/regia-4-x", "avanti": 2, "task": 4},
+            {"problema": "branch-non-pushato", "altri": 2},
+        ]);
+        assert_eq!(project[&words.key], expected, "the last key, of a held project too");
+        let request = fake.dossier_asked.borrow()[0].clone();
+        let asked = DossierRequest {
+            folder: "f".to_owned(),
+            repo: Some("o/d".to_owned()),
+            products: Some(" o/x ".to_owned()),
+            sites: Some("o/x=progetti/x".to_owned()),
+            in_progress: BTreeSet::from([2, 9]),
+        };
+        assert_eq!(request, asked);
+        // Blank products take their sites away; no folder, no question; none to say or none read, no key.
+        let mut bare = issues.clone();
+        bare[0].registry.as_mut().unwrap().products = Some("  ".to_owned());
+        let fake = Fake { issues: bare, dossier: Some(Vec::new()), ..Fake::default() };
+        assert!(project_of(&super::tests::line(&fake), "p").get(&words.key).is_none());
+        assert_eq!((fake.dossier_asked.borrow()[0].products.clone(), fake.dossier_asked.borrow()[0].sites.clone()), (None, None));
+        let fake = Fake { issues: vec![issues[0].clone()], ..Fake::default() };
+        assert!(project_of(&super::tests::line(&fake), "p").get(&words.key).is_none());
+        let fake = Fake { issues: vec![objective(1, "p", Status::Approved, "2", "3")], dossier: Some(vec![warning("senza-remoto", None, None)]), ..Fake::default() };
+        let _ = super::tests::line(&fake);
+        assert!(fake.dossier_asked.borrow().is_empty(), "no folder");
     }
 
     #[test]
