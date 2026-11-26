@@ -10,7 +10,8 @@ import { fitZoom } from "../src/lib/moviola/camera";
 import { prepare } from "../src/lib/moviola/model";
 import { type Camera, lowerBound } from "../src/lib/moviola/scene";
 import { Stage } from "../src/lib/moviola/stage";
-import { day, dayKey, LANE_ID, laneName, listText, timecode } from "../src/lib/moviola/text";
+import { listText } from "../src/lib/moviola/listbox";
+import { day, dayKey, LANE_ID, laneName, timecode } from "../src/lib/moviola/text";
 import { syntheticTimeline } from "./synthetic";
 
 

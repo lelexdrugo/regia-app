@@ -13,7 +13,9 @@
 //
 // --list (#490): the cost of the list of moments instead (harness/bench.ts, `benchList`), at x1, x10 and x100, at the
 // zoom of detail and of groups, against the conformance's bound of 1 ms; the folder receives bench-list-<engine>.json.
-// It measures work in the page, so headless counts too.
+// It measures work in the page, so headless counts too. A WebView2 window that something covers, or a locked screen,
+// draws no frame and the stage never settles: then `--args "--disable-features=CalculateNativeWinOcclusion
+// --disable-backgrounding-occluded-windows --disable-renderer-backgrounding"`.
 import { spawn } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -84,10 +86,16 @@ async function listBench() {
     const r = await page.evaluate("window.benchList");
     results.push(r);
     for (const level of r.levels) {
-      const worst = Math.max(level.still.max, level.stillNoChoice.max, level.step.max, level.order.max, level.playhead.max);
+      // The bound is the conformance's: a frame at a still view, and a rebuild, at p95; a single sample over it is
+      // reported, not judged (a collection of garbage lands where it will).
+      const still = Math.max(level.still.max, level.stillNoChoice.max);
+      const rebuild = Math.max(level.step.p95, level.order.p95, level.playhead.p95);
+      const worst = Math.max(level.step.max, level.order.max, level.playhead.max);
       console.log(`x${scale} ${level.level} (zoom ${level.zoom.toFixed(3)}): ${level.entries} entries, ${level.groups} groups of several, ${level.options} options in the page;`
         + ` ms median/p95/max: still ${ms(level.still)}, still with none chosen ${ms(level.stillNoChoice)}, arrow ${ms(level.step)},`
-        + ` order ${ms(level.order)}, playhead ${ms(level.playhead)}; ${level.builds} windows built; worst ${worst.toFixed(3)} ms, under ${r.bound_ms} ms: ${worst < r.bound_ms ? "yes" : "NO"}`);
+        + ` order ${ms(level.order)}, playhead ${ms(level.playhead)}; ${level.builds} windows built;`
+        + ` a still frame at most ${still.toFixed(4)} ms, a rebuild ${rebuild.toFixed(3)} ms at p95, under ${r.bound_ms} ms: ${still < r.bound_ms && rebuild < r.bound_ms ? "yes" : "NO"};`
+        + ` the slowest single rebuild ${worst.toFixed(3)} ms`);
     }
   }
   return results;

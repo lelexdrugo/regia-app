@@ -56,7 +56,7 @@
       <dd>
         <button type="button" class="link jump" onclick={() => onselect(last.index)}>
           <!-- A flex box keeps no space between its items: the hidden comma keeps the button's name in two words (#490). -->
-          <span class="mono">{timecode(strings, last.t)}</span><span class="sr">, </span>
+          <span class="mono">{timecode(strings, last.t)}</span><span class="sr">,&nbsp;</span>
           <span data-raw>{last.milestone.title}</span>
         </button>
       </dd>

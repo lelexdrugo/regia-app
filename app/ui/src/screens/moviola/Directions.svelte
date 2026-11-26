@@ -34,7 +34,7 @@
   {@const target = model.nodes[index]}
   {#if target}
     <button type="button" class="link jump" onclick={() => onselect(index)}>
-      <span class="mono">{timecode(strings, target.t)}</span><span class="sr">, </span>
+      <span class="mono">{timecode(strings, target.t)}</span><span class="sr">,&nbsp;</span>
       <span data-raw>{target.milestone.title}</span>
     </button>
   {/if}
@@ -56,16 +56,16 @@
             {:else}
               <span class="lane-name" data-raw>{lane.title ?? lane.id}</span>
             {/if}
-            <span class="sr">, </span>
+            <span class="sr">,&nbsp;</span>
             <span class="pill neutral">{strings.message(LANE_ID[lane.status])}</span>
           </button>
-          <span class="sr">, </span>
+          <span class="sr">,&nbsp;</span>
           <p class="lane-facts faint">
             <span class="mono" data-raw>{lane.id}</span>
-            <span aria-hidden="true">·</span><span class="sr">, </span>
+            <span aria-hidden="true">·</span><span class="sr">,&nbsp;</span>
             <span>{strings.message("moviola-direction-count", { n: lane.nodes.length })}</span>
           </p>
-          <span class="sr">, </span>
+          <span class="sr">,&nbsp;</span>
           {#if lane.id === main}
             <p class="lane-reason">{strings.message("moviola-direction-main")}</p>
           {:else if !lane.recorded}
@@ -75,11 +75,12 @@
           {:else}
             <p class="lane-reason faint">{strings.message("moviola-direction-no-reason")}</p>
           {/if}
+          <span class="sr">,&nbsp;</span>
           {#if card.openedBy}
-            <p class="frame-line"><span class="frame-label">{strings.message("moviola-direction-opened")}</span>{@render jump(card.openedBy.index)}</p>
+            <p class="frame-line"><span class="frame-label">{strings.message("moviola-direction-opened")}</span><span class="sr">:&nbsp;</span>{@render jump(card.openedBy.index)}</p>
           {/if}
           {#if card.closedBy}
-            <p class="frame-line"><span class="frame-label">{closing(card)}</span>{@render jump(card.closedBy.index)}</p>
+            <p class="frame-line"><span class="frame-label">{closing(card)}</span><span class="sr">:&nbsp;</span>{@render jump(card.closedBy.index)}</p>
           {/if}
           {#if open}
             {#if lane.nodes.length}

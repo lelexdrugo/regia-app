@@ -4,11 +4,15 @@
 // it and the focus ring stays on the stage. Each option says its place in the whole list (aria-posinset and
 // aria-setsize), not in the window; at the zoom of groups each group of the stage is a group of options, named once
 // with its moments, its lane, its span, its kinds and its health (#489/V9). The window is rebuilt only when the moment
-// chosen, the list or the words change, never at a frame. Words come from the catalog; titles and directions' ids are
-// text from others, and sit in data-raw.
+// chosen, the list or the words change, never at a frame. Words come from the catalog (`listText`, here and not in
+// text.ts, which the proofs' Node runs and which imports nothing but types); titles and directions' ids are text from
+// others, and sit in data-raw.
+import type { Catalog } from "../i18n";
 import type { ListGroup, Order } from "./moments";
 import { windowAt } from "./moments";
 import type { Model } from "./model";
+import { KINDS } from "./scene";
+import { HEALTH_ID, KIND_ID, timecode } from "./text";
 
 /** The words of an entry, said one after the other: a word of the catalog, or text from others (`raw`). */
 export type Words = { text: string; raw?: boolean }[];
@@ -122,4 +126,39 @@ function write(element: HTMLElement, words: Words): void {
     if (word.raw) span.setAttribute("data-raw", "");
     element.append(span);
   });
+}
+
+/** The words of the list: a moment's kind, title, instant, lane, and its health when it
+ * is not healthy; a group's place among the groups of several, its moments, lane, span, kinds and health (#489/V9).
+ * Titles and directions' ids are text from others. */
+export function listText(strings: Catalog, model: Model): ListText {
+  const laneWords = (index: number): Words[number] => {
+    const lane = model.lanes[index];
+    return !lane || lane.id === model.timeline.main_direction ? { text: strings.message("moviola-lane-main") } : { text: lane.id, raw: true };
+  };
+  return {
+    moment: (index) => {
+      const node = model.nodes[index] as Model["nodes"][number];
+      const m = node.milestone;
+      const said: Words = [{ text: strings.message(KIND_ID[m.kind]) }, { text: m.title, raw: true }, { text: timecode(strings, node.t) }, laneWords(node.lane)];
+      if (m.health !== "healthy") said.push({ text: strings.message(HEALTH_ID[m.health]) });
+      return said;
+    },
+    group: (group, position, total) => {
+      const span = group.from === group.to ? timecode(strings, group.from) : strings.message("moviola-list-span", { from: timecode(strings, group.from), to: timecode(strings, group.to) });
+      const said: Words = [
+        { text: strings.message("moviola-list-group", { position, total }) },
+        { text: strings.message("moviola-list-moments", { n: group.count }) },
+        laneWords(group.lane),
+        { text: span },
+      ];
+      KINDS.forEach((kind, k) => {
+        const n = group.kinds[k] ?? 0;
+        if (n > 0) said.push({ text: strings.message("moviola-list-kind", { kind: strings.message(KIND_ID[kind]), n }) });
+      });
+      if (group.atRisk > 0) said.push({ text: strings.message("moviola-list-at-risk", { n: group.atRisk }) });
+      if (group.waiting > 0) said.push({ text: strings.message("moviola-list-waiting", { n: group.waiting }) });
+      return said;
+    },
+  };
 }

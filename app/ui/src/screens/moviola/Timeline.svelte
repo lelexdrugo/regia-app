@@ -21,11 +21,11 @@
   import type { CanvasText } from "../../lib/moviola/canvas2d";
   import { type Filters as FilterState, filtering, fromAddress, NO_FILTERS, visible } from "../../lib/moviola/filters";
   import { frame as frameOf, type Notes } from "../../lib/moviola/frame";
-  import type { ListMode } from "../../lib/moviola/listbox";
   import { type Model, prepare, stateAt } from "../../lib/moviola/model";
   import { isEmpty, type Names, parseQuery, search, stepWithin } from "../../lib/moviola/search";
   import { type GroupsShown, Stage, type ViewRange } from "../../lib/moviola/stage";
-  import { day, dayKey, KIND_ID, LANE_ID, laneName, listText, timecode } from "../../lib/moviola/text";
+  import { listText, type ListMode } from "../../lib/moviola/listbox";
+  import { day, dayKey, KIND_ID, LANE_ID, laneName, timecode } from "../../lib/moviola/text";
   import type { MoviolaSource, Snapshot } from "../../lib/moviola/types";
   import { href } from "../../lib/route";
   import AtDate, { type Decisions } from "./AtDate.svelte";

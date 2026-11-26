@@ -115,7 +115,7 @@
   {#if target}
     <button type="button" class="link jump" onclick={() => onselect(index)}>
       <!-- A flex box keeps no space between its items: the hidden comma keeps the button's name in two words (#490). -->
-      <span class="mono">{timecode(strings, target.t)}</span><span class="sr">, </span>
+      <span class="mono">{timecode(strings, target.t)}</span><span class="sr">,&nbsp;</span>
       <span data-raw>{target.milestone.title}</span>
     </button>
   {/if}
