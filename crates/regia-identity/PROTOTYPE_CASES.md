@@ -19,5 +19,5 @@ The prototype stubs the platform and the environment; so does `state_dir_by`, th
 | P7 | `test_non_crea_la_cartella` | `the_rule_does_not_create_the_folder` |
 | P8 | `test_rifiuta_la_cartella_temporanea_da_qualunque_regola` (`REGIA_RUNTIME` and `LOCALAPPDATA` under the temporary folder) | not in this crate: the refusal is `regia-store`'s, so `crates/regia-conformance/tests/runtime_folder.rs` tries it end to end (`regia_runtime_under_the_temporary_folder_is_refused`, `the_platform_default_under_the_temporary_folder_is_refused`) |
 
-Not ported: every `MOVIOLA_ATTIVITA` case of `test_lettori_config_locale.py`. That variable, and the moviola
-store's `attivita` subfolder, are not in the product yet.
+The `MOVIOLA_ATTIVITA` cases of `test_lettori_config_locale.py` (class `CartellaDelloStore`), where the moviola
+store's folder meets this rule, are in `crates/regia-conformance/tests/moviola_store_folder.rs` (#491).

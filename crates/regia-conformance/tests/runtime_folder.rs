@@ -3,8 +3,9 @@
 //! of the dossier. The rule that names the folder is in `regia-identity`; the refusal is in `regia-store`
 //! (Storage Sense empties `%TEMP%`), so this is where the two are tried together.
 //!
-//! The prototype's `MOVIOLA_ATTIVITA` case has no counterpart: that variable is not ported. A case needs
-//! the process's variables, which tests share, so each runs this test binary again as a child with them set.
+//! The prototype's `MOVIOLA_ATTIVITA` case is in `moviola_store_folder.rs`, with the moviola store's own rule. A
+//! case needs the process's variables, which tests share, so each runs this test binary again as a child with them
+//! set.
 
 use std::env;
 use std::fs;
