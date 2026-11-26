@@ -19,6 +19,8 @@ export const VIEWS = [
   "#/moviola/alpha?data=demo&filters=advanced&hide=gate,exception&lane=probe-b",
   "#/moviola/alpha?data=demo&q=probe&hide=exploration,abandonment,exception,rejoin",
   "#/moviola/frame?data=demo&notes=fail&lane=probe",
+  // The story as text (#490), open: every moment and every direction's record, markup in a text included.
+  ...["alpha", "frame", "viewer"].map((project) => `#/moviola/${project}?data=demo&text=open`),
   // The comfortable density is larger in every measure, and the setup may choose it (#483).
   "#/brief?data=worst&density=comfortable",
   "#/settings?data=demo&density=comfortable&dir=nero",

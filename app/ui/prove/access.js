@@ -12,11 +12,15 @@
 // by keydown events from the page, a microtask apart: there a headless Chrome without GPU takes a tenth of a second for
 // each frame of the whole stage, and the walk would take minutes. PageDown and PageUp go a group, End is the list's
 // last entry. The live lines keep quiet while the stage holds the focus and speak from the transport; a hidden line
-// says when the level of detail changes.
+// says when the level of detail changes. The story as text, on alpha: nothing of it in the page while it is closed;
+// opened, every moment once in time order, then each direction with its moments.
 //
 // The negative controls (harness/main.ts, `list=`): no list, as before #490, must fail at the first moment, and the
 // renderer spike's list, which stopped at 200 items, exactly at the 201st. The arrows chose every moment before #490
 // too (#439/D38): what fails without the list is what a screen reader is told.
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { messages } from "./messages.js";
 
 const ROUTE = "#/moviola/x100?data=demo&lang=en";
@@ -289,6 +293,24 @@ export const access = {
     await sleep(50);
     const backIn = await page.evaluate(`document.getElementById("moviola-level").dataset.said`);
     check("back at the zoom of detail, the hidden line says so", backIn === en["moviola-list-level-detail"], `«${backIn}»`);
+
+    // The story as text, on alpha: closed, nothing of it in the page; open, every moment once in time order, labelled
+    // M01 on, then each direction with its moments, the directions by their first moment.
+    const alpha = m.prepare(JSON.parse(readFileSync(join(ui, "harness/moviola.json"), "utf8")).cases.find((c) => c.name === "alpha").timeline, 0);
+    await fresh(page, harness, "#/moviola/alpha?data=demo&lang=en");
+    const closed = await page.evaluate(`[document.querySelector("details.story-text")?.open, document.querySelectorAll(".story-text li").length]`);
+    await fresh(page, harness, "#/moviola/alpha?data=demo&lang=en&text=open");
+    const story = await page.evaluate(`({
+      index: [...document.querySelectorAll(".story-text > .story-list > li")].map((li) => li.dataset.id),
+      first: document.querySelector(".story-text > .story-list > li")?.textContent.replace(/\\s+/g, " ").trim() ?? "",
+      lanes: [...document.querySelectorAll(".story-lane")].map((section) => [section.dataset.lane, section.querySelectorAll("li").length]),
+    })`);
+    const firstAt = (lane) => (lane.nodes.length ? alpha.nodes[lane.nodes[0]].t : Infinity);
+    const lanes = [...alpha.lanes].sort((a, b) => firstAt(a) - firstAt(b)).map((lane) => [lane.id, lane.nodes.length]);
+    check("the story as text: closed, nothing built; open, every moment once in time order from M01, then each direction with its moments, by its first",
+      closed[0] === false && closed[1] === 0 && JSON.stringify(story.index) === JSON.stringify(alpha.nodes.map((node) => node.milestone.id))
+        && story.first.startsWith("M01 · ") && story.first.includes(alpha.nodes[0].milestone.title) && JSON.stringify(story.lanes) === JSON.stringify(lanes),
+      `closed ${JSON.stringify(closed)}; ${story.index.length} lines, «${story.first.slice(0, 60)}»; ${JSON.stringify(story.lanes)}`);
 
     // The negative controls: no list at all, and the spike's list of 200.
     await fresh(page, harness, `${ROUTE}&list=none`);

@@ -1765,16 +1765,24 @@ a.reel-name:hover {
 }
 
 /* Forced colours (#490): a contrast theme of the system repaints the page in its own few colours. An icon is a mask
-   over its background, which forced colours would paint Canvas, the colour around it: it keeps the colour of its
-   text instead. The stage's canvas is drawn in the system's colours by its palette (lib/moviola/palette.ts), and its
-   focus ring is the system's highlight. Nothing here touches tokens.css, which prove/contrast.js keeps as the
-   dossier's file. */
+   over its background, which forced colours would paint Canvas, the colour around it: it takes the system's colour of
+   the text it stands in, named, since an element that keeps its own colours sees the tokens' through currentColor.
+   The stage's canvas is drawn in the system's colours by its palette (lib/moviola/palette.ts), and its focus ring is
+   the system's highlight. Nothing here touches tokens.css, which prove/contrast.js keeps as the dossier's file. */
 @media (forced-colors: active) {
   .icon,
   .mark-gate,
   .mark-head {
     forced-color-adjust: none;
-    background-color: currentColor;
+    background-color: CanvasText;
+  }
+
+  a .icon {
+    background-color: LinkText;
+  }
+
+  button .icon {
+    background-color: ButtonText;
   }
 
   .stage canvas:focus-visible {
