@@ -17,17 +17,12 @@ use regia_core::policy::{file_path, local_file_name, read_local};
 use regia_core::{Policy, RawComment, Registry, Tracker, TrackerBinding, TrackerConfigV1, project_label_prefix};
 use regia_git::{DossierProject, Warning, WarningsRequest, dossier_warnings};
 use regia_github::GhTracker;
-use regia_identity::{config_dir, env_var, prototype_env_var, state_dir};
+use regia_identity::{config_dir, prototype_env_var, state_dir};
 use regia_store::{CursorName, LeaseEntry, LockStatus, ManualClock, ProjectId, ProviderUsage, Store, ViewField, WallTime, read_state_file, reports_folder};
 use serde_json::Value;
 
 use super::v1::format;
 use super::{DossierRequest, DossierWarning, ExpiredLease, HeldLock, Issue, ObjectiveRegistry, RecentComment, Report, Sources};
-
-/// The variable that names the folder of the user's settings in place of the system's, for the harness:
-/// `REGIA_CONFIG_DIR`. The system's folder is not one a variable moves on every system, and the harness
-/// must never read the machine's. Provisional, for the gate of names (#223).
-pub const SETTINGS_DIR_SUFFIX: &str = "CONFIG_DIR";
 
 /// How often the cache asks the probes, at most: the prototype's `BUDGET_MIN_INTERVALLO_S`.
 const PROBE_INTERVAL_S: u64 = regia_store::MIN_INTERVAL_S;
@@ -63,11 +58,6 @@ pub struct LiveSources {
 /// home of the budget policy's file.
 fn dossier_dir() -> Option<PathBuf> {
     std::env::var_os(prototype_env_var("HOME")).filter(|value| !value.is_empty()).map(PathBuf::from)
-}
-
-/// The folder of the user's settings: the variable's, else the system's.
-fn settings_dir() -> Option<PathBuf> {
-    std::env::var_os(env_var(SETTINGS_DIR_SUFFIX)).filter(|value| !value.is_empty()).map(PathBuf::from).or_else(config_dir)
 }
 
 /// The sources of a tick that may take `deadline_s` seconds, with the state's clock fixed at `fixed` when
@@ -402,8 +392,10 @@ impl Sources for LiveSources {
         file.with_local(read_local(read_state_file(folder, local_file_name()), utc(self.now()), &chrono::Local))
     }
 
+    /// The consent in the user's settings, in the configuration folder of every command: `config_dir`, which
+    /// `REGIA_CONFIG_DIR` moves (#466/V10).
     fn probe_consent(&self) -> Result<ProbeConsent, String> {
-        let Some(dir) = settings_dir() else { return Ok(ProbeConsent::Refused) };
+        let Some(dir) = config_dir() else { return Ok(ProbeConsent::Refused) };
         Settings::load(&dir).map(|settings| settings.probe_consent()).map_err(|error| error.to_string())
     }
 
