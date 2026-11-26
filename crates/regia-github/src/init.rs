@@ -1,7 +1,8 @@
 //! What `init` reads of GitHub ([`InitReads`]), as the prototype reads it (`tools/inizializza.py` of the dossier):
 //! the user and the token's scopes from `gh api -i user`, the repo, the owner's Projects page after page, the repo's
 //! labels page after page. Nothing is written. A REST call names its path in argv, built from typed values; the
-//! GraphQL query goes on stdin with its variables. Each call is logged before it is made, failed ones too, in the
+//! GraphQL query goes on stdin with its variables, through the adapter's one run of `gh api graphql`, the
+//! tracker's (`graphql_through`, #672). Each call is logged before it is made, failed ones too, in the
 //! words the prototype logs it with (`_descrivi`): for the query, the form `-f query=… -f o=…` it would take in argv.
 
 use std::collections::BTreeSet;
@@ -11,7 +12,9 @@ use regia_core::init::{FieldNode, FieldOption, GhSaid, GhUser, InitError, InitRe
 use regia_core::pystr;
 use regia_exec::{Args, Pin, Program, RepoSlug, Text};
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
+
+use crate::{Reply, limit};
 
 /// The owner's Projects, as the prototype asks for them: each with its status field by name, and its fields with
 /// their kind, id and name, and a single select's options.
@@ -35,6 +38,9 @@ pub struct GhInit {
     gh: Result<Pin, String>,
     work_dir: PathBuf,
     calls: Vec<String>,
+    /// The queries running at once, at most [`limit::MAX_CALLS`], as for the tracker: `init` reads one page
+    /// at a time, so a page never waits, but it runs as the tracker's queries do.
+    limit: limit::Calls,
 }
 
 impl Default for GhInit {
@@ -45,27 +51,23 @@ impl Default for GhInit {
 
 impl GhInit {
     pub fn new() -> Self {
-        Self { gh: Pin::resolve(Program::Gh).map_err(|error| error.to_string()), work_dir: regia_exec::neutral_folder(), calls: Vec::new() }
+        Self {
+            gh: Pin::resolve(Program::Gh).map_err(|error| error.to_string()),
+            work_dir: regia_exec::neutral_folder(),
+            calls: Vec::new(),
+            limit: limit::Calls::new(limit::MAX_CALLS),
+        }
     }
 
-    /// Runs `gh`, logged first as `description`. A failure is what `gh` said, its stderr, else its stdout, else
-    /// only its exit code.
-    fn run(&mut self, description: String, args: Args, stdin: Option<String>) -> Result<String, InitError> {
+    /// Runs `gh`, logged first as `description`. A failure is read as [`printed`] reads it.
+    fn run(&mut self, description: String, args: Args) -> Result<String, InitError> {
         self.calls.push(description);
         let gh = self.gh.as_ref().map_err(|error| InitError::Unavailable(error.clone()))?;
-        let mut launch = gh.launch(args, &self.work_dir);
-        if let Some(stdin) = stdin {
-            launch = launch.stdin(stdin);
-        }
-        let output = launch.run().map_err(|error| InitError::Unavailable(error.to_string()))?;
-        if !output.status.success() {
-            let (stderr, stdout) = (String::from_utf8_lossy(&output.stderr), String::from_utf8_lossy(&output.stdout));
-            let text = [pystr::strip(&stderr), pystr::strip(&stdout)].into_iter().find(|text| !text.is_empty());
-            let not_found = text.is_some_and(|text| NOT_FOUND.iter().any(|needle| text.contains(needle)));
-            let said = text.map_or(GhSaid::Exit(output.status.code().unwrap_or(-1)), |text| GhSaid::Text(text.to_owned()));
-            return Err(InitError::Gh { said, not_found });
-        }
-        String::from_utf8(output.stdout).map_err(|error| InitError::Unreadable(error.to_string()))
+        let output = gh
+            .launch(args, &self.work_dir)
+            .run()
+            .map_err(|error| InitError::Unavailable(error.to_string()))?;
+        printed(Reply::of(output))
     }
 
     /// `gh api [-i] <path>`, a GET.
@@ -76,7 +78,51 @@ impl GhInit {
         } else {
             (Args::new().word("api").value(&value), format!("gh api {path}"))
         };
-        self.run(description, args, None)
+        self.run(description, args)
+    }
+
+    /// The owner's Projects, page after page: each page is logged in `calls` first, then asked through the
+    /// adapter's one run of `gh api graphql` ([`crate::graphql_through`]), which `launch` makes while the
+    /// page holds its place in `limit`. The tests give it a launch that does not start a process.
+    fn projects_through(
+        owner: &str,
+        calls: &mut Vec<String>,
+        limit: &limit::Calls,
+        mut launch: impl FnMut(String) -> Result<Reply, InitError>,
+    ) -> Result<Option<Vec<ProjectNode>>, InitError> {
+        let mut nodes = Vec::new();
+        let mut after: Option<String> = None;
+        loop {
+            let mut variables = Map::new();
+            variables.insert("o".to_owned(), json!(owner));
+            let mut description = format!("gh api graphql -f {} -f o={owner}", described(PROJECTS_QUERY));
+            if let Some(cursor) = &after {
+                variables.insert("after".to_owned(), json!(cursor));
+                description.push_str(&format!(" -f after={cursor}"));
+            }
+            calls.push(description);
+            let reply = crate::graphql_through(limit, PROJECTS_QUERY, &variables, &mut launch)?;
+            let page = parse(&printed(reply)?)?;
+            if let Some(errors) = page.get("errors").filter(|errors| truthy(Some(errors))) {
+                let messages: Vec<&str> =
+                    errors.as_array().into_iter().flatten().map(|error| error.get("message").and_then(Value::as_str).unwrap_or_default()).collect();
+                return Err(InitError::Gh { said: GhSaid::Text(messages.join("; ")), not_found: false });
+            }
+            let found = page.get("data").and_then(|data| data.get("repositoryOwner")).filter(|found| truthy(Some(found)));
+            let Some(found) = found else { return Ok(None) };
+            let connection = found.get("projectsV2").filter(|connection| truthy(Some(connection)));
+            let listed = connection.and_then(|connection| connection.get("nodes")).and_then(Value::as_array);
+            for node in listed.into_iter().flatten().filter(|node| truthy(Some(node))) {
+                let wire: ProjectWire = serde_json::from_value(node.clone()).map_err(|error| InitError::Unreadable(error.to_string()))?;
+                nodes.push(wire.into_node());
+            }
+            let info = connection.and_then(|connection| connection.get("pageInfo"));
+            if !truthy(info.and_then(|info| info.get("hasNextPage"))) {
+                return Ok(Some(nodes));
+            }
+            let cursor = info.and_then(|info| info.get("endCursor")).and_then(Value::as_str);
+            after = Some(cursor.ok_or_else(|| InitError::Unreadable("a page of Projects with more and no cursor".to_owned()))?.to_owned());
+        }
     }
 }
 
@@ -99,37 +145,14 @@ impl InitReads for GhInit {
     }
 
     fn projects(&mut self, owner: &str) -> Result<Option<Vec<ProjectNode>>, InitError> {
-        let mut nodes = Vec::new();
-        let mut after: Option<String> = None;
-        loop {
-            let mut variables = json!({"o": owner});
-            let mut description = format!("gh api graphql -f {} -f o={owner}", described(PROJECTS_QUERY));
-            if let Some(cursor) = &after {
-                variables["after"] = json!(cursor);
-                description.push_str(&format!(" -f after={cursor}"));
-            }
-            let body = json!({"query": PROJECTS_QUERY, "variables": variables}).to_string();
-            let page = parse(&self.run(description, regia_exec::gh::graphql(), Some(body))?)?;
-            if let Some(errors) = page.get("errors").filter(|errors| truthy(Some(errors))) {
-                let messages: Vec<&str> =
-                    errors.as_array().into_iter().flatten().map(|error| error.get("message").and_then(Value::as_str).unwrap_or_default()).collect();
-                return Err(InitError::Gh { said: GhSaid::Text(messages.join("; ")), not_found: false });
-            }
-            let found = page.get("data").and_then(|data| data.get("repositoryOwner")).filter(|found| truthy(Some(found)));
-            let Some(found) = found else { return Ok(None) };
-            let connection = found.get("projectsV2").filter(|connection| truthy(Some(connection)));
-            let listed = connection.and_then(|connection| connection.get("nodes")).and_then(Value::as_array);
-            for node in listed.into_iter().flatten().filter(|node| truthy(Some(node))) {
-                let wire: ProjectWire = serde_json::from_value(node.clone()).map_err(|error| InitError::Unreadable(error.to_string()))?;
-                nodes.push(wire.into_node());
-            }
-            let info = connection.and_then(|connection| connection.get("pageInfo"));
-            if !truthy(info.and_then(|info| info.get("hasNextPage"))) {
-                return Ok(Some(nodes));
-            }
-            let cursor = info.and_then(|info| info.get("endCursor")).and_then(Value::as_str);
-            after = Some(cursor.ok_or_else(|| InitError::Unreadable("a page of Projects with more and no cursor".to_owned()))?.to_owned());
-        }
+        let (gh, work_dir) = (&self.gh, &self.work_dir);
+        Self::projects_through(owner, &mut self.calls, &self.limit, |body| {
+            let gh = gh
+                .as_ref()
+                .map_err(|error| InitError::Unavailable(error.clone()))?;
+            crate::graphql_launch(gh, work_dir, body)
+                .map_err(|error| InitError::Unavailable(error.to_string()))
+        })
     }
 
     fn label_names(&mut self, owner: &str, repo: &str) -> Result<BTreeSet<String>, InitError> {
@@ -212,6 +235,25 @@ fn parse(text: &str) -> Result<Value, InitError> {
     serde_json::from_str(text).map_err(|error| InitError::Unreadable(error.to_string()))
 }
 
+/// What `gh` printed, for the REST calls and the query alike, or what it said when it failed: its stderr,
+/// else its stdout, else only its exit code, and whether that says GitHub has no such thing.
+fn printed(reply: Reply) -> Result<String, InitError> {
+    if !reply.success {
+        let stderr = String::from_utf8_lossy(&reply.stderr);
+        let stdout = String::from_utf8_lossy(&reply.stdout);
+        let text = [pystr::strip(&stderr), pystr::strip(&stdout)]
+            .into_iter()
+            .find(|text| !text.is_empty());
+        let not_found =
+            text.is_some_and(|text| NOT_FOUND.iter().any(|needle| text.contains(needle)));
+        let said = text.map_or(GhSaid::Exit(reply.code.unwrap_or(-1)), |text| {
+            GhSaid::Text(text.to_owned())
+        });
+        return Err(InitError::Gh { said, not_found });
+    }
+    String::from_utf8(reply.stdout).map_err(|error| InitError::Unreadable(error.to_string()))
+}
+
 /// `owner/repo` as a typed value: what reaches argv is a name GitHub allows.
 fn slug(owner: &str, repo: &str) -> Result<RepoSlug, InitError> {
     RepoSlug::parse(&format!("{owner}/{repo}")).map_err(|error| InitError::Unavailable(format!("not a repo of GitHub: {error}")))
@@ -277,7 +319,121 @@ fn described(query: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::mpsc;
+    use std::time::Duration;
+
     use super::*;
+    use crate::tests::reply;
+
+    /// A page of the owner's Projects with the one numbered `number`: the last when `next` is none, else one
+    /// with `next` as its cursor.
+    fn page(number: u64, next: Option<&str>) -> String {
+        let project =
+            json!({"number": number, "id": format!("P{number}"), "title": "Fixture", "url": "u"});
+        let info = json!({"hasNextPage": next.is_some(), "endCursor": next});
+        json!({"data": {"repositoryOwner": {"projectsV2": {"pageInfo": info, "nodes": [project]}}}})
+            .to_string()
+    }
+
+    /// The Project of [`page`].
+    fn project(number: u64) -> ProjectNode {
+        ProjectNode {
+            number,
+            id: format!("P{number}"),
+            title: "Fixture".to_owned(),
+            url: "u".to_owned(),
+            ..ProjectNode::default()
+        }
+    }
+
+    /// #672: a page of the owner's Projects takes a place among the running calls, as the tracker's reads
+    /// and writes do, because it goes through the adapter's one run of `gh api graphql`. With one place,
+    /// held here, the read does not start `gh` until it is given back. The wait for "it did not start" can
+    /// only pass too soon on a slow machine, never fail for it.
+    #[test]
+    fn a_page_of_projects_waits_for_a_place_and_gives_it_back() {
+        let limit = limit::Calls::new(1);
+        let mut calls = Vec::new();
+        let place = limit.start();
+        let (started, hear) = mpsc::channel();
+        std::thread::scope(|scope| {
+            let read = scope.spawn(|| {
+                GhInit::projects_through("example", &mut calls, &limit, |body| {
+                    started.send(body).unwrap();
+                    Ok(reply(true, &page(1, None), ""))
+                })
+            });
+            assert!(
+                hear.recv_timeout(Duration::from_millis(50)).is_err(),
+                "the read ran without a place"
+            );
+            drop(place);
+            let body = hear.recv().expect("the read runs once it has a place");
+            let request = json!({"query": PROJECTS_QUERY, "variables": {"o": "example"}});
+            assert_eq!(serde_json::from_str::<Value>(&body).unwrap(), request);
+            assert_eq!(read.join().unwrap(), Ok(Some(vec![project(1)])));
+        });
+        assert_eq!(calls.len(), 1, "{calls:?}");
+        // The place was given back, even by a read whose launch failed: taking it again would wait for ever
+        // otherwise.
+        let down = || InitError::Unavailable("down".to_owned());
+        let failed = GhInit::projects_through("example", &mut calls, &limit, |_| Err(down()));
+        assert_eq!(failed, Err(down()));
+        drop(limit.start());
+    }
+
+    /// A page after the first names its cursor, in the request and in the log as the prototype logs it, and
+    /// the Projects of every page are read in order. No recorded case reads a second page: the fake `gh`
+    /// answers the owner's Projects with one.
+    #[test]
+    fn a_page_after_the_first_names_its_cursor() {
+        let limit = limit::Calls::new(1);
+        let mut calls = Vec::new();
+        let mut variables = Vec::new();
+        let mut pages = [page(1, Some("cursor-1")), page(2, None)].into_iter();
+        let read = GhInit::projects_through("example", &mut calls, &limit, |body| {
+            let body: Value = serde_json::from_str(&body).unwrap();
+            variables.push(body["variables"].clone());
+            Ok(reply(true, &pages.next().expect("two pages"), ""))
+        });
+        assert_eq!(read, Ok(Some(vec![project(1), project(2)])));
+        let second = json!({"o": "example", "after": "cursor-1"});
+        assert_eq!(variables, [json!({"o": "example"}), second]);
+        let query = described(PROJECTS_QUERY);
+        let first = format!("gh api graphql -f {query} -f o=example");
+        assert_eq!(calls, [first.clone(), format!("{first} -f after=cursor-1")]);
+    }
+
+    /// A run that fails says its stderr, else its stdout, stripped as Python strips them, else only its exit
+    /// code, and whether what it says is a thing GitHub does not have: for the REST calls and the query alike.
+    #[test]
+    fn a_failed_run_says_its_stderr_else_its_stdout_else_its_exit_code() {
+        let failed = |stdout: &str, stderr: &str, code| {
+            let run = reply(false, stdout, stderr);
+            printed(Reply { code, ..run })
+        };
+        let gh = |said, not_found| Err(InitError::Gh { said, not_found });
+        let text = |said: &str| GhSaid::Text(said.to_owned());
+        let refused = failed("out", " gh: Bad credentials (HTTP 401)\n", Some(1));
+        assert_eq!(refused, gh(text("gh: Bad credentials (HTTP 401)"), false));
+        let missing = failed(" gh: HTTP 404: Not Found \n", "", Some(1));
+        assert_eq!(missing, gh(text("gh: HTTP 404: Not Found"), true));
+        assert_eq!(failed("", " \n", Some(4)), gh(GhSaid::Exit(4), false));
+        assert_eq!(
+            failed("", "", None),
+            gh(GhSaid::Exit(-1), false),
+            "a run a signal ended"
+        );
+        assert_eq!(printed(reply(true, "{}", "a warning")), Ok("{}".to_owned()));
+        let unreadable = printed(Reply {
+            stdout: vec![0xff],
+            ..reply(true, "", "")
+        });
+        assert!(
+            matches!(unreadable, Err(InitError::Unreadable(_))),
+            "{unreadable:?}"
+        );
+    }
 
     #[test]
     fn the_query_is_logged_as_the_prototype_logs_it() {
