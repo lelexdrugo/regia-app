@@ -375,9 +375,14 @@ fn line(finding: &Finding) -> String {
     format!("{}: [{}] {} · {} · {}", finding.project, finding.check.id(), finding.location, finding.text, finding.why)
 }
 
+/// How many findings `step finish` lists in its text line before it says how many more there are: the prototype's.
+const STEP_LINES: usize = 3;
+
 /// The checks of `step finish`: on `folder` when it is given, else on the folder of the project's registry, HEAD
 /// against the disk. `unavailable`, with why, when they could not run: they never change the step's exit code.
-pub(crate) fn step_checks(project: &str, folder: Option<&str>, catalog: &Catalog) -> Value {
+/// With the JSON, the text of the step's line: `checks: N findings (…)` and the first of them, or the line that
+/// says they are unavailable (#701).
+pub(crate) fn step_checks(project: &str, folder: Option<&str>, catalog: &Catalog) -> (Value, Vec<String>) {
     let run = || -> Result<Outcome, String> {
         let (thresholds, reason) = thresholds();
         if let Some(reason) = reason {
@@ -394,14 +399,32 @@ pub(crate) fn step_checks(project: &str, folder: Option<&str>, catalog: &Catalog
         compute(&tracked, &projects, Mode::Step, now()?, &thresholds)
     };
     match run() {
-        Ok(outcome) => json!({
-            "total": outcome.findings.len(),
-            "per_check": checks::per_check(&outcome.findings),
-            "findings": outcome.findings,
-            "warnings": outcome.warnings,
-        }),
-        Err(reason) => json!({"unavailable": reason.chars().take(REASON_CHARS).collect::<String>()}),
+        Ok(outcome) => {
+            let value = json!({
+                "total": outcome.findings.len(),
+                "per_check": checks::per_check(&outcome.findings),
+                "findings": outcome.findings,
+                "warnings": outcome.warnings,
+            });
+            (value, step_lines(&outcome.findings, catalog))
+        }
+        Err(reason) => {
+            let reason: String = reason.chars().take(REASON_CHARS).collect();
+            let lines = vec![catalog.message_with("check-unavailable", "reason", &reason)];
+            (json!({"unavailable": reason}), lines)
+        }
     }
+}
+
+/// The summary line of `step finish`, then the first three findings, each on a line of its own, then how many more
+/// there are: as the prototype's `controlli_riga` prints them.
+fn step_lines(findings: &[Finding], catalog: &Catalog) -> Vec<String> {
+    let mut lines = vec![summary(findings, catalog)];
+    lines.extend(findings.iter().take(STEP_LINES).map(|finding| format!("  {}", line(finding))));
+    if findings.len() > STEP_LINES {
+        lines.push(format!("  {}", catalog.message_with("check-more", "count", &(findings.len() - STEP_LINES).to_string())));
+    }
+    lines
 }
 
 /// The contract's name of a reference's kind.

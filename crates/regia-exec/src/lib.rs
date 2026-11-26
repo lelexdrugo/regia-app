@@ -218,7 +218,7 @@ pub mod git {
 
 /// The Python prototype, for the facade and the recorder.
 pub mod python {
-    use crate::{Args, DossierPath, InvalidValue, Text};
+    use crate::{AbsolutePath, Args, DossierPath, InvalidValue, Text};
 
     /// The interpreter's flags for the prototype. `-I` keeps the `PYTHON*` variables, the user's site
     /// packages and the script's folder out (threat model §3.2, T06). The prototype loads its modules
@@ -242,7 +242,18 @@ pub mod python {
     /// option, but the prototype has no use for it, and a value is refused the same wherever it stands
     /// (#568/V2).
     pub fn prototype(script: &DossierPath, argv: &[String]) -> Result<Args, InvalidValue> {
-        let mut args = FLAGS.into_iter().fold(Args::new(), Args::word).value(script);
+        with_argv(FLAGS.into_iter().fold(Args::new(), Args::word).value(script), argv)
+    }
+
+    /// [`prototype`] with the script at an absolute path, for a run that does not start in the dossier's root: the
+    /// facade starts `path` with no `--project` in the caller's folder, which is what that command reads (#701).
+    /// The argv has the same rules; only the script, which `-I` keeps off `sys.path` anyway, is named in full.
+    pub fn prototype_at(script: &AbsolutePath, argv: &[String]) -> Result<Args, InvalidValue> {
+        with_argv(FLAGS.into_iter().fold(Args::new(), Args::word).value(script), argv)
+    }
+
+    /// `args`, which end with the script, then the facade's argv: each element judged as [`prototype`] says.
+    fn with_argv(mut args: Args, argv: &[String]) -> Result<Args, InvalidValue> {
         for item in argv {
             if let Some(option) = item.strip_prefix("--") {
                 let (name, joined) = match option.split_once('=') {

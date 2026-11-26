@@ -1,0 +1,8 @@
+passo alpha: concluso, lock rilasciato
+cursore eventi: t=2026-01-10T08:30:00Z propri.commenti=[41, 43]
+controlli: 5 voci (decisione-senza-flag 1, in-corso-fermo 4)
+  alpha: [decisione-senza-flag] #6 commento 9001 · Decisione: A, as advised. · «Decisione:» firmata chat, senza --per-conto-del-titolare: il controller non la vede
+  alpha: [in-corso-fermo] #5 · a task in progress with no live lease · In corso senza lease viva, issue ferma da 8 giorni (soglia 3)
+  alpha: [in-corso-fermo] #7 · another task in progress, no. 7 · In corso senza lease viva, issue ferma da 8 giorni (soglia 3)
+  … e altre 2 (regia controlla --progetto …)
+dossier: niente da committare

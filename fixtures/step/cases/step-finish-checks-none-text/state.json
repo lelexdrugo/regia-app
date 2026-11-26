@@ -1,0 +1,31 @@
+[
+  {
+    "doc": {
+      "aggiornato": "2026-01-10T09:00:00.000+00:00",
+      "valore": {
+        "propri": {
+          "commenti": [
+            41,
+            43
+          ]
+        },
+        "t": "2026-01-10T08:30:00Z",
+        "v": 1
+      }
+    },
+    "generation": 1,
+    "key": "alpha",
+    "kind": "cursore",
+    "stamped": false
+  },
+  {
+    "doc": {
+      "aggiornato": "2026-01-10T09:00:00.000+00:00",
+      "valore": null
+    },
+    "generation": 2,
+    "key": "alpha:passo",
+    "kind": "cursore",
+    "stamped": false
+  }
+]

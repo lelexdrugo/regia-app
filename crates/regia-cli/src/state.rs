@@ -424,6 +424,7 @@ fn step_finish(args: StepFinishArgs, catalog: &Catalog) -> Result<u8, String> {
         }
     };
     let released = store.release_lock(&project, &holder).map_err(|error| error.to_string())?;
+    let mut checks_text = Vec::new();
     let mut out = json!({
         "ok": true,
         "project": project.as_str(),
@@ -434,7 +435,9 @@ fn step_finish(args: StepFinishArgs, catalog: &Catalog) -> Result<u8, String> {
     if !args.no_push {
         // After the cursor and the lock, before the dossier's block: until the dossier is committed, the state file on
         // disk is compared with HEAD.
-        out["checks"] = crate::check::step_checks(&args.project, args.folder.as_deref().filter(|folder| !folder.is_empty()), catalog);
+        let (checks, lines) = crate::check::step_checks(&args.project, args.folder.as_deref().filter(|folder| !folder.is_empty()), catalog);
+        out["checks"] = checks;
+        checks_text = lines;
         let t = match &cursor {
             EventsCursor::Parts(parts) => parts.t.clone().unwrap_or(Value::Null),
             _ => Value::Null,
@@ -442,7 +445,20 @@ fn step_finish(args: StepFinishArgs, catalog: &Catalog) -> Result<u8, String> {
         let dossier = sync(&folder, &step_commit_message(&project, &t), &args.file, clock.commit_date());
         out["dossier"] = serde_json::to_value(dossier).map_err(|error| error.to_string())?;
     }
-    print(&out, args.json)?;
+    if args.json {
+        return print(&out, true).map(|()| 0);
+    }
+    // The text: the JSON's leaves, but the checks as the prototype's line, after the rest and before the dossier (#701).
+    if let Value::Object(fields) = &out {
+        let leaves = |key: &str, value: &Value| print(&json!({ key: value }), false);
+        for (key, value) in fields.iter().filter(|(key, _)| !matches!(key.as_str(), "checks" | "dossier")) {
+            leaves(key, value)?;
+        }
+        checks_text.iter().for_each(|line| println!("{line}"));
+        if let Some(dossier) = fields.get("dossier") {
+            leaves("dossier", dossier)?;
+        }
+    }
     Ok(0)
 }
 

@@ -14,7 +14,7 @@ use proptest::prelude::*;
 use regia_conformance::{bin_dir, workspace_root};
 use regia_exec::git::{self, CommitField};
 use regia_exec::{
-    Args, DossierPath, Effort, ExecError, GitRef, Launch, Limits, ModelId, Pin, Program, Search, Text, gh, harness,
+    AbsolutePath, Args, DossierPath, Effort, ExecError, GitRef, Launch, Limits, ModelId, Pin, Program, Search, Text, gh, harness,
     python,
 };
 use serde_json::Value;
@@ -103,6 +103,17 @@ fn every_builder_hands_the_program_exactly_its_tokens() {
     for hostile in ["-x", "--Upload-pack=x", "--upload-pack=", "-c core.sshCommand=x", "--", "", "--Upper"] {
         let facade = vec!["brief".to_owned(), hostile.to_owned()];
         assert!(python::prototype(&path, &facade).is_err(), "the facade passed {hostile:?}");
+    }
+    // #701: the script in full, for a run that starts elsewhere than the dossier's root: the flags, that script, and the
+    // same judgement of the argv.
+    let in_full = AbsolutePath::new(&dir.join("regia.py")).unwrap();
+    let report = seen(probe_as(Program::Python).launch(python::prototype_at(&in_full, &facade).unwrap(), &dir));
+    assert_eq!(argv(&report)[..3], ["-X", "utf8", "-I"]);
+    assert_eq!(argv(&report)[3], in_full.as_str());
+    assert_eq!(argv(&report)[4..], facade[..]);
+    for hostile in ["-x", "--Upload-pack=x", "--upload-pack=", "--", "", "--Upper"] {
+        let facade = vec!["brief".to_owned(), hostile.to_owned()];
+        assert!(python::prototype_at(&in_full, &facade).is_err(), "the facade passed {hostile:?}");
     }
 
     // agents: the prompt on stdin and never in argv, the model and the effort as --name=value.

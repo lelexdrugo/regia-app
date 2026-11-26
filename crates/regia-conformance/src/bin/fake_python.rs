@@ -6,7 +6,7 @@
 use std::io::Write;
 use std::process::ExitCode;
 
-use regia_conformance::{FAKE_PYTHON_SIDECAR, FAKE_PYTHON_WRONG_ARGV, Replay, read_json};
+use regia_conformance::{FAKE_PYTHON_SIDECAR, FAKE_PYTHON_WRONG_ARGV, FAKE_PYTHON_WRONG_CWD, Replay, read_json};
 
 fn main() -> ExitCode {
     let exe = std::env::current_exe().expect("own path");
@@ -15,6 +15,13 @@ fn main() -> ExitCode {
     if argv != replay.argv {
         eprintln!("fake python: started with {argv:?}, the case expects {:?}", replay.argv);
         return ExitCode::from(FAKE_PYTHON_WRONG_ARGV);
+    }
+    if let Some(expected) = &replay.cwd {
+        let here = std::env::current_dir().and_then(std::fs::canonicalize);
+        if here.ok() != std::fs::canonicalize(expected).ok() {
+            eprintln!("fake python: started in {:?}, the case expects {expected:?}", std::env::current_dir());
+            return ExitCode::from(FAKE_PYTHON_WRONG_CWD);
+        }
     }
     let _ = std::io::stdout().write_all(replay.stdout.as_bytes());
     let _ = std::io::stderr().write_all(replay.stderr.as_bytes());

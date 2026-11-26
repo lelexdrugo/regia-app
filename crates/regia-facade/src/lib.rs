@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use regia_exec::{DossierPath, ExecError, Launch, Limits, Pin, Program, Search};
+use regia_exec::{AbsolutePath, DossierPath, ExecError, Launch, Limits, Pin, Program, Search};
 use serde::Deserialize;
 use serde_json::{Map, Value};
 
@@ -47,6 +47,8 @@ pub enum FacadeError {
     NoPrototype(String),
     #[error("the prototype could not run: {0}")]
     Exec(#[from] ExecError),
+    #[error("the caller's folder or the prototype's path cannot be read: {0}")]
+    CallersPath(std::io::Error),
     #[error("the prototype ended without an exit code ({0})")]
     NoExitCode(String),
     #[error("the prototype printed invalid JSON: {0}")]
@@ -552,7 +554,7 @@ impl Table {
     pub fn run_prototype(&self, prototype: &PythonPrototype, command: &str, args: &[String]) -> Result<Run, FacadeError> {
         let argv = self.python_argv(command, args)?;
         let json = argv.first().is_some_and(|arg| arg == "--json") && self.command(command)?.output.is_some();
-        let output = prototype.launch(&argv)?.run()?;
+        let output = if reads_the_callers_folder(command, args) { prototype.launch_in_callers_folder(&argv)? } else { prototype.launch(&argv)? }.run()?;
         let exit = output
             .status
             .code()
@@ -566,6 +568,13 @@ impl Table {
         };
         Ok(Run { exit, stdout, stderr: output.stderr })
     }
+}
+
+/// Whether the prototype's answer to `command` depends on the folder it starts in: `path` with no `--project`
+/// resolves a reference in the working folder, which must then be the caller's, as it is for the native `path`
+/// (#448/V3, #701). No other command is started anywhere but the dossier's root.
+fn reads_the_callers_folder(command: &str, args: &[String]) -> bool {
+    command == "path" && !args.iter().any(|arg| arg == "--project" || arg.starts_with("--project="))
 }
 
 /// Where the prototype lives: `tools/regia.py` of the dossier.
@@ -601,6 +610,16 @@ impl PythonPrototype {
         let script = DossierPath::parse(SCRIPT).map_err(ExecError::from)?;
         let args = regia_exec::python::prototype(&script, argv).map_err(ExecError::from)?;
         Ok(self.interpreter()?.launch(args, &self.dossier).limits(PROTOTYPE_LIMITS))
+    }
+
+    /// As [`launch`](Self::launch), but started in the folder of the caller, with the script named in full: for
+    /// the commands that read their working folder (see `reads_the_callers_folder`).
+    pub fn launch_in_callers_folder(&self, argv: &[String]) -> Result<Launch, FacadeError> {
+        let here = std::env::current_dir().map_err(FacadeError::CallersPath)?;
+        let script = std::path::absolute(&self.script).map_err(FacadeError::CallersPath)?;
+        let script = AbsolutePath::new(&script).map_err(ExecError::from)?;
+        let args = regia_exec::python::prototype_at(&script, argv).map_err(ExecError::from)?;
+        Ok(self.interpreter()?.launch(args, &here).limits(PROTOTYPE_LIMITS))
     }
 }
 

@@ -68,6 +68,7 @@ fn dailies_start_reaches_the_prototype_with_its_arguments_and_opens_no_chat() {
             stderr: stderr.to_owned(),
             exit,
             json: false,
+            cwd: None,
         };
         replayed(label, &case, &replay)
     };
