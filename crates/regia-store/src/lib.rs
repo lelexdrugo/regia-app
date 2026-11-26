@@ -9,8 +9,10 @@
 
 mod budget;
 mod clock;
+mod compaction;
 mod cursor;
 mod db;
+mod declaration_reader;
 mod declarations;
 mod folder;
 mod held;
@@ -23,6 +25,7 @@ mod step;
 mod time;
 mod usage;
 mod v1;
+mod work;
 
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -36,6 +39,8 @@ pub use budget::{BudgetError, MIN_INTERVAL_S, NO_VALUE, NOTE_OVERTAKEN, NOTE_RUN
 pub use clock::{Clock, ManualClock, SystemClock};
 pub use cursor::CursorName;
 pub use db::{BUSY_WAIT, Row, SqliteError};
+pub use compaction::{Compacted, CompactionError, CompactionPolicy, compact_declarations};
+pub use declaration_reader::{LogReadError, LoggedDeclaration, declared_instant, read_declarations, split_lines};
 pub use declarations::{Declaration, DeclarationError, Declared, SessionIds, declarations_folder, step_role, write_declaration};
 pub use folder::{database_name, default_folder, is_within, temporary_folder};
 pub use held::{AsHolder, Fenced};
@@ -47,6 +52,7 @@ pub use step::{
     step_commit_message,
 };
 pub use time::{Precision, WallTime};
+pub use work::{WorkCleaned, WorkError, WorkPolicy, clean_work, work_folder};
 pub use usage::{CacheInfo, NO_DATA, ProviderUsage, Reading, Served, TokenState, TokenStatus, UsageStatus, Window, round_to_tenth};
 
 /// The state database of one folder, and the clock its expiries are read on.

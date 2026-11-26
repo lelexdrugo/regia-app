@@ -95,6 +95,21 @@ role = "ruolo"
 ids = [["CLAUDE_CODE_SESSION_ID", "claude"], ["ORCA_AGENT_SESSION_ID", "orca"], ["CODEX_THREAD_ID", "codex"]]
 step_role = "orchestratore"
 
+# The compaction of that log (#471): the files of a session and a process merge into one file a month,
+# `<month_prefix>AAAA-MM.jsonl`, which the prototype's reader reads as any other file of the log. A file written
+# within `quiet_hours` stays as it is. `plan` is the plan of a run, which the reader does not read. Both names are
+# provisional, for the gate of names.
+[compaction]
+month_prefix = "compattate-"
+plan = "compattazione.json"
+quiet_hours = 24
+
+# The work files of a task (the class `passaggio` of the dossier's ADR 0019): `<cache>/<folder>/<project>/<task>/`,
+# removed `after_days` after the task closed. The cache is the system's folder for it (ADR 0019 §5).
+[work]
+folder = "lavoro"
+after_days = 30
+
 # The monotonic expiry the prototype adds to every lock, lease and probe document. `clock` names the
 # implementation of the clock that wrote it: a reader with another one falls back to `expires_at`.
 [monotonic]

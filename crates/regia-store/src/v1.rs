@@ -16,6 +16,8 @@ pub(crate) struct Format {
     pub step: StepKeys,
     pub events: EventsKeys,
     pub declarations: DeclarationKeys,
+    pub compaction: CompactionNames,
+    pub work: WorkNames,
     pub monotonic: MonotonicKeys,
     pub view: View,
     pub budget: BudgetKeys,
@@ -111,6 +113,19 @@ pub(crate) struct DeclarationKeys {
     pub role: String,
     pub ids: Vec<(String, String)>,
     pub step_role: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct CompactionNames {
+    pub month_prefix: String,
+    pub plan: String,
+    pub quiet_hours: i64,
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct WorkNames {
+    pub folder: String,
+    pub after_days: i64,
 }
 
 #[derive(Debug, Deserialize)]
