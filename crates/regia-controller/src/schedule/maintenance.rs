@@ -1,7 +1,7 @@
 //! The maintenance of the machine's state (#471, F29 of the dossier's plan; R15 and R16 of its inventory), a
 //! scheduled operation with no chat and no session:
 //! - the log of declarations compacted by month (`regia_store::compact_declarations`): nothing is deleted from it,
-//!   since the moviola's `sync` reads declarations again for as long as Orca lists their sessions;
+//!   since the moviola's `sync` reads declarations again for as long as the agents' app lists their sessions;
 //! - the tasks' work files removed 30 days after the task closed (`regia_store::clean_work`), the closed tasks read
 //!   from the tracker only when there is a task's folder to look at.
 //!
