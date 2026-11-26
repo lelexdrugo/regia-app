@@ -4,14 +4,21 @@ prototype's own `_leggi_operazioni` and `_operazioni`. It loads the dossier's `t
 nothing there. No chat opens: the launcher of chats is a fake that counts its calls. It refuses the live state folder.
 
     python -X utf8 -I -B schedule_oracle.py --dossier <dossier> --dir <folder> --config <file> --closings <folder>
+        [--at <instant>]...
 
-One JSON line on stdout: the voices of the tick, the operations as `_leggi_operazioni` reads them, the chats asked for.
+Without `--at` one tick at the system's clock; with it, one tick at each instant given (ISO, in order), on the
+machine's local day as the prototype counts it (#732).
+
+One JSON line on stdout: the voices of the ticks (name and action), each tick's operations in full (`records`), the
+operations as `_leggi_operazioni` reads them after the last, the chats asked for, the first error, and the prototype's
+limits of the days skipped (`limits`).
 """
 import argparse
 import json
 import os
 import sys
 import time
+from datetime import datetime
 from pathlib import Path
 
 
@@ -33,7 +40,9 @@ def main():
     parser.add_argument("--dir", required=True)
     parser.add_argument("--config", required=True)
     parser.add_argument("--closings", required=True)
+    parser.add_argument("--at", action="append", default=[])
     a = parser.parse_args()
+    instants = [datetime.fromisoformat(at.replace("Z", "+00:00")).timestamp() for at in a.at]
     folder = Path(a.dir).resolve()
     if any(folder == live.resolve() for live in live_folders()):
         print(json.dumps({"error": "the live state folder"}), flush=True)
@@ -55,13 +64,20 @@ def main():
     ctl.dir_chiusure = Path(a.closings)
     ctl.prendi_lock()
     try:
-        rec = {}
-        ctl._operazioni(rec, time.time())
+        ticks = []
+        for t0 in instants or [time.time()]:
+            rec = {}
+            ctl._operazioni(rec, t0)
+            ticks.append(rec)
         ops = ctl._leggi_operazioni()
     finally:
         ctl.rilascia_lock()
-    voices = [[v["nome"], v["azione"]] for v in rec.get("operazioni", [])]
-    print(json.dumps({"voices": voices, "ops": ops, "calls": calls, "error": rec.get("operazioni_errore")}), flush=True)
+    records = [rec.get("operazioni", []) for rec in ticks]
+    voices = [[v["nome"], v["azione"]] for record in records for v in record]
+    error = next((rec["operazioni_errore"] for rec in ticks if rec.get("operazioni_errore")), None)
+    limits = {"lookback_days": C.SALTATE_LOOKBACK_GIORNI, "skipped_kept": C.SALTATE_TENUTE}
+    print(json.dumps({"voices": voices, "records": records, "ops": ops, "calls": calls, "error": error,
+                      "limits": limits}), flush=True)
     return 0
 
 
