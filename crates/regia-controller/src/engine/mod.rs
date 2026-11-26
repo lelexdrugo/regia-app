@@ -187,13 +187,53 @@ pub trait Steps: Send + Sync {
     fn suspended_projects(&self) -> BTreeSet<String>;
 }
 
-/// What runs before the precheck (the resume of suspended sessions, #470): true when the tick ends there,
-/// with its decision written in the record.
+/// What runs before the precheck: the resume of suspended sessions (#470) and the scheduled operations (#469).
+/// True when the tick ends there, with its decision written in the record.
 pub trait BeforePrecheck: Send {
     /// # Errors
     ///
     /// As a tick's.
-    fn before(&mut self, record: &mut Map<String, Value>, now: f64) -> Result<bool, TickError>;
+    fn before(&mut self, record: &mut Map<String, Value>, tick: &TickContext<'_>) -> Result<bool, TickError>;
+
+    /// What it adds to the state document after a tick, by the document's keys: the operations and their chats
+    /// to open (#469), the sessions to resume (#470). Nothing by default.
+    fn status(&self, _status: &mut Map<String, Value>) {}
+}
+
+/// What a hook before the precheck gets of its tick: the tick's instant and number, the tick's own guard of D1,
+/// and the projects whose session is suspended or resuming. A hook with an effect (a chat, a resume) calls
+/// [`TickContext::guard`] right before it, outside its own error handling, as the tick's launch points do.
+pub struct TickContext<'a> {
+    controller: &'a Controller,
+    now: f64,
+}
+
+impl TickContext<'_> {
+    /// The tick's instant, in seconds since the epoch.
+    #[must_use]
+    pub fn now(&self) -> f64 {
+        self.now
+    }
+
+    #[must_use]
+    pub fn round(&self) -> i64 {
+        self.controller.round
+    }
+
+    /// The tick's guard of D1, [`Controller::guard`].
+    ///
+    /// # Errors
+    ///
+    /// The lock is lost, or the state cannot be written.
+    pub fn guard(&self) -> Result<(), TickError> {
+        self.controller.guard()
+    }
+
+    /// The projects with a session suspended or resuming, from the steps registry.
+    #[must_use]
+    pub fn suspended_projects(&self) -> BTreeSet<String> {
+        self.controller.ports.steps.suspended_projects()
+    }
 }
 
 /// A launch's receipt as the prototype's launcher gives it, whatever the surface.
@@ -333,7 +373,7 @@ pub struct Controller {
     options: Options,
     ports: Ports,
     wake_up: WakeUp,
-    before_precheck: Option<Box<dyn BeforePrecheck>>,
+    before_precheck: Vec<Box<dyn BeforePrecheck>>,
     round: i64,
     alive: Vec<AliveStep>,
     unknown_budget: UnknownBudget,
@@ -405,13 +445,13 @@ fn wake_value(attempt: &WakeAttempt) -> Value {
 impl Controller {
     #[must_use]
     pub fn new(options: Options, ports: Ports, wake_up: WakeUp) -> Controller {
-        Controller { options, ports, wake_up, before_precheck: None, round: 0, alive: Vec::new(), unknown_budget: UnknownBudget::default() }
+        Controller { options, ports, wake_up, before_precheck: Vec::new(), round: 0, alive: Vec::new(), unknown_budget: UnknownBudget::default() }
     }
 
-    /// What runs before the precheck, and may end the tick there.
+    /// What runs before the precheck, and may end the tick there: after the hooks given before it.
     #[must_use]
     pub fn with_before_precheck(mut self, hook: Box<dyn BeforePrecheck>) -> Controller {
-        self.before_precheck = Some(hook);
+        self.before_precheck.push(hook);
         self
     }
 
@@ -501,13 +541,14 @@ impl Controller {
         record.insert(r.launched.clone(), json!([]));
         record.insert(r.budget.clone(), Value::Null);
         self.guard()?;
-        // The resume of suspended sessions (#470) and the scheduled operations (#469) go here, in this order.
-        let mut hook = self.before_precheck.take();
-        let ended = match hook.as_mut() {
-            Some(hook) => hook.before(&mut record, t0),
-            None => Ok(false),
+        // The resume of suspended sessions (#470) and the scheduled operations (#469) go here, in this order: each
+        // runs, the tick ends here when one says so, and the first error stops the others, as the prototype's.
+        let mut hooks = std::mem::take(&mut self.before_precheck);
+        let ended = {
+            let context = TickContext { controller: self, now: t0 };
+            hooks.iter_mut().try_fold(false, |ended, hook| Ok::<bool, TickError>(hook.before(&mut record, &context)? || ended))
         };
-        self.before_precheck = hook;
+        self.before_precheck = hooks;
         if ended? {
             self.guard()?;
             // No precheck in this tick, so no tick of the series of a stall: the signal says so to every project.
@@ -811,7 +852,7 @@ impl Controller {
     }
 
     /// The state document after the tick of `record`, as the prototype's state file of the controller: the host
-    /// writes it (#468). The sessions to resume and the scheduled operations are empty until #469 and #470.
+    /// writes it (#468). The hooks before the precheck fill their keys (#469, #470); without them they are empty.
     #[must_use]
     pub fn status(&self, record: &Value, host: &Host) -> Value {
         let (s, r, b) = (&words().status, &words().record, &words().budget);
@@ -840,6 +881,9 @@ impl Controller {
         status.insert(s.to_open.clone(), json!([]));
         status.insert(s.operations.clone(), json!({}));
         status.insert(s.wake.clone(), self.wake_up.last().map_or(Value::Null, wake_value));
+        for hook in &self.before_precheck {
+            hook.status(&mut status);
+        }
         Value::Object(status)
     }
 }

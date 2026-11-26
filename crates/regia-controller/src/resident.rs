@@ -112,6 +112,40 @@ impl Sleep for SystemSleep {
     }
 }
 
+/// How often a [`StopSleep`] looks at its flag.
+const STOP_LOOK: Duration = Duration::from_millis(100);
+
+/// The system's sleep, cut short by a stop: it looks at the flag every tenth of a second, so a stop asked during
+/// the wait (Ctrl+C, #468/V3) ends it at once instead of at its slice's end.
+#[derive(Debug, Clone)]
+pub struct StopSleep {
+    stop: Arc<AtomicBool>,
+}
+
+impl StopSleep {
+    #[must_use]
+    pub fn new(stop: Arc<AtomicBool>) -> StopSleep {
+        StopSleep { stop }
+    }
+}
+
+impl Sleep for StopSleep {
+    fn sleep(&self, secs: f64) {
+        if !(secs.is_finite() && secs > 0.0) {
+            return;
+        }
+        let span = Duration::try_from_secs_f64(secs).unwrap_or(Duration::MAX);
+        let start = std::time::Instant::now();
+        while !self.stop.load(Ordering::SeqCst) {
+            let left = span.saturating_sub(start.elapsed());
+            if left.is_zero() {
+                return;
+            }
+            std::thread::sleep(left.min(STOP_LOOK));
+        }
+    }
+}
+
 /// What a resident tells its user, as data: the command renders it in the user's language (#469).
 #[derive(Debug, Clone, PartialEq)]
 pub enum Notice {
@@ -128,6 +162,79 @@ pub enum Notice {
     LogNotWritten(String),
     /// The state file could not be written: the resident goes on.
     StatusNotWritten(String),
+}
+
+/// The precheck of a tick, as its summary names it.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PrecheckSummary {
+    /// None when the run did not end.
+    pub exit: Option<i64>,
+    pub outcome: Option<String>,
+    pub reason: Option<String>,
+}
+
+/// The token's wake-up of a tick, as its summary names it.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct WakeSummary {
+    pub ok: bool,
+    pub error: Option<String>,
+    /// The token's expiry changed across it.
+    pub renewed: bool,
+}
+
+/// A tick's line by meaning, as the prototype's summary of a tick names it (#468/V2): the command renders it in its
+/// user's language. The decision, the outcome and the actions are the format's words, data and not text.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Summary {
+    pub round: i64,
+    pub t: String,
+    /// None when the tick ended before the precheck.
+    pub precheck: Option<PrecheckSummary>,
+    pub decision: Option<String>,
+    /// The steps launched: the project, and the surface's word.
+    pub launched: Vec<(String, String)>,
+    /// The scheduled operations that did something: the name, and the action.
+    pub operations: Vec<(String, String)>,
+    pub wake: Option<WakeSummary>,
+    /// The tick followed a suspension of the machine.
+    pub wakeup: bool,
+}
+
+impl Summary {
+    /// The summary of a tick's line.
+    #[must_use]
+    pub fn of(record: &Value) -> Summary {
+        let (r, l, w) = (&words().record, &words().launched, &words().wake);
+        let k = &r.precheck_keys;
+        let text = |value: Option<&Value>| value.and_then(Value::as_str).map(str::to_owned);
+        let precheck = record.get(&r.precheck).filter(|precheck| precheck.is_object()).map(|precheck| PrecheckSummary {
+            exit: precheck.get(&k.exit).and_then(Value::as_i64),
+            outcome: text(precheck.get(&k.outcome)),
+            reason: text(precheck.get(&k.reason)),
+        });
+        let launched = record
+            .get(&r.launched)
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .map(|launch| (text(launch.get(&l.project)).unwrap_or_default(), text(launch.get(&l.adapter)).unwrap_or_default()))
+            .collect();
+        let wake = record.get(&r.wake).filter(|wake| wake.is_object()).map(|wake| WakeSummary {
+            ok: wake.get(&w.ok).and_then(Value::as_bool).unwrap_or(false),
+            error: text(wake.get(&w.error)),
+            renewed: wake.get(&w.renewed).and_then(Value::as_bool).unwrap_or(false),
+        });
+        Summary {
+            round: record.get(&r.round).and_then(Value::as_i64).unwrap_or(0),
+            t: text(record.get(&r.t)).unwrap_or_default(),
+            precheck,
+            decision: text(record.get(&r.decision)),
+            launched,
+            operations: crate::schedule::line_operations(record),
+            wake,
+            wakeup: record.get(&r.wakeup).and_then(Value::as_bool).unwrap_or(false),
+        }
+    }
 }
 
 /// Where a resident's notices go.
@@ -283,7 +390,7 @@ enum Waited {
 pub struct Resident {
     config: Config,
     ports: HostPorts,
-    before_precheck: Option<Box<dyn BeforePrecheck>>,
+    before_precheck: Vec<Box<dyn BeforePrecheck>>,
     holder: Holder,
     started: f64,
 }
@@ -345,14 +452,14 @@ impl Resident {
     pub fn new(config: Config, ports: HostPorts) -> Resident {
         let holder = Holder::new(format!("{}-{}-{}", words().reserved_project, config.pid, random_id())).expect("a holder with letters");
         let started = ports.clock.now().unix_secs_f64();
-        Resident { config, ports, before_precheck: None, holder, started }
+        Resident { config, ports, before_precheck: Vec::new(), holder, started }
     }
 
-    /// What runs in each tick before the precheck, and may end the tick there: the resume of the suspended
-    /// sessions (#470) and the scheduled operations (#469).
+    /// What runs in each tick before the precheck, and may end the tick there, after the hooks given before it:
+    /// the resume of the suspended sessions (#470), then the scheduled operations (#469).
     #[must_use]
     pub fn with_before_precheck(mut self, hook: Box<dyn BeforePrecheck>) -> Resident {
-        self.before_precheck = Some(hook);
+        self.before_precheck.push(hook);
         self
     }
 
@@ -424,7 +531,7 @@ impl Resident {
         };
         let wake_up = WakeUp::new(self.ports.consent).after(earlier.wake);
         let mut controller = Controller::new(self.config.options.clone(), ports, wake_up).with_unknown_budget(earlier.unknown);
-        if let Some(hook) = self.before_precheck.take() {
+        for hook in std::mem::take(&mut self.before_precheck) {
             controller = controller.with_before_precheck(hook);
         }
         for step in steps.launched_steps(self.started) {

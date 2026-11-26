@@ -1,0 +1,139 @@
+# Format v1 of the controller's scheduled operations (F133, F148-F153 and F256 of the dossier's inventory): the
+# words of the prototype's `config/controller.json`, of the cursors `operazioni` and `avvia-giornalieri` of the
+# reserved project, of the operations' entries in the line of a tick and in `controller-stato.json`, and of the
+# closing files of the dailies' chat. Both controllers read and write them while they coexist on one state
+# folder, and the Python brief reads the state file, so they are data, not identifiers.
+
+version = 1
+
+# The configuration, relative to the regia's home (the prototype's repo, `REGIA_HOME`), when the command names
+# no other file.
+config = "config/controller.json"
+
+# How far back the days an operation missed are looked for after a long absence, and how many its entry keeps.
+lookback_days = 14
+skipped_kept = 10
+
+# The operation the rule of one chat waiting applies to (#209 of the dossier): its closing file is the procedure's.
+dailies = "giornalieri"
+
+# The surface a scheduled chat opens on: one where its owner sees it. Never `auto`, whose fallback is a session
+# with nobody in front of it.
+chat_surface = "orca"
+
+# What the state keeps of a reason, in characters, and of the configuration's error about a file.
+reason_chars = 300
+file_error_chars = 200
+
+# The configuration's document and the keys of each operation.
+[config_keys]
+operations = "operazioni"
+name = "nome"
+hour = "ora"
+days = "giorni"
+action = "azione"
+prompt = "prompt"
+spec = "spec"
+folder = "cartella"
+model = "modello"
+effort = "effort"
+active = "attiva"
+# The levers of an idea search: the projects it looks at and the ideas a session proposes, from `ideas_min` to
+# `ideas_max`.
+projects = "progetti"
+ideas = "idee"
+ideas_min = 1
+ideas_max = 5
+
+# The days of an operation: Monday first, as Python's `weekday()`; a span may pass Sunday (`ven-lun`).
+[days]
+names = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"]
+every = ["tutti", "*", "ogni-giorno"]
+default = "tutti"
+
+[actions]
+chat = "chat"
+# The chronicler's operation (#59 of the dossier): checked as the prototype checks it; it runs with #493.
+chronicler = "cronista"
+# The idea search (#273 of the dossier, ADR 0029): checked as the prototype checks it, and not run; whether the
+# product runs it is to be decided (F315-F317 of the dossier's inventory).
+idea_search = "cerca-idee"
+
+# The cursors with a name of the reserved project: the operations done, and the last start of the dailies by hand
+# (`regia giornalieri avvia`, which writes it).
+[cursor]
+operations = "operazioni"
+started = "avvia-giornalieri"
+v = "v"
+ops = "ops"
+
+# An operation's entry in the cursor.
+[entry]
+counted = "contabilizzato"
+skipped = "saltate"
+day = "giorno"
+outcome = "esito"
+t = "t"
+attempts = "tentativi"
+last_launched = "ultima_lanciata"
+open_since = "aperta_dal"
+reason = "motivo"
+origin = "origine"
+session = "sessione"
+# Where the chat of `ultima_lanciata` came from: this schedule.
+scheduled = "orario"
+
+[outcomes]
+in_progress = "in-corso"
+launched = "lanciata"
+started = "avviata"
+to_open = "da-aprire"
+error = "errore"
+previous_open = "saltata-precedente-aperta"
+
+# The operations in the line of a tick.
+[voices]
+operations = "operazioni"
+config_errors = "operazioni_config"
+error = "operazioni_errore"
+name = "nome"
+action = "azione"
+days = "giorni"
+t = "t"
+outcome = "esito"
+open_since = "aperta_dal"
+reason = "motivo"
+adapter = "adapter"
+session = "sessione"
+log = "log"
+
+[voices.actions]
+skipped = "saltata"
+launched = "lanciata"
+already_started = "gia-avviata-oggi"
+already_done = "gia-eseguita-oggi"
+postponed_suspended = "rinviata-sospesa"
+previous_open = "saltata-precedente-aperta"
+to_open = "da-aprire"
+launch_error = "errore-lancio"
+
+# An entry of `da_aprire` in the state file: a chat of today the owner opens by hand.
+[to_open]
+name = "nome"
+day = "giorno"
+outcome = "esito"
+reason = "motivo"
+prompt = "prompt"
+folder = "cartella"
+attempts = "tentativi"
+
+# The closing files of the dailies' chat: `<folder>/.regia/giornalieri/AAAA-MM-GG-HHMM.md`, named by the UTC minute
+# the chat started (the procedure's §7).
+[closing]
+folder = ".regia/giornalieri"
+extension = ".md"
+
+# The sentences an entry keeps as its reason, in English; `{t}` and `{folder}` are filled in.
+[reasons]
+no_chat = "the cli launcher opens no chat: an interactive chat opens only on Orca"
+previous_open = "the chat opened at {t} has no closing file in {folder} yet"

@@ -14,6 +14,8 @@ path = "src/main.rs"
 chrono.workspace = true
 clap.workspace = true
 regia-agents.workspace = true
+# The controller's engine and its resident, which `controller run` hosts (ADR 0001 §7).
+regia-controller = { path = "../regia-controller" }
 regia-core.workspace = true
 regia-exec.workspace = true
 regia-facade.workspace = true
