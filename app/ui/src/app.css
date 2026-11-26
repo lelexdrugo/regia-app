@@ -1527,6 +1527,75 @@ a.reel-name:hover {
   overflow-wrap: anywhere;
 }
 
+/* The story as text (#490), under the panel at the playhead: closed, one line; open, a scrolling panel of its own. */
+.story-text {
+  flex: none;
+  min-width: 0;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.story-text[open] {
+  max-height: 40vh;
+  overflow: auto;
+}
+
+.story-text > summary {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.story-text h3 {
+  margin: 12px 0 4px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+.story-text p {
+  margin: 4px 0;
+  font-size: var(--fs-small);
+}
+
+.story-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  font-size: var(--fs-small);
+  list-style: none;
+}
+
+.story-list li {
+  overflow-wrap: anywhere;
+}
+
+.story-text .sep {
+  color: var(--faint);
+}
+
+.story-kv {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 2px 12px;
+  margin: 0 0 6px;
+  font-size: var(--fs-small);
+}
+
+.story-kv dt {
+  color: var(--muted);
+}
+
+.story-kv dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .at-date .link,
 .lane-toggle {
   padding: 0;
@@ -1692,5 +1761,36 @@ a.reel-name:hover {
     transition: none !important;
     animation: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Forced colours (#490): a contrast theme of the system repaints the page in its own few colours. An icon is a mask
+   over its background, which forced colours would paint Canvas, the colour around it: it takes the system's colour of
+   the text it stands in, named, since an element that keeps its own colours sees the tokens' through currentColor.
+   The stage's canvas is drawn in the system's colours by its palette (lib/moviola/palette.ts), and its focus ring is
+   the system's highlight. Nothing here touches tokens.css, which prove/contrast.js keeps as the dossier's file. */
+@media (forced-colors: active) {
+  .icon,
+  .mark-gate,
+  .mark-head {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+
+  a .icon {
+    background-color: LinkText;
+  }
+
+  button .icon {
+    background-color: ButtonText;
+  }
+
+  .stage canvas:focus-visible {
+    outline: 2px solid Highlight;
+  }
+
+  /* The direction chosen was a tint of the card, which forced colours drop. */
+  .lane-card.chosen {
+    border-color: Highlight;
   }
 }

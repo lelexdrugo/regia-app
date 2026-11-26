@@ -10,6 +10,11 @@
   // playhead under it; and, while no moment is open, the project's directions in the frame's place.
   // The level of detail (#489): zoomed out, the stage draws each lane's moments in groups, and a line under it says
   // how many moments the groups in view hold, so no moment leaves the view without a word.
+  // The list of moments (#490): the canvas is a listbox of every moment the filters keep, a window of it in the page,
+  // the moment chosen named with aria-activedescendant (lib/moviola/listbox.ts), and at the zoom of groups each group
+  // named once (#489/V9). While the stage has the focus the list says the moment chosen, so the status line and the
+  // panel at the playhead stop speaking; a hidden line says when the level of detail changes. Under the panel at the
+  // playhead, the story as text (StoryText.svelte), the prototype's `esporta` in the page.
   import { onMount, tick, untrack } from "svelte";
 
   import type { Catalog } from "../../lib/i18n";
@@ -19,6 +24,7 @@
   import { type Model, prepare, stateAt } from "../../lib/moviola/model";
   import { isEmpty, type Names, parseQuery, search, stepWithin } from "../../lib/moviola/search";
   import { type GroupsShown, Stage, type ViewRange } from "../../lib/moviola/stage";
+  import { listText, type ListMode } from "../../lib/moviola/listbox";
   import { day, dayKey, KIND_ID, LANE_ID, laneName, timecode } from "../../lib/moviola/text";
   import type { MoviolaSource, Snapshot } from "../../lib/moviola/types";
   import { href } from "../../lib/route";
@@ -26,6 +32,7 @@
   import Directions from "./Directions.svelte";
   import Filters from "./Filters.svelte";
   import Frame from "./Frame.svelte";
+  import StoryText from "./StoryText.svelte";
 
   interface Props {
     strings: Catalog;
@@ -43,10 +50,12 @@
     name: string;
     /** Off only for the harness's negative control of the themes. */
     observeTheme?: boolean;
+    /** The list of moments as the product has it, or a negative control of the harness. */
+    listMode?: ListMode;
     onsettled?: () => void;
   }
 
-  let { strings, source, project, moment = null, query = null, filterMode = null, hide = null, lane = null, name, observeTheme = true, onsettled }: Props =
+  let { strings, source, project, moment = null, query = null, filterMode = null, hide = null, lane = null, name, observeTheme = true, listMode = "window", onsettled }: Props =
     $props();
 
   type State = { kind: "loading" } | { kind: "ready"; model: Model } | { kind: "failed"; reason: string };
@@ -62,6 +71,12 @@
   let shown: ViewRange | null = $state(null);
   let grouped = $state<GroupsShown | null>(null);
   const groupsSaid = $derived(grouped ? strings.message("moviola-groups", { moments: grouped.moments, groups: grouped.groups }) : "");
+  // The stage holds the focus: the list says the moment chosen, and the live lines keep quiet (#490). The hidden line
+  // says when the stage starts or stops drawing groups, and nothing else.
+  let onStage = $state(false);
+  let levelSaid = $state("");
+  let wasGrouped: boolean | null = null;
+  const listing = $derived(listMode !== "none");
   // The sidecar of the moment chosen: only the answer for the one still chosen counts.
   let notes: Notes = $state({ kind: "loading" });
   let snapshot: Snapshot | null = $state.raw(null);
@@ -261,6 +276,8 @@
       dayKey,
       ...(strip ? { strip } : {}),
       observeTheme: untrack(() => observeTheme),
+      list: untrack(() => listText(strings, model)),
+      listMode: untrack(() => listMode),
       onchange: (moved) => {
         t = moved.t;
         range = moved.rangeValue();
@@ -269,7 +286,12 @@
         selected = moved.selected;
       },
       onview: (part) => (shown = part),
-      ongroups: (groups) => (grouped = groups),
+      ongroups: (groups) => {
+        grouped = groups;
+        const now = groups !== null;
+        if (wasGrouped !== null && now !== wasGrouped) levelSaid = strings.message(now ? "moviola-list-level-groups" : "moviola-list-level-detail");
+        wasGrouped = now;
+      },
     });
     stage = made;
     void made.ready.then(async () => {
@@ -289,6 +311,7 @@
     const catalog = strings;
     if (stage && view.kind === "ready") {
       stage.setText(words(catalog, view.model));
+      stage.setListText(listText(catalog, view.model));
     }
   });
 
@@ -440,8 +463,12 @@
         <canvas
           bind:this={canvas}
           tabindex="0"
+          role={listing ? "listbox" : undefined}
+          aria-orientation={listing ? "horizontal" : undefined}
           aria-label={strings.message("moviola-stage")}
           aria-describedby={grouped ? "moviola-status moviola-groups" : "moviola-status"}
+          onfocus={() => (onStage = true)}
+          onblur={() => (onStage = false)}
         ></canvas>
       </div>
       <div class="transport">
@@ -473,7 +500,7 @@
           <span class="icon icon-fit" aria-hidden="true"></span>
         </button>
       </div>
-      <p class="stage-status" id="moviola-status" aria-live="polite" data-selected={node ? node.milestone.id : ""}>
+      <p class="stage-status" id="moviola-status" aria-live={onStage && listing ? "off" : "polite"} data-selected={node ? node.milestone.id : ""}>
         {#if node}
           <span class="reel-kind">{strings.message(KIND_ID[node.milestone.kind])}</span>
           <span class="stage-title" data-raw title={node.milestone.title}>{node.milestone.title}</span>
@@ -484,10 +511,12 @@
       </p>
       <!-- Always there, empty at the zoom of detail, one line: the stage keeps its size when the zoom crosses into groups. -->
       <p class="stage-groups" id="moviola-groups" data-groups={grouped ? `${grouped.groups} ${grouped.moments}` : ""} title={groupsSaid || undefined}>{groupsSaid}</p>
+      <p class="sr" id="moviola-level" aria-live="polite" data-said={levelSaid}>{levelSaid}</p>
     </section>
     {#if at}
-      <AtDate {strings} {model} state={at} {decisions} onselect={(index) => stage?.select(index)} />
+      <AtDate {strings} {model} state={at} {decisions} live={!(onStage && listing)} onselect={(index) => stage?.select(index)} />
     {/if}
+    <StoryText {strings} {model} />
     </div>
     {#if current}
       <Frame {strings} {model} frame={current} {notes} {snapshot} onselect={(index) => stage?.select(index)} onclose={close} />

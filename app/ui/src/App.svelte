@@ -7,6 +7,7 @@
   import type { Done } from "./lib/brief";
   import type { Catalog } from "./lib/i18n";
   import { draw, type Look, type Saving } from "./lib/look";
+  import type { ListMode } from "./lib/moviola/listbox";
   import type { MoviolaSource } from "./lib/moviola/types";
   import { href, parse, type Route, same, type Section } from "./lib/route";
   import Brief from "./screens/Brief.svelte";
@@ -36,11 +37,13 @@
     moviola: MoviolaSource;
     /** Off only for the harness's negative control: a moviola that does not redraw on a new direction. */
     observeTheme?: boolean;
+    /** The list of moments as the product has it, or a negative control of the harness (lib/moviola/listbox.ts). */
+    listMode?: ListMode;
     /** Called each time the screen the address names has drawn: the brief once its data or error is in the DOM. */
     onsettled?: () => void;
   }
 
-  let { strings, catalogFor, product, load, done = [], settings, save, quota = null, moviola, observeTheme = true, onsettled }: Props =
+  let { strings, catalogFor, product, load, done = [], settings, save, quota = null, moviola, observeTheme = true, listMode = "window", onsettled }: Props =
     $props();
 
   let route: Route = $state(parse(location.hash));
@@ -206,6 +209,7 @@
         hide={route.hide}
         lane={route.lane}
         {observeTheme}
+        {listMode}
         {...onsettled ? { onsettled } : {}}
       />
     {:else if route.section === "settings"}
