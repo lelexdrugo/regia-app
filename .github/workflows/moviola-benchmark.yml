@@ -1,9 +1,9 @@
 name: moviola-benchmark
 
 # The moviola's bench (crates/regia-moviola-bench, README.md there) on the runner images: the same `npm ci` and
-# `npm run bench` as on a desktop, with shorter phases. By hand only, never on a push: minutes are a budget on a
-# private repo, and macOS costs about ten times Linux (one run of Linux and macOS is about 0.8 USD of the monthly
-# allowance). Runners are virtual machines without a GPU of their own: their numbers show that the bench runs in
+# `npm run bench` as on a desktop, with shorter phases. By hand only, never on a push: the runs are slow, and on a
+# private repo minutes are a budget where macOS costs about ten times Linux (this repository is public, and its
+# minutes are not billed). Runners are virtual machines without a GPU of their own: their numbers show that the bench runs in
 # each engine, and are recorded without a verdict (the dossier's docs/app/piano/traguardi.md).
 on:
   workflow_dispatch:

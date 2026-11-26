@@ -1,4 +1,5 @@
-// The synthetic timelines of the moviola's quick check and of its proofs (#486, #489): the renderer spike's seeded
+// The synthetic timelines of the moviola's proofs and of the list's bench (#486, #489; #486's quick check of the time
+// per frame is now crates/regia-moviola-bench, #683): the renderer spike's seeded
 // generator (commit 84871ea of regia-app's spike/moviola-renderer, src/dataset.js, and src/shape.json, the numeric
 // shape of the real stores of two dossiers), in the core's shape. x1 is the spike's 27 milestones and 128 aggregates
 // on 8 lanes over 18 days, x10 ten times the milestones and aggregates on 16 lanes over 91 days. Synthetic only: no
