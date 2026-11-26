@@ -15,6 +15,12 @@ export function isWsl(procVersion, env) {
   return /microsoft|wsl/i.test(procVersion ?? '') || Boolean(env.WSL_DISTRO_NAME || env.WSL_INTEROP);
 }
 
+/** What systemd-detect-virt printed: the hypervisor, or "none" on bare metal, where it exits with 1. Both are an
+ * answer, so the exit status does not count; no output at all (no such command) is unknown. */
+export function virtualOf(stdout) {
+  return (stdout ?? '').trim().split('\n')[0].trim() || 'unknown';
+}
+
 /** The lines of `glxinfo -B` that say what rasterises: the renderer and whether it is accelerated. */
 export function glxSummary(text) {
   const line = (key) => (text ?? '').split('\n').find((l) => l.trim().startsWith(key))?.split(':').slice(1).join(':').trim() ?? null;
@@ -29,7 +35,7 @@ function linux() {
     system: release ?? `Linux ${os.release()}`,
     wsl: isWsl(procVersion, process.env),
     wslg: existsSync('/mnt/wslg'),
-    virtual: run('systemd-detect-virt', []) ?? 'unknown',
+    virtual: virtualOf(spawnSync('systemd-detect-virt', [], { encoding: 'utf8', timeout: 20000 }).stdout),
     gpu: glxSummary(glxinfo),
     glxinfo,
   };

@@ -1,6 +1,7 @@
 // results.json -> raw.csv (one row per block, renderer, scale, repetition and phase), summary.json and summary.md:
 // the renderer spike's scripts/analyze.mjs (commit 84871ea), with the rows of T5 (docs/app/piano/traguardi.md of the
 // dossier) and their thresholds where this engine is the one the row names, and the verdict of the sanity check.
+// The thresholds and the late frames use the display's interval that the frames ran at (`displayInterval`).
 // Exits 1 when the sanity check fails or did not run in full, since then the numbers do not count (criteri.md).
 //
 //   node scripts/analyze.mjs <results-dir>...
@@ -11,9 +12,32 @@ import { fileURLToPath } from 'node:url';
 export const PHASES = ['pan', 'zoom', 'playhead', 'hover'];
 /** A cell with fewer frames than this is not reported: percentiles of a handful of frames mean nothing. */
 export const MIN_N = 30;
+/** A frame shorter than this share of the calibrated interval cannot come from a display at the calibrated rate. */
+export const FAST = 0.75;
+/** The share of a block's frames that must be that short for the display to have run faster than calibrated. */
+export const FAST_SHARE = 0.25;
 
 const q = (sorted, p) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))];
 const fmt = (v, d = 1) => (Number.isFinite(v) ? v.toFixed(d) : 'n/a');
+
+/**
+ * The display's refresh interval for a block's verdicts (README.md, "Read the result"). The harness calibrates it
+ * before the block on a second of empty frames, and Windows lowers a dynamic refresh rate while nothing moves: the
+ * calibration can read 60 Hz on a 120 Hz display while the stage's frames run at 120 (#489). A display cannot hand
+ * over a frame sooner than its interval, and jitter puts few frames there (at most 2 % under 0.75 intervals on the
+ * macOS runner, the jitteriest seen). So when at least a quarter of the block's frames are shorter than 0.75
+ * calibrated intervals, the display ran faster, and its interval is the median of those frames; otherwise the
+ * calibration stands. The interval only ever goes down: a slow renderer cannot raise it.
+ */
+export function displayInterval(calibrated, frames) {
+  const fast = frames.filter((v) => v < FAST * calibrated).sort((a, b) => a - b);
+  const share = frames.length ? fast.length / frames.length : 0;
+  const ran = frames.length >= MIN_N && share >= FAST_SHARE ? q(fast, 0.5) : null;
+  return { ms: ran ?? calibrated, calibrated, fast_pct: 100 * share, corrected: ran !== null };
+}
+
+/** The share of frames later than 1.5 display intervals, in %. */
+const lateShare = (dts, interval) => (dts.length ? (100 * dts.filter((x) => x > 1.5 * interval).length) / dts.length : NaN);
 
 export function pool(arrays) {
   const all = arrays.flat().sort((a, b) => a - b);
@@ -53,15 +77,34 @@ export function summarise(rows) {
   });
 }
 
-/** Software or GPU, from what rendered: the system's GPU (glxinfo on Linux, since WebKit masks WebGL's) and the page's. */
-export function engineClass(doc) {
+/** A hypervisor's name (systemd-detect-virt, sysctl, the system's model): anything but none, no and unknown. */
+const isVirtual = (name) => Boolean(name) && !['none', 'no', 'unknown'].includes(String(name).trim().toLowerCase());
+/** A renderer's name as read. WebKit answers every page's WebGL "Apple GPU", whatever renders: that is no reading. */
+const reading = (name) => (name && !/^apple gpu$/i.test(String(name).trim()) ? name : null);
+
+/** The engine class and, where it is not read from a renderer, the reason, for summary.md (README.md, "Read the result"). */
+function classify(doc) {
   const machine = doc.machine ?? {};
   const text = `${doc.page?.gpu?.renderer ?? ''} ${machine.gpu?.renderer ?? ''}`;
-  const software =
-    Boolean(doc.config?.software) ||
-    /llvmpipe|softpipe|swrast|swiftshader|basic render driver/i.test(text) ||
-    /^no$/i.test(machine.gpu?.accelerated ?? '');
-  return software ? 'software' : 'gpu';
+  if (doc.config?.software) return { engine: 'software', why: ' (--software)' };
+  if (/llvmpipe|softpipe|swrast|swiftshader|basic render driver/i.test(text) || /^no$/i.test(machine.gpu?.accelerated ?? '')) {
+    return { engine: 'software', why: '' };
+  }
+  if (machine.platform === 'linux' && doc.config?.xvfb) return { engine: 'software', why: ' (the window ran in Xvfb, which has no GPU)' };
+  if (machine.platform === 'linux' && !reading(machine.gpu?.renderer) && !reading(doc.page?.gpu?.renderer) && isVirtual(machine.virtual)) {
+    return { engine: 'software', why: ` (no renderer read, on a virtual machine: ${machine.virtual})` };
+  }
+  return { engine: 'gpu', why: '' };
+}
+
+/**
+ * Software or GPU, from what rendered: the system's GPU (glxinfo on Linux, since WebKit masks WebGL's) and the page's.
+ * On Linux, a window in Xvfb rasterises on the processor whatever the machine has, and so does a virtual machine whose
+ * renderer nothing read (glxinfo found no display, WebKit said "Apple GPU"): a GitHub runner has no GPU (#488/V23).
+ * A Linux that is not virtual keeps gpu when nothing is read.
+ */
+export function engineClass(doc) {
+  return classify(doc).engine;
 }
 
 /** The row of T5 for a scale on this engine: its threshold and the verdict, or no threshold here. */
@@ -91,18 +134,30 @@ export function sanityVerdict(base, busy, shadow, vsync) {
 export function analyze(dir) {
   const doc = JSON.parse(readFileSync(join(dir, 'results.json'), 'utf8'));
   const blocks = doc.blocks ?? [];
-  const rows = blocks.flatMap((b) => b.rows);
+  const intervals = Object.fromEntries(
+    blocks.map((b) => [b.name, displayInterval(b.vsync_ms, b.rows.filter((r) => r.renderer === 'canvas2d').flatMap((r) => r.samples?.dt ?? []))]),
+  );
+  // In a block whose frames ran faster than calibrated, the late frames are counted again on the interval that ran.
+  const rows = blocks.flatMap((b) => {
+    const interval = intervals[b.name];
+    return interval.corrected ? b.rows.map((r) => ({ ...r, dropped_pct: lateShare(r.samples?.dt ?? [], interval.ms) })) : b.rows;
+  });
   const cols = ['block', 'renderer', 'scale', 'rep', 'phase', 'repeat', 'frames', 'dt_median', 'dt_p95', 'dt_p99', 'dt_max', 'js_median', 'js_p95', 'dropped_pct', 'init_ms'];
   const csv = [cols.join(',')].concat(rows.map((r) => cols.map((c) => (typeof r[c] === 'number' ? Math.round(r[c] * 1000) / 1000 : JSON.stringify(r[c] ?? ''))).join(',')));
   writeFileSync(join(dir, 'raw.csv'), `${csv.join('\n')}\n`);
 
   const summary = summarise(rows);
-  const engine = engineClass(doc);
+  const { engine, why } = classify(doc);
   const m = doc.machine ?? {};
   const page = doc.page ?? {};
   const label = doc.config?.label ?? '';
   const reference = !m.wsl && ['no', 'none'].includes(m.virtual) && !label.startsWith('ci-');
   const vsyncOf = (name) => blocks.find((b) => b.name === name)?.vsync_ms;
+  const calibration = (b) => {
+    const measured = `${fmt(b.vsync_ms, 2)} ms (${fmt(1000 / b.vsync_ms, 0)} Hz) before ${b.name}`;
+    const i = intervals[b.name];
+    return i.corrected ? `${measured}, but ${fmt(i.fast_pct, 0)} % of its frames ran at ${fmt(i.ms, 2)} ms (${fmt(1000 / i.ms, 0)} Hz), the interval its verdicts use` : measured;
+  };
   const infoOf = (block, scale) => blocks.find((b) => b.name === block)?.infos.find((i) => String(i.scale) === scale && i.renderer === 'canvas2d');
 
   const lines = [`# Moviola bench: ${label}`, ''];
@@ -110,16 +165,16 @@ export function analyze(dir) {
   lines.push(`- WSL: ${m.wsl ? `yes${m.wslg ? ', with WSLg' : ''}` : 'no'}; virtual machine: ${m.virtual ?? 'unknown'}`);
   lines.push(`- GPU, as the system names it: ${m.gpu?.renderer ?? 'unknown'}${m.gpu?.accelerated ? ` (accelerated: ${m.gpu.accelerated})` : ''}`);
   lines.push(`- GPU, as the page's WebGL names it: ${page.gpu?.webgl ? page.gpu.renderer : 'no WebGL'} (WebKit always answers "Apple GPU")`);
-  lines.push(`- engine class: **${engine}**${doc.config?.software ? ' (--software)' : ''}`);
+  lines.push(`- engine class: **${engine}**${why}`);
   lines.push(`- webview: ${page.webview ?? '?'}; Tauri ${page.tauri ?? '?'}; ${page.userAgent ?? ''}`);
-  lines.push(`- display: ${(page.screen ?? []).join('x')} at dpr ${page.dpr}; refresh interval measured ${blocks.map((b) => `${fmt(b.vsync_ms, 2)} ms (${fmt(1000 / b.vsync_ms, 0)} Hz) before ${b.name}`).join(', ')}; stage ${doc.view?.w}x${doc.view?.h} and the tape ${doc.view?.tape}`);
+  lines.push(`- display: ${(page.screen ?? []).join('x')} at dpr ${page.dpr}; refresh interval measured ${blocks.map(calibration).join(', ')}; stage ${doc.view?.w}x${doc.view?.h} and the tape ${doc.view?.tape}`);
   lines.push(`- commit: ${m.commit ? `${m.commit.sha}${m.commit.clean ? '' : ' (with local changes)'}` : 'unknown'}; node ${m.node ?? '?'}`);
   lines.push(`- run: ${doc.started}, ${fmt(doc.wall_s, 0)} s; ${doc.config?.reps} repetitions x ${doc.config?.phase_ms} ms per phase, warm-up ${doc.config?.warmup_ms} ms; environment ${JSON.stringify(doc.config?.env ?? {})}`);
   lines.push('');
 
   const main = summary.filter((s) => s.block === 'main');
   if (main.length) {
-    const vsync = vsyncOf('main');
+    const vsync = intervals.main.ms;
     lines.push('## T5: time per frame (docs/app/piano/traguardi.md)', '');
     lines.push('Frame time in ms, median / p95 of the pooled frames of all repetitions; `n/a` = fewer than 30 frames. The display refresh interval is the floor: one missed refresh costs a whole interval. Late = longer than 1.5 intervals. Script ms is the time inside the draw (camera, labels, frame), not the GPU or the compositor after it.');
     lines.push(`A threshold shows where this engine is the one the row of T5 names. Its verdict counts ${reference ? 'here: this is not a runner, a VM or WSL' : '**only as information here**: a runner, a VM or WSL records the number without a verdict'}.`, '');
@@ -139,6 +194,7 @@ export function analyze(dir) {
   let exit = 0;
   const sanity = summary.filter((s) => s.block === 'sanity');
   if (blocks.some((b) => b.name === 'sanity')) {
+    // The busy work the harness spun: 1.6 calibrated intervals, whatever the display ran at.
     const vsync = vsyncOf('sanity');
     const get = (r) => sanity.find((s) => s.renderer === r);
     const base = get('canvas2d');
@@ -166,7 +222,7 @@ export function analyze(dir) {
     lines.push('');
   }
   writeFileSync(join(dir, 'summary.md'), `${lines.join('\n')}\n`);
-  writeFileSync(join(dir, 'summary.json'), JSON.stringify({ engine, reference, summary }, null, 1));
+  writeFileSync(join(dir, 'summary.json'), JSON.stringify({ engine, reference, intervals, summary }, null, 1));
   return { lines, exit, engine, summary };
 }
 
