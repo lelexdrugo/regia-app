@@ -1,0 +1,69 @@
+{
+  "_note": "Synthetic. #549, #646 and #743: the clones of a project's products, read with local git on real repos. Without a site the clone is the dossier's sibling folder with the repo's name; with one, the path under its alias's root. A clone's worker branch warns as the dossier's, with the product's repo, and so does the branch of a task in progress, here #7, not at all; a product without a clone, a site whose alias is unknown and a clone whose origin is another repo are one warning each. The dossier's own repo is not a product. A dossier out of place says nothing of its products.",
+  "transcribes": [
+    "test_branch_non_pushato.py::TestRepoDiProdotto::test_il_branch_del_clone_avanti_rispetto_al_remoto",
+    "test_branch_non_pushato.py::TestRepoDiProdotto::test_mai_pushato",
+    "test_branch_non_pushato.py::TestRepoDiProdotto::test_il_dossier_in_pari_non_da_avvisi_e_il_prodotto_si_guarda_lo_stesso",
+    "test_branch_non_pushato.py::TestRepoDiProdotto::test_clone_mancante_una_voce",
+    "test_branch_non_pushato.py::TestRepoDiProdotto::test_clone_con_un_altro_origin_la_stessa_voce",
+    "test_branch_non_pushato.py::TestRepoDiProdotto::test_il_repo_del_dossier_non_si_ripete_come_prodotto",
+    "test_branch_non_pushato.py::TestRepoDiProdotto::test_un_dossier_fuori_posto_non_fa_rumore_sui_prodotti",
+    "test_branch_non_pushato.py::TestRepoDiProdotto::test_piu_prodotti_uno_mancante_e_uno_con_un_branch",
+    "test_branch_non_pushato.py::TestPrecheckProdotto::test_stesso_esito_motivo_digest_e_conteggi_con_e_senza_un_branch_di_prodotto",
+    "test_branch_non_pushato.py::TestPrecheckProdotto::test_stesso_esito_con_il_clone_mancante",
+    "test_branch_non_pushato.py::TestPrecheckProdotto::test_un_task_in_corso_nasconde_il_suo_branch_e_lo_dice_al_dossier",
+    "test_branch_non_pushato.py::TestPrecheckProdotto::test_il_json_del_giro_porta_il_repo",
+    "test_branch_non_pushato.py::TestPrecheckProdotto::test_prodotti_e_in_corso_arrivano_alla_fonte",
+    "test_sede_prodotti.py::TestSedeDelClone::test_sede_con_branch_del_clone_li_vede",
+    "test_sede_prodotti.py::TestSedeDelClone::test_alias_sconosciuto"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nrepo: example/dossier-p\nprodotti: example/product, example/missing, example/dossier-p\nwip: 2\npriorita: 3"},
+    {"n": 2, "status": "Approvato"}
+  ],
+  "runs": [
+    {
+      "note": "a product's branch never pushed, and a product without a clone",
+      "dossiers": {
+        "p": {"remote": "example/dossier-p"},
+        "product": {"remote": "example/product", "branches": [{"name": "example/regia-7-slice", "commits": 2}]}
+      }
+    },
+    {
+      "note": "the sites of the clones: one that resolves, one whose alias is unknown",
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nrepo: example/dossier-p\nprodotti: example/product, example/missing\nsedi: example/product=progetti/elsewhere/product, example/missing=home/missing\nwip: 2\npriorita: 3"},
+        {"n": 2, "status": "Approvato"}
+      ],
+      "dossiers": {
+        "p": {"remote": "example/dossier-p"},
+        "elsewhere/product": {"remote": "example/product", "branches": [{"name": "example/regia-7-slice", "pushed": true, "more": 1}]}
+      }
+    },
+    {
+      "note": "a clone whose origin is another repo",
+      "dossiers": {
+        "p": {"remote": "example/dossier-p"},
+        "product": {"remote": "example/other", "branches": [{"name": "example/regia-7-slice"}]}
+      }
+    },
+    {
+      "note": "the task of the product's branch is in progress",
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nrepo: example/dossier-p\nprodotti: example/product\nwip: 2\npriorita: 3"},
+        {"n": 2, "status": "Approvato"},
+        {"n": 7, "status": "In corso"}
+      ],
+      "dossiers": {
+        "p": {"remote": "example/dossier-p"},
+        "product": {"remote": "example/product", "branches": [{"name": "example/regia-7-slice"}]}
+      }
+    },
+    {
+      "note": "a dossier out of place says nothing of its products",
+      "dossiers": {
+        "product": {"remote": "example/product", "branches": [{"name": "example/regia-7-slice"}]}
+      }
+    }
+  ]
+}

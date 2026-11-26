@@ -24,12 +24,16 @@
 //! behind the fake `orca` of the run's folder, which answers from the run's `workers`; the thresholds are the run's
 //! `policies/worker.yaml`. Neither side ever starts the machine's Orca.
 //!
-//! **The comparison is one-sided, and declared.** The prototype's line also carries what is not ported yet: per
-//! project the dossier's warnings, which need the prototype's `avvisi_dossier` (#450 of the dossier). That key is
-//! taken out of the prototype's line only, the product's must not have it, and no recorded run may end with a
-//! reason not ported yet (none is left), so a case that such a part decides cannot pass for equal. The `t` of the
-//! line is each run's own (the prototype's comes from the machine's clock), and so is the sentence of an error,
-//! whose key is kept.
+//! **The dossiers (#743).** Each side reads the dossiers' warnings with its own git, on real repos the run builds under
+//! its dossier's folder (`dossiers` of a run: the project's dossier, the clones of its products, their bare remotes),
+//! the prototype through its real `_dossier_da_regia`. A run can put a stand-in where git should be, on both sides. A
+//! run's dossier that is not built is the folder of its reports, or no folder at all: the old cases' lines carry
+//! `cartella-mancante` or `non-e-repo`.
+//!
+//! **Nothing is left out of the comparison.** Every key of the prototype's line is ported: the lists of what is not
+//! ported yet are empty, and no recorded run may end with a reason not ported (none is left). The `t` of the line is
+//! each run's own (the prototype's comes from the machine's clock), and so is the sentence of an error, whose key is
+//! kept.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -37,11 +41,11 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
 use regia_conformance::{
-    FIXTURE_NOW, StateRow, fixture_for_python, fixture_for_rust, fixtures_root, log_var, read_json, state_rows, workspace_root, write_state,
-    writes_of_run,
+    FIXTURE_NOW, GitDouble, StateRow, fixture_for_python, fixture_for_rust, fixtures_root, git_double_env, log_var, read_json, state_rows,
+    workspace_root, write_state, writes_of_run,
 };
 use regia_core::SignatureRole;
-use regia_exec::{Pin, Program, python};
+use regia_exec::{Launch, Pin, Program, python};
 use regia_facade::PROTOTYPE_LIMITS;
 use regia_identity::{env_var, prototype_env_var};
 use serde::Deserialize;
@@ -51,10 +55,10 @@ use serde_json::{Value, json};
 mod common;
 use common::Bin;
 
-/// The keys of the prototype's payload, and of each of its projects, not ported yet: the dossier's warnings, which
-/// need the prototype's `avvisi_dossier` (#450 of the dossier).
+/// The keys of the prototype's payload, and of each of its projects, not ported yet: none, since the dossier's
+/// warnings are (#743).
 const LATER_PAYLOAD_KEYS: [&str; 0] = [];
-const LATER_PROJECT_KEYS: [&str; 1] = ["dossier"];
+const LATER_PROJECT_KEYS: [&str; 0] = [];
 /// The reasons that only the parts not ported yet produce: a recorded run must end with none of them.
 const LATER_REASONS: [&str; 0] = [];
 
@@ -70,8 +74,8 @@ const DOSSIER: &str = "{dossier}";
 /// its clock at the run's instant (the cache of the budget included), its reports on disk, and the policy of
 /// the run's file with the override of the state folder. Its workers come from its real adapter of Orca behind the
 /// fake `orca`, found where the adapter looks for the program, with the thresholds of the run's `worker.yaml` and
-/// the run's instant: the precheck's own reader would ask the machine's clock (#599). The dossier's warnings have
-/// no data. It prints the exit code and what the precheck printed.
+/// the run's instant: the precheck's own reader would ask the machine's clock (#599). The dossier's warnings are its
+/// real `_dossier_da_regia`'s, with the git of its `PATH` (#743). It prints the exit code and what the precheck printed.
 const PROTOTYPE_SIDE: &str = r#"import io
 import json
 import sys
@@ -95,7 +99,6 @@ shutil.which = lambda name, *rest, **kw: run["orca"] if name == "orca" else whic
 soglia_s = worker_orca.carica_soglia_s(Path(run["worker_policy"]))
 blocco_s = worker_orca.carica_blocco_s(Path(run["worker_policy"]))
 amb = precheck.Ambiente(regia, precheck.TrackerGh(regia), runtime, adesso=lambda: now,
-                        dossier=lambda cartella, repo=None, **_: [],
                         politica=politica_budget.carica(Path(run["policy"]), adesso=now),
                         worker=lambda voluti, scadenza: worker_orca.leggi(voluti, soglia_s, scadenza, adesso=now, blocco_s=blocco_s),
                         soglia_silenzio_s=soglia_s, soglia_blocco_s=blocco_s)
@@ -231,6 +234,60 @@ struct RunSpec {
     orca_scoped: bool,
     /// The text of `policies/worker.yaml`; without it the file is not there and the defaults hold.
     worker_policy: Option<String>,
+    /// Real repos under the run's dossier's folder, by their path there (#743): a project's dossier, the clone of one of
+    /// its products. Built before the reports are written, the same on both sides.
+    #[serde(default)]
+    dossiers: BTreeMap<String, RepoSpec>,
+    /// A stand-in where git should be, on both sides: `timeout` answers every call with 124, `missing` is no git.
+    git: Option<GitDouble>,
+}
+
+/// A real repo of a run, on `main` with one commit, then shaped in the order of these fields.
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RepoSpec {
+    /// A folder and no repo.
+    #[serde(default)]
+    plain: bool,
+    /// The remote `origin`, a bare repo at `remotes/<remote>.git` under the run's dossier's folder, where `main` is pushed
+    /// with its upstream; none without it.
+    remote: Option<String>,
+    /// Branches from `main`.
+    #[serde(default)]
+    branches: Vec<BranchSpec>,
+    /// Commits on `main` after the push, never pushed.
+    #[serde(default)]
+    local_commits: usize,
+    /// `false`: `main` keeps its remote and loses its upstream.
+    #[serde(default = "yes")]
+    upstream: bool,
+    /// `HEAD` detached at the commit of `main`.
+    #[serde(default)]
+    detached: bool,
+    /// The branch checked out at the end, `main` by default.
+    checkout: Option<String>,
+}
+
+#[allow(clippy::unnecessary_wraps)]
+fn yes() -> bool {
+    true
+}
+
+/// A branch of a run's repo: its commits, pushed with its upstream when `pushed`, then `more` commits never pushed.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BranchSpec {
+    name: String,
+    #[serde(default = "one_commit")]
+    commits: usize,
+    #[serde(default)]
+    pushed: bool,
+    #[serde(default)]
+    more: usize,
+}
+
+fn one_commit() -> usize {
+    1
 }
 
 /// A worker of Orca on a task of the regia, compactly: one dispatch with its transcript and what `worker-show` says.
@@ -329,6 +386,8 @@ struct ReportSpec {
     name: String,
     /// Seconds and nanoseconds since the epoch would be unreadable: an instant, with up to 7 decimals.
     modified: String,
+    /// The report's text, a `done` with nothing else by default: a worker's report names its branch (#158).
+    body: Option<String>,
 }
 
 fn default_project_name() -> String {
@@ -642,18 +701,90 @@ fn system_time(instant: &str) -> SystemTime {
     SystemTime::UNIX_EPOCH + Duration::from_micros(micros) + Duration::from_nanos(u64::from(nanos))
 }
 
-/// The folders of a run: the dossier with its reports, shared by both sides, which only read it.
+/// The folders of a run: the dossier with its repos and its reports, which the side only reads.
 fn prepare_dossier(label: &str, run: &RunSpec) -> PathBuf {
     let dossier = prepare_state_dir(&format!("{label}-dossier"));
+    for (path, spec) in &run.dossiers {
+        build_repo(&dossier, &dossier.join(path), spec);
+    }
     for report in &run.reports {
         let dir = dossier.join(&report.project).join(".regia").join("report");
         fs::create_dir_all(&dir).expect("the reports folder");
         let path = dir.join(&report.name);
-        fs::write(&path, "---\ntipo: done\n---\n").expect("a report");
+        fs::write(&path, report.body.as_deref().unwrap_or("---\ntipo: done\n---\n")).expect("a report");
         let file = fs::OpenOptions::new().write(true).open(&path).expect("the report, to date it");
         file.set_modified(system_time(&report.modified)).expect("the report's date");
     }
     dossier
+}
+
+/// When the commits of a run's repos were made, a day before the fixtures' instant: the same ids on every run.
+const REPO_COMMIT_DATE: &str = "@1767949200 +0000";
+
+/// `git <args>` in `dir` with the user's git, which must succeed, its commits at [`REPO_COMMIT_DATE`].
+fn repo_git(dir: &Path, args: &[&str]) {
+    let pin = Pin::resolve(Program::Git).expect("git");
+    let args: Vec<String> = args.iter().map(|arg| (*arg).to_owned()).collect();
+    let output = regia_exec::harness::program(&pin, &args, dir)
+        .env("GIT_AUTHOR_DATE", REPO_COMMIT_DATE)
+        .env("GIT_COMMITTER_DATE", REPO_COMMIT_DATE)
+        .run()
+        .expect("git runs");
+    assert!(output.status.success(), "git {args:?} in {}: {}", dir.display(), String::from_utf8_lossy(&output.stderr));
+}
+
+/// A file `name` with its own name as text, committed in `dir`.
+fn repo_commit(dir: &Path, name: &str) {
+    fs::write(dir.join(name), format!("{name}\n")).expect("a file");
+    repo_git(dir, &["add", "--", name]);
+    repo_git(dir, &["commit", "-q", "-m", name]);
+}
+
+/// The repo of `spec` at `dir`, with the harness's own identity and no signing, hooks or line-break conversion of the
+/// machine; its remote, if any, a bare repo under `dossier`.
+fn build_repo(dossier: &Path, dir: &Path, spec: &RepoSpec) {
+    fs::create_dir_all(dir).expect("the repo's folder");
+    if spec.plain {
+        return;
+    }
+    repo_git(dir, &["init", "-q", "-b", "main"]);
+    for (key, value) in [("user.name", "Fixture"), ("user.email", "fixture@example.invalid"), ("commit.gpgsign", "false"), ("core.autocrlf", "false"), ("core.hooksPath", ".git/no-hooks")] {
+        repo_git(dir, &["config", key, value]);
+    }
+    repo_commit(dir, "first.txt");
+    if let Some(remote) = &spec.remote {
+        let bare = dossier.join("remotes").join(format!("{remote}.git"));
+        fs::create_dir_all(&bare).expect("the bare's folder");
+        repo_git(&bare, &["init", "-q", "--bare", "-b", "main"]);
+        repo_git(dir, &["remote", "add", "origin", &bare.display().to_string()]);
+        repo_git(dir, &["push", "-q", "-u", "origin", "main"]);
+    }
+    for branch in &spec.branches {
+        let file = branch.name.replace('/', "_");
+        repo_git(dir, &["checkout", "-q", "-b", &branch.name]);
+        for at in 0..branch.commits {
+            repo_commit(dir, &format!("{file}-{at}.txt"));
+        }
+        if branch.pushed {
+            repo_git(dir, &["push", "-q", "-u", "origin", &branch.name]);
+        }
+        for at in 0..branch.more {
+            repo_commit(dir, &format!("{file}-more-{at}.txt"));
+        }
+        repo_git(dir, &["checkout", "-q", "main"]);
+    }
+    for at in 0..spec.local_commits {
+        repo_commit(dir, &format!("local-{at}.txt"));
+    }
+    if !spec.upstream {
+        repo_git(dir, &["branch", "--unset-upstream"]);
+    }
+    if spec.detached {
+        repo_git(dir, &["checkout", "-q", "--detach"]);
+    }
+    if let Some(branch) = &spec.checkout {
+        repo_git(dir, &["checkout", "-q", branch]);
+    }
 }
 
 /// The folder of a run's policy file, `<home>/policies/budget.yaml`: the run's text, else the product's copy
@@ -781,10 +912,17 @@ fn product(state: &Path, responses: &Path, args: &[String], run: &RunSpec, now: 
         .env(&prototype_env_var("HOME"), policy_home(state, run))
         .env(&Program::Orca.env_name(), fake_orca(state, responses))
         .env(&env_var("NOW"), now);
+    let launch = with_git_double(launch, state, run);
     worker_policy(state, run);
     let output = launch.run().expect("run the precheck");
     let text = |bytes: &[u8]| String::from_utf8_lossy(bytes).replace("\r\n", "\n");
     Ran { exit: output.status.code(), stdout: text(&output.stdout), stderr: text(&output.stderr) }
+}
+
+/// A run of either side with the run's stand-in where git should be, if it has one: set last, so its `PATH` wins.
+fn with_git_double(launch: Launch, state: &Path, run: &RunSpec) -> Launch {
+    let Some(double) = run.git else { return launch };
+    git_double_env(state, double).into_iter().fold(launch, |launch, (name, value)| launch.env(&name, value))
 }
 
 /// The copy of the prototype in `REGIA_HOME`.
@@ -808,7 +946,7 @@ fn prototype_side(home: &Path, state: &Path, responses: &Path, args: &[String], 
     argv.extend([script.display().to_string(), home.display().to_string(), input.display().to_string()]);
     let launch = regia_exec::harness::program(&interpreter, &argv, home).limits(PROTOTYPE_LIMITS);
     let launch = fixture_for_python(launch, responses, state).env(&log_var(), state.join("python-calls.log")).env(&env_var("NOW"), now);
-    let output = launch.run().expect("run the prototype");
+    let output = with_git_double(launch, state, run).run().expect("run the prototype");
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
     assert_eq!(output.status.code(), Some(0), "the prototype's side failed\nstdout: {stdout}\nstderr: {stderr}");
@@ -1268,14 +1406,23 @@ fn the_format_s_vocabulary_is_the_prototype_s() {
     assert_eq!(python["idle"], json!(["budget", "occupato", "limite-wip", "proposte-esaurite", "lavoro-in-corso", "attesa-del-titolare", "nessun-evento"]));
 }
 
-/// The comparison notices a difference: an outcome, a count, a key out of order, the budget or the policy,
-/// a key not ported yet in the product's line.
+/// The comparison notices a difference: an outcome, a count, a key out of order, the budget or the policy, the
+/// dossier's warnings, which nothing takes out of either side any more (#743).
 #[test]
 fn the_comparison_notices_a_difference() {
-    let line = r#"{"v":1,"outcome":"new-activity","exit":0,"motivo":"pronti","cursore":[{"progetto":"p","valore":null}],"payload":{"progetti":[{"id":"p","esito":"new-activity","motivo":"pronti","eventi":1,"pronti":1,"report":0,"gate":0,"inbox":0,"lease":0,"task":[2]}],"budget":{"claude_5h_pct":10.0},"politica":"file"},"t":"2026-01-10T09:00:00Z"}"#;
-    let recorded = json!({"exit": 0, "line": with_placeholder_t(&line.replace(r#""task":[2]"#, r#""task":[2],"dossier":[{"problema":"senza-remoto"}]"#))});
+    let bare = r#"{"v":1,"outcome":"new-activity","exit":0,"motivo":"pronti","cursore":[{"progetto":"p","valore":null}],"payload":{"progetti":[{"id":"p","esito":"new-activity","motivo":"pronti","eventi":1,"pronti":1,"report":0,"gate":0,"inbox":0,"lease":0,"task":[2]}],"budget":{"claude_5h_pct":10.0},"politica":"file"},"t":"2026-01-10T09:00:00Z"}"#;
+    let line = &bare.replace(r#""task":[2]"#, r#""task":[2],"dossier":[{"problema":"senza-remoto","branch":"main"}]"#);
+    let recorded = json!({"exit": 0, "line": with_placeholder_t(line)});
     let ran = |line: &str| Ran { exit: Some(0), stdout: format!("precheck: rust\n{line}\n"), stderr: String::new() };
-    assert_eq!(differences(&ran(line), &recorded), Vec::<String>::new(), "the keys not ported yet are out of the prototype's side");
+    assert_eq!(differences(&ran(line), &recorded), Vec::<String>::new(), "the same line, dossier and all");
+    for altered in [
+        bare.to_owned(),
+        line.replace("senza-remoto", "senza-upstream"),
+        line.replace(r#","branch":"main""#, ""),
+        line.replace(r#"{"problema":"senza-remoto","branch":"main"}"#, r#"{"branch":"main","problema":"senza-remoto"}"#),
+    ] {
+        assert!(!differences(&ran(&altered), &recorded).is_empty(), "unnoticed: {altered}");
+    }
     for altered in [
         line.replace("\"pronti\":1", "\"pronti\":2"),
         line.replace(r#""report":0,"gate":0"#, r#""gate":0,"report":0"#),

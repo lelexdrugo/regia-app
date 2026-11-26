@@ -13,6 +13,6 @@
       }
     },
     "exit": 0,
-    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"pronti\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2],\"serie\":1}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
+    "line": "{\"v\":1,\"outcome\":\"new-activity\",\"exit\":0,\"motivo\":\"pronti\",\"cursore\":[{\"progetto\":\"p\",\"valore\":\"2026-01-10T08:00:00Z\"}],\"payload\":{\"progetti\":[{\"id\":\"p\",\"esito\":\"new-activity\",\"motivo\":\"pronti\",\"eventi\":1,\"pronti\":1,\"report\":0,\"gate\":0,\"inbox\":0,\"lease\":0,\"task\":[2],\"serie\":1,\"dossier\":[{\"problema\":\"cartella-mancante\"}]}],\"budget\":{\"claude_5h_pct\":10.0},\"politica\":\"file\"},\"t\":\"{precheck-t}\"}"
   }
 ]

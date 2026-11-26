@@ -1,9 +1,9 @@
 {
   "oracle_repository": "lelexdrugo/regia",
-  "oracle_commit": "b3901c1b49b01c9c497b43507c159519aab8c3fc",
+  "oracle_commit": "baa82126bdf0b73792971c0d04dca7e38da805d5",
   "oracle_last_change": {
     "tools/precheck.py": "9a881809b0d6b880dcc868f890d70b9ccf457745",
-    "tools/regia.py": "674a816b0e527f79d9d8fb27741dbc3fbc6d6b86",
+    "tools/regia.py": "a9aa4ba64c657fdf77b8358a613c4a9dc802d632",
     "tools/runtime.py": "e90a3e14094fafdd9050c78bc2e5caa377bd23fd",
     "tools/politica_budget.py": "8774a57f1d1d6593c6e3462e8c2b26a8da12771f",
     "tools/worker_orca.py": "c1fd045866ed751da9c7939082f7ca0b3ea682d3",
@@ -12,7 +12,10 @@
     "tools/tests/test_precheck_ferme.py": "4e7ce3a75b816452a263dee8091c491cafb1498f",
     "tools/tests/test_precheck_risposte.py": "4868a73cbc34299280e5eb8ea8c397fe6a80bf13",
     "tools/tests/test_precheck_worker.py": "d15b1f37985623b88035744259e50b578744163f",
-    "tools/tests/test_precheck_blocco.py": "c1fd045866ed751da9c7939082f7ca0b3ea682d3"
+    "tools/tests/test_precheck_blocco.py": "c1fd045866ed751da9c7939082f7ca0b3ea682d3",
+    "tools/tests/test_dossier_avvisi.py": "257b01d70639067929c693bbeea652c5b49758a9",
+    "tools/tests/test_branch_non_pushato.py": "69f850de91994a86071c52a3eecbbb689173643c",
+    "tools/tests/test_sede_prodotti.py": "9a881809b0d6b880dcc868f890d70b9ccf457745"
   },
   "driver": "crates/regia-conformance/tests/precheck.rs",
   "python": "3.12.10",

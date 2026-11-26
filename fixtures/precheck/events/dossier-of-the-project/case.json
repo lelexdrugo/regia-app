@@ -1,0 +1,45 @@
+{
+  "_note": "Synthetic. #159 and #743: the dossier's own warning, read with local git on a real repo the run builds, its remote a bare repo beside it. In step with its upstream it has none, and the line no key; then no remote, a registry without the repo, no upstream, two commits not pushed, a folder that is missing, one that is no repo, a detached HEAD, each with its branch where git has one. Under 5 s from the tick's deadline the dossier is not read. A git that does not answer or is not there is a warning of the project, never an error. A warning is a signal: the outcome and the counts are the same as without it.",
+  "transcribes": [
+    "test_dossier_avvisi.py::TestAvvisi::test_in_pari_nessun_avviso",
+    "test_dossier_avvisi.py::TestAvvisi::test_nessun_remoto",
+    "test_dossier_avvisi.py::TestAvvisi::test_repo_vuoto_nel_registro",
+    "test_dossier_avvisi.py::TestAvvisi::test_origin_senza_upstream",
+    "test_dossier_avvisi.py::TestAvvisi::test_avanti_di_due_commit_con_il_conteggio_giusto",
+    "test_dossier_avvisi.py::TestAvvisi::test_cartella_inesistente",
+    "test_dossier_avvisi.py::TestAvvisi::test_cartella_che_non_e_un_repo",
+    "test_dossier_avvisi.py::TestAvvisi::test_head_staccato",
+    "test_dossier_avvisi.py::TestGitCheFallisce::test_timeout_di_git_e_un_avviso_non_un_eccezione (a git that answers 124)",
+    "test_dossier_avvisi.py::TestGitCheFallisce::test_git_non_eseguibile (no git where each side looks for it)",
+    "test_dossier_avvisi.py::TestPrecheck::test_un_avviso_non_cambia_eventi_outcome_motivo_digest",
+    "test_dossier_avvisi.py::TestPrecheck::test_il_json_e_identico_salvo_la_chiave_dossier",
+    "test_dossier_avvisi.py::TestPrecheck::test_scadenza_esaurita_dossier_none_e_non_si_legge (--scadenza-s 4.9)",
+    "test_dossier_avvisi.py::TestPrecheckSuRepoVero::test_senza_remoto_e_non_pushati_dal_precheck_vero",
+    "test_dossier_avvisi.py::TestBrief::test_json_ha_la_chiave_dossier (the precheck's half: the compact keys)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nrepo: example/dossier-p\nwip: 2\npriorita: 3"},
+    {"n": 2, "status": "Approvato"},
+    {"n": 3, "status": "Approvato"}
+  ],
+  "runs": [
+    {"note": "in step with its upstream: no warning, no key", "dossiers": {"p": {"remote": "example/dossier-p"}}},
+    {"note": "no remote", "dossiers": {"p": {}}},
+    {
+      "note": "the registry names no repo",
+      "issues": [
+        {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nwip: 2\npriorita: 3"},
+        {"n": 2, "status": "Approvato"}
+      ],
+      "dossiers": {"p": {"remote": "example/dossier-p"}}
+    },
+    {"note": "no upstream", "dossiers": {"p": {"remote": "example/dossier-p", "upstream": false}}},
+    {"note": "two commits not pushed", "dossiers": {"p": {"remote": "example/dossier-p", "local_commits": 2}}},
+    {"note": "the folder is missing"},
+    {"note": "a folder that is no repo", "dossiers": {"p": {"plain": true}}},
+    {"note": "a detached HEAD", "dossiers": {"p": {"remote": "example/dossier-p", "detached": true}}},
+    {"note": "under 5 s from the tick's deadline the dossier is not read", "args": ["--scadenza-s", "4.9"], "dossiers": {"p": {"remote": "example/dossier-p", "local_commits": 1}}},
+    {"note": "a git that does not answer", "git": "timeout", "dossiers": {"p": {"remote": "example/dossier-p"}}},
+    {"note": "no git", "git": "missing", "dossiers": {"p": {"remote": "example/dossier-p"}}}
+  ]
+}

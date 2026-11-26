@@ -8,7 +8,7 @@ Everything here is synthetic: the projects are `p`, `a` and `b`, the tracker is 
 
 The cases are under `events/`, not `cases/`: the harness reads every family's `cases/` as cases of the CLI, and these drive another command. `events/<case>/` holds two files:
 
-- `case.json`: the issues, compactly, with the defaults of the prototype's test helper (a task of `p`, approved and ready; an Objective whose registry names the folder `{dossier}/<project>`, wip 2, priority 3); the comments, by issue, some signed by the product's own signer; and the runs, each with its arguments, the events cursor of each project, the locks, the leases, the reports on disk with their dates, and the failures to build;
+- `case.json`: the issues, compactly, with the defaults of the prototype's test helper (a task of `p`, approved and ready; an Objective whose registry names the folder `{dossier}/<project>`, wip 2, priority 3); the comments, by issue, some signed by the product's own signer; and the runs, each with its arguments, the events cursor of each project, the locks, the leases, the reports on disk with their dates and, for a worker's report, its text, the real repos of its dossiers (#743), a stand-in where git should be, and the failures to build;
 - `python.it.json`: for each run, the exit code and the line, with `t` as `{precheck-t}` and the sentence of an error as `{detail}`.
 
 ## Replaying a run
@@ -17,13 +17,13 @@ The cases are under `events/`, not `cases/`: the harness reads every family's `c
 
 1. the answers of the fake `gh`: the list of the open issues in one page, and the comments of every issue; the read of the recent comments (#393 of the dossier) has every issue with comments, an issue marked `closed` too, its last twenty, which the product asks as the checks do, every label at once, and the prototype by the project's label;
 2. the state folder: the synthetic `tracker.json`, and the rows of `regia.db` (the cursor's value with its date, a lock or a lease that expires in 2999 or in 2000, a row that is not a document);
-3. a dossier folder, with each report at `<project>/.regia/report/<name>` and its date, to the 100 nanoseconds.
+3. a dossier folder, with each report at `<project>/.regia/report/<name>` and its date, to the 100 nanoseconds, and the run's repos built in it first: a project's dossier at `<project>`, a product's clone beside it or where its site says, each on `main` with one commit and its bare remote under `remotes/`, then its branches, pushed or not, and its commits not pushed. A dossier the run does not build is the folder of its reports, or no folder at all: in the old cases `cartella-mancante` or `non-e-repo`.
 
-The product runs its `precheck` binary there, at `2026-01-10T09:00:00Z`. The prototype runs its precheck in process, with its own tracker reader behind the fake `gh`, its runtime on the state folder and its reports on disk; only the usage probe answers a known budget of 10 %, and the dossier's warnings have no data. The workers of the tasks in progress (#210 and #641 of the dossier) come from each side's own adapter of Orca behind the fake `orca` of the run's folder, which answers its four reads from the run's `workers`, with the thresholds of the run's `policies/worker.yaml` (the defaults without one) and the run's instant: the prototype's own reader would ask the machine's clock. The product finds the fake by `REGIA_ORCA`, the prototype's adapter where it looks the program up; neither ever starts the machine's Orca.
+The product runs its `precheck` binary there, at `2026-01-10T09:00:00Z`. The prototype runs its precheck in process, with its own tracker reader behind the fake `gh`, its runtime on the state folder and its reports on disk; only the usage probe answers a known budget of 10 %. The dossier's warnings are its real `_dossier_da_regia`'s, with the git of its `PATH`; the product's are `regia-git`'s, with the git it finds; a run's stand-in for git, if any, goes to both. The workers of the tasks in progress (#210 and #641 of the dossier) come from each side's own adapter of Orca behind the fake `orca` of the run's folder, which answers its four reads from the run's `workers`, with the thresholds of the run's `policies/worker.yaml` (the defaults without one) and the run's instant: the prototype's own reader would ask the machine's clock. The product finds the fake by `REGIA_ORCA`, the prototype's adapter where it looks the program up; neither ever starts the machine's Orca.
 
 ## The comparison
 
-The line must be the prototype's, key order included, once each project's `dossier` is taken out of the prototype's side only: the dossier's warnings need the prototype's `avvisi_dossier`, which #450 of the dossier ports, and the product's line must not have the key. Every reason is ported. The detector's rows must be the prototype's too, the digests of the series byte for byte.
+The line must be the prototype's, key order included, each project's `dossier` too (#743): nothing is taken out of either side. Every reason is ported. The detector's rows must be the prototype's too, the digests of the series byte for byte.
 
 ## Recording again
 

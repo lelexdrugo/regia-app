@@ -1,0 +1,67 @@
+{
+  "_note": "Synthetic. #158, #549 and #743: the branches of the workers in the dossier, read with local git on a real repo. A branch is a worker's when a report of the dossier names it or when its name is `<owner>/regia-<N>-<slug>`; it warns when it has commits neither its own branch on the remote nor the remote's main branch has: never pushed, or ahead of its remote. A report that is a gate holds its branch on purpose: expected. The branch of a task in progress, here #3, is no warning, nor is a branch in step with its remote or one outside the convention with no report. Past the first five the others are counted. After the dossier's own warning of no upstream the branches are still read.",
+  "transcribes": [
+    "test_branch_non_pushato.py::TestBranchNonPushato::test_il_remoto_e_indietro_di_un_commit",
+    "test_branch_non_pushato.py::TestBranchNonPushato::test_mai_pushato",
+    "test_branch_non_pushato.py::TestBranchNonPushato::test_allo_sha_del_remoto_niente",
+    "test_branch_non_pushato.py::TestBranchNonPushato::test_un_report_gate_e_atteso",
+    "test_branch_non_pushato.py::TestBranchNonPushato::test_un_branch_per_riga_in_ordine",
+    "test_branch_non_pushato.py::TestBranchNonPushato::test_dopo_un_avviso_del_dossier_i_branch_ci_sono_ancora",
+    "test_branch_non_pushato.py::TestBranchSenzaReport::test_nel_dossier_mai_pushato_senza_report",
+    "test_branch_non_pushato.py::TestBranchSenzaReport::test_il_task_in_corso_non_da_avviso",
+    "test_branch_non_pushato.py::TestBranchSenzaReport::test_fuori_dalla_convenzione_e_senza_report_niente",
+    "test_branch_non_pushato.py::TestBranchSenzaReport::test_il_pushato_resta_niente",
+    "test_branch_non_pushato.py::TestPrecheckBranch::test_il_compatto_porta_branch_avanti_task_e_atteso",
+    "test_branch_non_pushato.py::TestPrecheckBranch::test_oltre_il_massimo_i_branch_si_contano",
+    "test_branch_non_pushato.py::TestPrecheckBranch::test_il_json_del_giro_porta_il_branch",
+    "test_branch_non_pushato.py::TestPrecheckSuRepoVeroBranch::test_stesso_esito_e_stesso_motivo_con_e_senza_un_branch_non_pushato",
+    "test_branch_non_pushato.py::TestPrecheckProdotto::test_un_task_in_corso_nasconde_il_suo_branch_e_lo_dice_al_dossier (in the dossier)"
+  ],
+  "issues": [
+    {"n": 1, "status": "Approvato", "project": "p", "objective": true, "registry": "id: p\ncartella: {dossier}/p\nrepo: example/dossier-p\nwip: 3\npriorita: 3"},
+    {"n": 2, "status": "Approvato"},
+    {"n": 3, "status": "In corso"}
+  ],
+  "runs": [
+    {
+      "note": "the workers' branches, six that warn: the first five and the count of the others",
+      "dossiers": {
+        "p": {
+          "remote": "example/dossier-p",
+          "branches": [
+            {"name": "example/regia-1-alpha"},
+            {"name": "example/regia-2-beta", "pushed": true},
+            {"name": "example/regia-3-gamma", "commits": 2},
+            {"name": "example/regia-4-delta", "pushed": true, "more": 1},
+            {"name": "example/regia-5-epsilon"},
+            {"name": "example/regia-6-zeta", "commits": 3},
+            {"name": "example/regia-7-eta"},
+            {"name": "feature/without-report"},
+            {"name": "spike/named"}
+          ]
+        }
+      },
+      "reports": [
+        {"name": "2026-01-09-5-epsilon.md", "modified": "2026-01-10T08:00:00Z", "body": "---\ntipo: gate\ntask: 5\nbranch: \"example/regia-5-epsilon@0000000\"  # name@sha\n---\nbody\n"},
+        {"name": "2026-01-09-9-spike.md", "modified": "2026-01-10T08:00:00Z", "body": "---\ntipo: done\ntask: 9\nbranch: spike/named\n---\n"}
+      ]
+    },
+    {
+      "note": "no upstream: the dossier's own warning, then its branches",
+      "dossiers": {
+        "p": {
+          "remote": "example/dossier-p",
+          "upstream": false,
+          "branches": [
+            {"name": "example/regia-1-alpha"},
+            {"name": "example/regia-3-gamma"},
+            {"name": "example/regia-5-epsilon", "pushed": true, "more": 2}
+          ]
+        }
+      },
+      "reports": [
+        {"name": "2026-01-09-5-epsilon.md", "modified": "2026-01-10T08:00:00Z", "body": "---\ntipo: done\ntask: 5\npush: gate\nbranch: example/regia-5-epsilon\n---\n"}
+      ]
+    }
+  ]
+}
