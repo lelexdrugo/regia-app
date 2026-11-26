@@ -38,6 +38,10 @@ use serde_json::Value;
 const ATTEMPTS: u64 = 1000;
 const MIN_WINS: u64 = 100;
 const MIN_BUSY: u64 = 100;
+/// How long a winner may hold the lock inside the witness, at most. The verdict rule says an inconclusive run is
+/// repeated with other pacing: 2 ms gave too few refusals in WSL (90 to 129 against the 100 the rule wants, with
+/// no violation), 6 ms gives each side more to be refused by. A longer hold only makes the test harder to pass.
+const HOLD_MS: &str = "6";
 
 struct Sides {
     dossier: PathBuf,
@@ -237,6 +241,7 @@ fn both_create_the_same_schema() {
         (sql, journal)
     };
     assert_eq!(schema(&by_python), schema(&by_rust));
+    assert_eq!(schema(&by_python).1, "delete", "the prototype never sets the journal mode: a database it creates is in the rollback journal");
     assert_eq!(schema(&by_rust).1, "delete", "rollback journal, never WAL");
 }
 
@@ -365,6 +370,47 @@ fn the_controller_lock_excludes_both_ways() {
     assert_eq!(refused.json["lock"]["holder"], python_holder.as_str());
 }
 
+/// `test_a_otto_processi_un_solo_vincitore` of `test_runtime.py`, with eight real processes, four of each
+/// language, in four rounds: each round starts all eight on the same free lock at the same instant, and ends
+/// with one winner, seven refusals and the winner's row. The prototype's case starts eight Python processes;
+/// the one-language cases on the Rust side are in `crates/regia-store/tests/state.rs`.
+#[test]
+#[ignore = "needs the dossier and python: REGIA_HOME"]
+fn eight_processes_four_of_each_language_give_one_winner_in_each_of_four_rounds() {
+    let sides = sides();
+    let dir = folder("eight-processes");
+    let limits = Limits { timeout: Duration::from_secs(120), ..Limits::default() };
+    for round in 0..4 {
+        let project = format!("p{round}");
+        // The interpreters need a moment to start; every process then waits for this instant.
+        let start = (epoch_ms() + 3000).to_string();
+        let ran: Vec<(String, bool, Ran)> = thread::scope(|scope| {
+            let handles: Vec<_> = (0..8)
+                .map(|i| {
+                    let (sides, dir, project, start) = (&sides, &dir, &project, &start);
+                    scope.spawn(move || {
+                        let rust = i % 2 == 0;
+                        let holder = format!("{}{i}", if rust { "rs-" } else { "py-" });
+                        let args = ["acquire", project.as_str(), holder.as_str(), "60", "--start-at-ms", start.as_str()];
+                        let launch = if rust { sides.rust_launch(dir, &args) } else { sides.python_launch(dir, &args) };
+                        let output = launch.limits(limits).run().expect("run one of the eight");
+                        (holder, rust, finish(output))
+                    })
+                })
+                .collect();
+            handles.into_iter().map(|handle| handle.join().expect("one of the eight")).collect()
+        });
+        let winners: Vec<&(String, bool, Ran)> = ran.iter().filter(|(_, _, ran)| ran.code == 0).collect();
+        assert_eq!(winners.len(), 1, "round {round}: {ran:?}");
+        for (holder, rust, ran) in &ran {
+            let refused = if *rust { s(&ran.json["state"]) == "busy" } else { s(&ran.json["stato"]) == "occupato" };
+            assert!(ran.code == 0 || (ran.code == 3 && refused), "round {round}, {holder}: {ran:?}");
+        }
+        let held = sides.rust(&dir, &["status", &project]);
+        assert_eq!(held.json["lock"]["holder"], winners[0].0.as_str(), "round {round}: the row is the winner's: {held:?}");
+    }
+}
+
 fn refs(list: &[String]) -> Vec<&str> {
     list.iter().map(String::as_str).collect()
 }
@@ -389,7 +435,7 @@ fn contention_never_gives_two_holders() {
     let args = |holder: &str, done: &Path, peer: &Path| -> Vec<String> {
         let (done, peer) = (done.display().to_string(), peer.display().to_string());
         [
-            "contend", "p437", holder, &attempts, "--witness", &witness, "--start-at-ms", &start, "--hold-ms", "2", "--done",
+            "contend", "p437", holder, &attempts, "--witness", &witness, "--start-at-ms", &start, "--hold-ms", HOLD_MS, "--done",
             &done, "--peer-done", &peer,
         ]
         .map(str::to_owned)
@@ -431,8 +477,8 @@ fn contention_never_gives_two_holders() {
         "rule: each side at least {ATTEMPTS} attempts, at least {MIN_WINS} wins and {MIN_BUSY} busy; 0 violations, 0 anomalies
 "
     ));
-    log.push_str("each attempt: acquire with a 60 s ttl; on a win, a witness folder created, up to 2 ms held, removed, then release
-");
+    log.push_str(&format!("each attempt: acquire with a 60 s ttl; on a win, a witness folder created, up to {HOLD_MS} ms held, removed, then release
+"));
     log.push_str(&format!("rust: exit {} {}
 ", rust.code, rust.json));
     log.push_str(&format!("python: exit {} {}
