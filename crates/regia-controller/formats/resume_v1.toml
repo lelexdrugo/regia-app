@@ -1,0 +1,164 @@
+# Format v1 of the resume of the sessions a usage limit stopped (F121, F151, F158, F159, F161-F163, F165-F170 of the
+# dossier's inventory; #132 of the dossier): the words of the prototype's `tools/sospese.py` and of its controller's
+# methods in the steps registry, in the line of `controller.log`, in `controller-stato.json` and in the files beside the
+# state database. The Python controller, its brief and its dailies read them, so they are data, and stay out of the Rust
+# sources. Both controllers write the same words while they coexist on one state folder.
+
+version = 1
+
+# An hour has passed this long before its session resumes (`MARGINE_S`).
+margin_s = 60.0
+# A resume of one limit is tried this many times, then it is the owner's (`MAX_RIPRESE_PER_LIMITE`).
+max_failed = 2
+# A record that is not open and has not changed for this long is not read again.
+stale_s = 86400.0
+# The opt-in by folder looks this many days back; a release that matches no session is kept this long.
+opt_in_days = 14.0
+release_kept_s = 86400.0
+# What is kept of an error's text.
+error_chars = 300
+
+# The files beside the state database.
+[files]
+to_resume = "da-riprendere.json"
+opt_in = "ripresa-optin.json"
+releases = "rilasci"
+
+# What the resume adds to a record of the steps registry, besides the keys of `controller_v1.toml`.
+[record]
+analysis = "analisi"
+resets = "riprende"
+resets_iso = "riprende_iso"
+failed = "ripresa_fallita"
+released = "rilasciata_limite"
+resumed_t = "ripreso_t"
+parent = "padre"
+
+# The record's `analisi`: what its transcript said at the last tick.
+[analysis]
+state = "stato"
+resets_iso = "riprende_iso"
+source = "fonte"
+zone = "fuso"
+estimated = "stimata"
+limit_iso = "t_limite_iso"
+entrypoint = "entrypoint"
+
+[analysis.states]
+suspended = "sospesa"
+resuming = "ripresa-in-corso"
+active = "attiva"
+empty = "vuota"
+unreadable = "illeggibile"
+
+[analysis.sources]
+quota_limits = "quotaLimits"
+api_error_params = "apiErrorParams"
+text = "testo"
+task_error = "task_complete.error"
+
+[analysis.zones]
+local = "locale"
+
+# An attempt of a resume, in the record's `riprese`.
+[attempt]
+limit = "limite"
+effective = "effettivo"
+pid = "pid"
+log = "log"
+new_session = "sessione_nuova"
+error = "errore"
+
+[origins]
+worker = "worker-orca"
+opt_in = "optin"
+
+# What a tick's line adds.
+[line]
+suspended = "sospese"
+resumes = "riprese"
+resume_error = "ripresa_errore"
+releases = "rilasci"
+wait = "attesa"
+waiting_to_resume = "attesa_da_riprendere"
+
+# A suspended session, in the line and in the state file.
+[suspended]
+project = "progetto"
+session = "sessione"
+adapter = "adapter"
+origin = "origine"
+resets = "riprende"
+due = "scaduta"
+
+# A resume, in the line; and its error.
+[resume]
+session = "sessione"
+project = "progetto"
+adapter = "adapter"
+agent = "agente"
+expected = "attesa"
+effective = "effettivo"
+pid = "pid"
+log = "log"
+new_session = "sessione_nuova"
+error = "errore"
+
+# A tick that waits for a suspended session: until when, and for how many.
+[wait]
+until = "fino_a"
+sessions = "sessioni"
+
+# A session to resume by hand in the line, and a release.
+[waiting]
+project = "progetto"
+session = "sessione"
+reason = "motivo"
+
+[decisions]
+resumed = "ripresa"
+resume_error = "ripresa-errore"
+suspended = "attesa-sospesa"
+to_resume = "attesa-da-riprendere"
+
+# `da-riprendere.json`: the sessions the controller does not resume, which the brief and the dailies read.
+[to_resume]
+v = "v"
+updated = "aggiornato"
+sessions = "sessioni"
+project = "progetto"
+folder = "cartella"
+origin = "origine"
+adapter = "adapter"
+agent = "agente"
+session = "sessione"
+surface_session = "sessione_orca"
+transcript = "transcript"
+resets = "riprende"
+reason = "motivo"
+how = "come"
+command = "comando_orca"
+
+# `ripresa-optin.json`, written by hand: the sessions and the folders allowed to resume besides the regia's steps.
+[opt_in]
+sessions = "sessioni"
+folders = "cartelle"
+
+# A release, `rilasci/<name>.json`: a session the owner closed without resuming it, or every one.
+[release]
+session = "sessione"
+t = "t"
+all = "*"
+
+# Why a session is resumed or not, and how its owner resumes it, in the prototype's words.
+[reasons]
+agent = "agente non supportato: {agent}"
+app_session = "sessione di Orca: non si riprende via CLI (due scrittori sul transcript)"
+app_chat = "transcript di una chat di Orca (entrypoint sdk-ts)"
+no_session = "id di sessione sconosciuto"
+launched = "lanciata dall'adapter cli"
+no_answer = "Orca non risponde: non si può escludere che la sessione sia aperta in una scheda"
+shown = "Orca la mostra come chat"
+opted_in = "opt-in, sconosciuta a Orca"
+failed = "ripresa fallita {n} volte per lo stesso limite"
+how_app = "pulsante Continue nella scheda di Orca (mai `claude --resume` da fuori: due scrittori sul transcript)"

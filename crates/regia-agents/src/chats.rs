@@ -215,7 +215,7 @@ pub fn chat_wake_command(chat: &str) -> Option<String> {
         .then(|| format!("orca orchestration send --to {COORDINATOR}{chat} --type status --subject \"{CONTINUE}\" --body \"{CONTINUE}\""))
 }
 
-/// The prototype's `ritrova_sessione`: the session file of `folder` changed since `after` (5 s of slack) whose agent got
+/// The prototype's search of a step's session by its marker (`sospese.py`): the session file of `folder` changed since `after` (5 s of slack) whose agent got
 /// `marker` first, the oldest first. A step launched on the app whose session was not found at its launch. Claude's
 /// first message must start with it, as at the launch (#509: the app's naming session only quotes it); codex's file
 /// holds it.

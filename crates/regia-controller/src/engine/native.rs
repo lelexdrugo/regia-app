@@ -454,11 +454,26 @@ impl Steps for StoreSteps {
     fn suspended_projects(&self) -> BTreeSet<String> {
         let r = &words().registry;
         let busy = [r.states.suspended.as_str(), r.states.resuming.as_str()];
-        self.records()
+        StoreSteps::records(self)
             .values()
             .filter(|record| record.get(&r.record.state).and_then(Value::as_str).is_some_and(|state| busy.contains(&state)))
             .filter_map(|record| record.get(&r.record.project).and_then(Value::as_str).map(str::to_owned))
             .collect()
+    }
+
+    fn records(&self) -> Map<String, Value> {
+        StoreSteps::records(self)
+    }
+
+    /// Each record over the one of its key, then the save record by record with its version check: a record another
+    /// writer changed meanwhile stays as stored. With none, the save still applies what is kept.
+    fn save_records(&self, records: Map<String, Value>, at: f64) -> Result<(), StateError> {
+        let mut memory = self.memory()?;
+        for (key, record) in records {
+            memory.records.insert(key.clone(), record);
+            memory.changed.insert(key);
+        }
+        self.save(&mut memory, at)
     }
 }
 

@@ -185,6 +185,22 @@ pub trait Steps: Send + Sync {
 
     /// The projects with a session suspended or resuming: their work is half done.
     fn suspended_projects(&self) -> BTreeSet<String>;
+
+    /// The records, by key, as this controller knows them: what the resume of suspended sessions reads (#470). None by
+    /// default.
+    fn records(&self) -> Map<String, Value> {
+        Map::new()
+    }
+
+    /// Writes `records` over the ones of the same keys, then saves at `at`, as the registry saves: what the resume of
+    /// suspended sessions changed (#470). Nothing by default.
+    ///
+    /// # Errors
+    ///
+    /// The lock is lost, or the registry cannot be written.
+    fn save_records(&self, _records: Map<String, Value>, _at: f64) -> Result<(), StateError> {
+        Ok(())
+    }
 }
 
 /// What runs before the precheck: the resume of suspended sessions (#470) and the scheduled operations (#469).
@@ -233,6 +249,30 @@ impl TickContext<'_> {
     #[must_use]
     pub fn suspended_projects(&self) -> BTreeSet<String> {
         self.controller.ports.steps.suspended_projects()
+    }
+
+    /// The clock now, which may have moved since the tick began: a resume waits for its session.
+    #[must_use]
+    pub fn clock(&self) -> f64 {
+        self.controller.now()
+    }
+
+    /// The tick's steps registry, which the resume of suspended sessions reads and writes (#470).
+    #[must_use]
+    pub fn steps(&self) -> &dyn Steps {
+        self.controller.ports.steps.as_ref()
+    }
+
+    /// The tick's liveness of a process: a resume's process is adopted, so its host reaps it.
+    #[must_use]
+    pub fn liveness(&self) -> &dyn Liveness {
+        self.controller.ports.liveness.as_ref()
+    }
+
+    /// The tick's projects' folders.
+    #[must_use]
+    pub fn folders(&self) -> &dyn Folders {
+        self.controller.ports.folders.as_ref()
     }
 }
 

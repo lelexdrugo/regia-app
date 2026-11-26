@@ -18,5 +18,6 @@ pub mod engine;
 pub mod interrupt;
 pub mod precheck;
 pub mod resident;
+pub mod resume;
 pub mod schedule;
 pub mod shadow;
